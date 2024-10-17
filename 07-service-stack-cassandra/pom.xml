@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>http://www.isygo-it.eu</url>
+    </organization>
+
+    <groupId>eu.isygo-it.services</groupId>
+    <artifactId>service-stack-cassandra</artifactId>
+    <version>1.0.241017-S0215</version>
+
+    <name>service-stack-cassandra</name>
+    <description>service-stack-cassandra</description>
+
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>eu.isygo-it.services</groupId>
+        <artifactId>service-stack</artifactId>
+        <version>1.0.241017-S0215</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <properties/>
+
+    <dependencies>
+        <dependency>
+            <groupId>eu.isygo-it.services</groupId>
+            <artifactId>service-stack-shared</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.isygo-it.services</groupId>
+            <artifactId>service-stack-jpa</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-cassandra</artifactId>
+            <version>4.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.26</version>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub isygo-it Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/isygo-it/00-service-stack</url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub isygo-it Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/isygo-it/00-service-stack</url>
+        </repository>
+    </repositories>
+</project>
