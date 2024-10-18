@@ -50,7 +50,7 @@
         </dependency>
     </dependencies>
 
-        <distributionManagement>
+    <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
