@@ -50,11 +50,11 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
+        <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-it/00-service-stack</url>
+            <url>https://maven.pkg.github.com/isygo-dev/realease</url>
         </repository>
     </distributionManagement>
 
@@ -62,7 +62,7 @@
         <repository>
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-it/00-service-stack</url>
+            <url>https://maven.pkg.github.com/isygo-dev/realease</url>
         </repository>
     </repositories>
 </project>
