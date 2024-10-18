@@ -150,7 +150,7 @@
         <repository>
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/release</url>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
         </repository>
     </distributionManagement>
 
@@ -158,7 +158,7 @@
         <repository>
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/release</url>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
         </repository>
     </repositories>
 </project>
