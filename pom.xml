@@ -65,7 +65,12 @@
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/release</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
+
+
     </distributionManagement>
 
     <repositories>
@@ -73,6 +78,9 @@
             <id>github</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/release</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 </project>
