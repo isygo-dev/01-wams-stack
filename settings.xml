@@ -133,8 +133,8 @@ under the License.
 
         <server>
             <id>github</id>
-            <username>${env.GITHUB_USER}</username>
-            <password>${env.GITHUB_TOKEN}</password> <!-- deploy_package_token -->
+            <username>isygo-it</username>
+            <password>Sami@241180</password> <!-- deploy_package_token -->
         </server>
     </servers>
 
