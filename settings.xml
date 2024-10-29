@@ -134,7 +134,12 @@ under the License.
         <server>
             <id>isygo-it-github-01</id>
             <username>isygo-it</username>
-            <password>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</password> <!-- deploy_package_token -->
+            <password>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</password>
+        </server>
+        <server>
+            <id>isygo-it-github-02</id>
+            <username>isygo-it</username>
+            <password>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</password>
         </server>
     </servers>
 
