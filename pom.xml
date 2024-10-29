@@ -62,7 +62,7 @@
 
     <distributionManagement>
         <repository>
-            <id>isygo-it-github</id>
+            <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
             <snapshots>
@@ -73,7 +73,7 @@
 
     <repositories>
         <repository>
-            <id>isygo-it-github</id>
+            <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
             <snapshots>
