@@ -132,9 +132,9 @@ under the License.
         -->
 
         <server>
-            <id>github</id>
+            <id>isygo-it-github</id>
             <username>isygo-it</username>
-            <password>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</password> <!-- deploy_package_token -->
+            <password>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</password> <!-- deploy_package_token -->
         </server>
     </servers>
 
