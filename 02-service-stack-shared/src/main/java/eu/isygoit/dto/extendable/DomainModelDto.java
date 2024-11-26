@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
 /**
@@ -20,9 +21,16 @@ import java.io.Serializable;
 @SuperBuilder
 public abstract class DomainModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
 
+    @NotEmpty
     private String name;
     private String description;
     private String url;
+    @NotEmpty
+    private String email;
+    @NotEmpty
+    private String phone;
+    @NotEmpty
+    private String industry;
     @Builder.Default
     private IEnumBinaryStatus.Types adminStatus = IEnumBinaryStatus.Types.ENABLED;
 }

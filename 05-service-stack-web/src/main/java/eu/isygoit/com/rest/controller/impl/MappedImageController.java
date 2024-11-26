@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.com.rest.api.IUploadImageApi;
+import eu.isygoit.com.rest.api.IMappedImageApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
@@ -37,7 +37,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
         FULLD extends MIND,
         S extends IImageServiceMethods<I, T> & ICrudServiceMethod<I, T>>
         extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements IUploadImageApi<I, FULLD> {
+        implements IMappedImageApi<I, FULLD> {
 
     @Override
     public ResponseEntity<FULLD> uploadImage(RequestContextDto requestContext,
@@ -103,10 +103,10 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
     }
 
     /**
-     * Before create full d.
+     * Before create fulld.
      *
      * @param object the object
-     * @return the full d
+     * @return the fulld
      * @throws Exception the exception
      */
     public FULLD beforeCreate(FULLD object) throws Exception {
@@ -125,10 +125,10 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
     }
 
     /**
-     * Before update full d.
+     * Before update fulld.
      *
      * @param object the object
-     * @return the full d
+     * @return the fulld
      * @throws Exception the exception
      */
     public FULLD beforeUpdate(FULLD object) throws Exception {

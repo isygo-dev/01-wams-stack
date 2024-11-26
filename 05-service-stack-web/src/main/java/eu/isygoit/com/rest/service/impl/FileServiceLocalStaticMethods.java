@@ -56,7 +56,7 @@ public final class FileServiceLocalStaticMethods {
     static <T extends IFileEntity & IIdEntity & ICodifiable> Resource download(T entity, Long version) throws MalformedURLException {
         if (StringUtils.hasText(entity.getPath())) {
             Resource resource = new UrlResource(Path.of(entity.getPath() +
-                    File.separator + entity.getCode()).toUri());
+                    File.separator + entity.getOriginalFileName()).toUri());
             if (!resource.exists()) {
                 throw new ResourceNotFoundException("No resource found for "
                         + (ISAASEntity.class.isAssignableFrom(entity.getClass())

@@ -1,9 +1,10 @@
 package eu.isygoit.helper;
 
 import eu.isygoit.annotation.Criteria;
-import eu.isygoit.enums.IEnumCombiner;
+import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
+import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,8 +26,8 @@ public class CriteriaHelper {
      * @param delim    the delim
      * @return the list
      */
-    public static List<eu.isygoit.filter.Criteria> convertStringToCriteria(String criteria, String delim) {
-        List<eu.isygoit.filter.Criteria> list = new ArrayList<>();
+    public static List<QueryCriteria> convertStringToCriteria(String criteria, String delim) {
+        List<QueryCriteria> list = new ArrayList<>();
         StringTokenizer tokenizer = new StringTokenizer(criteria, delim);
 
         while (tokenizer.hasMoreTokens()) {
@@ -34,19 +35,19 @@ public class CriteriaHelper {
 
             //get combiner if exists
             String[] combinerKeyValue = token.split("->");
-            IEnumCombiner.Types combiner = IEnumCombiner.Types.OR;
+            IEnumCriteriaCombiner.Types combiner = IEnumCriteriaCombiner.Types.OR;
             if (combinerKeyValue.length == 2) {
-                combiner = IEnumCombiner.Types.valueOf(combinerKeyValue[0].trim());
+                combiner = IEnumCriteriaCombiner.Types.valueOf(combinerKeyValue[0].trim());
                 token = combinerKeyValue[1];
             }
 
 
             String finalToken = token;
-            IEnumCombiner.Types finalCombiner = combiner;
+            IEnumCriteriaCombiner.Types finalCombiner = combiner;
             Arrays.stream(IEnumOperator.Types.values()).forEach(operator -> {
                 if (finalToken.contains(operator.symbol())) {
                     String[] keyValue = finalToken.split(operator.symbol());
-                    list.add(eu.isygoit.filter.Criteria.builder()
+                    list.add(QueryCriteria.builder()
                             .combiner(finalCombiner)
                             .name(keyValue[0])
                             .operator(operator)
@@ -86,10 +87,10 @@ public class CriteriaHelper {
      * @param classType the class type
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> buildSpecification(String domain, List<eu.isygoit.filter.Criteria> criteria, Class<?> classType) {
+    public static <T extends IIdEntity> Specification<T> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
         Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(classType);
         Specification<T> specification = Specification.where(null);
-        for (eu.isygoit.filter.Criteria cr : criteria) {
+        for (QueryCriteria cr : criteria) {
             String name = cr.getName();
             String value = cr.getValue();
             if (!criteriaMap.containsKey(name)) {

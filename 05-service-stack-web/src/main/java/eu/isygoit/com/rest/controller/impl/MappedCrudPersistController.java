@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.com.rest.api.IMappedPersistCrudApi;
+import eu.isygoit.com.rest.api.IMappedCrudPersistApi;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.model.IIdEntity;
@@ -17,12 +17,12 @@ import org.springframework.http.ResponseEntity;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedPersistCrudController<I, T extends IIdEntity,
+public abstract class MappedCrudPersistController<I, T extends IIdEntity,
         MIND extends IIdentifiableDto,
         FULLD extends MIND,
         S extends ICrudServiceMethod<I, T>>
         extends CrudControllerSubMethods<I, T, MIND, FULLD, S>
-        implements IMappedPersistCrudApi<I, FULLD> {
+        implements IMappedCrudPersistApi<I, FULLD> {
 
     public final ResponseEntity<FULLD> create(FULLD object) {
         return subCreate(object);

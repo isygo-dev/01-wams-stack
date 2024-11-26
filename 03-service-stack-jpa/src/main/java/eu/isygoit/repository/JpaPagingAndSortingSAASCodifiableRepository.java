@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
- * The interface Jpa paging and sorting sas codifiable repository.
+ * The interface Jpa paging and sorting saas codifiable repository.
  *
  * @param <T> the type parameter
  * @param <I> the type parameter

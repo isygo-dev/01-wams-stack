@@ -40,13 +40,6 @@ public abstract class CancelableEntity<T extends Serializable> extends AbstractE
     private Long canceledBy;
 
     /**
-     * Gets check cancel.
-     *
-     * @return the check cancel
-     */
-
-
-    /**
      * Sets check cancel.
      *
      * @param checkCancel the check cancel

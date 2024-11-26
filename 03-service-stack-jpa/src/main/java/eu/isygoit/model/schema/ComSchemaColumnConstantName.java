@@ -686,4 +686,8 @@ public interface ComSchemaColumnConstantName {
      * The constant C_TAG_OWNER.
      */
     String C_TAG_OWNER = "TAG_OWNER";
+    /**
+     * The constant C_INDUSTRY.
+     */
+    String C_INDUSTRY = "INDUSTRY";
 }

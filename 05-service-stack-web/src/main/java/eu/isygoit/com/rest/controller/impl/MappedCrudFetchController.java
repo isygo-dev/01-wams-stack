@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.com.rest.api.IMappedFetchCrudApi;
+import eu.isygoit.com.rest.api.IMappedCrudFetchApi;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -21,12 +21,12 @@ import java.util.Map;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedFetchCrudController<I, T extends IIdEntity,
+public abstract class MappedCrudFetchController<I, T extends IIdEntity,
         MIND extends IIdentifiableDto,
         FULLD extends MIND,
         S extends ICrudServiceMethod<I, T>>
         extends CrudControllerSubMethods<I, T, MIND, FULLD, S>
-        implements IMappedFetchCrudApi<I, MIND, FULLD> {
+        implements IMappedCrudFetchApi<I, MIND, FULLD> {
 
 
     @Override

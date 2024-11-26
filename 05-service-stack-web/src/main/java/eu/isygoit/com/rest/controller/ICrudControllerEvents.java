@@ -17,10 +17,10 @@ import java.util.List;
 interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiableDto, FULLD extends MIND> {
 
     /**
-     * Before create full d.
+     * Before create fulld.
      *
      * @param object the object
-     * @return the full d
+     * @return the fulld
      */
     FULLD beforeCreate(FULLD object);
 
@@ -33,11 +33,11 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
     T afterCreate(T object);
 
     /**
-     * Before update full d.
+     * Before update fulld.
      *
      * @param id     the id
      * @param object the object
-     * @return the full d
+     * @return the fulld
      */
     FULLD beforeUpdate(I id, FULLD object);
 
@@ -82,10 +82,10 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
     boolean afterDelete(List<FULLD> objects);
 
     /**
-     * After find by id full d.
+     * After find by id fulld.
      *
      * @param object the object
-     * @return the full d
+     * @return the fulld
      */
     FULLD afterFindById(FULLD object);
 

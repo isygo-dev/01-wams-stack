@@ -22,6 +22,20 @@ public interface IFileEntity {
     void setType(String type);
 
     /**
+     * Gets file name.
+     *
+     * @return the file name
+     */
+    String getFileName();
+
+    /**
+     * Sets file name.
+     *
+     * @param fileName the file name
+     */
+    void setFileName(String fileName);
+
+    /**
      * Gets original file name.
      *
      * @return the original file name

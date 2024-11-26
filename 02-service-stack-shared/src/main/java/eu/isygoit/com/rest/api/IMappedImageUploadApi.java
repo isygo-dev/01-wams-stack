@@ -13,42 +13,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 /**
- * The interface Upload image api.
+ * The interface Mapped image upload api.
  *
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IUploadImageApi<I, D extends IIdentifiableDto & IImageUploadDto> {
-
-
-    /**
-     * Download image response entity.
-     *
-     * @param requestContext the request context
-     * @param id             the id
-     * @return the response entity
-     * @throws IOException the io exception
-     */
-    @Operation(summary = "Download the image by linked object identifier",
-            description = "Download the image by linked object identifier")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Resource.class))})
-    })
-    @GetMapping(path = "/image/download/{id}")
-    ResponseEntity<Resource> downloadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                           @PathVariable(name = RestApiConstants.ID) I id) throws IOException;
+public interface IMappedImageUploadApi<I, D extends IIdentifiableDto & IImageUploadDto> {
 
     /**
      * Create with image response entity.

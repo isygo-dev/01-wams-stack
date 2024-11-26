@@ -6,12 +6,12 @@
 
     <organization>
         <name>isygo-it-services</name>
-        <url>http://www.isygo-it.eu</url>
+        <url>https://isygo-it.eu</url>
     </organization>
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-quartz</artifactId>
-    <version>1.0.241017-S0215</version>
+    <version>WS-1.0.261112-S1046</version>
 
     <name>service-stack-quartz</name>
     <description>service-stack-quartz</description>
@@ -21,7 +21,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>1.0.241017-S0215</version>
+        <version>WS-1.0.261112-S1046</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

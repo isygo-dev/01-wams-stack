@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.filter.Criteria;
+import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdEntity;
 import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;
@@ -186,7 +186,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param criteria the criteria
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<Criteria> criteria);
+    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria);
 
     /**
      * Find all by criteria filter list.
@@ -196,5 +196,5 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param pageRequest the page request
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<Criteria> criteria, PageRequest pageRequest);
+    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest);
 }

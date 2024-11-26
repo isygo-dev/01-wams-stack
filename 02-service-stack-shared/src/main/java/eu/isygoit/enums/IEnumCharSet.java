@@ -8,7 +8,7 @@ public interface IEnumCharSet {
     /**
      * The constant STR_ENUM_SIZE.
      */
-    int STR_ENUM_SIZE = 6;
+    int STR_ENUM_SIZE = 8;
 
     /**
      * The enum Types.

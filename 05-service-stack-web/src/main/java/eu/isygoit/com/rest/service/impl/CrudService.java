@@ -5,7 +5,7 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
-import eu.isygoit.filter.Criteria;
+import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.ICodifiable;
 import eu.isygoit.model.IIdEntity;
@@ -400,7 +400,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<Criteria> criteria) {
+    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
         if (!CollectionUtils.isEmpty(criteria)) {
             //get criteria data to validate filter
             Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
@@ -412,7 +412,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<Criteria> criteria, PageRequest pageRequest) {
+    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
         if (!CollectionUtils.isEmpty(criteria)) {
             //get criteria data to validate filter
             Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);

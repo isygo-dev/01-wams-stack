@@ -41,4 +41,9 @@ public interface AppParameterConstants {
      * The constant TECHNICAL_ADMIN_EMAIL.
      */
     String TECHNICAL_ADMIN_EMAIL = "TECHNICAL_ADMIN_EMAIL";
+
+    /**
+     * The constant OTP_DIGIT_NUMBER.
+     */
+    String OTP_DIGIT_NUMBER = "OTP_DIGIT_NUMBER";
 }

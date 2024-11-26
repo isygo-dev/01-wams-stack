@@ -1,9 +1,9 @@
 package eu.isygoit.enums;
 
 /**
- * The interface Enum combiner.
+ * The interface Enum criteria combiner.
  */
-public interface IEnumCombiner {
+public interface IEnumCriteriaCombiner {
 
 
     /**

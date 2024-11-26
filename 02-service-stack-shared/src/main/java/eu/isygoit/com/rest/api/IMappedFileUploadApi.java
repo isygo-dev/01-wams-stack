@@ -11,42 +11,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * The interface Upload file api.
+ * The interface Mapped file upload api.
  *
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IUploadFileApi<I, D extends IFileUploadDto> {
-
-
-    /**
-     * Download file response entity.
-     *
-     * @param requestContext the request context
-     * @param id             the id
-     * @param version        the version
-     * @return the response entity
-     */
-    @Operation(summary = "Download a file by object id and version Api",
-            description = "Download a file by object id and version")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Resource.class))})
-    })
-    @GetMapping(path = "/file/download")
-    ResponseEntity<Resource> downloadFile(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-            @RequestParam(name = RestApiConstants.ID) I id,
-            @RequestParam(name = RestApiConstants.VERSION) Long version);
+public interface IMappedFileUploadApi<I, D extends IFileUploadDto> {
 
     /**
      * Upload file response entity.

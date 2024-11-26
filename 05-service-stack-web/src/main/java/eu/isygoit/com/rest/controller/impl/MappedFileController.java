@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.com.rest.api.IUploadFileApi;
+import eu.isygoit.com.rest.api.IMappedFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
@@ -34,7 +34,7 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
         FULLD extends MIND,
         S extends IFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
         extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements IUploadFileApi<I, FULLD> {
+        implements IMappedFileApi<I, FULLD> {
 
     @Override
     public ResponseEntity<FULLD> uploadFile(RequestContextDto requestContext,
@@ -98,10 +98,10 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
     }
 
     /**
-     * Before create full d.
+     * Before create fulld.
      *
      * @param object the object
-     * @return the full d
+     * @return the fulld
      * @throws Exception the exception
      */
     public FULLD beforeCreate(FULLD object) throws Exception {
@@ -120,10 +120,10 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
     }
 
     /**
-     * Before update full d.
+     * Before update fulld.
      *
      * @param object the object
-     * @return the full d
+     * @return the fulld
      * @throws Exception the exception
      */
     public FULLD beforeUpdate(FULLD object) throws Exception {

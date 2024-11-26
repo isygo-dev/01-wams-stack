@@ -10,7 +10,7 @@ public class JobSchedulePovider {
     /**
      * The constant startDelay.
      */
-    public static int startDelay = 3;
+    public static int startDelay = 1;
 
     /**
      * Gets start delay.

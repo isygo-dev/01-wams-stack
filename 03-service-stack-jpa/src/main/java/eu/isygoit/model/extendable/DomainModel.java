@@ -44,6 +44,9 @@ public abstract class DomainModel<T extends Serializable> extends AuditableCance
     @Column(name = ComSchemaColumnConstantName.C_PHONE_NUMBER)
     private String phone;
 
+    @Column(name = ComSchemaColumnConstantName.C_INDUSTRY, length = ComSchemaConstantSize.S_NAME)
+    private String industry;
+
     @Builder.Default
     @ColumnDefault("'ENABLED'")
     @Enumerated(EnumType.STRING)

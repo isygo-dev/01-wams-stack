@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.com.rest.api.IUploadMultiFileApi;
+import eu.isygoit.com.rest.api.IMappedMultiFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
@@ -37,7 +37,7 @@ public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiF
         FULLD extends MIND,
         S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
         extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements IUploadMultiFileApi<L, I> {
+        implements IMappedMultiFileApi<L, I> {
 
     /**
      * Linked file mapper entity mapper.

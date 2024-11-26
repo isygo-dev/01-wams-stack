@@ -9,7 +9,7 @@ import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
-import eu.isygoit.filter.Criteria;
+import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.ICodifiable;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
@@ -375,12 +375,12 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<Criteria> criteria) {
+    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
         return null;
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<Criteria> criteria, PageRequest pageRequest) {
+    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
         return null;
     }
 }

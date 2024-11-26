@@ -10,5 +10,5 @@ import eu.isygoit.dto.IIdentifiableDto;
  * @param <FULLD> the type parameter
  */
 public interface IMappedCrudApi<I, MIND extends IIdentifiableDto, FULLD extends MIND>
-        extends IMappedFetchCrudApi<I, MIND, FULLD>, IMappedPersistCrudApi<I, FULLD>, IMappedDeleteCrudApi<I> {
+        extends IMappedCrudFetchApi<I, MIND, FULLD>, IMappedCrudPersistApi<I, FULLD>, IMappedCrudDeleteApi<I> {
 }

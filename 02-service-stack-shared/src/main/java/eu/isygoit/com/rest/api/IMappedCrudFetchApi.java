@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The interface Mapped fetch crud api.
+ * The interface Mapped crud fetch api.
  *
  * @param <I>     the type parameter
  * @param <MIND>  the type parameter
  * @param <FULLD> the type parameter
  */
-public interface IMappedFetchCrudApi<I, MIND extends IIdentifiableDto, FULLD extends MIND> {
+public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD extends MIND> {
 
     /**
      * Find all response entity.
