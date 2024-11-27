@@ -1,6 +1,6 @@
 # 01-wams-stack
 
-> isygo-it backend microservices stack.
+> WAMS backend microservices stack.
 
 # Technology Stack
 
@@ -24,9 +24,9 @@
 
 ## Backend
 
-### isygo-it services stack
+### WAMS stack
 
-- clone the isygo-it project from https://github.com/isygo-dev/01-wams-stack.git
+- clone the WAMS stack project from https://github.com/your-org/01-wams-stack.git
 - Open the project with Intellij IDEA (open as maven project)
 - Copy the settings.xml file from the root directory to the Maven .m2 directory
 - Run: `mvn clean install` in the terminal or use the Intellij Maven GUI
