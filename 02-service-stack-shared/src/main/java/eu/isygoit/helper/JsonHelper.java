@@ -97,7 +97,7 @@ public final class JsonHelper {
      * @return the set
      * @throws IOException the io exception
      */
-    static Set<ValidationMessage> validateJson(String jsonFilePath, String schemaFilePath, String schemaLanguage) throws IOException {
+    public static Set<ValidationMessage> validateJson(String jsonFilePath, String schemaFilePath, String schemaLanguage) throws IOException {
         File schemaFile = new File(schemaFilePath);
         if (!schemaFile.exists() || !schemaFile.isFile()) {
             throw new FileNotFoundException("Schema file not found: " + schemaFilePath);
@@ -123,7 +123,7 @@ public final class JsonHelper {
      * @return the set
      * @throws IOException the io exception
      */
-    static Set<ValidationMessage> validateJson(File jsonFile, File schemaFile, String schemaLanguage) throws IOException {
+    public static Set<ValidationMessage> validateJson(File jsonFile, File schemaFile, String schemaLanguage) throws IOException {
         if (!schemaFile.exists() || !schemaFile.isFile()) {
             throw new FileNotFoundException("Schema file not found: " + schemaFile);
         }
