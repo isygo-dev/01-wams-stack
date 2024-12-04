@@ -99,6 +99,7 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
      */
     final boolean subDeleteFile(L entity) {
         try {
+            repository().delete(entity);
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (linkedFileService != null) {
                 return FileServiceDmsStaticMethods.delete(entity, linkedFileService);

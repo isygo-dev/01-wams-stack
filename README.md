@@ -20,13 +20,13 @@
 - Install Git last version from https://git-scm.com/downloads/win
 - Install Intellij IDEA last version (Ultimate or Community) from https://www.jetbrains.com/idea/download/other.html
 - Install Java 17 from https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html
-- install Docker desktop last version from https://www.docker.com/products/docker-desktop
+- Install Docker desktop last version from https://www.docker.com/products/docker-desktop
 
 ## Backend
 
 ### WAMS stack
 
-- clone the WAMS stack project from https://github.com/your-org/01-wams-stack.git
+- Clone the WAMS stack project from https://github.com/your-org/01-wams-stack.git
 - Open the project with Intellij IDEA (open as maven project)
 - Copy the settings.xml file from the root directory to the Maven .m2 directory
 - Run: `mvn clean install` in the terminal or use the Intellij Maven GUI

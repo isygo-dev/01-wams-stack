@@ -56,13 +56,13 @@ public final class FileServiceLocalStaticMethods {
     static <T extends IFileEntity & IIdEntity & ICodifiable> Resource download(T entity, Long version) throws MalformedURLException {
         if (StringUtils.hasText(entity.getPath())) {
             Resource resource = new UrlResource(Path.of(entity.getPath() +
-                    File.separator + entity.getOriginalFileName()).toUri());
+                    File.separator + entity.getFileName()).toUri());
             if (!resource.exists()) {
                 throw new ResourceNotFoundException("No resource found for "
                         + (ISAASEntity.class.isAssignableFrom(entity.getClass())
                         ? ((ISAASEntity) entity).getDomain()
                         : DomainConstants.DEFAULT_DOMAIN_NAME
-                        + '/' + entity.getOriginalFileName()
+                        + '/' + entity.getFileName()
                         + "/" + version));
             }
             return resource;
@@ -71,7 +71,7 @@ public final class FileServiceLocalStaticMethods {
                     + (ISAASEntity.class.isAssignableFrom(entity.getClass())
                     ? ((ISAASEntity) entity).getDomain()
                     : DomainConstants.DEFAULT_DOMAIN_NAME
-                    + '/' + entity.getOriginalFileName()
+                    + '/' + entity.getFileName()
                     + "/" + version));
         }
     }
@@ -86,7 +86,7 @@ public final class FileServiceLocalStaticMethods {
      */
     public static <L extends ILinkedFile & ICodifiable & IIdEntity> boolean delete(L entity) throws IOException {
         File file = new File(entity.getPath()
-                + File.separator + entity.getCode());
+                + File.separator + entity.getFileName());
         if (file.exists()) {
             FileUtils.delete(file);
             return true;
