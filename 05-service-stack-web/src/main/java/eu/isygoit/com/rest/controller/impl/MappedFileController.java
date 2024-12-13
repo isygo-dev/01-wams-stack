@@ -7,10 +7,10 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.ISAASDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.ISAASEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -70,8 +70,8 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
                                                 FULLD dto) {
         log.info("Create with file request received");
         try {
-            if (ISAASEntity.class.isAssignableFrom(dto.getClass()) && StringUtils.isEmpty(((ISAASEntity) dto).getDomain())) {
-                ((ISAASEntity) dto).setDomain(requestContext.getSenderDomain());
+            if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getDomain())) {
+                ISAASDto.setDomain(requestContext.getSenderDomain());
             }
             dto = this.beforeCreate(dto);
             FULLD savedResume = mapper().entityToDto(this.afterCreate(

@@ -25,10 +25,10 @@ public class AuditorAwareService implements IAuditAwereService<String> {
         }
 
         Object principal = authentication.getPrincipal();
-        if (UserDetails.class.isAssignableFrom(principal.getClass())) {
-            return Optional.of(((UserDetails) authentication.getPrincipal()).getUsername());
-        } else if (String.class.isAssignableFrom(principal.getClass())) {
-            return Optional.of((String) authentication.getPrincipal());
+        if (principal instanceof UserDetails userDetails) {
+            return Optional.of(userDetails.getUsername());
+        } else if (principal instanceof String string) {
+            return Optional.of(string);
         }
 
         return Optional.of("anonymousUser");

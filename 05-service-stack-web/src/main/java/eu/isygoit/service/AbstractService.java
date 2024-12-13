@@ -56,8 +56,8 @@ public abstract class AbstractService<T extends NextCodeModel> implements IServi
 
     @Override
     public <E extends IIdEntity> E beforePersist(E entity) {
-        if (ICodifiable.class.isAssignableFrom(entity.getClass()) && !StringUtils.hasText(((ICodifiable) entity).getCode())) {
-            ((ICodifiable) entity).setCode(this.getNextCode());
+        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(((ICodifiable) entity).getCode())) {
+            codifiable.setCode(this.getNextCode());
         }
         return entity;
     }

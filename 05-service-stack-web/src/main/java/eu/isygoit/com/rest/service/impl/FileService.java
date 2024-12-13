@@ -64,19 +64,18 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
     @Override
     public T createWithFile(String senderDomain, T entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
 
         if (file != null && !file.isEmpty()) {
-            if (ICodifiableService.class.isAssignableFrom(this.getClass()) && ICodifiable.class.isAssignableFrom(entity.getClass())) {
-                if (!StringUtils.hasText(((ICodifiable) entity).getCode())) {
-                    ((ICodifiable) entity).setCode(((ICodifiableService) this).getNextCode());
-                }
+            if (!StringUtils.hasText(entity.getCode())) {
+                entity.setCode(this.getNextCode());
             }
 
             entity.setPath(this.getUploadDirectory() +
-                    File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                    File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                     File.separator + this.persistentClass.getSimpleName().toLowerCase());
 
             entity.setOriginalFileName(file.getOriginalFilename());
@@ -89,14 +88,14 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
         if (file != null && !file.isEmpty()) {
             //Uploading file
-            entity = this.beforeUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                            ? ((ISAASEntity) entity).getDomain()
+            entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
+                            ? isaasEntity.getDomain()
                             : DomainConstants.DEFAULT_DOMAIN_NAME)
                     , entity
                     , file);
             subUploadFile(file, entity);
-            return this.afterUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                            ? ((ISAASEntity) entity).getDomain()
+            return this.afterUpload((entity instanceof ISAASEntity isaasEntity
+                            ? isaasEntity.getDomain()
                             : DomainConstants.DEFAULT_DOMAIN_NAME)
                     , entity
                     , file);
@@ -109,21 +108,20 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
     @Override
     public T updateWithFile(String senderDomain, I id, T entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
 
         if (repository().existsById(id)) {
             entity.setId(id);
             if (file != null && !file.isEmpty()) {
-                if (ICodifiableService.class.isAssignableFrom(this.getClass()) && ICodifiable.class.isAssignableFrom(entity.getClass())) {
-                    if (!StringUtils.hasText(((ICodifiable) entity).getCode())) {
-                        ((ICodifiable) entity).setCode(((ICodifiableService) this).getNextCode());
-                    }
+                if (!StringUtils.hasText(entity.getCode())) {
+                    entity.setCode(((ICodifiableService) this).getNextCode());
                 }
 
                 entity.setPath(this.getUploadDirectory() +
-                        File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                        File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                         File.separator + this.persistentClass.getSimpleName().toLowerCase());
                 entity.setOriginalFileName(file.getOriginalFilename());
                 entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
@@ -134,14 +132,14 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
             if (file != null && !file.isEmpty()) {
                 //Uploading file
-                entity = this.beforeUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                ? ((ISAASEntity) entity).getDomain()
+                entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
+                                ? isaasEntity.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME),
                         entity,
                         file);
                 subUploadFile(file, entity);
-                return this.afterUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                ? ((ISAASEntity) entity).getDomain()
+                return this.afterUpload((entity instanceof ISAASEntity isaasEntity
+                                ? isaasEntity.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME),
                         entity,
                         file);
@@ -159,14 +157,12 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
         T entity = findById(id);
         if (entity != null) {
             if (file != null && !file.isEmpty()) {
-                if (ICodifiableService.class.isAssignableFrom(this.getClass()) && ICodifiable.class.isAssignableFrom(entity.getClass())) {
-                    if (!StringUtils.hasText(((ICodifiable) entity).getCode())) {
-                        ((ICodifiable) entity).setCode(((ICodifiableService) this).getNextCode());
-                    }
+                if (!StringUtils.hasText(entity.getCode())) {
+                    entity.setCode(((ICodifiableService) this).getNextCode());
                 }
 
                 entity.setPath(this.getUploadDirectory() +
-                        File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                        File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                         File.separator + this.persistentClass.getSimpleName().toLowerCase());
                 entity.setOriginalFileName(file.getOriginalFilename());
                 entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
@@ -174,14 +170,14 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
                 entity = this.updateAndFlush(entity);
 
                 //Uploading file
-                entity = this.beforeUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                ? ((ISAASEntity) entity).getDomain()
+                entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
+                                ? isaasEntity.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME),
                         entity,
                         file);
                 subUploadFile(file, entity);
-                return this.afterUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                ? ((ISAASEntity) entity).getDomain()
+                return this.afterUpload((entity instanceof ISAASEntity isaasEntity
+                                ? isaasEntity.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME),
                         entity,
                         file);

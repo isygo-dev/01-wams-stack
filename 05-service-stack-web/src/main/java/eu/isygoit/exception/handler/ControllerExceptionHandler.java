@@ -74,33 +74,33 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
         log.error("<Error>: Error in exception handler:", throwable);
         StringBuilder message = new StringBuilder();
         try {
-            if (SizeLimitExceededException.class.isAssignableFrom(throwable.getClass())) {
+            if (throwable instanceof SizeLimitExceededException) {
                 message.append(localeService.getMessage("size.limit.exceeded.exception", LocaleContextHolder.getLocale()));
             }
 
-            if (JpaSystemException.class.isAssignableFrom(throwable.getClass())) {
+            if (throwable instanceof JpaSystemException) {
                 throwable = NestedExceptionUtils.getRootCause(throwable);
             }
 
-            if (TransactionSystemException.class.isAssignableFrom(throwable.getClass())
+            if (throwable instanceof TransactionSystemException
                     && throwable.getCause() != null
-                    && RollbackException.class.isAssignableFrom(throwable.getCause().getClass())
-                    && throwable.getCause().getCause() != null) {
+                    && throwable.getCause().getCause() != null
+                    && throwable.getCause() instanceof RollbackException) {
                 throwable = throwable.getCause().getCause();
             }
 
-            if (FeignException.class.isAssignableFrom(throwable.getClass())) {
+            if (throwable instanceof FeignException) {
                 message.append(getLocaleService().getMessage(((FeignException) throwable).contentUTF8(), LocaleContextHolder.getLocale()));
-            } else if (CannotCreateTransactionException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof CannotCreateTransactionException) {
                 message.append(getLocaleService().getMessage("cannot.create.transaction.exception", LocaleContextHolder.getLocale()));
-            } else if (PSQLException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof PSQLException) {
                 Optional<String> keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(throwable.getMessage()::contains).findFirst();
                 if (keyOptional.isPresent()) {
                     message.append(localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale()));
                 } else {
                     message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));
                 }
-            } else if (javax.validation.ConstraintViolationException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof javax.validation.ConstraintViolationException) {
                 if (!CollectionUtils.isEmpty(((javax.validation.ConstraintViolationException) throwable).getConstraintViolations())) {
                     Iterator<ConstraintViolation<?>> it = ((javax.validation.ConstraintViolationException) throwable).getConstraintViolations().iterator();
                     while (it.hasNext()) {
@@ -111,16 +111,19 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                         message.append(localeService.getMessage(cv.getMessage().replace(" ", "."), LocaleContextHolder.getLocale())).append("\n");
                     }
                 }
-            } else if (EmptyResultDataAccessException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof EmptyResultDataAccessException) {
                 message.append(localeService.getMessage("object.not.found", LocaleContextHolder.getLocale()));
-            } else if (EntityExistsException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof EntityExistsException) {
                 message.append(localeService.getMessage("object.already.exists", LocaleContextHolder.getLocale()));
-            } else if (PersistenceException.class.isAssignableFrom(throwable.getClass()) || DataIntegrityViolationException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof PersistenceException
+                    || throwable instanceof DataIntegrityViolationException) {
                 Optional<String> keyOptional = Optional.empty();
-                if (throwable.getCause() != null && ConstraintViolationException.class.isAssignableFrom(throwable.getCause().getClass())) {
+                if (throwable.getCause() != null
+                        && throwable.getCause() instanceof ConstraintViolationException) {
                     if (((ConstraintViolationException) throwable.getCause()).getConstraintName() != null) {
                         keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(((ConstraintViolationException) throwable.getCause()).getConstraintName()::equals).findFirst();
-                    } else if (throwable.getCause().getCause() != null && SQLException.class.isAssignableFrom(throwable.getCause().getCause().getClass())) {
+                    } else if (throwable.getCause().getCause() != null
+                            && throwable.getCause().getCause() instanceof SQLException) {
                         keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(throwable.getCause().getCause().toString().toLowerCase()::equals).findFirst();
                     }
 
@@ -129,7 +132,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                     } else {
                         message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));
                     }
-                } else if (throwable.getCause() != null && DataException.class.isAssignableFrom(throwable.getCause().getClass())) {
+                } else if (throwable.getCause() != null && throwable.getCause() instanceof DataException) {
                     SQLException sqlException = ((DataException) throwable.getCause()).getSQLException();
                     if (sqlException != null) {
                         message.append(localeService.getMessage(sqlException.getMessage().toLowerCase().replace(" ", ".")
@@ -139,12 +142,14 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                                         .replace("error.value.too.long.for.type.character.varying.", "length.must.be.between.0.and.")
                                 , LocaleContextHolder.getLocale())).append("\n");
                     }
-                } else if (throwable.getCause() != null && DataException.class.isAssignableFrom(throwable.getCause().getClass()) && throwable.getCause().getCause() != null) {
+                } else if (throwable.getCause() != null
+                        && throwable.getCause() instanceof DataException
+                        && throwable.getCause().getCause() != null) {
                     message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append((this.getStackTrace(throwable)));
                 } else {
                     message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));
                 }
-            } else if (ManagedException.class.isAssignableFrom(throwable.getClass())) {
+            } else if (throwable instanceof ManagedException) {
                 message.append(getLocaleService().getMessage(((ManagedException) throwable).getMsgLocale(), LocaleContextHolder.getLocale()));
             } else {
                 throw new UnknownException(throwable);

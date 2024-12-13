@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * The interface File upload dto.
  */
-public interface IFileUploadDto {
+public interface IFileUploadDto extends IDto {
 
     /**
      * Gets file.

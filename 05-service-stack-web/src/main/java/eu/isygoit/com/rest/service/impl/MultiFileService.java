@@ -58,13 +58,14 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
                     if (file != null && !file.isEmpty()) {
                         L linkedFile = linkedFileClass.newInstance();
                         linkedFile.setCode(this.getNextCode());
-                        if (ISAASEntity.class.isAssignableFrom(entity.getClass()) && ISAASEntity.class.isAssignableFrom(linkedFile.getClass())) {
-                            ((ISAASEntity) linkedFile).setDomain(((ISAASEntity) entity).getDomain());
+                        if (entity instanceof ISAASEntity isaasEntity
+                                && linkedFile instanceof ISAASEntity isaasLinkedFile) {
+                            isaasLinkedFile.setDomain(isaasEntity.getDomain());
                         }
                         linkedFile.setOriginalFileName(file.getOriginalFilename());
                         linkedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
                         linkedFile.setPath(this.getUploadDirectory() +
-                                File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                                File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                                 File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional");
                         linkedFile.setMimetype(file.getContentType());
                         linkedFile.setCrc16(CRC16.calculate(file.getBytes()));
@@ -73,14 +74,14 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
                         linkedFile.setVersion(1L);
 
                         //Uploading file
-                        linkedFile = this.beforeUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                        ? ((ISAASEntity) entity).getDomain()
+                        linkedFile = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
+                                        ? isaasEntity.getDomain()
                                         : DomainConstants.DEFAULT_DOMAIN_NAME),
                                 linkedFile,
                                 file);
                         linkedFile = subUploadFile(file, linkedFile);
-                        this.afterUpload((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                        ? ((ISAASEntity) entity).getDomain()
+                        this.afterUpload((entity instanceof ISAASEntity isaasEntity
+                                        ? isaasEntity.getDomain()
                                         : DomainConstants.DEFAULT_DOMAIN_NAME),
                                 linkedFile,
                                 file);

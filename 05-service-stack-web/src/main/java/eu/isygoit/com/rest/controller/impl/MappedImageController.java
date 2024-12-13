@@ -7,10 +7,10 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.IImageUploadDto;
+import eu.isygoit.dto.ISAASDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.IImageEntity;
-import eu.isygoit.model.ISAASEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -74,8 +74,8 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
                                                  FULLD dto) {
         log.info("Create with image request received");
         try {
-            if (ISAASEntity.class.isAssignableFrom(dto.getClass()) && StringUtils.isEmpty(((ISAASEntity) dto).getDomain())) {
-                ((ISAASEntity) dto).setDomain(requestContext.getSenderDomain());
+            if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getDomain())) {
+                isaasDto.setDomain(requestContext.getSenderDomain());
             }
             dto = this.beforeCreate(dto);
             return ResponseFactory.ResponseOk(mapper().entityToDto(

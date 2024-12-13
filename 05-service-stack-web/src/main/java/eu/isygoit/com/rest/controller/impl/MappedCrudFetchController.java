@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The type Mapped fetch crud controller.
+ * The type Mapped crud fetch controller.
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter

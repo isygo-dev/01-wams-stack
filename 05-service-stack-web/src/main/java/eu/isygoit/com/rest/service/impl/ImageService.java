@@ -46,10 +46,10 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
             T entity = this.findById(id);
             if (entity != null) {
                 entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                                File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                                File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                                 File.separator + entity.getClass().getSimpleName().toLowerCase() +
                                 File.separator + "image",
-                        file.getOriginalFilename() + "_" + (ICodifiable.class.isAssignableFrom(entity.getClass()) ? ((ICodifiable) entity).getCode() : entity.getId()), file, "png").toString());
+                        file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
                 return this.update(entity);
             } else {
                 throw new ObjectNotFoundException(persistentClass.getSimpleName() + "with id " + id);
@@ -83,19 +83,20 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
     @Transactional
     public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
 
-        if (ICodifiable.class.isAssignableFrom(entity.getClass()) && !StringUtils.hasText(((ICodifiable) entity).getCode())) {
+        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(codifiable.getCode())) {
             ((ICodifiable) entity).setCode(this.getNextCode());
         }
         if (file != null && !file.isEmpty()) {
             entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                             File.separator + entity.getClass().getSimpleName().toLowerCase() +
                             File.separator + "image",
-                    file.getOriginalFilename() + "_" + (ICodifiable.class.isAssignableFrom(entity.getClass()) ? ((ICodifiable) entity).getCode() : entity.getId()), file, "png").toString());
+                    file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
         } else {
             log.warn("File is null or empty");
         }
@@ -106,16 +107,17 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
     @Transactional
     public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
 
         if (file != null && !file.isEmpty()) {
             entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (ISAASEntity.class.isAssignableFrom(entity.getClass()) ? ((ISAASEntity) entity).getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                             File.separator + entity.getClass().getSimpleName().toLowerCase() +
                             File.separator + "image",
-                    file.getOriginalFilename() + "_" + (ICodifiable.class.isAssignableFrom(entity.getClass()) ? ((ICodifiable) entity).getCode() : entity.getId()), file, "png").toString());
+                    file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
         } else {
             entity.setImagePath(this.findById((I) entity.getId()).getImagePath());
             log.warn("File is null or empty");

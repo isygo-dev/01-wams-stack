@@ -4,10 +4,8 @@ import java.io.Serializable;
 
 /**
  * The interface Dto.
- *
- * @param <T> the type parameter
  */
-public interface IDto<T extends Serializable> extends Serializable {
+public interface IDto extends Serializable {
 
     /**
      * Gets section name.

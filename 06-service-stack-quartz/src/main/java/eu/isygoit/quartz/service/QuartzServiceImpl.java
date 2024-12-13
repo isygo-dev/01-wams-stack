@@ -39,17 +39,17 @@ public class QuartzServiceImpl implements QuartzService {
     @Override
     public JobDetail createJobDetail(Class<? extends Job> jobClass, String identity, String group, SingleJobData singleJobData) {
         if (singleJobData.getValue() != null) {
-            Object o = singleJobData.getValue();
-            if (o instanceof String) {
-                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), (String) singleJobData.getValue()).storeDurably().build();
-            } else if (o instanceof Integer) {
-                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), (Integer) singleJobData.getValue()).storeDurably().build();
-            } else if (o instanceof Long) {
-                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), (Long) singleJobData.getValue()).storeDurably().build();
-            } else if (o instanceof Double) {
-                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), (Double) singleJobData.getValue()).storeDurably().build();
-            } else if (o instanceof Boolean) {
-                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), (Boolean) singleJobData.getValue()).storeDurably().build();
+            Object value = singleJobData.getValue();
+            if (value instanceof String data) {
+                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), data).storeDurably().build();
+            } else if (value instanceof Integer data) {
+                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), data).storeDurably().build();
+            } else if (value instanceof Long data) {
+                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), data).storeDurably().build();
+            } else if (value instanceof Double data) {
+                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), data).storeDurably().build();
+            } else if (value instanceof Boolean data) {
+                return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), data).storeDurably().build();
             } else {
                 log.error("<ERROR>: Job data type is invalid, job will not be created");
             }

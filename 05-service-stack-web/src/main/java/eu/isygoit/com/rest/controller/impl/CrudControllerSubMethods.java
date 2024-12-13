@@ -117,7 +117,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         log.info("Find all {}s request received", persistentClass.getSimpleName());
         try {
             List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
             } else {
                 list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
@@ -140,7 +141,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         log.info("Find all {}s request received", persistentClass.getSimpleName());
         try {
             List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
             } else {
                 list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
@@ -163,7 +165,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
         try {
             List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
                 list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
@@ -186,7 +189,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         log.info("Find all {}s request received", persistentClass.getSimpleName());
         try {
             List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
             } else {
                 list = this.mapper().listEntityToDto(this.crudService().findAll());
@@ -213,7 +217,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
 
         try {
             List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
                 list = this.mapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
@@ -253,7 +258,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         log.info("Get count {} request received", persistentClass.getSimpleName());
         try {
             List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 return ResponseFactory.ResponseOk(this.crudService().count(requestContext.getSenderDomain()));
             } else {
                 return ResponseFactory.ResponseOk(this.crudService().count());
@@ -300,7 +306,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     public ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         try {
             List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")));
             } else {
                 list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")));
@@ -323,7 +330,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
                                                                     Integer page, Integer size) {
         try {
             List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
+            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")
                         , PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {

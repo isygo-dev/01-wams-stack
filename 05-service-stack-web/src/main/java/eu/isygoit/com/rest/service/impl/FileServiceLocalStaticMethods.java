@@ -59,8 +59,8 @@ public final class FileServiceLocalStaticMethods {
                     File.separator + entity.getFileName()).toUri());
             if (!resource.exists()) {
                 throw new ResourceNotFoundException("No resource found for "
-                        + (ISAASEntity.class.isAssignableFrom(entity.getClass())
-                        ? ((ISAASEntity) entity).getDomain()
+                        + (entity instanceof ISAASEntity isaasEntity
+                        ? isaasEntity.getDomain()
                         : DomainConstants.DEFAULT_DOMAIN_NAME
                         + '/' + entity.getFileName()
                         + "/" + version));
@@ -68,8 +68,8 @@ public final class FileServiceLocalStaticMethods {
             return resource;
         } else {
             throw new EmptyPathException("For entity "
-                    + (ISAASEntity.class.isAssignableFrom(entity.getClass())
-                    ? ((ISAASEntity) entity).getDomain()
+                    + (entity instanceof ISAASEntity isaasEntity
+                    ? isaasEntity.getDomain()
                     : DomainConstants.DEFAULT_DOMAIN_NAME
                     + '/' + entity.getFileName()
                     + "/" + version));

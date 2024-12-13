@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
 /**
- * The type Mapped delete crud controller.
+ * The type Mapped crud delete controller.
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter

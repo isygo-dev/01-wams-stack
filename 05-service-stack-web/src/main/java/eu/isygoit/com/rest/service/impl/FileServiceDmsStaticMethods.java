@@ -36,8 +36,8 @@ public final class FileServiceDmsStaticMethods {
                                                                                           ILinkedFileApi linkedFileService) throws IOException {
         ResponseEntity<LinkedFileResponseDto> result = linkedFileService.upload(//RequestContextDto.builder().build(),
                 LinkedFileRequestDto.builder()
-                        .domain((ISAASEntity.class.isAssignableFrom(entity.getClass())
-                                ? ((ISAASEntity) entity).getDomain()
+                        .domain((entity instanceof ISAASEntity isaasEntity
+                                ? isaasEntity.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME))
                         .code(entity.getCode())
                         .path(File.separator + entity.getClass().getSimpleName().toLowerCase())
@@ -64,8 +64,8 @@ public final class FileServiceDmsStaticMethods {
      * @throws IOException the io exception
      */
     static <T extends IFileEntity & IIdEntity & ICodifiable> Resource download(T entity, Long version, ILinkedFileApi linkedFileService) throws IOException {
-        String domain = ISAASEntity.class.isAssignableFrom(entity.getClass())
-                ? ((ISAASEntity) entity).getDomain()
+        String domain = entity instanceof ISAASEntity isaasEntity
+                ? isaasEntity.getDomain()
                 : DomainConstants.DEFAULT_DOMAIN_NAME;
         ResponseEntity<Resource> result = linkedFileService.download(RequestContextDto.builder().build(),
                 domain,
@@ -87,8 +87,8 @@ public final class FileServiceDmsStaticMethods {
      * @return the boolean
      */
     public static <L extends ILinkedFile & ICodifiable & IIdEntity> boolean delete(L entity, ILinkedFileApi linkedFileService) {
-        String domain = ISAASEntity.class.isAssignableFrom(entity.getClass())
-                ? ((ISAASEntity) entity).getDomain()
+        String domain = entity instanceof ISAASEntity isaasEntity
+                ? isaasEntity.getDomain()
                 : DomainConstants.DEFAULT_DOMAIN_NAME;
         ResponseEntity<Boolean> result = linkedFileService.deleteFile(RequestContextDto.builder().build(),
                 domain,
