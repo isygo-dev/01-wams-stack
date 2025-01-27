@@ -7,6 +7,8 @@ import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.INextCodeService;
 
+import java.util.Optional;
+
 /**
  * The interface Codifiable service.
  *
@@ -17,18 +19,18 @@ public interface ICodifiableService<I, T extends IIdEntity>
         extends ICrudServiceMethod<I, T> {
 
     /**
-     * Init code generator next code model.
+     * Init code generator optional.
      *
-     * @return the next code model
+     * @return the optional
      */
-    NextCodeModel initCodeGenerator();
+    Optional<NextCodeModel> initCodeGenerator();
 
     /**
      * Gets next code.
      *
      * @return the next code
      */
-    String getNextCode();
+    Optional<String> getNextCode();
 
     /**
      * Next code service next code service.

@@ -3,25 +3,27 @@ package eu.isygoit.service;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.extendable.NextCodeModel;
 
+import java.util.Optional;
+
 /**
  * The interface Service.
  */
 public interface IService {
 
     /**
-     * Init code generator t.
+     * Init code generator optional.
      *
      * @param <T> the type parameter
-     * @return the t
+     * @return the optional
      */
-    <T extends NextCodeModel> T initCodeGenerator();
+    <T extends NextCodeModel> Optional<T> initCodeGenerator();
 
     /**
      * Gets next code.
      *
      * @return the next code
      */
-    String getNextCode();
+    Optional<String> getNextCode();
 
     /**
      * Before persist e.

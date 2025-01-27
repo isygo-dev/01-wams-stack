@@ -2,10 +2,10 @@ package eu.isygoit.helper;
 
 import eu.isygoit.dto.IIdentifiableDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -62,18 +62,18 @@ public final class BeanHelper {
      * @return the identifiable dto
      */
     public static IIdentifiableDto merge(IIdentifiableDto source, IIdentifiableDto destination) {
-        if (source == null || destination == null) {
+        if (Objects.isNull(source) || Objects.isNull(destination)) {
             log.error("<Error>: merging null objects");
             return destination;
         }
         if (destination.getClass().isAssignableFrom(source.getClass())
                 || source.getClass().isAssignableFrom(destination.getClass())) {
-            for (Field field : source.getClass().getDeclaredFields()) {
+            Arrays.stream(source.getClass().getDeclaredFields()).forEach(field -> {
                 Object fieldValue = callGetter(source, field.getName());
-                if (fieldValue != null) {
+                if (Objects.nonNull(fieldValue)) {
                     if (Collection.class.isAssignableFrom(field.getType())) {
                         Collection collection = callGetter(destination, field.getName());
-                        if (collection == null) {
+                        if (CollectionUtils.isEmpty(collection)) {
                             if (List.class.isAssignableFrom(field.getType())) {
                                 collection = new ArrayList();
                             } else if (Set.class.isAssignableFrom(field.getType())) {
@@ -81,7 +81,7 @@ public final class BeanHelper {
                             }
                         }
 
-                        if (collection != null) {
+                        if (!CollectionUtils.isEmpty(collection)) {
                             collection.addAll((Collection) fieldValue);
                             callSetter(destination, field.getName(), collection);
                         }
@@ -89,7 +89,7 @@ public final class BeanHelper {
                         callSetter(destination, field.getName(), fieldValue);
                     }
                 }
-            }
+            });
         } else {
             log.error("<Error>: Error merging object icompatible {}/{}", source.getClass().getSimpleName(), destination.getClass().getSimpleName());
         }

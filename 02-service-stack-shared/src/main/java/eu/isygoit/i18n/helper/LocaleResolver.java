@@ -2,6 +2,7 @@ package eu.isygoit.i18n.helper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.util.Arrays;
@@ -23,7 +24,7 @@ public class LocaleResolver extends AcceptHeaderLocaleResolver {
     @Override
     public Locale resolveLocale(HttpServletRequest request) {
         String language = request.getHeader("Accept-Language");
-        if (language == null || language.isEmpty()) {
+        if (StringUtils.isEmpty(language)) {
             return Locale.getDefault();
         }
         List<Locale.LanguageRange> list = Locale.LanguageRange.parse(language);

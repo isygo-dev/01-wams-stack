@@ -11,6 +11,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Column;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * The type Cancelable entity.
@@ -43,6 +44,6 @@ public abstract class CancelableEntity<T> extends AbstractEntity<T> {
      * @param checkCancel the check cancel
      */
     public void setCheckCancel(Boolean checkCancel) {
-        this.checkCancel = (checkCancel != null && checkCancel);
+        this.checkCancel = (Objects.nonNull(checkCancel) && checkCancel);
     }
 }

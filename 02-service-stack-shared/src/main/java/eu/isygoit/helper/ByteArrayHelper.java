@@ -24,6 +24,8 @@
 package eu.isygoit.helper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.zip.CRC32;
@@ -44,7 +46,7 @@ public final class ByteArrayHelper {
      * @return the string
      */
     public static String byteArrayToHexString(byte[] bytesData) {
-        if (bytesData == null) {
+        if (ArrayUtils.isEmpty(bytesData)) {
             return "";
         }
         int len = bytesData.length;
@@ -78,7 +80,7 @@ public final class ByteArrayHelper {
      * @return the byte [ ]
      */
     public static byte[] hexStringToByteArray(String hexStringData) {
-        if (hexStringData == null) {
+        if (StringUtils.isEmpty(hexStringData)) {
             return null;
         }
         int hexStringDataLength = hexStringData.length();

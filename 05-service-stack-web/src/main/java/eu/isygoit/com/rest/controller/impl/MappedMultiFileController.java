@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -95,7 +96,7 @@ public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiF
             log.info("download file ");
             try {
                 Resource resource = crudService().downloadFile(parentId, fileId, version);
-                if (resource != null) {
+                if (Objects.nonNull(resource)) {
                     log.info("File downloaded successfully {}", resource.getFilename());
                     return ResponseEntity.ok()
                             .header(HttpHeaders.CONTENT_TYPE, "multipart/form-data")

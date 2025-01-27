@@ -23,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The type Abstract jwt auth filter.
@@ -76,33 +77,42 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwt)) {
             log.info("Request received:  {} - {} - {} ", request.getMethod(), request.getAuthType(), request.getRequestURI());
             try {
-                String subject = jwtService.extractSubject(jwt);
-                String userName = jwtService.extractUserName(jwt);
-                String application = jwtService.extractApplication(jwt);
-                String domain = jwtService.extractDomain(jwt);
+                Optional<String> subject = jwtService.extractSubject(jwt);
+                Optional<String> userName = jwtService.extractUserName(jwt);
+                Optional<String> application = jwtService.extractApplication(jwt);
+                Optional<String> domain = jwtService.extractDomain(jwt);
                 Boolean isAdmin = jwtService.extractIsAdmin(jwt);
-                isTokenValid(jwt, domain, application, userName);
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(new CustomAuthentification(CustomUserDetails.builder()
-                                .username(subject)
-                                .isAdmin(isAdmin)
-                                .password("password")
-                                .passwordExpired(false)
-                                //.authorities(Account.getAuthorities(account))
-                                .domainEnabled(true)
-                                .accountEnabled(true)
-                                .accountExpired(true)
-                                .accountLocked(true)
-                                .build(),
-                                "password",
-                                new ArrayList<>()));
+                subject.ifPresentOrElse(value -> {
+                            userName.ifPresentOrElse(name -> isTokenValid(jwt,
+                                            domain.orElseGet(() -> "NA"),
+                                            application.orElseGet(() -> "NA"),
+                                            name),
+                                    () -> new TokenInvalidException("Invalid JWT/userName"));
+
+                            SecurityContextHolder.getContext()
+                                    .setAuthentication(new CustomAuthentification(CustomUserDetails.builder()
+                                            .username(value)
+                                            .isAdmin(isAdmin)
+                                            .password("password")
+                                            .passwordExpired(false)
+                                            //.authorities(Account.getAuthorities(account))
+                                            .domainEnabled(true)
+                                            .accountEnabled(true)
+                                            .accountExpired(true)
+                                            .accountLocked(true)
+                                            .build(),
+                                            "password",
+                                            new ArrayList<>()));
+                        },
+                        () -> new TokenInvalidException("Invalid JWT/subject"));
+
 
                 addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
-                        .senderDomain(domain)
-                        .senderUser(userName)
+                        .senderDomain(domain.orElseGet(() -> "NA"))
+                        .senderUser(userName.orElseGet(() -> "NA"))
                         .isAdmin(isAdmin)
-                        .logApp(application)
+                        .logApp(application.orElseGet(() -> "NA"))
                         .build()));
 
                 filterChain.doFilter(request, response);

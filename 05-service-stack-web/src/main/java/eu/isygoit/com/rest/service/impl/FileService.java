@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.util.Objects;
 
 /**
  * The type File service.
@@ -69,9 +70,10 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
 
-        if (file != null && !file.isEmpty()) {
+        if (Objects.nonNull(file) && !file.isEmpty()) {
             if (!StringUtils.hasText(entity.getCode())) {
-                entity.setCode(this.getNextCode());
+                T finalEntity = entity;
+                this.getNextCode().ifPresent(code -> finalEntity.setCode(code));
             }
 
             entity.setPath(this.getUploadDirectory() +
@@ -86,7 +88,7 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
         //Creating entity
         entity = this.createAndFlush(entity);
 
-        if (file != null && !file.isEmpty()) {
+        if (Objects.nonNull(file) && !file.isEmpty()) {
             //Uploading file
             entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
                             ? isaasEntity.getDomain()
@@ -115,9 +117,10 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
         if (repository().existsById(id)) {
             entity.setId(id);
-            if (file != null && !file.isEmpty()) {
+            if (Objects.nonNull(file) && !file.isEmpty()) {
                 if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodifiableService) this).getNextCode());
+                    T finalEntity = entity;
+                    ((ICodifiableService) this).getNextCode().ifPresent(code -> finalEntity.setCode((String) code));
                 }
 
                 entity.setPath(this.getUploadDirectory() +
@@ -130,7 +133,7 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
             }
             entity = this.updateAndFlush(entity);
 
-            if (file != null && !file.isEmpty()) {
+            if (Objects.nonNull(file) && !file.isEmpty()) {
                 //Uploading file
                 entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
                                 ? isaasEntity.getDomain()
@@ -154,51 +157,45 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
     @Transactional
     @Override
     public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
-        T entity = findById(id);
-        if (entity != null) {
-            if (file != null && !file.isEmpty()) {
-                if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodifiableService) this).getNextCode());
-                }
-
-                entity.setPath(this.getUploadDirectory() +
-                        File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                        File.separator + this.persistentClass.getSimpleName().toLowerCase());
-                entity.setOriginalFileName(file.getOriginalFilename());
-                entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-
-                entity = this.updateAndFlush(entity);
-
-                //Uploading file
-                entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
-                                ? isaasEntity.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        entity,
-                        file);
-                subUploadFile(file, entity);
-                return this.afterUpload((entity instanceof ISAASEntity isaasEntity
-                                ? isaasEntity.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        entity,
-                        file);
-            } else {
-                log.warn("Upload file ({}) :File is null or empty", this.persistentClass.getSimpleName());
+        T entity = findById(id).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id));
+        if (Objects.nonNull(file) && !file.isEmpty()) {
+            if (!StringUtils.hasText(entity.getCode())) {
+                T finalEntity = entity;
+                ((ICodifiableService) this).getNextCode().ifPresent(code -> finalEntity.setCode((String) code));
             }
 
-            return entity;
+            entity.setPath(this.getUploadDirectory() +
+                    File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                    File.separator + this.persistentClass.getSimpleName().toLowerCase());
+            entity.setOriginalFileName(file.getOriginalFilename());
+            entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
+
+            entity = this.updateAndFlush(entity);
+
+            //Uploading file
+            entity = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
+                            ? isaasEntity.getDomain()
+                            : DomainConstants.DEFAULT_DOMAIN_NAME),
+                    entity,
+                    file);
+            subUploadFile(file, entity);
+            return this.afterUpload((entity instanceof ISAASEntity isaasEntity
+                            ? isaasEntity.getDomain()
+                            : DomainConstants.DEFAULT_DOMAIN_NAME),
+                    entity,
+                    file);
         } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
+            log.warn("Upload file ({}) :File is null or empty", this.persistentClass.getSimpleName());
         }
+
+        return entity;
     }
 
     @Override
     public Resource downloadFile(I id, Long version) throws IOException {
-        T entity = findById(id);
-        if (entity != null) {
-            return subDownloadFile(entity, version);
-        } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
-        }
+        return subDownloadFile(findById(id)
+                        .orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id))
+                , version);
     }
 
     /**

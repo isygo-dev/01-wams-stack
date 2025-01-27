@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
 
+import java.util.Objects;
+
 /**
  * The type Crud service utils.
  *
@@ -26,11 +28,11 @@ public abstract class CrudServiceUtils<T extends IIdEntity, R extends Repository
 
     @Override
     public final R repository() throws JpaRepositoryNotDefinedException {
-        if (this.repository == null) {
+        if (Objects.isNull(this.repository)) {
             SrvRepo controllerDefinition = this.getClass().getAnnotation(SrvRepo.class);
-            if (controllerDefinition != null) {
+            if (Objects.nonNull(controllerDefinition)) {
                 this.repository = (R) applicationContextServie.getBean(controllerDefinition.value());
-                if (this.repository == null) {
+                if (Objects.isNull(this.repository)) {
                     log.error("<Error>: bean {} not found", controllerDefinition.value().getSimpleName());
                     throw new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found");
                 }

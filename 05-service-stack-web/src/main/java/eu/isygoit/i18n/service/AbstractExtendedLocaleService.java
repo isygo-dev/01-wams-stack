@@ -40,7 +40,7 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
     public final void refresh() {
         extendedMessageMap.forEach((code, message) -> {
             String[] codePlisLocal = code.split("|");
-            message = loadMessage(codePlisLocal[0], codePlisLocal[1]);
+            loadMessage(codePlisLocal[0], codePlisLocal[1]);
         });
     }
 
@@ -56,17 +56,16 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
     @Override
     public void setMessage(String code, String locale, String message) {
         extendedMessageMap.put(code + "|" + locale, message);
-        Optional<LocaleMessageModel> optionalMessage = getMessageRepository().findByCodeIgnoreCaseAndLocale(code, locale);
-        if (optionalMessage.isPresent()) {
-            optionalMessage.get().setText(message);
-            getMessageRepository().save(optionalMessage.get());
-        } else {
-            getMessageRepository().save(LocaleMessageModel.builder()
-                    .code(code)
-                    .locale(locale)
-                    .text(message)
-                    .build());
-        }
+        Optional<LocaleMessageModel> optional = getMessageRepository().findByCodeIgnoreCaseAndLocale(code, locale);
+        optional.ifPresentOrElse(localeMessageModel -> {
+                    optional.get().setText(message);
+                    getMessageRepository().save(optional.get());
+                },
+                () -> getMessageRepository().save(LocaleMessageModel.builder()
+                        .code(code)
+                        .locale(locale)
+                        .text(message)
+                        .build()));
     }
 
     /**

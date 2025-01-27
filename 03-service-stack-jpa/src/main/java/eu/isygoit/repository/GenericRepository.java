@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Optional;
-
 /**
  * The type Generic repository.
  */
@@ -39,11 +37,8 @@ public class GenericRepository {
      * @return the repository
      */
     public JpaRepository getRepository(Class<?> domainClass) {
-        Optional<Object> optional = repositories.getRepositoryFor(domainClass);
-        if (optional.isPresent()) {
-            return (JpaRepository) optional.get();
-        }
-        throw new JpaRepositoryNotDefinedException("for entity " + domainClass.getSimpleName());
+        return (JpaRepository) repositories.getRepositoryFor(domainClass)
+                .orElseThrow(() -> new JpaRepositoryNotDefinedException("for entity " + domainClass.getSimpleName()));
     }
 
     /**

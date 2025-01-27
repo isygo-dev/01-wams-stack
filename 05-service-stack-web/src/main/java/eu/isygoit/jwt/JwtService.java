@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -31,95 +32,115 @@ public class JwtService implements IJwtService {
     /* Not Signed */
 
     @Override
-    public String extractSubject(String token) {
+    public Optional<String> extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
     @Override
-    public String extractDomain(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_SENDER_DOMAIN)) {
-            return claims.get(JwtConstants.JWT_SENDER_DOMAIN, String.class);
+    public Optional<String> extractDomain(String token) {
+        Optional<Claims> optional = this.extractAllClaims(token);
+        if (optional.isPresent()) {
+            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_SENDER_DOMAIN)) {
+                return optional.get().get(JwtConstants.JWT_SENDER_DOMAIN, String.class).describeConstable();
+            }
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
     public Boolean extractIsAdmin(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_IS_ADMIN)) {
-            return claims.get(JwtConstants.JWT_IS_ADMIN, Boolean.class);
+        Optional<Claims> optional = this.extractAllClaims(token);
+        if (optional.isPresent()) {
+            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_IS_ADMIN)) {
+                return optional.get().get(JwtConstants.JWT_IS_ADMIN, Boolean.class);
+            }
         }
-        return null;
+        return Boolean.FALSE;
     }
 
     @Override
-    public String extractApplication(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_LOG_APP)) {
-            return claims.get(JwtConstants.JWT_LOG_APP, String.class);
+    public Optional<String> extractApplication(String token) {
+        Optional<Claims> optional = this.extractAllClaims(token);
+        if (optional.isPresent()) {
+            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_LOG_APP)) {
+                return optional.get().get(JwtConstants.JWT_LOG_APP, String.class).describeConstable();
+            }
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public String extractAccountType(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_SENDER_ACCOUNT_TYPE)) {
-            return claims.get(JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class);
+    public Optional<String> extractAccountType(String token) {
+        Optional<Claims> optional = this.extractAllClaims(token);
+        if (optional.isPresent()) {
+            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_SENDER_ACCOUNT_TYPE)) {
+                return optional.get().get(JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class).describeConstable();
+            }
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public String extractUserName(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_SENDER_USER)) {
-            return claims.get(JwtConstants.JWT_SENDER_USER, String.class);
+    public Optional<String> extractUserName(String token) {
+        Optional<Claims> optional = this.extractAllClaims(token);
+        if (optional.isPresent()) {
+            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_SENDER_USER)) {
+                return optional.get().get(JwtConstants.JWT_SENDER_USER, String.class).describeConstable();
+            }
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public String extractSubject(String token, String key) {
+    public Optional<String> extractSubject(String token, String key) {
         return extractClaim(token, Claims::getSubject, key);
     }
 
     @Override
-    public Claims extractAllClaims(String token) {
+    public Optional<Claims> extractAllClaims(String token) {
         //This is To avoid signing check !!!!!!!
         int i = token.lastIndexOf('.');
         token = token.substring(0, i + 1);
-        return Jwts.parser().parseClaimsJwt(token).getBody();
+        return Optional.ofNullable(Jwts.parser().parseClaimsJwt(token).getBody());
     }
 
     /* Signed */
 
     @Override
-    public Date extractExpiration(String token, String key) {
+    public Optional<Date> extractExpiration(String token, String key) {
         return extractClaim(token, Claims::getExpiration, key);
     }
 
     @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
-        final Claims claims = extractAllClaims(token, key);
-        return claimsResolver.apply(claims);
+    public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
+        final Optional<Claims> optional = extractAllClaims(token, key);
+        if (optional.isPresent()) {
+            return Optional.ofNullable(claimsResolver.apply(optional.get()));
+        }
+        return Optional.empty();
     }
 
     @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Optional<Claims> optional = extractAllClaims(token);
+        if (optional.isPresent()) {
+            return Optional.ofNullable(claimsResolver.apply(optional.get()));
+        }
+        return Optional.empty();
     }
 
     @Override
-    public Claims extractAllClaims(String token, String key) {
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+    public Optional<Claims> extractAllClaims(String token, String key) {
+        return Optional.ofNullable(Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody());
     }
 
     @Override
     public Boolean isTokenExpired(String token, String key) {
-        return extractExpiration(token, key).before(new Date());
+        Optional<Date> optional = extractExpiration(token, key);
+        if (optional.isPresent()) {
+            return optional.get().before(new Date());
+        }
+        return Boolean.FALSE;
     }
 
     @Override
@@ -156,9 +177,11 @@ public class JwtService implements IJwtService {
         }
         try {
             Jwts.parser().setSigningKey(key).parseClaimsJws(token);
-            final String jwtSubject = extractSubject(token, key);
-            if (StringUtils.hasText(jwtSubject) && !jwtSubject.equalsIgnoreCase(subject)) {
-                throw new TokenInvalidException("Invalid JWT:subject not matching");
+            final Optional<String> optional = extractSubject(token, key);
+            if (!optional.isPresent()) {
+                if (StringUtils.hasText(optional.get()) && !optional.get().equalsIgnoreCase(subject)) {
+                    throw new TokenInvalidException("Invalid JWT:subject not matching");
+                }
             }
         } catch (SignatureException ex) {
             log.error("<Error>: Invalid JWT signature");

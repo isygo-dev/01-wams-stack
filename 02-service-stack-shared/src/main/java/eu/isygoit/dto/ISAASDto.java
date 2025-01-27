@@ -2,7 +2,7 @@ package eu.isygoit.dto;
 
 
 /**
- * The interface Isas dto.
+ * The interface Isaas dto.
  */
 public interface ISAASDto extends IDto {
 

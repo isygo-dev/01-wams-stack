@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The type Jwt kms auth filter.
@@ -27,7 +28,7 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
 
     @Override
     public boolean isTokenValid(String jwt, String domain, String application, String userName) {
-        if (tokenService != null) {
+        if (Objects.nonNull(tokenService)) {
             if (!tokenService.isTokenValid(domain, application, IEnumAppToken.Types.ACCESS, jwt,
                     userName.toLowerCase() + "@" + domain)) {
                 throw new TokenInvalidException("KMS::isTokenValid");

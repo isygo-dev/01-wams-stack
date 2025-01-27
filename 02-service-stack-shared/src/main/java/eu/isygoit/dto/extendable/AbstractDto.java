@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * The type Abstract dto.
@@ -42,7 +43,7 @@ public abstract class AbstractDto implements IDto {
     public boolean isEmpty() {
         for (Field field : this.getClass().getDeclaredFields()) {
             Object fieldValue = BeanHelper.callGetter(this, field.getName());
-            if (fieldValue != null) {
+            if (Objects.nonNull(fieldValue)) {
                 if (IIdentifiableDto.class.isAssignableFrom(field.getType())) {
                     if (!((IIdentifiableDto) fieldValue).isEmpty()) {
                         return false;

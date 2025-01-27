@@ -1,5 +1,7 @@
 package eu.isygoit.factory;
 
+import java.util.Objects;
+
 /**
  * The type Abstract factory.
  *
@@ -11,7 +13,7 @@ public abstract class AbstractFactory<T> implements Factory<T> {
 
     @Override
     public T instance() {
-        if (this.instance == null) {
+        if (Objects.isNull(this.instance)) {
             this.instance = newInstance();
         }
         return this.instance;

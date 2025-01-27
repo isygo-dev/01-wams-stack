@@ -14,6 +14,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * The type Cancelable entity.
@@ -45,6 +46,6 @@ public abstract class CancelableEntity<T extends Serializable> extends AbstractE
      * @param checkCancel the check cancel
      */
     public void setCheckCancel(Boolean checkCancel) {
-        this.checkCancel = (checkCancel != null && checkCancel);
+        this.checkCancel = (Objects.nonNull(checkCancel) && checkCancel);
     }
 }

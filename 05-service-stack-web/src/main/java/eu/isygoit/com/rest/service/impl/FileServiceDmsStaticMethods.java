@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The type File service dms static methods.
@@ -22,18 +23,18 @@ import java.util.List;
 public final class FileServiceDmsStaticMethods {
 
     /**
-     * Upload linked file response dto.
+     * Upload optional.
      *
      * @param <T>               the type parameter
      * @param file              the file
      * @param entity            the entity
      * @param linkedFileService the linked file service
-     * @return the linked file response dto
+     * @return the optional
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> LinkedFileResponseDto upload(MultipartFile file,
-                                                                                          T entity,
-                                                                                          ILinkedFileApi linkedFileService) throws IOException {
+    static <T extends IFileEntity & IIdEntity & ICodifiable> Optional<LinkedFileResponseDto> upload(MultipartFile file,
+                                                                                                    T entity,
+                                                                                                    ILinkedFileApi linkedFileService) throws IOException {
         ResponseEntity<LinkedFileResponseDto> result = linkedFileService.upload(//RequestContextDto.builder().build(),
                 LinkedFileRequestDto.builder()
                         .domain((entity instanceof ISAASEntity isaasEntity
@@ -47,10 +48,10 @@ public final class FileServiceDmsStaticMethods {
                         .build());
         if (result.getStatusCode().is2xxSuccessful()) {
             log.info("File uploaded successfully {} with code {}", file.getOriginalFilename(), result.getBody().getCode());
-            return result.getBody();
+            return Optional.ofNullable(result.getBody());
         }
 
-        return null;
+        return Optional.empty();
     }
 
     /**

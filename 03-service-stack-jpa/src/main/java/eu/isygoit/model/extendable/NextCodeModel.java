@@ -12,8 +12,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * The type Next code model.
@@ -54,9 +56,9 @@ public abstract class NextCodeModel<T extends Serializable> implements IIdEntity
      * @return the code
      */
     public String getCode() {
-        return ((prefix != null ? prefix.trim() : "")
-                + String.format("%1$" + (valueLength != null ? valueLength : 6L) + "s", (value != null ? value : 0L))
-                + (suffix != null ? suffix.trim() : ""))
+        return ((!StringUtils.hasText(prefix) ? prefix.trim() : "")
+                + String.format("%1$" + (Objects.nonNull(valueLength) ? valueLength : 6L) + "s", (Objects.nonNull(value) ? value : 0L))
+                + (!StringUtils.hasText(suffix) ? suffix.trim() : ""))
                 .replace(" ", "0");
     }
 
@@ -66,7 +68,7 @@ public abstract class NextCodeModel<T extends Serializable> implements IIdEntity
      * @return the next code model
      */
     public NextCodeModel nextCode() {
-        value += (increment != null ? increment : 1);
+        value += (Objects.nonNull(increment) ? increment : 1);
         return this;
     }
 }

@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.util.StringUtils;
+
+import java.util.Objects;
 
 /**
  * The type Next code dto.
@@ -34,9 +37,9 @@ public class NextCodeDto extends AbstractAuditableDto<Long> {
      * @return the code
      */
     public String getCode() {
-        return ((prefix != null ? prefix.trim() : "")
-                + String.format("%1$" + (valueLength != null ? valueLength : 6L) + "s", (value != null ? value : 0L))
-                + (suffix != null ? suffix.trim() : ""))
+        return ((!StringUtils.hasText(prefix) ? prefix.trim() : "")
+                + String.format("%1$" + (Objects.nonNull(valueLength) ? valueLength : 6L) + "s", (Objects.nonNull(value) ? value : 0L))
+                + (!StringUtils.hasText(suffix) ? suffix.trim() : ""))
                 .replace(" ", "0");
     }
 
@@ -46,7 +49,7 @@ public class NextCodeDto extends AbstractAuditableDto<Long> {
      * @return the next code dto
      */
     public NextCodeDto nextCode() {
-        value += (increment != null ? increment : 1);
+        value += (Objects.nonNull(increment) ? increment : 1);
         return this;
     }
 }

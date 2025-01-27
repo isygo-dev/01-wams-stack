@@ -31,6 +31,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -83,8 +84,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
             }
 
             if (throwable instanceof TransactionSystemException
-                    && throwable.getCause() != null
-                    && throwable.getCause().getCause() != null
+                    && Objects.nonNull(throwable.getCause())
+                    && Objects.nonNull(throwable.getCause().getCause())
                     && throwable.getCause() instanceof RollbackException) {
                 throwable = throwable.getCause().getCause();
             }
@@ -95,11 +96,9 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                 message.append(getLocaleService().getMessage("cannot.create.transaction.exception", LocaleContextHolder.getLocale()));
             } else if (throwable instanceof PSQLException) {
                 Optional<String> keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(throwable.getMessage()::contains).findFirst();
-                if (keyOptional.isPresent()) {
-                    message.append(localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale()));
-                } else {
-                    message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));
-                }
+                Throwable finalThrowable1 = throwable;
+                keyOptional.ifPresentOrElse(s -> message.append(localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale())),
+                        () -> message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(finalThrowable1)));
             } else if (throwable instanceof javax.validation.ConstraintViolationException) {
                 if (!CollectionUtils.isEmpty(((javax.validation.ConstraintViolationException) throwable).getConstraintViolations())) {
                     Iterator<ConstraintViolation<?>> it = ((javax.validation.ConstraintViolationException) throwable).getConstraintViolations().iterator();
@@ -118,23 +117,22 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
             } else if (throwable instanceof PersistenceException
                     || throwable instanceof DataIntegrityViolationException) {
                 Optional<String> keyOptional = Optional.empty();
-                if (throwable.getCause() != null
+                if (Objects.nonNull(throwable.getCause())
                         && throwable.getCause() instanceof ConstraintViolationException) {
-                    if (((ConstraintViolationException) throwable.getCause()).getConstraintName() != null) {
+                    if (Objects.nonNull(((ConstraintViolationException) throwable.getCause()).getConstraintName())) {
                         keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(((ConstraintViolationException) throwable.getCause()).getConstraintName()::equals).findFirst();
-                    } else if (throwable.getCause().getCause() != null
+                    } else if (Objects.nonNull(throwable.getCause().getCause())
                             && throwable.getCause().getCause() instanceof SQLException) {
                         keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(throwable.getCause().getCause().toString().toLowerCase()::equals).findFirst();
                     }
 
-                    if (keyOptional.isPresent()) {
-                        message.append(localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale()));
-                    } else {
-                        message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));
-                    }
-                } else if (throwable.getCause() != null && throwable.getCause() instanceof DataException) {
+                    Optional<String> finalKeyOptional = keyOptional;
+                    Throwable finalThrowable = throwable;
+                    keyOptional.ifPresentOrElse(s -> message.append(localeService.getMessage(this.getExcepMessage().get(finalKeyOptional.get()), LocaleContextHolder.getLocale())),
+                            () -> message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(finalThrowable)));
+                } else if (Objects.nonNull(throwable.getCause()) && throwable.getCause() instanceof DataException) {
                     SQLException sqlException = ((DataException) throwable.getCause()).getSQLException();
-                    if (sqlException != null) {
+                    if (Objects.nonNull(sqlException)) {
                         message.append(localeService.getMessage(sqlException.getMessage().toLowerCase().replace(" ", ".")
                                         .replace(":", "")
                                         .replace("(", ".")
@@ -142,9 +140,9 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                                         .replace("error.value.too.long.for.type.character.varying.", "length.must.be.between.0.and.")
                                 , LocaleContextHolder.getLocale())).append("\n");
                     }
-                } else if (throwable.getCause() != null
+                } else if (Objects.nonNull(throwable.getCause())
                         && throwable.getCause() instanceof DataException
-                        && throwable.getCause().getCause() != null) {
+                        && Objects.nonNull(throwable.getCause().getCause())) {
                     message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append((this.getStackTrace(throwable)));
                 } else {
                     message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));

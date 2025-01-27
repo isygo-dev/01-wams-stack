@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -14,100 +15,100 @@ import java.util.function.Function;
 public interface IJwtService {
 
     /**
-     * Extract domain string.
+     * Extract domain optional.
      *
      * @param token the token
-     * @return the string
+     * @return the optional
      */
-    String extractDomain(String token);
+    Optional<String> extractDomain(String token);
 
     /**
-     * Extract application string.
+     * Extract application optional.
      *
      * @param token the token
-     * @return the string
+     * @return the optional
      */
-    String extractApplication(String token);
+    Optional<String> extractApplication(String token);
 
     /**
-     * Extract account type string.
+     * Extract account type optional.
      *
      * @param token the token
-     * @return the string
+     * @return the optional
      */
-    String extractAccountType(String token);
+    Optional<String> extractAccountType(String token);
 
     /**
-     * Extract user name string.
+     * Extract user name optional.
      *
      * @param token the token
-     * @return the string
+     * @return the optional
      */
-    String extractUserName(String token);
+    Optional<String> extractUserName(String token);
 
     /**
-     * Extract subject string.
-     *
-     * @param token the token
-     * @param key   the key
-     * @return the string
-     */
-    String extractSubject(String token, String key);
-
-    /**
-     * Extract subject string.
-     *
-     * @param token the token
-     * @return the string
-     */
-    String extractSubject(String token);
-
-    /**
-     * Extract expiration date.
+     * Extract subject optional.
      *
      * @param token the token
      * @param key   the key
-     * @return the date
+     * @return the optional
      */
-    Date extractExpiration(String token, String key);
+    Optional<String> extractSubject(String token, String key);
 
     /**
-     * Extract claim t.
+     * Extract subject optional.
+     *
+     * @param token the token
+     * @return the optional
+     */
+    Optional<String> extractSubject(String token);
+
+    /**
+     * Extract expiration optional.
+     *
+     * @param token the token
+     * @param key   the key
+     * @return the optional
+     */
+    Optional<Date> extractExpiration(String token, String key);
+
+    /**
+     * Extract claim optional.
      *
      * @param <T>            the type parameter
      * @param token          the token
      * @param claimsResolver the claims resolver
      * @param key            the key
-     * @return the t
+     * @return the optional
      */
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver, String key);
+    <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key);
 
     /**
-     * Extract claim t.
+     * Extract claim optional.
      *
      * @param <T>            the type parameter
      * @param token          the token
      * @param claimsResolver the claims resolver
-     * @return the t
+     * @return the optional
      */
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver);
+    <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver);
 
     /**
-     * Extract all claims claims.
+     * Extract all claims optional.
      *
      * @param token the token
      * @param key   the key
-     * @return the claims
+     * @return the optional
      */
-    Claims extractAllClaims(String token, String key);
+    Optional<Claims> extractAllClaims(String token, String key);
 
     /**
-     * Extract all claims claims.
+     * Extract all claims optional.
      *
      * @param token the token
-     * @return the claims
+     * @return the optional
      */
-    Claims extractAllClaims(String token);
+    Optional<Claims> extractAllClaims(String token);
 
     /**
      * Is token expired boolean.

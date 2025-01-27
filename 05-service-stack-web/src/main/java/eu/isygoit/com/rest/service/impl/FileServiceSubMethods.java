@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service.impl;
 import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodifiable;
 import eu.isygoit.model.IFileEntity;
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The type File service sub methods.
@@ -30,11 +34,11 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
     private ILinkedFileApi linkedFileApi;
 
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
-        if (this.linkedFileApi == null) {
+        if (Objects.isNull(this.linkedFileApi)) {
             DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
-            if (annotation != null) {
+            if (Objects.nonNull(annotation)) {
                 this.linkedFileApi = applicationContextService.getBean(annotation.value());
-                if (this.linkedFileApi == null) {
+                if (Objects.isNull(this.linkedFileApi)) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
                     throw new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
                 }
@@ -47,25 +51,28 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
     }
 
     /**
-     * Sub upload file string.
+     * Sub upload file optional.
      *
      * @param file   the file
      * @param entity the entity
-     * @return the string
+     * @return the optional
      */
-    final String subUploadFile(MultipartFile file, T entity) {
+    final Optional<String> subUploadFile(MultipartFile file, T entity) {
         try {
             ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
-                return FileServiceDmsStaticMethods.upload(file, entity, linkedFileService).getCode();
+            if (Objects.nonNull(linkedFileService)) {
+                Optional<LinkedFileResponseDto> optional = FileServiceDmsStaticMethods.upload(file, entity, linkedFileService);
+                if (optional.isPresent()) {
+                    return Optional.ofNullable(optional.get().getCode());
+                }
             } else {
-                return FileServiceLocalStaticMethods.upload(file, entity);
+                return Optional.ofNullable(FileServiceLocalStaticMethods.upload(file, entity));
             }
         } catch (Exception e) {
             log.error("Remote feign call failed : ", e);
         }
 
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -78,7 +85,7 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
     final Resource subDownloadFile(T entity, Long version) {
         try {
             ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
+            if (Objects.nonNull(linkedFileService)) {
                 return FileServiceDmsStaticMethods.download(entity, version, linkedFileService);
             } else {
                 return FileServiceLocalStaticMethods.download(entity, version);

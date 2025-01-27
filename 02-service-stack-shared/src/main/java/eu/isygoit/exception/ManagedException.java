@@ -4,6 +4,8 @@ import eu.isygoit.annotation.MsgLocale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
+
 /**
  * The type Managed exception.
  */
@@ -65,7 +67,7 @@ public abstract class ManagedException extends RuntimeException {
     public String getMsgLocale() {
         String value = null;
         MsgLocale msgLocale = this.getClass().getAnnotation(MsgLocale.class);
-        if (msgLocale != null && StringUtils.hasText(msgLocale.value())) {
+        if (Objects.nonNull(msgLocale) && StringUtils.hasText(msgLocale.value())) {
             value = msgLocale.value();
         } else {
             log.error("<Error>: msgLocale annotation not defined for class type {}", this.getClass().getSimpleName());

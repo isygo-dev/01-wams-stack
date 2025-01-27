@@ -9,6 +9,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
 /**
  * The type Service starter.
@@ -32,9 +33,9 @@ public class ServiceStarter {
     @EventListener(ApplicationReadyEvent.class)
     public final void extractApis() {
         //Extract controller apis to build permission list
-        applicationContextService.getBeansWithAnnotation(RestController.class).values().forEach(ctrl -> {
+        applicationContextService.getBeansWithAnnotation(RestController.class).values().stream().forEach(ctrl -> {
             try {
-                if (apiExtractor != null) {
+                if (Objects.nonNull(apiExtractor)) {
                     apiExtractor.extractApis(ctrl.getClass());
                 } else {
                     log.warn("<Warning>: Extract service is null {}", ctrl.getClass().getSimpleName());

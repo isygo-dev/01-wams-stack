@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service.impl;
 import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodifiable;
 import eu.isygoit.model.IIdEntity;
@@ -13,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The type Multi file service sub methods.
@@ -32,11 +36,11 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
     private ILinkedFileApi linkedFileApi;
 
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
-        if (this.linkedFileApi == null) {
+        if (Objects.isNull(this.linkedFileApi)) {
             DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
-            if (annotation != null) {
+            if (Objects.nonNull(annotation)) {
                 this.linkedFileApi = applicationContextService.getBean(annotation.value());
-                if (this.linkedFileApi == null) {
+                if (Objects.isNull(this.linkedFileApi)) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
                     throw new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
                 }
@@ -58,8 +62,11 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
     final L subUploadFile(MultipartFile file, L entity) {
         try {
             ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
-                entity.setCode(FileServiceDmsStaticMethods.upload(file, entity, linkedFileService).getCode());
+            if (Objects.nonNull(linkedFileService)) {
+                Optional<LinkedFileResponseDto> optional = FileServiceDmsStaticMethods.upload(file, entity, linkedFileService);
+                if (optional.isPresent()) {
+                    entity.setCode(optional.get().getCode());
+                }
             } else {
                 entity.setCode(FileServiceLocalStaticMethods.upload(file, entity));
             }
@@ -80,7 +87,7 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
     final Resource subDownloadFile(L entity, Long version) {
         try {
             ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
+            if (Objects.nonNull(linkedFileService)) {
                 return FileServiceDmsStaticMethods.download(entity, version, linkedFileService);
             } else {
                 return FileServiceLocalStaticMethods.download(entity, version);
@@ -101,7 +108,7 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
         try {
             repository().delete(entity);
             ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
+            if (Objects.nonNull(linkedFileService)) {
                 return FileServiceDmsStaticMethods.delete(entity, linkedFileService);
             } else {
                 return FileServiceLocalStaticMethods.delete(entity);

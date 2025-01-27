@@ -24,6 +24,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The type Codifiable service.
@@ -53,9 +55,10 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
      */
     @EventListener(ApplicationReadyEvent.class)
     public void registerIncrementalNextCode() {
-        NextCodeModel initNextCode = this.initCodeGenerator();
-        if (initNextCode != null && StringUtils.hasText(initNextCode.getEntity())) {
-            if (remoteNextCodeService() != null) {
+        Optional<NextCodeModel> optional = this.initCodeGenerator();
+        if (optional.isPresent() && StringUtils.hasText(optional.get().getEntity())) {
+            NextCodeModel initNextCode = optional.get();
+            if (Objects.nonNull(remoteNextCodeService())) {
                 try {
                     ResponseEntity<String> result = remoteNextCodeService()
                             .subscribeNextCode(//RequestContextDto.builder().build(),
@@ -84,43 +87,50 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
 
     @Override
     @Transactional
-    public String getNextCode() {
-        NextCodeModel initNextCode = this.initCodeGenerator();
-        if (initNextCode != null && StringUtils.hasText(initNextCode.getEntity())) {
-            if (remoteNextCodeService() != null) {
-                return getRemoteNextCode(initNextCode);
+    public Optional<String> getNextCode() {
+        Optional<NextCodeModel> optional = this.initCodeGenerator();
+        if (optional.isPresent() && StringUtils.hasText(optional.get().getEntity())) {
+            if (Objects.nonNull(remoteNextCodeService())) {
+                return getRemoteNextCode(optional.get());
             } else {
-                //get from in memory map
-                return getLocalNextCode(initNextCode);
+                //get from memory map
+                return getLocalNextCode(optional.get());
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    private String getLocalNextCode(NextCodeModel initNextCode) {
+    private Optional<String> getLocalNextCode(NextCodeModel initNextCode) {
+        //Get from memory map (optimization)
         NextCodeModel nextCode = inMemoNextCode.get(getNextCodeKey(initNextCode));
 
-        //get from database and update in memory map
-        if (nextCode == null && nextCodeService() != null) {
-            nextCode = nextCodeService().findByDomainAndEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute());
-            inMemoNextCode.put(getNextCodeKey(initNextCode), nextCode);
+        //if not in memory map, get from database and update the memory map
+        if (Objects.isNull(nextCode) && Objects.nonNull(nextCodeService())) {
+            nextCodeService().findByDomainAndEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute())
+                    .ifPresent(nextCodeModel -> {
+                        inMemoNextCode.put(getNextCodeKey(initNextCode), nextCodeModel);
+                    });
         }
 
-        //save a fist use and update in memory map
-        if (nextCode == null && nextCodeService() != null) {
+        //Get from memory map
+        nextCode = inMemoNextCode.get(getNextCodeKey(initNextCode));
+
+        //if not in memory map, save a fist use and update the memory map
+        if (Objects.isNull(nextCode) && Objects.nonNull(nextCodeService())) {
             nextCode = nextCodeService().saveAndFlush(initNextCode);
             inMemoNextCode.put(getNextCodeKey(initNextCode), nextCode);
         }
 
         //increment and update database
-        if (nextCodeService() != null) {
+        if (Objects.nonNull(nextCodeService())) {
             nextCodeService().increment(nextCode.getDomain(), nextCode.getEntity(), nextCode.getIncrement());
         }
-        return nextCode.nextCode().getCode();
+
+        return Optional.ofNullable(nextCode.nextCode().getCode());
     }
 
-    private String getRemoteNextCode(NextCodeModel initNextCode) {
-        if (remoteNextCodeService() != null) {
+    private Optional<String> getRemoteNextCode(NextCodeModel initNextCode) {
+        if (Objects.nonNull(remoteNextCodeService())) {
             try {
                 ResponseEntity<String> result = remoteNextCodeService()
                         .generateNextCode(RequestContextDto.builder().build(),
@@ -129,7 +139,7 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
                                 initNextCode.getAttribute()
                         );
                 if (result.getStatusCode().is2xxSuccessful() && result.hasBody()) {
-                    return result.getBody();
+                    return Optional.ofNullable(result.getBody());
                 } else {
                     throw new BadResponseException("remote next code");
                 }
@@ -150,18 +160,18 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
     }
 
     @Override
-    public NextCodeModel initCodeGenerator() {
+    public Optional<NextCodeModel> initCodeGenerator() {
         log.warn("Code generator is not implemented for type {}", this.getClass().getCanonicalName());
-        return null;
+        return Optional.empty();
     }
 
     @Override
     public final IRemoteNextCodeService remoteNextCodeService() throws RemoteNextCodeServiceNotDefinedException {
-        if (this.remoteNextCodeService == null) {
+        if (Objects.isNull(this.remoteNextCodeService)) {
             CodeGenKms annotation = this.getClass().getAnnotation(CodeGenKms.class);
-            if (annotation != null) {
+            if (Objects.nonNull(annotation)) {
                 this.remoteNextCodeService = applicationContextServie.getBean(annotation.value());
-                if (this.remoteNextCodeService == null) {
+                if (Objects.isNull(this.remoteNextCodeService)) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
                     throw new RemoteNextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
                 }
@@ -176,11 +186,11 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
 
     @Override
     public final INextCodeService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException {
-        if (this.nextCodeService == null) {
+        if (Objects.isNull(this.nextCodeService)) {
             CodeGenLocal annotation = this.getClass().getAnnotation(CodeGenLocal.class);
-            if (annotation != null) {
+            if (Objects.nonNull(annotation)) {
                 this.nextCodeService = applicationContextServie.getBean(annotation.value());
-                if (this.nextCodeService == null) {
+                if (Objects.isNull(this.nextCodeService)) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
                     throw new NextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
                 }

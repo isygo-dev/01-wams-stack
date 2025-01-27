@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * The type Quartz service.
@@ -38,7 +39,7 @@ public class QuartzServiceImpl implements QuartzService {
 
     @Override
     public JobDetail createJobDetail(Class<? extends Job> jobClass, String identity, String group, SingleJobData singleJobData) {
-        if (singleJobData.getValue() != null) {
+        if (Objects.nonNull(singleJobData.getValue())) {
             Object value = singleJobData.getValue();
             if (value instanceof String data) {
                 return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(singleJobData.getKey(), data).storeDurably().build();

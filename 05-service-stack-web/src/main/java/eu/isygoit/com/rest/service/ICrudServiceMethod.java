@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The interface Crud service method.
@@ -131,13 +132,13 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
     List<T> findAll(String domain, Pageable pageable) throws NotSupportedException;
 
     /**
-     * Find by id t.
+     * Find by id optional.
      *
      * @param id the id
-     * @return the t
+     * @return the optional
      * @throws ObjectNotFoundException the object not found exception
      */
-    T findById(I id) throws ObjectNotFoundException;
+    Optional<T> findById(I id) throws ObjectNotFoundException;
 
     /**
      * Save or update t.

@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Objects;
+
 /**
  * The type Controller exception handler.
  */
@@ -26,19 +28,19 @@ public abstract class ControllerExceptionHandler implements IControllerException
     private IExceptionHandler exceptionHandler;
 
     public final IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
-        if (this.exceptionHandler == null) {
+        if (Objects.isNull(this.exceptionHandler)) {
             CtrlHandler ctrlHandler = this.getClass().getAnnotation(CtrlHandler.class);
-            if (ctrlHandler != null) {
+            if (Objects.nonNull(ctrlHandler)) {
                 this.exceptionHandler = applicationContextService.getBean(ctrlHandler.value());
-                if (this.exceptionHandler == null) {
+                if (Objects.isNull(this.exceptionHandler)) {
                     log.error("<Error>: Exception Handler bean not found");
                     throw new BeanNotFoundException(this.getClass().getSimpleName());
                 }
             } else {
                 CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-                if (ctrlDef != null) {
+                if (Objects.nonNull(ctrlDef)) {
                     this.exceptionHandler = applicationContextService.getBean(ctrlDef.handler());
-                    if (this.exceptionHandler == null) {
+                    if (Objects.isNull(this.exceptionHandler)) {
                         log.error("<Error>: Exception Handler bean not found");
                         throw new BeanNotFoundException(this.getClass().getSimpleName());
                     }
@@ -54,7 +56,7 @@ public abstract class ControllerExceptionHandler implements IControllerException
 
     @Override
     public String handleExceptionMessage(Throwable throwable) {
-        if (exceptionHandler() != null) {
+        if (Objects.nonNull(exceptionHandler())) {
             return exceptionHandler().handleError(throwable);
         }
         return throwable.toString();

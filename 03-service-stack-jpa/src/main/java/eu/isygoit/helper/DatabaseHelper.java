@@ -3,6 +3,7 @@ package eu.isygoit.helper;
 import eu.isygoit.exception.BackupCommandException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,7 +58,7 @@ public class DatabaseHelper {
         try (BufferedReader buf = new BufferedReader(
                 new InputStreamReader(process.getErrorStream()))) {
             String line = buf.readLine();
-            while (line != null) {
+            while (!StringUtils.hasText(line)) {
                 line = buf.readLine();
             }
         }

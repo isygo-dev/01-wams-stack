@@ -5,6 +5,8 @@ import eu.isygoit.service.INotificationListenerService;
 import jakarta.persistence.*;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * The type Notification listener.
  */
@@ -39,7 +41,7 @@ public class NotificationListener {
      */
     @PostPersist
     void onPostPersist(INotifiableEntity entity) {
-        if (notificationService != null) {
+        if (Objects.nonNull(notificationService)) {
             notificationService.performPostPersistNotification(entity);
         }
     }
@@ -51,7 +53,7 @@ public class NotificationListener {
      */
     @PostRemove
     void onPostRemove(INotifiableEntity entity) {
-        if (notificationService != null) {
+        if (Objects.nonNull(notificationService)) {
             notificationService.performPostRemoveNotification(entity);
         }
     }
@@ -63,7 +65,7 @@ public class NotificationListener {
      */
     @PostUpdate
     void onPostUpdate(INotifiableEntity entity) {
-        if (notificationService != null) {
+        if (Objects.nonNull(notificationService)) {
             notificationService.performPostUpdateNotification(entity);
         }
     }

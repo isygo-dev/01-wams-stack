@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.Objects;
 
 /**
  * The type Crud controller utils.
@@ -50,19 +51,19 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
 
     @Override
     public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
-        if (this.crudService == null) {
+        if (Objects.isNull(this.crudService)) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
+            if (Objects.nonNull(ctrlDef)) {
                 this.crudService = (S) getApplicationContextService().getBean(ctrlDef.service());
-                if (this.crudService == null) {
+                if (Objects.isNull(this.crudService)) {
                     log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.service().getSimpleName());
                     throw new BeanNotFoundException(CONTROLLER_SERVICE);
                 }
             } else {
                 CtrlService ctrlService = this.getClass().getAnnotation(CtrlService.class);
-                if (ctrlService != null) {
+                if (Objects.nonNull(ctrlService)) {
                     this.crudService = (S) getApplicationContextService().getBean(ctrlService.value());
-                    if (this.crudService == null) {
+                    if (Objects.isNull(this.crudService)) {
                         log.error(ERROR_BEAN_NOT_FOUND, ctrlService.value().getSimpleName());
                         throw new BeanNotFoundException(CONTROLLER_SERVICE);
                     }
@@ -77,18 +78,18 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
 
     @Override
     public final EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException {
-        if (this.fullEntityMapper == null) {
+        if (Objects.isNull(this.fullEntityMapper)) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
+            if (Objects.nonNull(ctrlDef)) {
                 this.fullEntityMapper = getApplicationContextService().getBean(ctrlDef.mapper());
-                if (this.fullEntityMapper == null) {
+                if (Objects.isNull(this.fullEntityMapper)) {
                     log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.mapper().getSimpleName());
                     throw new BeanNotFoundException(ctrlDef.mapper().getSimpleName());
                 }
             } else {
                 CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
                 this.fullEntityMapper = getApplicationContextService().getBean(ctrlMapper.mapper());
-                if (this.fullEntityMapper == null) {
+                if (Objects.isNull(this.fullEntityMapper)) {
                     log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.mapper().getSimpleName());
                     throw new BeanNotFoundException(ctrlMapper.mapper().getSimpleName());
                 } else {
@@ -103,18 +104,18 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
 
     @Override
     public final EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
-        if (this.minEntityMapper == null) {
+        if (Objects.isNull(this.minEntityMapper)) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
+            if (Objects.nonNull(ctrlDef)) {
                 this.minEntityMapper = getApplicationContextService().getBean(ctrlDef.minMapper());
-                if (this.minEntityMapper == null) {
+                if (Objects.isNull(this.minEntityMapper)) {
                     log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.minMapper().getSimpleName());
                     throw new BeanNotFoundException(ctrlDef.minMapper().getSimpleName());
                 }
             } else {
                 CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
                 this.minEntityMapper = getApplicationContextService().getBean(ctrlMapper.minMapper());
-                if (this.minEntityMapper == null) {
+                if (Objects.isNull(this.minEntityMapper)) {
                     log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.minMapper().getSimpleName());
                     throw new BeanNotFoundException(ctrlMapper.minMapper().getSimpleName());
                 } else {

@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
+
 /**
  * The type Url helper.
  */
@@ -39,7 +41,7 @@ public class UrlHelper {
      */
     public static String getClientIp(HttpServletRequest request) {
         String remoteAddr = "";
-        if (request != null) {
+        if (Objects.nonNull(request)) {
             remoteAddr = request.getHeader("X-FORWARDED-FOR");
             if (!StringUtils.hasText(remoteAddr)) {
                 remoteAddr = request.getRemoteAddr();
@@ -56,7 +58,7 @@ public class UrlHelper {
      */
     public static String getDevice(HttpServletRequest request) {
         String userAgent = request.getHeader("User-Agent");
-        if (userAgent != null) {
+        if (!StringUtils.hasText(userAgent)) {
             if (userAgent.contains("Mobile") || userAgent.contains("Android") || userAgent.contains("iPhone")) {
                 return "Mobile";
             } else if (userAgent.contains("iPad")) {

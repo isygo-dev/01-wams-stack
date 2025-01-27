@@ -79,7 +79,7 @@ public abstract class ControllerExceptionHandlerBuilder {
     @PostConstruct
     private void generateConstraintMap() {
         processManagedException();
-        if (this.entityManager != null) {
+        if (Objects.nonNull(this.entityManager)) {
             log.info("BEGIN PROCESSING FULL ENTITY CONSTRAINTS");
             Set<EntityType<?>> entities = entityManager.getMetamodel().getEntities();
             Iterator<EntityType<?>> entityTypeIterator = entities.iterator();
@@ -131,7 +131,7 @@ public abstract class ControllerExceptionHandlerBuilder {
         String stringMsg;
         String translation;
         Table table = (Table) entity.getJavaType().getAnnotation(Table.class);
-        if (table != null) {
+        if (Objects.nonNull(table)) {
             for (int i = 0; i < table.uniqueConstraints().length; i++) {
                 UniqueConstraint uniqueConstraint = table.uniqueConstraints()[i];
                 if (StringUtils.hasText(uniqueConstraint.name())) {
@@ -147,7 +147,7 @@ public abstract class ControllerExceptionHandlerBuilder {
             }
 
             SecondaryTables secondaryTables = (SecondaryTables) entity.getJavaType().getAnnotation(SecondaryTables.class);
-            if (secondaryTables != null) {
+            if (Objects.nonNull(secondaryTables)) {
                 for (int i = 0; i < secondaryTables.value().length; i++) {
                     SecondaryTable secondaryTable = secondaryTables.value()[i];
                     for (int j = 0; j < secondaryTable.uniqueConstraints().length; j++) {
@@ -172,9 +172,9 @@ public abstract class ControllerExceptionHandlerBuilder {
         String stringMsg;
         String translation;
         JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-        if (joinColumn != null) {
+        if (Objects.nonNull(joinColumn)) {
             ForeignKey foreignKey = joinColumn.foreignKey();
-            if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
+            if (Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name())) {
                 stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
                 translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
                         + foreignKey.name()
@@ -185,12 +185,12 @@ public abstract class ControllerExceptionHandlerBuilder {
         }
 
         JoinTable joinTable = field.getAnnotation(JoinTable.class);
-        if (joinTable != null) {
+        if (Objects.nonNull(joinTable)) {
             List<JoinColumn> joinColumnArray = Arrays.asList(joinTable.joinColumns());
             if (!CollectionUtils.isEmpty(joinColumnArray)) {
                 for (JoinColumn jc : joinColumnArray) {
                     ForeignKey foreignKey = jc.foreignKey();
-                    if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
+                    if (Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name())) {
                         stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
                         translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
                                 + foreignKey.name()
@@ -205,7 +205,7 @@ public abstract class ControllerExceptionHandlerBuilder {
             if (!CollectionUtils.isEmpty(joinColumnArray)) {
                 for (JoinColumn jc : joinColumnArray) {
                     ForeignKey foreignKey = jc.foreignKey();
-                    if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
+                    if (Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name())) {
                         stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
                         translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
                                 + foreignKey.name()
@@ -223,7 +223,7 @@ public abstract class ControllerExceptionHandlerBuilder {
         String translation;
         Table table = (Table) entity.getJavaType().getAnnotation(Table.class);
         Column column = field.getAnnotation(Column.class);
-        if (column != null && !column.nullable()) {
+        if (Objects.nonNull(column) && !column.nullable()) {
             stringMsg = "not.null." + entity.getName().toLowerCase() + "." + attributeName.toLowerCase() + CONSTRAINT_VIOLATED;
             translation = getTranslationMessage(stringMsg, "The value "
                     + column.name()
@@ -242,27 +242,28 @@ public abstract class ControllerExceptionHandlerBuilder {
 
     private void processManagedException() {
         Set<BeanDefinition> managedExceptionBeans = springClassScanner.findAnnotatedClasses(MsgLocale.class, "eu.isygoit.exception");
-        for (BeanDefinition exceptionBean : managedExceptionBeans) {
+        managedExceptionBeans.stream().forEach(beanDefinition -> {
             Class<?> cl = null;
             try {
-                cl = Class.forName(exceptionBean.getBeanClassName());
+                cl = Class.forName(beanDefinition.getBeanClassName());
                 MsgLocale msgLocale = cl.getAnnotation(MsgLocale.class);
-                if (msgLocale != null && StringUtils.hasText(msgLocale.value())) {
+                if (Objects.nonNull(msgLocale) && StringUtils.hasText(msgLocale.value())) {
                     String translation = getTranslationMessage(msgLocale.value(), msgLocale.value());
                     log.info("EXCPT:{}", translation);
                 } else {
-                    log.error("<Error>: msgLocale annotation not defined for class type {}", exceptionBean.getBeanClassName());
+                    log.error("<Error>: msgLocale annotation not defined for class type {}", beanDefinition.getBeanClassName());
                 }
             } catch (ClassNotFoundException e) {
                 log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             }
-        }
+        });
     }
 
     private String getTranslationMessage(String stringMsg, String defaultTranslation) {
         String translation = this.environment.getProperty(stringMsg);
-        StringBuilder translatedMessage = (new StringBuilder()).append(stringMsg).append("=").append(translation != null ? translation : defaultTranslation);
-        if (translation != null) {
+        StringBuilder translatedMessage = (new StringBuilder()).append(stringMsg).append("=")
+                .append(!StringUtils.hasText(translation) ? translation : defaultTranslation);
+        if (!StringUtils.hasText(translation)) {
             messages.get(TRANSLATED_MESSAGES).add(translatedMessage.toString());
         } else {
             messages.get(NON_TRANSLATED_MESSAGES).add(translatedMessage.toString());

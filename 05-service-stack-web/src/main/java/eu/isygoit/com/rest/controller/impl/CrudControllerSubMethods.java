@@ -7,6 +7,7 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
@@ -19,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The type Crud controller sub methods.
@@ -43,7 +45,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     @Override
     public ResponseEntity<FULLD> subCreate(FULLD object) {
         log.info("Create {} request received", persistentClass.getSimpleName());
-        if (object == null) {
+        if (Objects.isNull(object)) {
             return ResponseFactory.ResponseBadRequest();
         }
 
@@ -64,9 +66,9 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         }
 
         try {
-            objects.forEach(FULLD -> this.beforeCreate(FULLD));
+            objects.stream().forEach(FULLD -> this.beforeCreate(FULLD));
             List<T> entities = this.crudService().create(mapper().listDtoToEntity(objects));
-            entities.forEach(t -> this.afterCreate(t));
+            entities.stream().forEach(t -> this.afterCreate(t));
             return ResponseFactory.ResponseOk(mapper().listEntityToDto(entities));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -77,7 +79,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     @Override
     public ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
         log.info("Delete {} request received", persistentClass.getSimpleName());
-        if (id == null) {
+        if (Objects.isNull(id)) {
             return ResponseFactory.ResponseBadRequest();
         }
 
@@ -119,9 +121,9 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
             List<MIND> list = null;
             if (ISAASEntity.class.isAssignableFrom(persistentClass)
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
+                list = this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
             } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
+                list = this.minDtoMapper().listEntityToDto(this.crudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -143,9 +145,9 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
             List<MIND> list = null;
             if (ISAASEntity.class.isAssignableFrom(persistentClass)
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
+                list = this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
             } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
+                list = this.minDtoMapper().listEntityToDto(this.crudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -167,9 +169,9 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
             List<MIND> list = null;
             if (ISAASEntity.class.isAssignableFrom(persistentClass)
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -211,7 +213,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     @Override
     public ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
-        if (page == null || size == null) {
+        if (Objects.isNull(page) || Objects.isNull(size)) {
             return ResponseFactory.ResponseBadRequest();
         }
 
@@ -241,12 +243,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     public ResponseEntity<FULLD> subFindById(RequestContextDto requestContext, I id) {
         log.info("Find {} by id request received", persistentClass.getSimpleName());
         try {
-            final FULLD object = this.mapper().entityToDto(this.crudService().findById(id));
-            if (object == null) {
-                return ResponseFactory.ResponseNoContent();
-            }
-
-            return ResponseFactory.ResponseOk(this.afterFindById(object));
+            return ResponseFactory.ResponseOk(this.afterFindById(this.mapper().entityToDto(this.crudService().findById(id)
+                    .orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id)))));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -273,7 +271,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     @Override
     public ResponseEntity<FULLD> subUpdate(I id, FULLD object) {
         log.info("Update {} request received", persistentClass.getSimpleName());
-        if (object == null || id == null) {
+        if (Objects.isNull(object) || Objects.isNull(id)) {
             return ResponseFactory.ResponseBadRequest();
         }
 

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The type Jwt kms client auth filter.
@@ -23,7 +24,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
     @Override
     public boolean isTokenValid(String jwt, String domain, String application, String userName) {
-        if (tokenService != null) {
+        if (Objects.nonNull(tokenService)) {
             try {
                 ResponseEntity<Boolean> result = tokenService.isTokenValid(RequestContextDto.builder().build(),
                         domain, application, IEnumAppToken.Types.ACCESS, jwt,

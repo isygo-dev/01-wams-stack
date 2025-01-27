@@ -1,6 +1,7 @@
 package eu.isygoit.encrypt.generator;
 
 import eu.isygoit.enums.IEnumCharSet;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -70,7 +71,7 @@ public abstract class AbstractKeyGenerator implements IKeyGenerator {
     public void setBufferlength(int length) {
         if (length < 1)
             throw new IllegalArgumentException("textLength < 1: " + length);
-        if (buf == null || buf.length != length) {
+        if (ArrayUtils.isEmpty(buf) || buf.length != length) {
             buf = new char[length];
         }
     }

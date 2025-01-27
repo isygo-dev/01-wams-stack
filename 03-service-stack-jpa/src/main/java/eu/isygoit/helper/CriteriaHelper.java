@@ -71,7 +71,7 @@ public class CriteriaHelper {
         Map<String, String> criteriaMap = new HashMap<>();
         Arrays.stream(classType.getDeclaredFields()).forEach(field -> {
             Criteria criteria = field.getAnnotation(Criteria.class);
-            if (criteria != null) {
+            if (Objects.nonNull(criteria)) {
                 criteriaMap.put(field.getName(), field.getType().getSimpleName());
             }
         });
@@ -89,8 +89,11 @@ public class CriteriaHelper {
      */
     public static <T extends IIdEntity> Specification<T> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
         Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(classType);
-        Specification<T> specification = Specification.where(null);
-        for (QueryCriteria cr : criteria) {
+
+        var wrapper = new Object() {
+            Specification<T> specification = Specification.where(null);
+        };
+        criteria.stream().forEach(cr -> {
             String name = cr.getName();
             String value = cr.getValue();
             if (!criteriaMap.containsKey(name)) {
@@ -129,19 +132,21 @@ public class CriteriaHelper {
 
             switch (cr.getCombiner()) {
                 case OR:
-                    specification = specification.or(criteriaSpec);
+                    wrapper.specification = wrapper.specification.or(criteriaSpec);
                     break;
                 case AND:
-                    specification = specification.and(criteriaSpec);
+                    wrapper.specification = wrapper.specification.and(criteriaSpec);
                     break;
                 default:
-                    specification = specification.or(criteriaSpec);
+                    wrapper.specification = wrapper.specification.or(criteriaSpec);
             }
-        }
+        });
+
+
         if (StringUtils.hasText(domain)) {
-            specification = specification.and(CriteriaHelper.equal("domain", domain));
+            wrapper.specification = wrapper.specification.and(CriteriaHelper.equal("domain", domain));
         }
-        return specification;
+        return wrapper.specification;
     }
 
     /**

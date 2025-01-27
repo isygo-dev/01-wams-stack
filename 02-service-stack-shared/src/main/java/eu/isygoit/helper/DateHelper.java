@@ -12,10 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * The type Date helper.
@@ -112,11 +109,13 @@ public class DateHelper {
         knownPatterns.add(new SimpleDateFormat(SIMPLE_DATE_FORMAT_FR));
         knownPatterns.add(new SimpleDateFormat(COMPACT_DATE_FORMAT_EN));
         knownPatterns.add(new SimpleDateFormat(COMPACT_DATE_FORMAT_FR));
+
         for (final SimpleDateFormat pattern : knownPatterns) {
             try {
-                return pattern.parse(absDate);
+                Date result = pattern.parse(absDate);
+                return result;
             } catch (final Exception e) {
-
+                //continue looping
             }
         }
 
@@ -129,8 +128,8 @@ public class DateHelper {
      * @param date the date
      * @return the string
      */
-    public static String convertDateToAbsoleDate(Date date) {
-        if (date != null) {
+    public static String convertDateToAbsoluteDate(Date date) {
+        if (Objects.nonNull(date)) {
             final DateTime dateTime = new DateTime(date);
             final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(DATE_WITH_TIME_ZONE_ISO_FR);
             return dateTime.toString(dateTimeFormatter);
@@ -146,7 +145,7 @@ public class DateHelper {
      * @return the string
      */
     public static String convertDateToSimpleDate(Date date, String dateFormat) {
-        if (date != null) {
+        if (Objects.nonNull(date)) {
             final DateTime dateTime = new DateTime(date);
             final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(dateFormat /*SIMPLE_DATE_FORMAT_FR*/);
             return dateTime.toString(dateTimeFormatter);
@@ -175,7 +174,7 @@ public class DateHelper {
      * @return the first time
      */
     public static Date setFirstTime(Date date) {
-        if (date == null) {
+        if (Objects.isNull(date)) {
             return null;
         }
         LocalDateTime dateTime = LocalDateTime.fromDateFields(date);
@@ -189,7 +188,7 @@ public class DateHelper {
      * @return the last time
      */
     public static Date setLastTime(Date date) {
-        if (date == null) {
+        if (Objects.isNull(date)) {
             return null;
         }
         LocalDateTime dateTime = LocalDateTime.fromDateFields(date);
@@ -204,7 +203,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isInLastHours(Date date, Integer hours) {
-        if (date == null || hours == null) {
+        if (Objects.isNull(date) || Objects.isNull(hours)) {
             throw new IllegalArgumentException("Date and hours must not be null");
         }
         Calendar cal = Calendar.getInstance();
@@ -220,7 +219,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isSameDay(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
+        if (Objects.isNull(date1) || Objects.isNull(date2)) {
             throw new IllegalArgumentException("The dates must not be null");
         }
         Calendar cal1 = Calendar.getInstance();
@@ -238,7 +237,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isSameDay(Calendar cal1, Calendar cal2) {
-        if (cal1 == null || cal2 == null) {
+        if (Objects.isNull(cal1) || Objects.isNull(cal2)) {
             throw new IllegalArgumentException("The dates must not be null");
         }
         return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
@@ -274,7 +273,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isBeforeDay(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
+        if (Objects.isNull(date1) || Objects.isNull(date2)) {
             throw new IllegalArgumentException("The dates must not be null");
         }
         Calendar cal1 = Calendar.getInstance();
@@ -292,7 +291,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isBeforeDay(Calendar cal1, Calendar cal2) {
-        if (cal1 == null || cal2 == null) {
+        if (Objects.isNull(cal1) || Objects.isNull(cal2)) {
             throw new IllegalArgumentException("The dates must not be null");
         }
         if (cal1.get(Calendar.ERA) < cal2.get(Calendar.ERA)) return true;
@@ -310,7 +309,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isAfterDay(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
+        if (Objects.isNull(date1) || Objects.isNull(date2)) {
             throw new IllegalArgumentException("The dates must not be null");
         }
         Calendar cal1 = Calendar.getInstance();
@@ -328,7 +327,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isAfterDay(Calendar cal1, Calendar cal2) {
-        if (cal1 == null || cal2 == null) {
+        if (Objects.isNull(cal1) || Objects.isNull(cal2)) {
             throw new IllegalArgumentException("The dates must not be null");
         }
         if (cal1.get(Calendar.ERA) < cal2.get(Calendar.ERA)) return false;
@@ -346,7 +345,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isWithinDaysFuture(Date date, int days) {
-        if (date == null) {
+        if (Objects.isNull(date)) {
             throw new IllegalArgumentException("The date must not be null");
         }
         Calendar cal = Calendar.getInstance();
@@ -362,7 +361,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean isWithinDaysFuture(Calendar cal, int days) {
-        if (cal == null) {
+        if (Objects.isNull(cal)) {
             throw new IllegalArgumentException("The date must not be null");
         }
         Calendar today = Calendar.getInstance();
@@ -388,7 +387,7 @@ public class DateHelper {
      * @return the date
      */
     public static Date clearTime(Date date) {
-        if (date == null) {
+        if (Objects.isNull(date)) {
             return null;
         }
         Calendar c = Calendar.getInstance();
@@ -407,7 +406,7 @@ public class DateHelper {
      * @return the boolean
      */
     public static boolean hasTime(Date date) {
-        if (date == null) {
+        if (Objects.isNull(date)) {
             return false;
         }
         Calendar c = Calendar.getInstance();
@@ -431,7 +430,7 @@ public class DateHelper {
      * @return the end
      */
     public static Date getEnd(Date date) {
-        if (date == null) {
+        if (Objects.isNull(date)) {
             return null;
         }
         Calendar c = Calendar.getInstance();
@@ -451,9 +450,9 @@ public class DateHelper {
      * @return the date
      */
     public static Date max(Date d1, Date d2) {
-        if (d1 == null && d2 == null) return null;
-        if (d1 == null) return d2;
-        if (d2 == null) return d1;
+        if (Objects.isNull(d1) && Objects.isNull(d2)) return null;
+        if (Objects.isNull(d1)) return d2;
+        if (Objects.isNull(d2)) return d1;
         return (d1.after(d2)) ? d1 : d2;
     }
 
@@ -465,9 +464,9 @@ public class DateHelper {
      * @return the date
      */
     public static Date min(Date d1, Date d2) {
-        if (d1 == null && d2 == null) return null;
-        if (d1 == null) return d2;
-        if (d2 == null) return d1;
+        if (Objects.isNull(d1) && Objects.isNull(d2)) return null;
+        if (Objects.isNull(d1)) return d2;
+        if (Objects.isNull(d2)) return d1;
         return (d1.before(d2)) ? d1 : d2;
     }
 
@@ -478,7 +477,7 @@ public class DateHelper {
      * @return the date
      */
     public static Date toDate(java.time.LocalDateTime localDateTime) {
-        if (localDateTime != null) {
+        if (Objects.nonNull(localDateTime)) {
             return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
         }
         return null;
@@ -491,7 +490,7 @@ public class DateHelper {
      * @return the java . time . local date time
      */
     public static java.time.LocalDateTime convertToLocalDateTime(Date dateToConvert) {
-        if (dateToConvert != null) {
+        if (Objects.nonNull(dateToConvert)) {
             return Instant.ofEpochMilli(dateToConvert.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
@@ -506,7 +505,7 @@ public class DateHelper {
      * @return the java . time . local date
      */
     public static java.time.LocalDate convertToLocalDate(Date dateToConvert) {
-        if (dateToConvert != null) {
+        if (Objects.nonNull(dateToConvert)) {
             return Instant.ofEpochMilli(dateToConvert.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate();

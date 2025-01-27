@@ -17,10 +17,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -54,7 +51,7 @@ public class FileHelper {
      * @throws IOException the io exception
      */
     public static Path storeMultipartFile(String directory, String fileName, MultipartFile file, String extension) throws IOException {
-        if (file != null && !file.isEmpty()) {
+        if (Objects.nonNull(file) && !file.isEmpty()) {
             makeDirectoryIfNotExist(directory);
 
             Path fileNamePath = Paths.get(directory
@@ -163,7 +160,7 @@ public class FileHelper {
      */
     static public void addFilesToZip(String path, List<String> srcFiles, ZipOutputStream zip) throws Exception {
         try {
-            srcFiles.forEach(srcFile -> {
+            srcFiles.stream().forEach(srcFile -> {
                 File folder = new File(srcFile);
                 if (folder.isDirectory()) {
                     try {
@@ -194,16 +191,20 @@ public class FileHelper {
 
     static private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws Exception {
         File folder = new File(srcFolder);
+        Arrays.stream(folder.list()).forEach(fileName -> {
+            try {
+                if (path.equals("")) {
+                    addFileToZip(folder.getName(), srcFolder
+                            + File.separator + fileName, zip);
 
-        for (String fileName : folder.list()) {
-            if (path.equals("")) {
-                addFileToZip(folder.getName(), srcFolder
-                        + File.separator + fileName, zip);
-            } else {
-                addFileToZip(path
-                        + File.separator + folder.getName(), srcFolder + File.separator + fileName, zip);
+                } else {
+                    addFileToZip(path
+                            + File.separator + folder.getName(), srcFolder + File.separator + fileName, zip);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        }
+        });
     }
 
     /**

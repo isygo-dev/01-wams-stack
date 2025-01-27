@@ -2,6 +2,8 @@ package eu.isygoit.service.nextCode;
 
 import eu.isygoit.model.extendable.NextCodeModel;
 
+import java.util.Optional;
+
 /**
  * The interface Next code service.
  *
@@ -10,22 +12,22 @@ import eu.isygoit.model.extendable.NextCodeModel;
 public interface INextCodeService<T extends NextCodeModel> {
 
     /**
-     * Find by entity t.
+     * Find by entity optional.
      *
      * @param entity the entity
-     * @return the t
+     * @return the optional
      */
-    T findByEntity(String entity);
+    Optional<T> findByEntity(String entity);
 
     /**
-     * Find by domain and entity and attribute t.
+     * Find by domain and entity and attribute optional.
      *
      * @param domain    the domain
      * @param entity    the entity
      * @param attribute the attribute
-     * @return the t
+     * @return the optional
      */
-    T findByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
+    Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
 
     /**
      * Increment.

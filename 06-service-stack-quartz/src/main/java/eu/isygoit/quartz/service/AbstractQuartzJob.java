@@ -4,6 +4,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
+import java.util.Objects;
+
 /**
  * The type Abstract quartz job.
  */
@@ -11,7 +13,7 @@ public abstract class AbstractQuartzJob extends QuartzJobBean implements QuartzJ
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        if (this.getJobService() != null) {
+        if (Objects.nonNull(this.getJobService())) {
             this.getJobService().process(jobExecutionContext);
         }
     }

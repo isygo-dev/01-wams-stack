@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The type Locale service.
@@ -42,7 +43,7 @@ public class LocaleServiceImpl implements LocaleService {
     public String getMessage(String code, Locale loc) {
         String message = null;
         try {
-            if (extendedLocaleService != null && extendedLocaleService.enabled()) {
+            if (Objects.nonNull(extendedLocaleService) && extendedLocaleService.enabled()) {
                 message = extendedLocaleService.getMessage(code, loc.toLanguageTag());
                 if (!StringUtils.hasText(message)) {
                     message = messageMap.get(code + "|" + loc.toLanguageTag());
