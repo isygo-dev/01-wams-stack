@@ -304,7 +304,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
         }
         List<T> list = repository().findAll();
         if (CollectionUtils.isEmpty(list)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
 
         }
 
@@ -321,7 +321,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
         Page<T> page = repository().findAll(pageable);
         if (page.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return this.afterFindAll(page.getContent());
@@ -333,7 +333,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
                 && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
             List<T> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
             if (CollectionUtils.isEmpty(list)) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             return this.afterFindAll(list);
         } else {
@@ -347,7 +347,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
                 && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
             Page<T> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
             if (page.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             return this.afterFindAll(page.getContent());
         } else {

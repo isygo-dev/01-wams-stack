@@ -280,7 +280,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
 
         List<T> list = repository().findAll();
         if (CollectionUtils.isEmpty(list)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return this.afterFindAll(list);
@@ -296,7 +296,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
 
         Slice<T> page = repository().findAll(pageable);
         if (page.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return this.afterFindAll(page.getContent());
@@ -308,7 +308,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
                 && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
             List<T> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
             if (CollectionUtils.isEmpty(list)) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             return this.afterFindAll(list);
         } else {
@@ -322,7 +322,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
                 && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
             Page<T> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
             if (page.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             return this.afterFindAll(page.getContent());
         } else {
@@ -396,11 +396,11 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
 
     @Override
     public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
     public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 }

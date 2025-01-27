@@ -26,14 +26,18 @@ import java.util.stream.Collectors;
 public abstract class AbstractApiExtractor<E extends ApiPermissionModel> implements IApiExtractor<E> {
 
     @Transactional
-    public List<E> extractApis(Class<?> controller) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public List<E> extractApis(Class<?> controller)
+            throws NoSuchMethodException,
+            InvocationTargetException,
+            InstantiationException,
+            IllegalAccessException {
         String ctrlName = ClassUtils.getUserClass(controller).getSimpleName().replace("Controller", "");
         //Get controller url
         RequestMapping requestMapping = AnnotationUtils.findAnnotation(controller, RequestMapping.class);
         if (Objects.nonNull(requestMapping) && ArrayUtils.isNotEmpty(requestMapping.path())) {
             String url = requestMapping.path()[0];
             if (ArrayUtils.isNotEmpty(controller.getMethods())) {
-                return Arrays.stream(controller.getMethods()).map(method -> {
+                return Arrays.stream(controller.getMethods()).map((Method method) -> {
                     E api = newInstance();
                     //Set api object
                     api.setObject(ctrlName);
@@ -41,20 +45,24 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
                     api.setMethod(method.getName());
                     //Set method type and pathextractApiMapping(url, method, api);
                     isAPermission(url, method, api);
-                    if (Objects.nonNull(api.getRqType())) {
-                        //Set api description
-                        api.setDescription("[" + api.getRqType().action() + "]" +
-                                api.getServiceName() +
-                                "_" + api.getObject() +
-                                " (" + api.getMethod() + ")");
-                        return this.saveApi(api);
-                    }
-                    return null;
-                }).collect(Collectors.toList());
+                    return saveApiPermission(api);
+                }).toList();
             }
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
+    }
+
+    private E saveApiPermission(E api) {
+        if (Objects.nonNull(api.getRqType())) {
+            //Set api description
+            api.setDescription("[" + api.getRqType().action() + "]" +
+                    api.getServiceName() +
+                    "_" + api.getObject() +
+                    " (" + api.getMethod() + ")");
+            return this.saveApi(api);
+        }
+        return null;
     }
 
     private boolean isGetApi(String url, Method method, E api) {

@@ -29,7 +29,8 @@ public abstract class AbstractCamelProcessor<T extends IIdentifiableDto> impleme
      */
     public static final String ORIGIN = "origin";
 
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
+            .getGenericSuperclass()).getActualTypeArguments()[0];
 
     /**
      * Perform processor.
@@ -43,7 +44,8 @@ public abstract class AbstractCamelProcessor<T extends IIdentifiableDto> impleme
     @Transactional
     @Override
     public void process(Exchange exchange) throws Exception {
-        log.info("START EXECUTING PROCESSOR: {} on object {}", this.getClass().getSimpleName(), persistentClass.getSimpleName());
+        log.info("START EXECUTING PROCESSOR: {} on object {}", this.getClass().getSimpleName(),
+                persistentClass.getSimpleName());
         try {
             exchange.getIn().setHeader(RETURN_HEADER, false);
             T object = (T) exchange.getIn().getBody();
