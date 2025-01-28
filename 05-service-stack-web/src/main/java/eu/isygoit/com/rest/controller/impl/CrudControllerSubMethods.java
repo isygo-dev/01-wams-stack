@@ -66,10 +66,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         }
 
         try {
-            objects.stream().forEach(FULLD -> this.beforeCreate(FULLD));
-            List<T> entities = this.crudService().create(mapper().listDtoToEntity(objects));
-            entities.stream().forEach(t -> this.afterCreate(t));
-            return ResponseFactory.ResponseOk(mapper().listEntityToDto(entities));
+            return ResponseFactory.ResponseOk(mapper().listEntityToDto(objects.stream().map(FULLD -> this.crudService()
+                    .create(mapper().dtoToEntity(this.beforeCreate(FULLD)))).toList()));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);

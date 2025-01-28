@@ -108,12 +108,9 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        List<T> createdObjects = new ArrayList<>();
-        objects.stream().forEach(object -> {
-            createdObjects.add(this.create(object));
-        });
-
-        return createdObjects;
+        return objects.stream().map(object ->
+                this.create(object)
+        ).toList();
     }
 
     @Override
@@ -148,12 +145,10 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
-        List<T> updatedObjects = new ArrayList<>();
-        objects.stream().forEach(object -> {
-            updatedObjects.add(this.update(object));
-        });
 
-        return updatedObjects;
+        return objects.stream().map(object ->
+                this.update(object)
+        ).toList();
     }
 
     @Override
@@ -165,11 +160,10 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
 
         if (ISAASEntity.class.isAssignableFrom(persistentClass)
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            objects.stream().forEach(object -> {
-                if (!senderDomain.equals(((ISAASEntity) object).getDomain())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
-                }
-            });
+            Optional<T> optional = objects.stream().filter(object -> !senderDomain.equals(((ISAASEntity) object).getDomain())).findFirst();
+            if (optional.isPresent()) {
+                throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + optional.get().getId());
+            }
         }
 
         this.beforeDelete(objects);
@@ -366,12 +360,9 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        List<T> updatedObjects = new ArrayList<>();
-        objects.stream().forEach(object -> {
-            updatedObjects.add(this.saveOrUpdate(object));
-        });
-
-        return updatedObjects;
+        return objects.stream().map(object ->
+                this.saveOrUpdate(object)
+        ).toList();
     }
 
     @Override
