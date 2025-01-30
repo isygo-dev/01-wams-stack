@@ -25,7 +25,6 @@ public abstract class AccountModelDto<T extends Serializable> extends AbstractAu
     private String code;
     @NotEmpty
     private String email;
-    @NotEmpty
     private String fullName;
     @Builder.Default
     private String origin = IEnumAccountOrigin.Types.SYS_ADMIN.name();
