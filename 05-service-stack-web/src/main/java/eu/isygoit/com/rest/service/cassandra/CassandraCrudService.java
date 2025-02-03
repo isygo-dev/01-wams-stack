@@ -95,11 +95,6 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
     }
 
     @Override
-    public void delete(String senderDomain, I id) {
-
-    }
-
-    @Override
     @Transactional
     public T update(T object) {
         validateEntity(object);
@@ -127,6 +122,17 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
     @Override
     public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
         return List.of();
+    }
+
+    @Override
+    public void delete(String senderDomain, I id) {
+        validateId(id);
+        findById(id).ifPresent(object -> {
+            checkSaaSDeletePermission(senderDomain, object);
+            beforeDelete(id);
+            performDelete(object, id);
+            afterDelete(id);
+        });
     }
 
     @Override
@@ -247,6 +253,14 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
                         throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
                     }
             );
+        }
+    }
+
+    private void checkSaaSDeletePermission(String senderDomain, T object) {
+        if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+            if (!senderDomain.equals(((ISAASEntity) object).getDomain())) {
+                throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
+            }
         }
     }
 
