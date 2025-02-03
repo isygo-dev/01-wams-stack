@@ -10,6 +10,7 @@ import java.util.Date;
  * The type Encrypt helper.
  */
 public class EncryptHelper {
+
     /**
      * Create decrypt data decrypt data.
      *

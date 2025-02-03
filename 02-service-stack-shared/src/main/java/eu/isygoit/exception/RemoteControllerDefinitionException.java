@@ -4,13 +4,13 @@ import eu.isygoit.annotation.MsgLocale;
 
 
 /**
- * The type Remote controller definition exception.
+ * The type Remote encrypt definition exception.
  */
-@MsgLocale("remote.controller.not.defined")
+@MsgLocale("remote.encrypt.not.defined")
 public class RemoteControllerDefinitionException extends ManagedException {
 
     /**
-     * Instantiates a new Remote controller definition exception.
+     * Instantiates a new Remote encrypt definition exception.
      *
      * @param message the message
      */

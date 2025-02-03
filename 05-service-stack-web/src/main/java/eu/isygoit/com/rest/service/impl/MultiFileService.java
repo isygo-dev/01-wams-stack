@@ -42,9 +42,9 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) {
         T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
-        Arrays.stream(files).forEach(multipartFile -> {
+        Arrays.stream(files).forEach(file -> {
             try {
-                this.uploadAdditionalFile(parentId, multipartFile);
+                uploadAdditionalFile(parentId, file);
             } catch (IOException e) {
                 throw new UploadFileException(e);
             }
@@ -56,46 +56,15 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
         T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
         if (Objects.nonNull(file) && !file.isEmpty()) {
-            try {
-                L linkedFile = linkedFileClass.newInstance();
-                L finalLinkedFile = linkedFile;
-                this.getNextCode().ifPresent(code -> finalLinkedFile.setCode(code));
-                if (entity instanceof ISAASEntity isaasEntity
-                        && linkedFile instanceof ISAASEntity isaasLinkedFile) {
-                    isaasLinkedFile.setDomain(isaasEntity.getDomain());
-                }
-                linkedFile.setOriginalFileName(file.getOriginalFilename());
-                linkedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-                linkedFile.setPath(this.getUploadDirectory() +
-                        File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                        File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional");
-                linkedFile.setMimetype(file.getContentType());
-                linkedFile.setCrc16(CRC16.calculate(file.getBytes()));
-                linkedFile.setCrc32(CRC32.calculate(file.getBytes()));
-                linkedFile.setSize(file.getSize());
-                linkedFile.setVersion(1L);
+            L linkedFile = createLinkedFile(entity, file);
+            linkedFile = beforeUpload(entity, linkedFile, file);
+            linkedFile = subUploadFile(file, linkedFile);
+            afterUpload(entity, linkedFile, file);
 
-                //Uploading file
-                linkedFile = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
-                                ? isaasEntity.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        linkedFile,
-                        file);
-                linkedFile = subUploadFile(file, linkedFile);
-                this.afterUpload((entity instanceof ISAASEntity isaasEntity
-                                ? isaasEntity.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        linkedFile,
-                        file);
-
-                if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
-                    entity.setAdditionalFiles(new ArrayList<>());
-                }
-                entity.getAdditionalFiles().add(linkedFile);
-            } catch (Exception e) {
-                log.error("Update additional files failed : ", e);
-                //throw new RemoteCallFailedException(e);
+            if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
+                entity.setAdditionalFiles(new ArrayList<>());
             }
+            entity.getAdditionalFiles().add(linkedFile);
         } else {
             log.warn("Upload file ({}) :File is null or empty", this.persistentClass.getSimpleName());
         }
@@ -107,10 +76,8 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     @Override
     public Resource downloadFile(I parentId, I fileId, Long version) throws IOException {
         T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + parentId));
-        L linkedFile = (L) entity.getAdditionalFiles().stream()
-                .filter(item -> ((L) item).getId().equals(fileId)).findAny()
-                .orElse(null);
-        if (Objects.nonNull(linkedFile)) {
+        L linkedFile = findLinkedFileById(entity, fileId);
+        if (linkedFile != null) {
             return subDownloadFile(linkedFile, version);
         } else {
             throw new ObjectNotFoundException(this.linkedFileClass.getSimpleName() + " with id " + fileId);
@@ -120,10 +87,8 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     @Override
     public boolean deleteAdditionalFile(I parentId, I fileId) throws IOException {
         T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
-        L linkedFile = (L) entity.getAdditionalFiles().stream()
-                .filter(item -> ((L) item).getId().equals(fileId)).findAny()
-                .orElse(null);
-        if (Objects.nonNull(linkedFile)) {
+        L linkedFile = findLinkedFileById(entity, fileId);
+        if (linkedFile != null) {
             entity.getAdditionalFiles().removeIf(elm -> ((L) elm).getId().equals(fileId));
             subDeleteFile(linkedFile);
             this.update(entity);
@@ -133,30 +98,75 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
         }
     }
 
+    // Helper method to create a linked file
+    private L createLinkedFile(T entity, MultipartFile file) throws IOException {
+        try {
+            L linkedFile = linkedFileClass.newInstance();
+            this.getNextCode().ifPresent(linkedFile::setCode);
+            setDomainIfNeeded(entity, linkedFile);
+
+            linkedFile.setOriginalFileName(file.getOriginalFilename());
+            linkedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
+            linkedFile.setPath(getFilePath(entity, file));
+            linkedFile.setMimetype(file.getContentType());
+            linkedFile.setCrc16(CRC16.calculate(file.getBytes()));
+            linkedFile.setCrc32(CRC32.calculate(file.getBytes()));
+            linkedFile.setSize(file.getSize());
+            linkedFile.setVersion(1L);
+
+            return linkedFile;
+        } catch (InstantiationException | IllegalAccessException e) {
+            log.error("Error creating linked file instance: ", e);
+            throw new UploadFileException("Error creating linked file instance", e);
+        }
+    }
+
+    // Helper method to set domain if needed
+    private void setDomainIfNeeded(T entity, L linkedFile) {
+        if (entity instanceof ISAASEntity isaasEntity && linkedFile instanceof ISAASEntity isaasLinkedFile) {
+            isaasLinkedFile.setDomain(isaasEntity.getDomain());
+        }
+    }
+
+    // Helper method to get the file path for a linked file
+    private String getFilePath(T entity, MultipartFile file) {
+        return this.getUploadDirectory() +
+                File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional";
+    }
+
+    // Helper method to find a linked file by ID
+    private L findLinkedFileById(T entity, I fileId) {
+        return (L) entity.getAdditionalFiles().stream()
+                .filter(item -> ((L) item).getId().equals(fileId)).findFirst()
+                .orElse(null);
+    }
+
     /**
      * Before upload l.
      *
-     * @param domain the domain
-     * @param entity the entity
-     * @param file   the file
+     * @param entity     the entity
+     * @param linkedFile the linked file
+     * @param file       the file
      * @return the l
      * @throws IOException the io exception
      */
-    public L beforeUpload(String domain, L entity, MultipartFile file) throws IOException {
-        return entity;
+// Hook methods for pre- and post-processing
+    public L beforeUpload(T entity, L linkedFile, MultipartFile file) throws IOException {
+        return linkedFile;
     }
 
     /**
      * After upload l.
      *
-     * @param domain the domain
-     * @param entity the entity
-     * @param file   the file
+     * @param entity     the entity
+     * @param linkedFile the linked file
+     * @param file       the file
      * @return the l
      * @throws IOException the io exception
      */
-    public L afterUpload(String domain, L entity, MultipartFile file) throws IOException {
-        return entity;
+    public L afterUpload(T entity, L linkedFile, MultipartFile file) throws IOException {
+        return linkedFile;
     }
 
     /**

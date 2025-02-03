@@ -32,7 +32,7 @@ public class ServiceStarter {
      */
     @EventListener(ApplicationReadyEvent.class)
     public final void extractApis() {
-        //Extract controller apis to build permission list
+        //Extract encrypt apis to build permission list
         applicationContextService.getBeansWithAnnotation(RestController.class).values().stream().forEach(ctrl -> {
             try {
                 if (Objects.nonNull(apiExtractor)) {

@@ -1,8 +1,8 @@
 package eu.isygoit.helper;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 /**
  * The interface Map helper.
@@ -17,16 +17,9 @@ public interface MapHelper {
      * @return the map
      */
     static Map<String, String> convertStringToMap(String data, String delim) {
-        Map<String, String> map = new HashMap<>();
-        StringTokenizer tokenizer = new StringTokenizer(data, delim);
-
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            String[] keyValue = token.split(":");
-            map.put(keyValue[0], keyValue[1]);
-        }
-
-        return map;
+        return Arrays.stream(data.split(delim))  // Split the string by the delimiter
+                .map(token -> token.split(":"))       // Split each token by ":"
+                .collect(Collectors.toMap(parts -> parts[0], parts -> parts[1]));  // Collect into a map
     }
 
     /**
@@ -36,13 +29,8 @@ public interface MapHelper {
      * @return the map
      */
     static Map<String, String> convertStringArrayToMap(String[] data) {
-        Map<String, String> map = new HashMap<>();
-
-        for (String keyValue : data) {
-            String[] parts = keyValue.split(":");
-            map.put(parts[0], parts[1]);
-        }
-
-        return map;
+        return Arrays.stream(data)
+                .map(keyValue -> keyValue.split(":"))  // Split each string by ":"
+                .collect(Collectors.toMap(parts -> parts[0], parts -> parts[1]));  // Create a map from the split parts
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * The type Locale service.
@@ -23,6 +22,7 @@ import java.util.Objects;
 @Transactional
 public class LocaleServiceImpl implements LocaleService {
 
+    private static final String DELIMITER = "|"; // Delimiter constant
     @Autowired
     private MessageSource messageSource;
     @Autowired
@@ -40,33 +40,46 @@ public class LocaleServiceImpl implements LocaleService {
     }
 
     @Override
-    public String getMessage(String code, Locale loc) {
+    public String getMessage(String code, Locale locale) {
         String message = null;
+        String key = generateKey(code, locale);
+
         try {
-            if (Objects.nonNull(extendedLocaleService) && extendedLocaleService.enabled()) {
-                message = extendedLocaleService.getMessage(code, loc.toLanguageTag());
+            if (extendedLocaleService != null && extendedLocaleService.enabled()) {
+                message = extendedLocaleService.getMessage(code, locale.toLanguageTag());
                 if (!StringUtils.hasText(message)) {
-                    message = messageMap.get(code + "|" + loc.toLanguageTag());
-                    if (!StringUtils.hasText(message)) {
-                        message = messageSource.getMessage(code, null, loc);
-                        if (StringUtils.hasText(message)) {
-                            extendedLocaleService.setMessage(code, loc.toLanguageTag(), message);
-                        }
+                    message = getDefaultMessage(key, code, locale);
+                    if (StringUtils.hasText(message)) {
+                        extendedLocaleService.setMessage(code, locale.toLanguageTag(), message);
                     }
                 }
             } else {
-                message = messageMap.get(code + "|" + loc.toLanguageTag());
-                if (!StringUtils.hasText(message)) {
-                    message = messageSource.getMessage(code, null, loc);
-                    if (StringUtils.hasText(message)) {
-                        messageMap.put(code + "|" + loc.toLanguageTag(), message);
-                    }
+                message = getDefaultMessage(key, code, locale);
+                if (StringUtils.hasText(message)) {
+                    messageMap.put(key, message);
                 }
             }
-        } catch (Throwable e) {
-            log.error("<Error>: unknown or Non translated message: {}:{} \n", loc.toLanguageTag(), code, e);
+        } catch (Exception e) {
+            log.error("<Error>: Unknown or non-translated message: {}:{} \n", locale.toLanguageTag(), code, e);
         }
 
-        return StringUtils.hasText(message) ? message : loc.toLanguageTag() + ":" + code;
+        return StringUtils.hasText(message) ? message : locale.toLanguageTag() + ":" + code;
+    }
+
+    // Helper method to generate key
+    private String generateKey(String code, Locale locale) {
+        return code + DELIMITER + locale.toLanguageTag();
+    }
+
+    // Helper method to retrieve the message from the default sources
+    private String getDefaultMessage(String key, String code, Locale locale) {
+        String message = messageMap.get(key);
+        if (!StringUtils.hasText(message)) {
+            message = messageSource.getMessage(code, null, locale);
+            if (StringUtils.hasText(message)) {
+                messageMap.put(key, message);
+            }
+        }
+        return message;
     }
 }

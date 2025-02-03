@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.service.impl;
 import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
-import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodifiable;
 import eu.isygoit.model.IIdEntity;
@@ -16,7 +15,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * The type Multi file service sub methods.
@@ -42,14 +40,22 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
                 this.linkedFileApi = applicationContextService.getBean(annotation.value());
                 if (Objects.isNull(this.linkedFileApi)) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
-                    throw new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
+                    throw new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName());
                 }
             } else {
                 log.error("<Error>: Linked file service not defined for {}, local storage will be used!", this.getClass().getSimpleName());
             }
         }
-
         return this.linkedFileApi;
+    }
+
+    private <R> R executeFileOperation(FileOperation<R> operation) {
+        try {
+            return operation.execute();
+        } catch (Exception e) {
+            log.error("Remote service operation failed: ", e);
+            return null;
+        }
     }
 
     /**
@@ -60,21 +66,16 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
      * @return the l
      */
     final L subUploadFile(MultipartFile file, L entity) {
-        try {
+        return executeFileOperation(() -> {
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (Objects.nonNull(linkedFileService)) {
-                Optional<LinkedFileResponseDto> optional = FileServiceDmsStaticMethods.upload(file, entity, linkedFileService);
-                if (optional.isPresent()) {
-                    entity.setCode(optional.get().getCode());
-                }
+                FileServiceDmsStaticMethods.upload(file, entity, linkedFileService)
+                        .ifPresent(linkedFileResponseDto -> entity.setCode(linkedFileResponseDto.getCode()));
             } else {
                 entity.setCode(FileServiceLocalStaticMethods.upload(file, entity));
             }
-        } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
-        }
-
-        return entity;
+            return entity;
+        });
     }
 
     /**
@@ -85,17 +86,14 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
      * @return the resource
      */
     final Resource subDownloadFile(L entity, Long version) {
-        try {
+        return executeFileOperation(() -> {
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (Objects.nonNull(linkedFileService)) {
                 return FileServiceDmsStaticMethods.download(entity, version, linkedFileService);
             } else {
                 return FileServiceLocalStaticMethods.download(entity, version);
             }
-        } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
-        }
-        return null;
+        });
     }
 
     /**
@@ -105,7 +103,7 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
      * @return the boolean
      */
     final boolean subDeleteFile(L entity) {
-        try {
+        return executeFileOperation(() -> {
             repository().delete(entity);
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (Objects.nonNull(linkedFileService)) {
@@ -113,10 +111,22 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
             } else {
                 return FileServiceLocalStaticMethods.delete(entity);
             }
-        } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
-        }
+        });
+    }
 
-        return false;
+    /**
+     * The interface File operation.
+     *
+     * @param <R> the type parameter
+     */
+    @FunctionalInterface
+    interface FileOperation<R> {
+        /**
+         * Execute r.
+         *
+         * @return the r
+         * @throws Exception the exception
+         */
+        R execute() throws Exception;
     }
 }

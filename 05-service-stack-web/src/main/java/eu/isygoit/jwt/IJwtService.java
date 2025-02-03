@@ -23,6 +23,15 @@ public interface IJwtService {
     Optional<String> extractDomain(String token);
 
     /**
+     * Extract is admin optional.
+     *
+     * @param token the token
+     * @param key   the key
+     * @return the optional
+     */
+    Optional<Boolean> extractIsAdmin(String token, String key);
+
+    /**
      * Extract application optional.
      *
      * @param token the token
@@ -31,12 +40,30 @@ public interface IJwtService {
     Optional<String> extractApplication(String token);
 
     /**
+     * Extract application optional.
+     *
+     * @param token the token
+     * @param key   the key
+     * @return the optional
+     */
+    Optional<String> extractApplication(String token, String key);
+
+    /**
      * Extract account type optional.
      *
      * @param token the token
      * @return the optional
      */
     Optional<String> extractAccountType(String token);
+
+    /**
+     * Extract account type optional.
+     *
+     * @param token the token
+     * @param key   the key
+     * @return the optional
+     */
+    Optional<String> extractAccountType(String token, String key);
 
     /**
      * Extract user name optional.
@@ -62,6 +89,15 @@ public interface IJwtService {
      * @return the optional
      */
     Optional<String> extractSubject(String token);
+
+    /**
+     * Extract user name optional.
+     *
+     * @param token the token
+     * @param key   the key
+     * @return the optional
+     */
+    Optional<String> extractUserName(String token, String key);
 
     /**
      * Extract expiration optional.
@@ -152,10 +188,19 @@ public interface IJwtService {
     Date calcExpiryDate(Integer lifeTimeInMs);
 
     /**
-     * Extract is admin boolean.
+     * Extract domain optional.
      *
      * @param token the token
-     * @return the boolean
+     * @param key   the key
+     * @return the optional
      */
-    Boolean extractIsAdmin(String token);
+    Optional<String> extractDomain(String token, String key);
+
+    /**
+     * Extract is admin optional.
+     *
+     * @param token the token
+     * @return the optional
+     */
+    Optional<Boolean> extractIsAdmin(String token);
 }

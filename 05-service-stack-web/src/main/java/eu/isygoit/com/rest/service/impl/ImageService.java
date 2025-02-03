@@ -35,8 +35,7 @@ import java.util.Objects;
  */
 @Slf4j
 public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R extends JpaPagingAndSortingRepository>
-        extends CodifiableService<I, T, R>
-        implements IImageServiceMethods<I, T> {
+        extends CodifiableService<I, T, R> implements IImageServiceMethods<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
@@ -44,23 +43,19 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
     @Transactional
     public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
         if (Objects.nonNull(file) && !file.isEmpty()) {
-            T entity = this.findById(id).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + "with id " + id));
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                            File.separator + entity.getClass().getSimpleName().toLowerCase() +
-                            File.separator + "image",
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
+            T entity = this.findById(id).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+            String imagePath = generateImagePath(entity, file);
+            entity.setImagePath(imagePath);
             return this.update(entity);
         } else {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
-
-        throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
     }
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        T entity = this.findById(id).orElseThrow(() -> new ResourceNotFoundException(persistentClass.getSimpleName() + "with id " + id));
+        T entity = this.findById(id).orElseThrow(() -> new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
         if (StringUtils.hasText(entity.getImagePath())) {
             Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
             if (!resource.exists()) {
@@ -68,54 +63,70 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
             }
             return resource;
         } else {
-            throw new EmptyPathException(persistentClass.getSimpleName() + "for id " + id);
+            throw new EmptyPathException(persistentClass.getSimpleName() + " for id " + id);
         }
     }
 
     @Override
     @Transactional
     public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((ISAASEntity) entity).setDomain(senderDomain);
-        }
+        // Set domain for SAAS entity if applicable
+        setDomainForSaaSEntity(senderDomain, entity);
 
-        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(codifiable.getCode())) {
-            this.getNextCode().ifPresent(code -> ((ICodifiable) entity).setCode(code));
-        }
+        // Set code if entity is codifiable
+        setCodeForEntityIfNeeded(entity);
+
         if (Objects.nonNull(file) && !file.isEmpty()) {
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                            File.separator + entity.getClass().getSimpleName().toLowerCase() +
-                            File.separator + "image",
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
+            String imagePath = generateImagePath(entity, file);
+            entity.setImagePath(imagePath);
         } else {
             log.warn("File is null or empty");
         }
+
         return this.create(entity);
     }
 
     @Override
     @Transactional
     public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((ISAASEntity) entity).setDomain(senderDomain);
-        }
+        // Set domain for SAAS entity if applicable
+        setDomainForSaaSEntity(senderDomain, entity);
 
         if (Objects.nonNull(file) && !file.isEmpty()) {
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                            File.separator + entity.getClass().getSimpleName().toLowerCase() +
-                            File.separator + "image",
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
+            String imagePath = generateImagePath(entity, file);
+            entity.setImagePath(imagePath);
         } else {
+            // Preserve existing image path if no file is provided
             this.findById((I) entity.getId()).ifPresent(object -> entity.setImagePath(object.getImagePath()));
             log.warn("File is null or empty");
         }
+
         return this.update(entity);
+    }
+
+    // Helper method to generate the image path
+    private String generateImagePath(T entity, MultipartFile file) throws IOException {
+        return FileHelper.storeMultipartFile(
+                this.getUploadDirectory() +
+                        File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                        File.separator + entity.getClass().getSimpleName().toLowerCase() +
+                        File.separator + "image",
+                file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()),
+                file, "png").toString();
+    }
+
+    // Helper method to set domain for SAAS entities
+    private void setDomainForSaaSEntity(String senderDomain, T entity) {
+        if (ISAASEntity.class.isAssignableFrom(persistentClass) && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+            ((ISAASEntity) entity).setDomain(senderDomain);
+        }
+    }
+
+    // Helper method to set code if the entity is codifiable
+    private void setCodeForEntityIfNeeded(T entity) {
+        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(codifiable.getCode())) {
+            this.getNextCode().ifPresent(code -> codifiable.setCode(code));
+        }
     }
 
     /**
@@ -125,6 +136,7 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
      */
     protected abstract String getUploadDirectory();
 
+    // Hook methods for pre- and post-processing
     public T beforeUpdate(T object) {
         return object;
     }

@@ -14,20 +14,25 @@ import java.util.Optional;
  */
 public abstract class AbstractExtendedLocaleService implements ExtendedLocaleService {
 
-
+    private static final String DELIMITER = "|"; // Using a constant for delimiter
     @Qualifier("extendedMessageMap")
     @Autowired
     private Map<String, String> extendedMessageMap;
 
     @Override
     public final String getMessage(String code, String locale) {
-        String message = extendedMessageMap.get(code + "|" + locale);
-        if (!StringUtils.hasText(message)) {
-            message = loadMessage(code, locale);
-            if (StringUtils.hasText(message)) {
-                extendedMessageMap.put(code + "|" + locale, message);
-            }
+        String key = generateKey(code, locale);
+        String message = extendedMessageMap.get(key);
+
+        if (StringUtils.hasText(message)) {
+            return message;
         }
+
+        message = loadMessage(code, locale);
+        if (StringUtils.hasText(message)) {
+            extendedMessageMap.put(key, message);
+        }
+
         return message;
     }
 
@@ -39,7 +44,7 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
     @Override
     public final void refresh() {
         extendedMessageMap.forEach((code, message) -> {
-            String[] codePlisLocal = code.split("|");
+            String[] codePlisLocal = code.split("\\|"); // Fix regex issue
             loadMessage(codePlisLocal[0], codePlisLocal[1]);
         });
     }
@@ -47,25 +52,30 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
     @Override
     public String loadMessage(String code, String locale) {
         Optional<LocaleMessageModel> optionalMessage = getMessageRepository().findByCodeIgnoreCaseAndLocale(code, locale);
-        if (optionalMessage.isPresent()) {
-            return optionalMessage.get().getText();
-        }
-        return null;
+        return optionalMessage.map(LocaleMessageModel::getText).orElse(null); // Cleaner way to handle Optional
     }
 
     @Override
     public void setMessage(String code, String locale, String message) {
-        extendedMessageMap.put(code + "|" + locale, message);
+        String key = generateKey(code, locale);
+        extendedMessageMap.put(key, message);
+
         Optional<LocaleMessageModel> optional = getMessageRepository().findByCodeIgnoreCaseAndLocale(code, locale);
-        optional.ifPresentOrElse(localeMessageModel -> {
-                    optional.get().setText(message);
-                    getMessageRepository().save(optional.get());
+        optional.ifPresentOrElse(
+                localeMessageModel -> {
+                    localeMessageModel.setText(message);
+                    getMessageRepository().save(localeMessageModel);
                 },
                 () -> getMessageRepository().save(LocaleMessageModel.builder()
                         .code(code)
                         .locale(locale)
                         .text(message)
-                        .build()));
+                        .build())
+        );
+    }
+
+    private String generateKey(String code, String locale) {
+        return String.format("%s%s%s", code, DELIMITER, locale); // Using String.format for clarity
     }
 
     /**

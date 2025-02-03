@@ -1,16 +1,20 @@
 package eu.isygoit.encrypt.helper;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * The type Crc 32.
  */
 @Slf4j
 public class CRC32 {
+
+    private static final int POLYNOMIAL = 0xEDB88320;
+    private static final int INITIAL_CRC = 0xFFFFFFFF; // Standard initial value for CRC-32-ANSI
+    private static final int FINAL_CRC = 0xFFFFFFFF; // No final XOR in CRC-16-ANSI
 
     /**
      * Calculate int.
@@ -19,30 +23,18 @@ public class CRC32 {
      * @return the int
      */
     public static int calculate(byte[] bytes) {
-        int crc = 0xffffffff;
-
-        /**************************************************************************
-         * Using direct calculation
-         **************************************************************************/
-
-        crc = 0x00000000; // initial contents of LFBSR
-        final int poly = 0x04C11DB7; // reverse polynomial
-        final long TOPBIT = 1L << 31;
-
-        for (final byte b : bytes) {
-
-            int temp = crc ^ b << 24;
-            // read 8 bits one at a time
-            for (int i = 0; i < 8; i++) {
-                if ((temp & TOPBIT) == TOPBIT) {
-                    temp = temp << 1 ^ poly;
+        int crc = INITIAL_CRC; // Initial CRC value
+        for (byte b : bytes) {
+            crc ^= (b & 0xFF) << 24; // Align byte to the left
+            for (int i = 0; i < 8; i++) { // Process each bit
+                if ((crc & 0x80000000) != 0) { // Check if the leftmost bit is 1
+                    crc = (crc << 1) ^ POLYNOMIAL; // Shift left and XOR with polynomial
                 } else {
-                    temp = temp << 1;
+                    crc <<= 1; // Just shift left if no XOR
                 }
             }
-            crc = temp;
         }
-        return crc;
+        return crc ^ FINAL_CRC; // Final XOR
     }
 
     /**
@@ -53,7 +45,7 @@ public class CRC32 {
      * @throws IOException the io exception
      */
     public static int calculate(File inputFile) throws IOException {
-        final byte[] bytes = FileUtils.readFileToByteArray(inputFile);
-        return calculate(bytes);
+        byte[] fileBytes = Files.readAllBytes(inputFile.toPath()); // Java 17 API
+        return calculate(fileBytes);
     }
 }

@@ -22,7 +22,6 @@ public abstract class AbstractService<T extends NextCodeModel> implements IServi
     @Autowired
     private INextCodeService<T> nextCodeService;
 
-
     @Override
     public Optional<T> initCodeGenerator() {
         return Optional.empty();
@@ -31,37 +30,29 @@ public abstract class AbstractService<T extends NextCodeModel> implements IServi
     @Override
     @Transactional
     public Optional<String> getNextCode() {
-        Optional<T> optional = this.createCodeGenerator();
-        Optional<String> returnOptional = Optional.empty();
-        if (optional.isPresent() && StringUtils.hasText(optional.get().getEntity())) {
-            returnOptional = Optional.ofNullable(optional.get().nextCode().getCode());
-            nextCodeService.saveAndFlush(optional.get());
-        } else {
-            log.error("<Error>: Class code generator could not be initialized");
-        }
-
-        return returnOptional;
+        return createCodeGenerator()
+                .filter(generator -> StringUtils.hasText(generator.getEntity()))
+                .map(generator -> {
+                    String nextCode = generator.nextCode().getCode();
+                    nextCodeService.saveAndFlush(generator);
+                    return nextCode;
+                });
     }
 
-    private final Optional<T> createCodeGenerator() {
-        Optional<T> defaultNextCode = this.initCodeGenerator();
-        if (defaultNextCode.isPresent() && StringUtils.hasText(defaultNextCode.get().getEntity())) {
-            T initNextCodeGen = defaultNextCode.get();
-            Optional<T> optional = nextCodeService.findByDomainAndEntityAndAttribute(initNextCodeGen.getDomain()
-                    , initNextCodeGen.getEntity(), initNextCodeGen.getAttribute());
-            if (optional.isPresent()) {
-                return optional;
-            } else {
-                return Optional.ofNullable(nextCodeService.save(initNextCodeGen));
-            }
-        }
-        return Optional.empty();
+    private Optional<T> createCodeGenerator() {
+        return initCodeGenerator()
+                .filter(generator -> StringUtils.hasText(generator.getEntity()))
+                .flatMap(generator -> {
+                    Optional<T> existingGenerator = nextCodeService.findByDomainAndEntityAndAttribute(
+                            generator.getDomain(), generator.getEntity(), generator.getAttribute());
+                    return existingGenerator.isPresent() ? existingGenerator : Optional.ofNullable(nextCodeService.save(generator));
+                });
     }
 
     @Override
     public <E extends IIdEntity> E beforePersist(E entity) {
-        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(((ICodifiable) entity).getCode())) {
-            this.getNextCode().ifPresent(code -> codifiable.setCode(code));
+        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(codifiable.getCode())) {
+            getNextCode().ifPresent(codifiable::setCode);
         }
         return entity;
     }

@@ -63,13 +63,16 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
             if (Objects.nonNull(linkedFileService)) {
                 Optional<LinkedFileResponseDto> optional = FileServiceDmsStaticMethods.upload(file, entity, linkedFileService);
                 if (optional.isPresent()) {
+                    log.info("File uploaded successfully with code {}", optional.get().getCode());
                     return Optional.ofNullable(optional.get().getCode());
                 }
             } else {
-                return Optional.ofNullable(FileServiceLocalStaticMethods.upload(file, entity));
+                String fileCode = FileServiceLocalStaticMethods.upload(file, entity);
+                log.info("File uploaded locally with code {}", fileCode);
+                return Optional.ofNullable(fileCode);
             }
         } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
+            log.error("File upload failed: ", e);
         }
 
         return Optional.empty();
@@ -91,8 +94,8 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
                 return FileServiceLocalStaticMethods.download(entity, version);
             }
         } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
+            log.error("File download failed: ", e);
         }
-        return null;
+        return null;  // Consider throwing an exception if downloading fails
     }
 }

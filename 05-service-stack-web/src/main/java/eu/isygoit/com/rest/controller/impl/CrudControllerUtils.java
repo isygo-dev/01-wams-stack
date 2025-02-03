@@ -40,7 +40,7 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     /**
      * The constant CONTROLLER_SERVICE.
      */
-    public static final String CONTROLLER_SERVICE = "controller service";
+    public static final String CONTROLLER_SERVICE = "encrypt service";
     @Getter
     private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
     @Getter

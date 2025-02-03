@@ -1,7 +1,6 @@
 package eu.isygoit.exception.handler;
 
 import eu.isygoit.annotation.MsgLocale;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.helper.SpringClassScanner;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.EntityType;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
@@ -112,9 +110,8 @@ public abstract class ControllerExceptionHandlerBuilder {
             log.info("END PROCESSING FULL ENTITY CONSTRAINTS");
 
             log.error("<Error>: BEGIN PROCESSING ERROR ENTITY CONSTRAINTS");
-            for (String message : messages.get(NON_TRANSLATED_MESSAGES)) {
-                log.error("<Error>: {}", message);
-            }
+            messages.get(NON_TRANSLATED_MESSAGES).stream()
+                    .forEach(message -> log.error("<Error>: {}", message));
             log.error("<Error>: END PROCESSING ERROR ENTITY CONSTRAINTS");
         }
     }
@@ -132,38 +129,38 @@ public abstract class ControllerExceptionHandlerBuilder {
         String translation;
         Table table = (Table) entity.getJavaType().getAnnotation(Table.class);
         if (Objects.nonNull(table)) {
-            for (int i = 0; i < table.uniqueConstraints().length; i++) {
-                UniqueConstraint uniqueConstraint = table.uniqueConstraints()[i];
-                if (StringUtils.hasText(uniqueConstraint.name())) {
-                    stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                    translation = getTranslationMessage(stringMsg, "The value "
-                            + Arrays.toString(uniqueConstraint.columnNames())
-                            + " of "
-                            + table.name()
-                            + " is already used");
-                    excepMessage.put(uniqueConstraint.name().toLowerCase(), stringMsg);
-                    log.info("UC:{}", translation);
-                }
-            }
+            Arrays.stream(table.uniqueConstraints())
+                    .filter(uniqueConstraint -> StringUtils.hasText(uniqueConstraint.name()))
+                    .forEach(uniqueConstraint -> {
+                        String _stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                        String _translation = getTranslationMessage(_stringMsg, "The value "
+                                + Arrays.toString(uniqueConstraint.columnNames())
+                                + " of "
+                                + table.name()
+                                + " is already used");
+                        excepMessage.put(uniqueConstraint.name().toLowerCase(), _stringMsg);
+                        log.info("UC:{}", _translation);
+                    });
 
             SecondaryTables secondaryTables = (SecondaryTables) entity.getJavaType().getAnnotation(SecondaryTables.class);
             if (Objects.nonNull(secondaryTables)) {
-                for (int i = 0; i < secondaryTables.value().length; i++) {
-                    SecondaryTable secondaryTable = secondaryTables.value()[i];
-                    for (int j = 0; j < secondaryTable.uniqueConstraints().length; j++) {
-                        UniqueConstraint uniqueConstraint = secondaryTable.uniqueConstraints()[j];
-                        if (StringUtils.hasText(uniqueConstraint.name())) {
-                            stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                            translation = getTranslationMessage(stringMsg, "The value "
-                                    + Arrays.toString(uniqueConstraint.columnNames())
-                                    + " of "
-                                    + table.name()
-                                    + " is already used ");
-                            excepMessage.put(uniqueConstraint.name().toLowerCase(), stringMsg);
-                            log.info("UC:{}", translation);
-                        }
-                    }
-                }
+                Arrays.stream(secondaryTables.value())
+                        .forEach(secondaryTable -> {
+                            Arrays.stream(secondaryTable.uniqueConstraints())
+                                    .forEach(uniqueConstraint -> {
+                                        if (StringUtils.hasText(uniqueConstraint.name())) {
+                                            String _stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                                            String _translation = getTranslationMessage(_stringMsg,
+                                                    "The value " +
+                                                            Arrays.toString(uniqueConstraint.columnNames()) +
+                                                            " of " +
+                                                            table.name() +
+                                                            " is already used ");
+                                            excepMessage.put(uniqueConstraint.name().toLowerCase(), _stringMsg);
+                                            log.info("UC:{}", _translation);
+                                        }
+                                    });
+                        });
             }
         }
     }
@@ -186,35 +183,27 @@ public abstract class ControllerExceptionHandlerBuilder {
 
         JoinTable joinTable = field.getAnnotation(JoinTable.class);
         if (Objects.nonNull(joinTable)) {
-            List<JoinColumn> joinColumnArray = Arrays.asList(joinTable.joinColumns());
-            if (!CollectionUtils.isEmpty(joinColumnArray)) {
-                for (JoinColumn jc : joinColumnArray) {
-                    ForeignKey foreignKey = jc.foreignKey();
-                    if (Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name())) {
-                        stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                        translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
-                                + foreignKey.name()
-                                + CAN_T_BE_VIOLATED);
-                        excepMessage.put(foreignKey.name().toLowerCase(), stringMsg);
-                        log.info(FK, translation);
-                    }
-                }
-            }
+            Arrays.stream(joinTable.joinColumns())
+                    .map(JoinColumn::foreignKey)
+                    .filter(foreignKey -> Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name()))
+                    .forEach(foreignKey -> {
+                        String _stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                        String _translation = getTranslationMessage(_stringMsg,
+                                A_LINK_BETWEEN + foreignKey.name() + CAN_T_BE_VIOLATED);
+                        excepMessage.put(foreignKey.name().toLowerCase(), _stringMsg);
+                        log.info(FK, _translation);
+                    });
 
-            joinColumnArray = Arrays.asList(joinTable.inverseJoinColumns());
-            if (!CollectionUtils.isEmpty(joinColumnArray)) {
-                for (JoinColumn jc : joinColumnArray) {
-                    ForeignKey foreignKey = jc.foreignKey();
-                    if (Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name())) {
-                        stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                        translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
-                                + foreignKey.name()
-                                + CAN_T_BE_VIOLATED);
-                        excepMessage.put(foreignKey.name().toLowerCase(), stringMsg);
-                        log.info(FK, translation);
-                    }
-                }
-            }
+            Arrays.stream(joinTable.inverseJoinColumns())
+                    .map(JoinColumn::foreignKey)
+                    .filter(foreignKey -> Objects.nonNull(foreignKey) && StringUtils.hasText(foreignKey.name()))
+                    .forEach(foreignKey -> {
+                        String _stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                        String _translation = getTranslationMessage(_stringMsg,
+                                A_LINK_BETWEEN + foreignKey.name() + CAN_T_BE_VIOLATED);
+                        excepMessage.put(foreignKey.name().toLowerCase(), _stringMsg);
+                        log.info(FK, _translation);
+                    });
         }
     }
 
@@ -225,11 +214,12 @@ public abstract class ControllerExceptionHandlerBuilder {
         Column column = field.getAnnotation(Column.class);
         if (Objects.nonNull(column) && !column.nullable()) {
             stringMsg = "not.null." + entity.getName().toLowerCase() + "." + attributeName.toLowerCase() + CONSTRAINT_VIOLATED;
-            translation = getTranslationMessage(stringMsg, "The value "
-                    + column.name()
-                    + " of "
-                    + table.name()
-                    + " is required");
+            translation = getTranslationMessage(stringMsg,
+                    "The value " +
+                            column.name() +
+                            " of " +
+                            table.name() +
+                            " is required");
             excepMessage.put(column.name().toLowerCase(), stringMsg);
             log.info("NNU:{}", translation);
         }
@@ -243,10 +233,8 @@ public abstract class ControllerExceptionHandlerBuilder {
     private void processManagedException() {
         Set<BeanDefinition> managedExceptionBeans = springClassScanner.findAnnotatedClasses(MsgLocale.class, "eu.isygoit.exception");
         managedExceptionBeans.stream().forEach(beanDefinition -> {
-            Class<?> cl = null;
             try {
-                cl = Class.forName(beanDefinition.getBeanClassName());
-                MsgLocale msgLocale = cl.getAnnotation(MsgLocale.class);
+                MsgLocale msgLocale = Class.forName(beanDefinition.getBeanClassName()).getAnnotation(MsgLocale.class);
                 if (Objects.nonNull(msgLocale) && StringUtils.hasText(msgLocale.value())) {
                     String translation = getTranslationMessage(msgLocale.value(), msgLocale.value());
                     log.info("EXCPT:{}", translation);
@@ -254,10 +242,11 @@ public abstract class ControllerExceptionHandlerBuilder {
                     log.error("<Error>: msgLocale annotation not defined for class type {}", beanDefinition.getBeanClassName());
                 }
             } catch (ClassNotFoundException e) {
-                log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+                throw new RuntimeException(e);
             }
         });
     }
+
 
     private String getTranslationMessage(String stringMsg, String defaultTranslation) {
         String translation = this.environment.getProperty(stringMsg);

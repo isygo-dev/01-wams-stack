@@ -4,7 +4,10 @@ import eu.isygoit.com.rest.service.ICodifiableService;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
-import eu.isygoit.exception.*;
+import eu.isygoit.exception.BadArgumentException;
+import eu.isygoit.exception.EmptyCriteriaFilterException;
+import eu.isygoit.exception.EmptyListException;
+import eu.isygoit.exception.OperationNotAllowedException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.ICodifiable;
@@ -51,8 +54,8 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     @Override
     @Transactional(readOnly = true)
     public Long count(String domain) {
-        if (repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            return jpaPagingAndSortingSAASRepository.countByDomainIgnoreCase(domain);
+        if (repository() instanceof JpaPagingAndSortingSAASRepository repository) {
+            return repository.countByDomainIgnoreCase(domain);
         } else {
             throw new UnsupportedOperationException("this is not a SAS entity/repository: " + repository().getClass().getSimpleName());
         }
@@ -61,6 +64,12 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     @Override
     public boolean existsById(I id) {
         return repository().existsById(id);
+    }
+
+    private void handleCodifiableEntity(T object) {
+        if (this instanceof ICodifiableService && object instanceof ICodifiable codifiable && !StringUtils.hasText(codifiable.getCode())) {
+            ((ICodifiableService) this).getNextCode().ifPresent(code -> codifiable.setCode((String) code));
+        }
     }
 
     @Override
@@ -82,11 +91,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
         if (Objects.isNull(object.getId())) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodifiableService codifiableService &&
-                    object instanceof ICodifiable codifiable &&
-                    !StringUtils.hasText(codifiable.getCode())) {
-                codifiableService.getNextCode().ifPresent(code -> codifiable.setCode((String) code));
-            }
+            handleCodifiableEntity(object);
             return this.afterCreate((T) repository().save(object));
         } else {
             throw new EntityExistsException();
@@ -102,11 +107,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
         if (Objects.isNull(object.getId())) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodifiableService codifiableService &&
-                    object instanceof ICodifiable codifiable &&
-                    !StringUtils.hasText(codifiable.getCode())) {
-                codifiableService.getNextCode().ifPresent(code -> codifiable.setCode((String) code));
-            }
+            handleCodifiableEntity(object);
             return this.afterCreate((T) repository().saveAndFlush(object));
         } else {
             throw new EntityExistsException();
@@ -119,9 +120,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        return objects.stream().map(object ->
-                this.create(object)
-        ).toList();
+        return objects.stream().map(this::create).toList();
     }
 
     @Override
@@ -133,11 +132,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
         if (Objects.nonNull(object.getId())) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodifiableService codifiableService &&
-                    object instanceof ICodifiable codifiable &&
-                    !StringUtils.hasText(codifiable.getCode())) {
-                codifiableService.getNextCode().ifPresent(code -> codifiable.setCode((String) code));
-            }
+            handleCodifiableEntity(object);
             return this.afterUpdate((T) repository().save(object));
         } else {
             throw new EntityNotFoundException();
@@ -153,11 +148,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
         if (Objects.nonNull(object.getId())) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodifiableService codifiableService &&
-                    object instanceof ICodifiable codifiable &&
-                    !StringUtils.hasText(codifiable.getCode())) {
-                codifiableService.getNextCode().ifPresent(code -> codifiable.setCode((String) code));
-            }
+            handleCodifiableEntity(object);
             return this.afterUpdate((T) repository().saveAndFlush(object));
         } else {
             throw new EntityNotFoundException();
@@ -171,9 +162,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        return objects.stream().map(object ->
-                this.update(object)
-        ).toList();
+        return objects.stream().map(this::update).toList();
     }
 
     @Override
@@ -218,8 +207,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             //before delete ops
             this.beforeDelete(id);
 
-            if (CancelableEntity.class.isAssignableFrom(persistentClass)
-                    || CancelableEntity.class.isAssignableFrom(persistentClass)) {
+            if (CancelableEntity.class.isAssignableFrom(persistentClass)) {
                 ((CancelableEntity) object).setCheckCancel(true);
                 ((CancelableEntity) object).setCancelDate(new Date());
                 this.update(object);
@@ -259,11 +247,9 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
         }
 
         this.findById(id).ifPresent(object -> {
-            //before delete ope
             this.beforeDelete(id);
 
-            if (CancelableEntity.class.isAssignableFrom(persistentClass)
-                    || CancelableEntity.class.isAssignableFrom(persistentClass)) {
+            if (CancelableEntity.class.isAssignableFrom(persistentClass)) {
                 ((CancelableEntity) object).setCheckCancel(true);
                 ((CancelableEntity) object).setCancelDate(new Date());
                 this.update(object);
@@ -271,7 +257,6 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
                 repository().deleteById(id);
             }
 
-            //after delete ope
             this.afterDelete(id);
         });
     }
@@ -300,12 +285,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             log.warn("Find all give vulnerability to SAS entity...");
         }
         List<T> list = repository().findAll();
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-
-        }
-
-        return this.afterFindAll(list);
+        return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
     }
 
     @Override
@@ -317,53 +297,33 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
         }
 
         Page<T> page = repository().findAll(pageable);
-        if (page.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return this.afterFindAll(page.getContent());
+        return page.isEmpty() ? Collections.emptyList() : this.afterFindAll(page.getContent());
     }
 
     @Override
     public List<T> findAll(String domain) throws NotSupportedException {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            List<T> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
-            if (CollectionUtils.isEmpty(list)) {
-                return Collections.emptyList();
-            }
-            return this.afterFindAll(list);
+        if (ISAASEntity.class.isAssignableFrom(persistentClass) && repository() instanceof JpaPagingAndSortingSAASRepository) {
+            List<T> list = ((JpaPagingAndSortingSAASRepository) repository()).findByDomainIgnoreCase(domain);
+            return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
         } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+            throw new NotSupportedException("find all by domain for: " + persistentClass.getSimpleName());
         }
     }
 
     @Override
     public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            Page<T> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
-            if (page.isEmpty()) {
-                return Collections.emptyList();
-            }
-            return this.afterFindAll(page.getContent());
+        if (ISAASEntity.class.isAssignableFrom(persistentClass) && repository() instanceof JpaPagingAndSortingSAASRepository) {
+            Page<T> page = ((JpaPagingAndSortingSAASRepository) repository()).findByDomainIgnoreCase(domain, pageable);
+            return page.isEmpty() ? Collections.emptyList() : this.afterFindAll(page.getContent());
         } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+            throw new NotSupportedException("find all by domain for: " + persistentClass.getSimpleName());
         }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<T> findById(I id) throws ObjectNotFoundException {
-        if (Objects.isNull(id)) {
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
-        }
-
-        Optional<T> optional = repository().findById(id);
-        if (optional.isPresent()) {
-            return Optional.ofNullable(this.afterFindById(optional.get()));
-        }
-        return Optional.empty();
+    public Optional<T> findById(I id) {
+        return Objects.isNull(id) ? Optional.empty() : repository().findById(id);
     }
 
     @Override

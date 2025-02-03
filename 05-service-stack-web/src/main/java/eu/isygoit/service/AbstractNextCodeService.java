@@ -5,21 +5,23 @@ import eu.isygoit.repository.NextCodeRepository;
 import eu.isygoit.service.nextCode.INextCodeService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
  * The type Abstract next code service.
  *
  * @param <T> the type parameter
+ * @param <I> the type parameter
  */
-public abstract class AbstractNextCodeService<T extends NextCodeModel> implements INextCodeService<T> {
+public abstract class AbstractNextCodeService<T extends NextCodeModel, I extends Serializable> implements INextCodeService<T> {
 
     /**
      * Next code repository next code repository.
      *
      * @return the next code repository
      */
-    public abstract NextCodeRepository nextCodeRepository();
+    public abstract NextCodeRepository<T, I> nextCodeRepository();
 
     @Override
     public Optional<T> findByEntity(String entity) {
@@ -35,14 +37,18 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel> implement
     @Transactional
     public void increment(String domain, String entity, Integer increment) {
         nextCodeRepository().increment(domain, entity, increment);
-        nextCodeRepository().flush();
+        nextCodeRepository().flush(); // Ensures the changes are immediately persisted
     }
 
+    @Override
+    @Transactional
     public T saveAndFlush(T appNextCode) {
-        return (T) nextCodeRepository().saveAndFlush(appNextCode);
+        return nextCodeRepository().saveAndFlush(appNextCode);
     }
 
+    @Override
+    @Transactional
     public T save(T appNextCode) {
-        return (T) nextCodeRepository().save(appNextCode);
+        return nextCodeRepository().save(appNextCode);
     }
 }

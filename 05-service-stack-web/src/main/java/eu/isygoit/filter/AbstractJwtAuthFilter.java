@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -31,11 +32,8 @@ import java.util.Optional;
 @Slf4j
 public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
-    /**
-     * The constant should_not_filter.
-     */
     @Value("${app.feign.shouldNotFilterKey}")
-    public static String should_not_filter = "$SHOULD_NOT_FILTER";
+    private String shouldNotFilter;
 
     @Autowired
     private IJwtService jwtService;
@@ -62,80 +60,96 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         log.info("Jwt auth filter: attribute SHOULD_NOT_FILTER_KEY: {}", request.getHeader("SHOULD_NOT_FILTER_KEY"));
-        //extract to list to be customisable
-        return request.getRequestURI().startsWith("/api/v1/public")
-                //|| request.getRequestURI().startsWith("/socket")
-                || request.getRequestURI().contains("/image/download")
-                || request.getRequestURI().contains("/file/download")
-                || should_not_filter.equals(request.getHeader("SHOULD_NOT_FILTER_KEY"));
+        return isExcludedUri(request) || shouldNotFilter.equals(request.getHeader("SHOULD_NOT_FILTER_KEY"));
+    }
+
+    private boolean isExcludedUri(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/api/v1/public")
+                || uri.contains("/image/download")
+                || uri.contains("/file/download");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String jwt = UrlHelper.getJwtFromRequest(request);
+
         if (StringUtils.hasText(jwt)) {
-            log.info("Request received:  {} - {} - {} ", request.getMethod(), request.getAuthType(), request.getRequestURI());
+            log.info("Request received:  {} - {} - {}", request.getMethod(), request.getAuthType(), request.getRequestURI());
             try {
-                Optional<String> subject = jwtService.extractSubject(jwt);
-                Optional<String> userName = jwtService.extractUserName(jwt);
-                Optional<String> application = jwtService.extractApplication(jwt);
-                Optional<String> domain = jwtService.extractDomain(jwt);
-                Boolean isAdmin = jwtService.extractIsAdmin(jwt);
-
-                subject.ifPresentOrElse(value -> {
-                            userName.ifPresentOrElse(name -> isTokenValid(jwt,
-                                            domain.orElseGet(() -> "NA"),
-                                            application.orElseGet(() -> "NA"),
-                                            name),
-                                    () -> new TokenInvalidException("Invalid JWT/userName"));
-
-                            SecurityContextHolder.getContext()
-                                    .setAuthentication(new CustomAuthentification(CustomUserDetails.builder()
-                                            .username(value)
-                                            .isAdmin(isAdmin)
-                                            .password("password")
-                                            .passwordExpired(false)
-                                            //.authorities(Account.getAuthorities(account))
-                                            .domainEnabled(true)
-                                            .accountEnabled(true)
-                                            .accountExpired(true)
-                                            .accountLocked(true)
-                                            .build(),
-                                            "password",
-                                            new ArrayList<>()));
-                        },
-                        () -> new TokenInvalidException("Invalid JWT/subject"));
-
-
-                addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
-                        .senderDomain(domain.orElseGet(() -> "NA"))
-                        .senderUser(userName.orElseGet(() -> "NA"))
-                        .isAdmin(isAdmin)
-                        .logApp(application.orElseGet(() -> "NA"))
-                        .build()));
-
+                handleJwtAuthentication(jwt, request);
                 filterChain.doFilter(request, response);
             } catch (JwtException | IllegalArgumentException | TokenInvalidException e) {
-                log.error("<Error>: Invalid token: {}> {} / {}", request.getMethod(), request.getRequestURI(), e);
+                log.error("<Error>: Invalid token: {} > {} / {}", request.getMethod(), request.getRequestURI(), e);
                 response.setContentType("application/json");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             }
         } else {
-            log.error("<Error>: Missed token for request {}> {}", request.getMethod(), request.getRequestURI());
-            addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
-                    .senderDomain(DomainConstants.SUPER_DOMAIN_NAME)
-                    .senderUser("root")
-                    .isAdmin(true)
-                    .logApp("application")
-                    .build()));
-            /*
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
-            response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Missing token");
-             */
+            log.error("<Error>: Missed token for request {} > {}", request.getMethod(), request.getRequestURI());
+            setDefaultAttributes(request);
             filterChain.doFilter(request, response);
         }
+    }
+
+    private void handleJwtAuthentication(String jwt, HttpServletRequest request) {
+        Optional<String> subject = jwtService.extractSubject(jwt);
+        Optional<String> userName = jwtService.extractUserName(jwt);
+        Optional<String> application = jwtService.extractApplication(jwt);
+        Optional<String> domain = jwtService.extractDomain(jwt);
+        Optional<Boolean> isAdmin = jwtService.extractIsAdmin(jwt);
+
+        subject.ifPresentOrElse(value -> {
+            userName.ifPresentOrElse(name -> {
+                        if (!isTokenValid(jwt, domain.orElse("NA"), application.orElse("NA"), name)) {
+                            throw new TokenInvalidException("Invalid JWT/userName");
+                        }
+                    },
+                    () -> {
+                        throw new TokenInvalidException("Invalid JWT/userName");
+                    });
+
+            setAuthentication(value, isAdmin.orElse(Boolean.FALSE));
+        }, () -> {
+            throw new TokenInvalidException("Invalid JWT/subject");
+        });
+
+        addAttributes(request, createRequestAttributes(domain, userName, isAdmin.orElse(Boolean.FALSE), application));
+    }
+
+    private void setAuthentication(String subject, Boolean isAdmin) {
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                .username(subject)
+                .isAdmin(isAdmin)
+                .password("password")
+                .passwordExpired(false)
+                .domainEnabled(true)
+                .accountEnabled(true)
+                .accountExpired(true)
+                .accountLocked(true)
+                .build();
+
+        Authentication authentication = new CustomAuthentification(userDetails, "password", new ArrayList<>());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private Map<String, Object> createRequestAttributes(Optional<String> domain, Optional<String> userName,
+                                                        Boolean isAdmin, Optional<String> application) {
+        return Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
+                .senderDomain(domain.orElse("NA"))
+                .senderUser(userName.orElse("NA"))
+                .isAdmin(isAdmin)
+                .logApp(application.orElse("NA"))
+                .build());
+    }
+
+    private void setDefaultAttributes(HttpServletRequest request) {
+        addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
+                .senderDomain(DomainConstants.SUPER_DOMAIN_NAME)
+                .senderUser("root")
+                .isAdmin(true)
+                .logApp("application")
+                .build()));
     }
 }

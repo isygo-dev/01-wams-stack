@@ -11,7 +11,6 @@ import jakarta.persistence.RollbackException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.exception.DataException;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -29,8 +28,6 @@ import javax.naming.SizeLimitExceededException;
 import javax.validation.ConstraintViolation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -58,6 +55,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     @Autowired
     private LocaleService localeService;
 
+    private StringBuilder message = new StringBuilder();
+
     public String getStackTrace(Throwable throwable) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -73,90 +72,108 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     @Override
     public String handleError(Throwable throwable) {
         log.error("<Error>: Error in exception handler:", throwable);
-        StringBuilder message = new StringBuilder();
+
         try {
-            if (throwable instanceof SizeLimitExceededException) {
-                message.append(localeService.getMessage("size.limit.exceeded.exception", LocaleContextHolder.getLocale()));
-            }
-
-            if (throwable instanceof JpaSystemException) {
-                throwable = NestedExceptionUtils.getRootCause(throwable);
-            }
-
-            if (throwable instanceof TransactionSystemException
-                    && Objects.nonNull(throwable.getCause())
-                    && Objects.nonNull(throwable.getCause().getCause())
-                    && throwable.getCause() instanceof RollbackException) {
-                throwable = throwable.getCause().getCause();
-            }
-
-            if (throwable instanceof FeignException) {
-                message.append(getLocaleService().getMessage(((FeignException) throwable).contentUTF8(), LocaleContextHolder.getLocale()));
-            } else if (throwable instanceof CannotCreateTransactionException) {
-                message.append(getLocaleService().getMessage("cannot.create.transaction.exception", LocaleContextHolder.getLocale()));
-            } else if (throwable instanceof PSQLException) {
-                Optional<String> keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(throwable.getMessage()::contains).findFirst();
-                Throwable finalThrowable1 = throwable;
-                keyOptional.ifPresentOrElse(s -> message.append(localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale())),
-                        () -> message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(finalThrowable1)));
-            } else if (throwable instanceof javax.validation.ConstraintViolationException) {
-                if (!CollectionUtils.isEmpty(((javax.validation.ConstraintViolationException) throwable).getConstraintViolations())) {
-                    Iterator<ConstraintViolation<?>> it = ((javax.validation.ConstraintViolationException) throwable).getConstraintViolations().iterator();
-                    while (it.hasNext()) {
-                        ConstraintViolation cv = it.next();
-                        if (StringUtils.hasText(cv.getPropertyPath().toString())) {
-                            message.append(localeService.getMessage(cv.getPropertyPath().toString().replace("_", "."), LocaleContextHolder.getLocale())).append(": ");
-                        }
-                        message.append(localeService.getMessage(cv.getMessage().replace(" ", "."), LocaleContextHolder.getLocale())).append("\n");
-                    }
-                }
-            } else if (throwable instanceof EmptyResultDataAccessException) {
-                message.append(localeService.getMessage("object.not.found", LocaleContextHolder.getLocale()));
-            } else if (throwable instanceof EntityExistsException) {
-                message.append(localeService.getMessage("object.already.exists", LocaleContextHolder.getLocale()));
-            } else if (throwable instanceof PersistenceException
-                    || throwable instanceof DataIntegrityViolationException) {
-                Optional<String> keyOptional = Optional.empty();
-                if (Objects.nonNull(throwable.getCause())
-                        && throwable.getCause() instanceof ConstraintViolationException) {
-                    if (Objects.nonNull(((ConstraintViolationException) throwable.getCause()).getConstraintName())) {
-                        keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(((ConstraintViolationException) throwable.getCause()).getConstraintName()::equals).findFirst();
-                    } else if (Objects.nonNull(throwable.getCause().getCause())
-                            && throwable.getCause().getCause() instanceof SQLException) {
-                        keyOptional = this.getExcepMessage().keySet().stream().parallel().filter(throwable.getCause().getCause().toString().toLowerCase()::equals).findFirst();
-                    }
-
-                    Optional<String> finalKeyOptional = keyOptional;
-                    Throwable finalThrowable = throwable;
-                    keyOptional.ifPresentOrElse(s -> message.append(localeService.getMessage(this.getExcepMessage().get(finalKeyOptional.get()), LocaleContextHolder.getLocale())),
-                            () -> message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(finalThrowable)));
-                } else if (Objects.nonNull(throwable.getCause()) && throwable.getCause() instanceof DataException) {
-                    SQLException sqlException = ((DataException) throwable.getCause()).getSQLException();
-                    if (Objects.nonNull(sqlException)) {
-                        message.append(localeService.getMessage(sqlException.getMessage().toLowerCase().replace(" ", ".")
-                                        .replace(":", "")
-                                        .replace("(", ".")
-                                        .replace(")", "")
-                                        .replace("error.value.too.long.for.type.character.varying.", "length.must.be.between.0.and.")
-                                , LocaleContextHolder.getLocale())).append("\n");
-                    }
-                } else if (Objects.nonNull(throwable.getCause())
-                        && throwable.getCause() instanceof DataException
-                        && Objects.nonNull(throwable.getCause().getCause())) {
-                    message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append((this.getStackTrace(throwable)));
-                } else {
-                    message.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append(" ").append(this.getStackTrace(throwable));
-                }
-            } else if (throwable instanceof ManagedException) {
-                message.append(getLocaleService().getMessage(((ManagedException) throwable).getMsgLocale(), LocaleContextHolder.getLocale()));
-            } else {
-                throw new UnknownException(throwable);
-            }
+            message.setLength(0);  // Clear the message for each new exception handling
+            message.append(handleSpecificExceptions(throwable));
         } catch (Throwable e) {
-            message.append(getLocaleService().getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale())).append("\n");
-            message.append(getLocaleService().getMessage(UNMANAGED_EXCEPTION_NOTIFICATION, LocaleContextHolder.getLocale())).append("\n");
+            message.setLength(0);  // Clear the message for the unmanaged exception
+            message.append(getLocaleService().getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale()))
+                    .append("\n")
+                    .append(getLocaleService().getMessage(UNMANAGED_EXCEPTION_NOTIFICATION, LocaleContextHolder.getLocale()))
+                    .append("\n");
             processUnmanagedException(this.getStackTrace(e));
         }
         return message.toString();
+    }
+
+    private String handleSpecificExceptions(Throwable throwable) {
+        if (throwable instanceof SizeLimitExceededException) {
+            return localeService.getMessage("size.limit.exceeded.exception", LocaleContextHolder.getLocale());
+        } else if (throwable instanceof JpaSystemException) {
+            throwable = NestedExceptionUtils.getRootCause(throwable);
+            return handleJpaSystemException(throwable);
+        } else if (throwable instanceof TransactionSystemException) {
+            throwable = handleTransactionException(throwable);
+            return handleJpaSystemException(throwable);
+        } else if (throwable instanceof FeignException) {
+            return getLocaleService().getMessage(((FeignException) throwable).contentUTF8(), LocaleContextHolder.getLocale());
+        } else if (throwable instanceof CannotCreateTransactionException) {
+            return localeService.getMessage("cannot.create.transaction.exception", LocaleContextHolder.getLocale());
+        } else if (throwable instanceof PSQLException) {
+            return handleSQLException((PSQLException) throwable);
+        } else if (throwable instanceof javax.validation.ConstraintViolationException) {
+            return handleConstraintViolationException((javax.validation.ConstraintViolationException) throwable);
+        } else if (throwable instanceof EmptyResultDataAccessException) {
+            return localeService.getMessage("object.not.found", LocaleContextHolder.getLocale());
+        } else if (throwable instanceof EntityExistsException) {
+            return localeService.getMessage("object.already.exists", LocaleContextHolder.getLocale());
+        } else if (throwable instanceof PersistenceException || throwable instanceof DataIntegrityViolationException) {
+            return handlePersistenceException(throwable);
+        } else if (throwable instanceof ManagedException) {
+            return getLocaleService().getMessage(((ManagedException) throwable).getMsgLocale(), LocaleContextHolder.getLocale());
+        } else {
+            throw new UnknownException(throwable);
+        }
+    }
+
+    private String handleJpaSystemException(Throwable throwable) {
+        return localeService.getMessage("jpa.system.exception", LocaleContextHolder.getLocale());
+    }
+
+    private Throwable handleTransactionException(Throwable throwable) {
+        if (Objects.nonNull(throwable.getCause()) && throwable.getCause() instanceof RollbackException) {
+            return throwable.getCause().getCause();
+        }
+        return throwable;
+    }
+
+    private String handleSQLException(PSQLException throwable) {
+        Optional<String> keyOptional = this.getExcepMessage().keySet().stream()
+                .parallel().filter(throwable.getMessage()::contains).findFirst();
+        if (keyOptional.isPresent()) {
+            return localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale());
+        } else {
+            return localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale()) + " " + this.getStackTrace(throwable);
+        }
+    }
+
+    private String handleConstraintViolationException(javax.validation.ConstraintViolationException throwable) {
+        StringBuilder localMessage = new StringBuilder();
+        if (!CollectionUtils.isEmpty(throwable.getConstraintViolations())) {
+            for (ConstraintViolation<?> cv : throwable.getConstraintViolations()) {
+                if (StringUtils.hasText(cv.getPropertyPath().toString())) {
+                    localMessage.append(localeService.getMessage(cv.getPropertyPath().toString().replace("_", "."), LocaleContextHolder.getLocale()))
+                            .append(": ");
+                }
+                localMessage.append(localeService.getMessage(cv.getMessage().replace(" ", "."), LocaleContextHolder.getLocale())).append("\n");
+            }
+        }
+        return localMessage.toString();
+    }
+
+    private String handlePersistenceException(Throwable throwable) {
+        StringBuilder localMessage = new StringBuilder();
+        Optional<String> keyOptional = Optional.empty();
+
+        if (Objects.nonNull(throwable.getCause()) && throwable.getCause() instanceof ConstraintViolationException) {
+            keyOptional = handleConstraintViolationExceptionCause(throwable);
+        }
+
+        if (keyOptional.isPresent()) {
+            localMessage.append(localeService.getMessage(this.getExcepMessage().get(keyOptional.get()), LocaleContextHolder.getLocale()));
+        } else {
+            localMessage.append(localeService.getMessage(UNKNOWN_REASON, LocaleContextHolder.getLocale()))
+                    .append(" ").append(this.getStackTrace(throwable));
+        }
+        return localMessage.toString();
+    }
+
+    private Optional<String> handleConstraintViolationExceptionCause(Throwable throwable) {
+        if (Objects.nonNull(((ConstraintViolationException) throwable.getCause()).getConstraintName())) {
+            return this.getExcepMessage().keySet().stream()
+                    .parallel().filter(((ConstraintViolationException) throwable.getCause()).getConstraintName()::equals).findFirst();
+        }
+        return Optional.empty();
     }
 }

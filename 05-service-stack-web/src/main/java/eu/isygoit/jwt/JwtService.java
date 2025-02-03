@@ -8,11 +8,11 @@ import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -29,66 +29,9 @@ public class JwtService implements IJwtService {
      */
     public static final String AUTHORIZATION = "Authorization";
 
-    /* Not Signed */
-
     @Override
     public Optional<String> extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
-    }
-
-    @Override
-    public Optional<String> extractDomain(String token) {
-        Optional<Claims> optional = this.extractAllClaims(token);
-        if (optional.isPresent()) {
-            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_SENDER_DOMAIN)) {
-                return optional.get().get(JwtConstants.JWT_SENDER_DOMAIN, String.class).describeConstable();
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public Boolean extractIsAdmin(String token) {
-        Optional<Claims> optional = this.extractAllClaims(token);
-        if (optional.isPresent()) {
-            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_IS_ADMIN)) {
-                return optional.get().get(JwtConstants.JWT_IS_ADMIN, Boolean.class);
-            }
-        }
-        return Boolean.FALSE;
-    }
-
-    @Override
-    public Optional<String> extractApplication(String token) {
-        Optional<Claims> optional = this.extractAllClaims(token);
-        if (optional.isPresent()) {
-            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_LOG_APP)) {
-                return optional.get().get(JwtConstants.JWT_LOG_APP, String.class).describeConstable();
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<String> extractAccountType(String token) {
-        Optional<Claims> optional = this.extractAllClaims(token);
-        if (optional.isPresent()) {
-            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_SENDER_ACCOUNT_TYPE)) {
-                return optional.get().get(JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class).describeConstable();
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<String> extractUserName(String token) {
-        Optional<Claims> optional = this.extractAllClaims(token);
-        if (optional.isPresent()) {
-            if (!CollectionUtils.isEmpty(optional.get()) && optional.get().containsKey(JwtConstants.JWT_SENDER_USER)) {
-                return optional.get().get(JwtConstants.JWT_SENDER_USER, String.class).describeConstable();
-            }
-        }
-        return Optional.empty();
     }
 
     @Override
@@ -97,11 +40,53 @@ public class JwtService implements IJwtService {
     }
 
     @Override
-    public Optional<Claims> extractAllClaims(String token) {
-        //This is To avoid signing check !!!!!!!
-        int i = token.lastIndexOf('.');
-        token = token.substring(0, i + 1);
-        return Optional.ofNullable(Jwts.parser().parseClaimsJwt(token).getBody());
+    public Optional<String> extractDomain(String token) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_SENDER_DOMAIN).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<String> extractDomain(String token, String key) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_SENDER_DOMAIN, key).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<Boolean> extractIsAdmin(String token) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_IS_ADMIN).map(o -> (Boolean) o);
+    }
+
+    @Override
+    public Optional<Boolean> extractIsAdmin(String token, String key) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_IS_ADMIN, key).map(o -> (Boolean) o);
+    }
+
+    @Override
+    public Optional<String> extractApplication(String token) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_LOG_APP).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<String> extractApplication(String token, String key) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_LOG_APP, key).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<String> extractAccountType(String token) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<String> extractAccountType(String token, String key) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE, key).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<String> extractUserName(String token) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_SENDER_USER).map(Objects::toString);
+    }
+
+    @Override
+    public Optional<String> extractUserName(String token, String key) {
+        return extractClaimFromClaims(token, JwtConstants.JWT_SENDER_USER, key).map(Objects::toString);
     }
 
     /* Signed */
@@ -113,20 +98,17 @@ public class JwtService implements IJwtService {
 
     @Override
     public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
-        final Optional<Claims> optional = extractAllClaims(token, key);
-        if (optional.isPresent()) {
-            return Optional.ofNullable(claimsResolver.apply(optional.get()));
-        }
-        return Optional.empty();
+        return extractAllClaims(token, key).map(claimsResolver);
     }
 
     @Override
     public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Optional<Claims> optional = extractAllClaims(token);
-        if (optional.isPresent()) {
-            return Optional.ofNullable(claimsResolver.apply(optional.get()));
-        }
-        return Optional.empty();
+        return extractAllClaims(token).map(claimsResolver);
+    }
+
+    @Override
+    public Optional<Claims> extractAllClaims(String token) {
+        return Optional.ofNullable(Jwts.parser().parseClaimsJwt(token).getBody());
     }
 
     @Override
@@ -136,31 +118,21 @@ public class JwtService implements IJwtService {
 
     @Override
     public Boolean isTokenExpired(String token, String key) {
-        Optional<Date> optional = extractExpiration(token, key);
-        if (optional.isPresent()) {
-            return optional.get().before(new Date());
-        }
-        return Boolean.FALSE;
+        return extractExpiration(token, key).map(exp -> exp.before(new Date())).orElse(Boolean.FALSE);
     }
 
     @Override
-    public TokenDto createToken(String subject, Map<String, Object> claims, String issuer, String audience
-            , SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs) {
-
+    public TokenDto createToken(String subject, Map<String, Object> claims, String issuer, String audience, SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs) {
         Date expiryDate = calcExpiryDate(lifeTimeInMs);
         JwtBuilder jwtBuilder = Jwts.builder()
                 .setSubject(subject)
                 .setIssuer(issuer)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .setAudience(audience)
                 .signWith(algorithm, key);
 
-        if (!CollectionUtils.isEmpty(claims)) {
-            claims.forEach((k, v) -> {
-                jwtBuilder.claim(k, v);
-            });
-        }
+        Optional.ofNullable(claims).ifPresent(c -> c.forEach(jwtBuilder::claim));
 
         return TokenDto.builder()
                 .type(IEnumWebToken.Types.Bearer)
@@ -170,39 +142,64 @@ public class JwtService implements IJwtService {
     }
 
     @Override
+    public Date calcExpiryDate(Integer lifeTimeInMs) {
+        return new Date(System.currentTimeMillis() + lifeTimeInMs);
+    }
+
     public void validateToken(String token, String subject, String key) {
         if (!StringUtils.hasText(token)) {
-            log.error("<Error>: Invalid JWT: null or empty");
-            throw new TokenInvalidException("Invalid JWT token: null or empty");
+            logAndThrow("Invalid JWT: null or empty", null);
         }
+
         try {
             Jwts.parser().setSigningKey(key).parseClaimsJws(token);
-            final Optional<String> optional = extractSubject(token, key);
-            if (!optional.isPresent()) {
-                if (StringUtils.hasText(optional.get()) && !optional.get().equalsIgnoreCase(subject)) {
-                    throw new TokenInvalidException("Invalid JWT:subject not matching");
-                }
-            }
-        } catch (SignatureException ex) {
-            log.error("<Error>: Invalid JWT signature");
-            throw new TokenInvalidException("Invalid JWT:signature", ex);
-        } catch (MalformedJwtException ex) {
-            log.error("<Error>: Invalid JWT token");
-            throw new TokenInvalidException("Invalid JWT:malformed", ex);
-        } catch (ExpiredJwtException ex) {
-            log.error("<Error>: Expired JWT token");
-            throw new TokenInvalidException("Invalid JWT:Expired", ex);
-        } catch (UnsupportedJwtException ex) {
-            log.error("<Error>: Unsupported JWT token");
-            throw new TokenInvalidException("Invalid JWT:unsupported", ex);
-        } catch (IllegalArgumentException ex) {
-            log.error("<Error>: JWT claims string is empty");
-            throw new TokenInvalidException("Invalid JWT:illegal", ex);
+
+            extractSubject(token, key).ifPresentOrElse(
+                    sub -> {
+                        if (!sub.equalsIgnoreCase(subject)) {
+                            logAndThrow("Invalid JWT: subject not matching", null);
+                        }
+                    },
+                    () -> logAndThrow("Invalid JWT: subject missing", null)
+            );
+        } catch (JwtException ex) {
+            handleJwtException(ex);
         }
     }
 
-    @Override
-    public Date calcExpiryDate(Integer lifeTimeInMs) {
-        return new Date(new Date().getTime() + lifeTimeInMs);
+    private void logAndThrow(String message, Exception ex) {
+        log.error("<Error>: {}", message, ex);
+        throw new TokenInvalidException(message, ex);
+    }
+
+    /**
+     * Handle jwt exception.
+     *
+     * @param ex the ex
+     */
+    public void handleJwtException(JwtException ex) {
+        if (ex instanceof SignatureException) {
+            logAndThrow("Invalid JWT: signature", ex);
+        } else if (ex instanceof MalformedJwtException) {
+            logAndThrow("Invalid JWT: malformed", ex);
+        } else if (ex instanceof ExpiredJwtException) {
+            logAndThrow("Invalid JWT: expired", ex);
+        } else if (ex instanceof UnsupportedJwtException) {
+            logAndThrow("Invalid JWT: unsupported", ex);
+        } else {
+            logAndThrow("Invalid JWT: unknown error", ex);
+        }
+    }
+
+    private Optional<Object> extractClaimFromClaims(String token, String claimKey) {
+        return extractAllClaims(token)
+                .filter(claims -> claims.containsKey(claimKey))
+                .map(claims -> claims.get(claimKey, Object.class));
+    }
+
+    private Optional<Object> extractClaimFromClaims(String token, String claimKey, String key) {
+        return extractAllClaims(token, key)
+                .filter(claims -> claims.containsKey(claimKey))
+                .map(claims -> claims.get(claimKey, Object.class));
     }
 }

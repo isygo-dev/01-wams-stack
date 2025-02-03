@@ -9,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
 
-import java.util.Objects;
-
 /**
  * The type Crud service utils.
  *
@@ -18,30 +16,37 @@ import java.util.Objects;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudServiceUtils<T extends IIdEntity, R extends Repository>
-        implements ICrudServiceUtils<T> {
+public abstract class CrudServiceUtils<T extends IIdEntity, R extends Repository> implements ICrudServiceUtils<T> {
 
     @Autowired
-    private ApplicationContextService applicationContextServie;
+    private ApplicationContextService applicationContextService;
 
     private R repository;
 
     @Override
     public final R repository() throws JpaRepositoryNotDefinedException {
-        if (Objects.isNull(this.repository)) {
-            SrvRepo controllerDefinition = this.getClass().getAnnotation(SrvRepo.class);
-            if (Objects.nonNull(controllerDefinition)) {
-                this.repository = (R) applicationContextServie.getBean(controllerDefinition.value());
-                if (Objects.isNull(this.repository)) {
-                    log.error("<Error>: bean {} not found", controllerDefinition.value().getSimpleName());
-                    throw new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found");
+        if (repository == null) {
+            synchronized (this) {
+                if (repository == null) {
+                    SrvRepo controllerDefinition = this.getClass().getAnnotation(SrvRepo.class);
+
+                    if (controllerDefinition != null) {
+                        this.repository = (R) applicationContextService.getBean(controllerDefinition.value());
+
+                        if (this.repository == null) {
+                            String errorMessage = String.format("<Error>: Bean %s not found", controllerDefinition.value().getSimpleName());
+                            log.error(errorMessage);
+                            throw new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found");
+                        }
+                    } else {
+                        String errorMessage = String.format("<Error>: Repository bean not defined for %s", this.getClass().getSimpleName());
+                        log.error(errorMessage);
+                        throw new JpaRepositoryNotDefinedException("JpaRepository not defined");
+                    }
                 }
-            } else {
-                log.error("<Error>: Repository bean not defined for {}", this.getClass().getSimpleName());
-                throw new JpaRepositoryNotDefinedException("JpaRepository");
             }
         }
 
-        return this.repository;
+        return repository;
     }
 }
