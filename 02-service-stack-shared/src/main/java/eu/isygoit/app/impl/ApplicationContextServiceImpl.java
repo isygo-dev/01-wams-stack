@@ -11,28 +11,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
- * The type Application context service.
+ * Application context service implementation.
  */
 @Slf4j
 @Service
 @Transactional
 public class ApplicationContextServiceImpl implements ApplicationContextService {
 
+    private final ApplicationContext applicationContext;
+
     @Autowired
-    private ApplicationContext applicationContext;
+    public ApplicationContextServiceImpl(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public <T> T getBean(Class<T> beanClass) throws BeanNotFoundException {
-        T bean = this.applicationContext.getBean(beanClass);
-        if (Objects.isNull(bean)) {
-            log.error("<Error>: bean {} not found", beanClass.getSimpleName());
-            throw new BeanNotFoundException(beanClass.getSimpleName());
-        }
-
-        return bean;
+        return Optional.ofNullable(applicationContext.getBean(beanClass))
+                .orElseThrow(() -> {
+                    log.error("Bean {} not found", beanClass.getSimpleName());
+                    return new BeanNotFoundException(beanClass.getSimpleName());
+                });
     }
 
     @Override
