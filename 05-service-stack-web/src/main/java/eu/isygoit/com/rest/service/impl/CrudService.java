@@ -368,7 +368,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public T afterFindById(T object) {
+    public T afterGetById(T object) {
         return object;
     }
 

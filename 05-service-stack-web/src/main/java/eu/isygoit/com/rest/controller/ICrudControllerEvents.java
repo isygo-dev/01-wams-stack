@@ -87,7 +87,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param object the object
      * @return the fulld
      */
-    FULLD afterFindById(FULLD object);
+    FULLD afterGetById(FULLD object);
 
     /**
      * After find all full list.

@@ -78,7 +78,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param object the object
      * @return the t
      */
-    T afterFindById(T object);
+    T afterGetById(T object);
 
     /**
      * After create t.

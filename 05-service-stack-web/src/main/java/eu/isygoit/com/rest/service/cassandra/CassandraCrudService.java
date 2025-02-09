@@ -170,7 +170,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
     public Optional<T> getById(I id) {
         validateId(id);
         Optional<T> optional = repository().findById(id);
-        return optional.map(this::afterFindById);
+        return optional.map(this::afterGetById);
     }
 
     @Override
@@ -287,7 +287,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
         return list;
     }
 
-    public T afterFindById(T object) {
+    public T afterGetById(T object) {
         return object;
     }
 

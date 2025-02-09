@@ -241,7 +241,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     public ResponseEntity<FULLD> subGetById(RequestContextDto requestContext, I id) {
         log.info("Find {} by id request received", persistentClass.getSimpleName());
         try {
-            return ResponseFactory.ResponseOk(this.afterFindById(this.mapper().entityToDto(this.crudService().getById(id)
+            return ResponseFactory.ResponseOk(this.afterGetById(this.mapper().entityToDto(this.crudService().getById(id)
                     .orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id)))));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -397,7 +397,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public FULLD afterFindById(FULLD object) {
+    public FULLD afterGetById(FULLD object) {
         return object;
     }
 
