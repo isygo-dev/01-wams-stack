@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,13 +32,20 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdenti
      * @param dto The entity data to create.
      * @return The created entity with its identifier.
      */
-    @Operation(summary = "Create a new entity",
-            description = "Creates a new entity and returns the persisted representation.")
+    @Operation(
+            summary = "Create a new entity",
+            description = "Creates a new entity and returns the persisted representation."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Entity created successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Entity created successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data"
+            )
     })
     @PostMapping(consumes = "application/json", produces = "application/json")
     ResponseEntity<D> create(@Valid @RequestBody D dto);
@@ -49,16 +57,29 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdenti
      * @param dto The updated entity data.
      * @return The updated entity.
      */
-    @Operation(summary = "Update an existing entity",
-            description = "Updates an existing entity and returns the modified representation.")
+    @Operation(
+            summary = "Update an existing entity",
+            description = "Updates an existing entity and returns the modified representation."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Entity updated successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))),
-            @ApiResponse(responseCode = "404", description = "Entity not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Entity updated successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Entity not found"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data"
+            )
     })
     @PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
-    ResponseEntity<D> update(@PathVariable(name = RestApiConstants.ID) I id,
-                             @Valid @RequestBody D dto);
+    ResponseEntity<D> update(
+            @PathVariable(name = RestApiConstants.ID) I id,
+            @Valid @RequestBody D dto
+    );
+
 }

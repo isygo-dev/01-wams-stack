@@ -65,5 +65,5 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIden
     ResponseEntity<Resource> downloadImage(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
             @PathVariable(name = RestApiConstants.ID) I id
-    );
+    ) throws IOException;
 }

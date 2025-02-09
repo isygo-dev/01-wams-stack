@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,13 +26,15 @@ public interface IMappedCrudDeleteApi<I extends Serializable> {
      *
      * @param requestContext Optional user context.
      * @param id             Unique identifier of the resource.
-     * @return HTTP 204 No Content if deleted successfully.
+     * @return HTTP 204 No Content if deleted successfully, or 404 if resource is not found.
      */
-    @Operation(summary = "Delete resource by ID", description = "Deletes a resource using its unique identifier.")
+    @Operation(summary = "Delete resource by ID",
+            description = "Deletes a resource using its unique identifier.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Resource deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Invalid request or malformed ID", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Resource not found with the provided ID", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     @DeleteMapping("/{id}")
     ResponseEntity<String> delete(

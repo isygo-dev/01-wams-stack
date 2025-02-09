@@ -28,28 +28,34 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
      * @param linkedFile File to be uploaded.
      * @return Response containing file details.
      */
-    @Operation(summary = "Upload linked file", description = "Uploads a linked file.")
+    @Operation(summary = "Upload linked file",
+            description = "Uploads a linked file to the server and returns file details.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "File uploaded successfully",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileResponseDto.class)))
+                            schema = @Schema(implementation = LinkedFileResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid file data or missing parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<LinkedFileResponseDto> upload(@ModelAttribute D linkedFile);
 
     /**
-     * Downloads a linked file.
+     * Downloads a linked file by domain and code.
      *
      * @param requestContext Optional user context.
      * @param domain         Domain name associated with the file.
      * @param code           Unique file identifier.
      * @return Response containing the requested file as a resource.
      */
-    @Operation(summary = "Download linked file", description = "Downloads a linked file by domain and code.")
+    @Operation(summary = "Download linked file",
+            description = "Downloads a linked file by the specified domain and unique file code.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "File downloaded successfully",
                     content = @Content(mediaType = "application/octet-stream",
-                            schema = @Schema(implementation = Resource.class)))
+                            schema = @Schema(implementation = Resource.class))),
+            @ApiResponse(responseCode = "404", description = "File not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping(path = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     ResponseEntity<Resource> download(
@@ -63,13 +69,16 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
      * @param requestContext Optional user context.
      * @param domain         Domain name associated with the file.
      * @param code           Unique file identifier.
-     * @return Boolean indicating whether the deletion was successful.
+     * @return Response indicating whether the deletion was successful.
      */
-    @Operation(summary = "Delete linked file", description = "Deletes a linked file by domain and code.")
+    @Operation(summary = "Delete linked file",
+            description = "Deletes a linked file by the specified domain and unique file code.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "File deleted successfully",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Boolean.class)))
+                            schema = @Schema(implementation = Boolean.class))),
+            @ApiResponse(responseCode = "404", description = "File not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping(path = "/delete")
     ResponseEntity<Boolean> delete(

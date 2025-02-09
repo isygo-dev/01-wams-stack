@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -33,18 +34,29 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
      * @param version        The version of the file.
      * @return A ResponseEntity containing the file as a resource.
      */
-    @Operation(summary = "Download a file by entity ID and version",
-            description = "Downloads the file associated with the entity ID and version provided.")
+    @Operation(
+            summary = "Download a file by entity ID and version",
+            description = "Downloads the file associated with the entity ID and version provided."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "File downloaded successfully",
-                    content = @Content(mediaType = "application/octet-stream",
-                            schema = @Schema(implementation = Resource.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-            @ApiResponse(responseCode = "404", description = "File not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "File downloaded successfully",
+                    content = @Content(mediaType = "application/octet-stream", schema = @Schema(implementation = Resource.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request parameters"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "File not found"
+            )
     })
     @GetMapping(path = "/file/download", produces = "application/octet-stream")
     ResponseEntity<Resource> download(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
             @RequestParam(name = RestApiConstants.ID) I id,
-            @RequestParam(name = RestApiConstants.VERSION) Long version);
+            @RequestParam(name = RestApiConstants.VERSION) Long version
+    );
 }

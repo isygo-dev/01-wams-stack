@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * The interface for managing file upload associated with an object.
+ * The interface for managing file uploads associated with an object.
  *
  * @param <L> the type of the linked file DTO
  * @param <I> the type of the identifier for the parent object and file
@@ -49,7 +49,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I extends
                     content = @Content(mediaType = "application/json"))
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> upload(
+    ResponseEntity<List<L>> uploadMultipleFiles(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
             @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
             @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files
@@ -76,7 +76,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I extends
                     content = @Content(mediaType = "application/json"))
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> upload(
+    ResponseEntity<List<L>> uploadSingleFile(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
             @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
             @RequestPart(name = RestApiConstants.FILES) MultipartFile file

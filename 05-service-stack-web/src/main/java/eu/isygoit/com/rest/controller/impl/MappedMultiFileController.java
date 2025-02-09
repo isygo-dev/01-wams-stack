@@ -49,7 +49,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
     public abstract EntityMapper linkedFileMapper();
 
     @Override
-    public ResponseEntity<List<L>> upload(RequestContextDto requestContext,
+    public ResponseEntity<List<L>> uploadMultipleFiles(RequestContextDto requestContext,
                                           I parentId,
                                           MultipartFile[] files) {
         log.info("update additionl file");
@@ -62,7 +62,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
     }
 
     @Override
-    public ResponseEntity<List<L>> upload(RequestContextDto requestContext,
+    public ResponseEntity<List<L>> uploadSingleFile(RequestContextDto requestContext,
                                           I parentId,
                                           MultipartFile file) {
         log.info("update additionl file");

@@ -37,12 +37,13 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdenti
      */
     @Operation(
             summary = "Create a new object and upload its associated image",
-            description = "Create a new object and upload an associated image file"
+            description = "Create a new object with details and upload an associated image file"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Object created successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))})
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> createObjectWithImage(
@@ -66,7 +67,8 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdenti
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Object updated successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))})
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Object not found", content = @Content)
     })
     @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> updateObjectWithImage(
@@ -90,7 +92,8 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdenti
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Image uploaded and linked successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))})
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Object not found", content = @Content)
     })
     @PostMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadImageAndLinkToObject(

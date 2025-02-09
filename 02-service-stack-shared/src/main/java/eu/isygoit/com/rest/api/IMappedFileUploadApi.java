@@ -49,14 +49,14 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
             @Valid @RequestParam("file") MultipartFile file);
 
     /**
-     * Creates a new entity and upload a linked file.
+     * Creates a new entity and uploads a linked file.
      *
      * @param requestContext The context of the request.
      * @param fileUpload     The entity and file to upload.
      * @return The created entity with the linked file.
      */
     @Operation(summary = "Create a new entity and upload a linked file",
-            description = "Creates a new entity and upload the associated file.")
+            description = "Creates a new entity and uploads the associated file.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Entity created and file uploaded successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))),
@@ -68,7 +68,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
             @ModelAttribute(RestApiConstants.FILE_UPLOAD) D fileUpload);
 
     /**
-     * Updates an existing entity and upload a new linked file.
+     * Updates an existing entity and uploads a new linked file.
      *
      * @param requestContext The context of the request.
      * @param id             The identifier of the entity to update.
