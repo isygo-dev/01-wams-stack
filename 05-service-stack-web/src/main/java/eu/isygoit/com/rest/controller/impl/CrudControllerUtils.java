@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.Objects;
 
 /**
  * The type Crud controller utils.

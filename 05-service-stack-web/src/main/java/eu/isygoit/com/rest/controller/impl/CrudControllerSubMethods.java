@@ -323,7 +323,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
 
     @Override
     public ResponseEntity<List<FULLD>> subGetAllFilteredPaged(RequestContextDto requestContext, String criteria,
-                                                                    int page, int size) {
+                                                              int page, int size) {
         try {
             List<FULLD> list = null;
             if (ISAASEntity.class.isAssignableFrom(persistentClass)

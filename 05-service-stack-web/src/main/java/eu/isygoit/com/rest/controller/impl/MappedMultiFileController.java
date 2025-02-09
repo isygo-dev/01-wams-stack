@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedMultiFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
 import eu.isygoit.dto.IIdentifiableDto;
@@ -52,8 +51,8 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
      * Handles the upload of multiple files for a specific parent entity.
      *
      * @param requestContext the request context
-     * @param parentId the ID of the parent entity
-     * @param files the files to be uploaded
+     * @param parentId       the ID of the parent entity
+     * @param files          the files to be uploaded
      * @return the ResponseEntity containing the list of linked file DTOs
      */
     @Override
@@ -75,8 +74,8 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
      * Handles the upload of a single file for a specific parent entity.
      *
      * @param requestContext the request context
-     * @param parentId the ID of the parent entity
-     * @param file the file to be uploaded
+     * @param parentId       the ID of the parent entity
+     * @param file           the file to be uploaded
      * @return the ResponseEntity containing the list of linked file DTOs
      */
     @Override
@@ -98,8 +97,8 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
      * Handles the deletion of a file associated with a parent entity.
      *
      * @param requestContext the request context
-     * @param parentId the ID of the parent entity
-     * @param fileId the ID of the file to be deleted
+     * @param parentId       the ID of the parent entity
+     * @param fileId         the ID of the file to be deleted
      * @return the ResponseEntity indicating success or failure of the deletion
      */
     @Override
@@ -124,9 +123,9 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
      * Handles the download of a specific file for a parent entity.
      *
      * @param requestContext the request context
-     * @param parentId the ID of the parent entity
-     * @param fileId the ID of the file to be downloaded
-     * @param version the version of the file (if applicable)
+     * @param parentId       the ID of the parent entity
+     * @param fileId         the ID of the file to be downloaded
+     * @param version        the version of the file (if applicable)
      * @return the ResponseEntity containing the file or an error status
      */
     @Override

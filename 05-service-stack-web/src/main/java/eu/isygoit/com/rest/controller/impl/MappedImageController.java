@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedImageApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
 import eu.isygoit.dto.IIdentifiableDto;
@@ -42,8 +41,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
      * Handles the upload of an image and links it to an entity.
      *
      * @param requestContext the request context, containing metadata like domain
-     * @param id the ID of the entity to which the image will be linked
-     * @param file the image file to be uploaded
+     * @param id             the ID of the entity to which the image will be linked
+     * @param file           the image file to be uploaded
      * @return a ResponseEntity containing the full DTO of the updated entity
      */
     @Override
@@ -66,7 +65,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
      * Handles the download of an image for a given entity.
      *
      * @param requestContext the request context
-     * @param id the ID of the entity whose image is being requested
+     * @param id             the ID of the entity whose image is being requested
      * @return a ResponseEntity containing the image file resource
      */
     @Override
@@ -96,8 +95,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
      * Creates an entity and associates an image with it.
      *
      * @param requestContext the request context
-     * @param file the image file to be uploaded
-     * @param dto the DTO containing the details of the entity to be created
+     * @param file           the image file to be uploaded
+     * @param dto            the DTO containing the details of the entity to be created
      * @return a ResponseEntity containing the full DTO of the created entity
      */
     @Override
@@ -125,8 +124,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
      * Updates an entity and associates an image with it.
      *
      * @param requestContext the request context
-     * @param file the image file to be uploaded
-     * @param dto the DTO containing the updated details of the entity
+     * @param file           the image file to be uploaded
+     * @param dto            the DTO containing the updated details of the entity
      * @return a ResponseEntity containing the full DTO of the updated entity
      */
     @Override

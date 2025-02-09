@@ -41,8 +41,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
      * Uploads a file and returns a response containing the updated DTO.
      *
      * @param requestContext the request context
-     * @param id the entity ID
-     * @param file the file to be uploaded
+     * @param id             the entity ID
+     * @param file           the file to be uploaded
      * @return ResponseEntity containing the updated DTO
      */
     @Override
@@ -62,8 +62,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
      * Downloads a file, returning the file as a Resource.
      *
      * @param requestContext the request context
-     * @param id the entity ID
-     * @param version the version of the file to be downloaded
+     * @param id             the entity ID
+     * @param version        the version of the file to be downloaded
      * @return ResponseEntity containing the file as a resource
      */
     @Override
@@ -86,7 +86,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
      * Creates a new entity with an associated file.
      *
      * @param requestContext the request context
-     * @param dto the DTO containing the entity data and file
+     * @param dto            the DTO containing the entity data and file
      * @return ResponseEntity containing the created entity as a DTO
      */
     @Override
@@ -110,8 +110,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
      * Updates an existing entity with an associated file.
      *
      * @param requestContext the request context
-     * @param id the entity ID
-     * @param dto the DTO containing the updated data and file
+     * @param id             the entity ID
+     * @param dto            the DTO containing the updated data and file
      * @return ResponseEntity containing the updated entity as a DTO
      */
     @Override

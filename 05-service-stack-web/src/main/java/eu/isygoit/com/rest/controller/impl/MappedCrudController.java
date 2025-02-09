@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * The type Mapped CRUD controller.
- *
+ * <p>
  * This abstract controller handles common CRUD operations for entities, including
  * creating, deleting, updating, fetching, and applying filters.
  *
@@ -48,7 +48,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
      * Deletes an entity by its ID.
      *
      * @param requestContext the context of the current request
-     * @param id the ID of the entity to delete
+     * @param id             the ID of the entity to delete
      * @return ResponseEntity confirming the deletion
      */
     @Override
@@ -97,8 +97,8 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
      * Fetches all entities with pagination.
      *
      * @param requestContext the context of the current request
-     * @param page the page number
-     * @param size the page size
+     * @param page           the page number
+     * @param size           the page size
      * @return ResponseEntity containing the paginated list of entities
      */
     @Override
@@ -111,8 +111,8 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
      * Fetches all full entities with pagination.
      *
      * @param requestContext the context of the current request
-     * @param page the page number
-     * @param size the page size
+     * @param page           the page number
+     * @param size           the page size
      * @return ResponseEntity containing the paginated list of full entities
      */
     @Override
@@ -125,7 +125,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
      * Fetches an entity by its ID.
      *
      * @param requestContext the context of the current request
-     * @param id the ID of the entity
+     * @param id             the ID of the entity
      * @return ResponseEntity containing the entity
      */
     @Override
@@ -137,7 +137,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     /**
      * Updates an entity by its ID.
      *
-     * @param id the ID of the entity
+     * @param id     the ID of the entity
      * @param object the updated entity
      * @return ResponseEntity containing the updated entity
      */
@@ -163,7 +163,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
      * Fetches entities filtered by criteria.
      *
      * @param requestContext the context of the current request
-     * @param criteria the filtering criteria
+     * @param criteria       the filtering criteria
      * @return ResponseEntity containing the filtered list of entities
      */
     @Override
@@ -176,9 +176,9 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
      * Fetches filtered entities with pagination.
      *
      * @param requestContext the context of the current request
-     * @param criteria the filtering criteria
-     * @param page the page number
-     * @param size the page size
+     * @param criteria       the filtering criteria
+     * @param page           the page number
+     * @param size           the page size
      * @return ResponseEntity containing the paginated filtered list of entities
      */
     @Override

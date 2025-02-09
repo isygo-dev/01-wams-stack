@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 /**
  * The type Mapped CRUD persist controller.
- *
+ * <p>
  * This abstract controller handles the basic CRUD operations for entities and
  * supports persistence actions with a DTO to entity mapping.
  *
@@ -44,7 +44,7 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
     /**
      * Updates an existing entity with the given ID and full DTO.
      *
-     * @param id the ID of the entity to be updated
+     * @param id     the ID of the entity to be updated
      * @param object the full DTO containing the updated data
      * @return ResponseEntity containing the updated entity as a DTO
      */

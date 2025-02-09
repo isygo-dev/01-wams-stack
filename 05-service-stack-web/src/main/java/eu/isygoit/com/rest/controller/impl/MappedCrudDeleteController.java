@@ -12,7 +12,7 @@ import java.io.Serializable;
 
 /**
  * The type Mapped CRUD delete controller.
- *
+ * <p>
  * This abstract controller handles the deletion of entities. It implements
  * the logic for deleting entities by their ID and provides a base for deletion
  * operations in subclasses.
@@ -35,7 +35,7 @@ public abstract class MappedCrudDeleteController<I extends Serializable, T exten
      * Deletes an entity by its ID.
      *
      * @param requestContext the context of the current request, typically includes domain, user info, etc.
-     * @param id the ID of the entity to be deleted
+     * @param id             the ID of the entity to be deleted
      * @return ResponseEntity containing a confirmation message
      */
     @Override

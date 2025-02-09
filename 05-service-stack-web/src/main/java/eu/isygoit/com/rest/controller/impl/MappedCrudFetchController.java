@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * The type Mapped CRUD fetch controller.
- *
+ * <p>
  * This abstract controller handles fetching entities with various filtering,
  * pagination, and counting operations. It supports the mapping of entities
  * to DTOs (both full and minimal) and provides a base for fetching operations.
@@ -74,8 +74,8 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
      * Fetches all entities in a minimal DTO format with pagination.
      *
      * @param requestContext the context of the current request
-     * @param page the page number for pagination
-     * @param size the size of the page (number of records per page)
+     * @param page           the page number for pagination
+     * @param size           the size of the page (number of records per page)
      * @return ResponseEntity containing the paginated list of minimal DTOs
      */
     @Override
@@ -88,8 +88,8 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
      * Fetches all entities in a full DTO format with pagination.
      *
      * @param requestContext the context of the current request
-     * @param page the page number for pagination
-     * @param size the size of the page (number of records per page)
+     * @param page           the page number for pagination
+     * @param size           the size of the page (number of records per page)
      * @return ResponseEntity containing the paginated list of full DTOs
      */
     @Override
@@ -102,7 +102,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
      * Fetches a single entity by its ID in a full DTO format.
      *
      * @param requestContext the context of the current request
-     * @param id the ID of the entity to be fetched
+     * @param id             the ID of the entity to be fetched
      * @return ResponseEntity containing the full DTO of the entity
      */
     @Override
@@ -127,7 +127,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
      * Fetches entities filtered by a given criteria in a full DTO format.
      *
      * @param requestContext the context of the current request
-     * @param criteria the filtering criteria
+     * @param criteria       the filtering criteria
      * @return ResponseEntity containing the filtered list of full DTOs
      */
     @Override
@@ -140,9 +140,9 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
      * Fetches filtered entities in a full DTO format with pagination.
      *
      * @param requestContext the context of the current request
-     * @param criteria the filtering criteria
-     * @param page the page number for pagination
-     * @param size the size of the page (number of records per page)
+     * @param criteria       the filtering criteria
+     * @param page           the page number for pagination
+     * @param size           the size of the page (number of records per page)
      * @return ResponseEntity containing the paginated list of filtered full DTOs
      */
     @Override

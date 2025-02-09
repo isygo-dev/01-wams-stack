@@ -41,7 +41,7 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Retrieves the message for the given code and request, resolving the locale from the request.
      *
-     * @param code The message code.
+     * @param code    The message code.
      * @param request The HTTP request used to resolve the locale.
      * @return The localized message.
      */
@@ -53,7 +53,7 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Retrieves the message for the given code and locale.
      *
-     * @param code The message code.
+     * @param code   The message code.
      * @param locale The locale used to fetch the message.
      * @return The localized message.
      */
@@ -72,7 +72,7 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Generates a unique cache key based on the message code and locale.
      *
-     * @param code The message code.
+     * @param code   The message code.
      * @param locale The locale.
      * @return The cache key.
      */
@@ -83,9 +83,9 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Fetches the message from either the extended locale service (if enabled) or the default service.
      *
-     * @param code The message code.
+     * @param code   The message code.
      * @param locale The locale.
-     * @param key The cache key.
+     * @param key    The cache key.
      * @return The localized message.
      */
     private String fetchMessage(String code, Locale locale, String key) {
@@ -107,9 +107,9 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Fetches the message from the extended locale service if it's available.
      *
-     * @param code The message code.
-     * @param locale The locale.
-     * @param key The cache key.
+     * @param code    The message code.
+     * @param locale  The locale.
+     * @param key     The cache key.
      * @param service The extended locale service.
      * @return The localized message from the extended service.
      */
@@ -134,8 +134,8 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Fetches the message from the default sources (messageMap or MessageSource).
      *
-     * @param key The cache key.
-     * @param code The message code.
+     * @param key    The cache key.
+     * @param code   The message code.
      * @param locale The locale.
      * @return The localized message.
      */
@@ -154,8 +154,8 @@ public class LocaleServiceImpl implements LocaleService {
     /**
      * Retrieves the default message either from the cache or the MessageSource.
      *
-     * @param key The cache key.
-     * @param code The message code.
+     * @param key    The cache key.
+     * @param code   The message code.
      * @param locale The locale.
      * @return The localized message.
      */

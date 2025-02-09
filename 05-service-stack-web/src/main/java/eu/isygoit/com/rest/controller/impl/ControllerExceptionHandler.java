@@ -32,13 +32,13 @@ public abstract class ControllerExceptionHandler implements IControllerException
 
     /**
      * Retrieves the appropriate exception handler for the controller.
-     *
+     * <p>
      * This method checks for annotations on the class to determine the handler to use.
      * It first checks for a CtrlHandler annotation, then a CtrlDef annotation,
      * and throws an error if neither is found or if the handler bean is not defined.
      *
      * @return The exception handler instance
-     * @throws BeanNotFoundException if the exception handler bean is not found in the context
+     * @throws BeanNotFoundException               if the exception handler bean is not found in the context
      * @throws ExceptionHandlerNotDefinedException if no handler is defined via annotations
      */
     @Override
