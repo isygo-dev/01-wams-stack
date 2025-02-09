@@ -44,8 +44,8 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
     @Override
     public final void refresh() {
         extendedMessageMap.forEach((code, message) -> {
-            String[] codePlisLocal = code.split("\\|"); // Fix regex issue
-            loadMessage(codePlisLocal[0], codePlisLocal[1]);
+            String[] split = code.split("\\|"); // Fix regex issue
+            loadMessage(split[0], split[1]);
         });
     }
 
