@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +33,7 @@ import java.util.Objects;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiFileEntity,
+public abstract class MappedMultiFileController<I extends Serializable, T extends IIdEntity & IMultiFileEntity,
         L extends LinkedFileMinDto,
         MIND extends IIdentifiableDto,
         FULLD extends MIND,
@@ -48,12 +49,12 @@ public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiF
     public abstract EntityMapper linkedFileMapper();
 
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFiles(RequestContextDto requestContext,
-                                                         I parentId,
-                                                         MultipartFile[] files) {
+    public ResponseEntity<List<L>> upload(RequestContextDto requestContext,
+                                          I parentId,
+                                          MultipartFile[] files) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(parentId, files)));
+            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().upload(parentId, files)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -61,12 +62,12 @@ public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiF
     }
 
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFile(RequestContextDto requestContext,
-                                                        I parentId,
-                                                        MultipartFile file) {
+    public ResponseEntity<List<L>> upload(RequestContextDto requestContext,
+                                          I parentId,
+                                          MultipartFile file) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(parentId, file)));
+            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().upload(parentId, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -74,12 +75,12 @@ public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiF
     }
 
     @Override
-    public ResponseEntity<Boolean> deleteAdditionalFile(RequestContextDto requestContext,
-                                                        I parentId,
-                                                        I fileId) {
+    public ResponseEntity<Boolean> delete(RequestContextDto requestContext,
+                                          I parentId,
+                                          I fileId) {
         log.info("delete additional file");
         try {
-            return ResponseFactory.ResponseOk(crudService().deleteAdditionalFile(parentId, fileId));
+            return ResponseFactory.ResponseOk(crudService().delete(parentId, fileId));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -95,7 +96,7 @@ public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiF
         try {
             log.info("download file ");
             try {
-                Resource resource = crudService().downloadFile(parentId, fileId, version);
+                Resource resource = crudService().download(parentId, fileId, version);
                 if (Objects.nonNull(resource)) {
                     log.info("File downloaded successfully {}", resource.getFilename());
                     return ResponseEntity.ok()

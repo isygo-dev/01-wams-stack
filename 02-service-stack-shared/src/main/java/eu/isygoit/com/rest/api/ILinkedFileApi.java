@@ -15,76 +15,65 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
-
 /**
- * The interface Linked file api.
+ * REST API for managing linked files.
  *
- * @param <D> the type parameter
+ * @param <D> Type parameter extending {@link IFileUploadDto}.
  */
 public interface ILinkedFileApi<D extends IFileUploadDto> {
 
     /**
-     * Upload response entity.
+     * Uploads a linked file.
      *
-     * @param linkedFile the linked file
-     * @return the response entity
-     * @throws IOException the io exception
+     * @param linkedFile File to be uploaded.
+     * @return Response containing file details.
      */
-    @Operation(summary = "Upload linked file Api",
-            description = "Upload linked file")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileResponseDto.class))})
+    @Operation(summary = "Upload linked file", description = "Uploads a linked file.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "File uploaded successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = LinkedFileResponseDto.class)))
     })
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<LinkedFileResponseDto> upload(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                 @ModelAttribute("linkedFile") D linkedFile) throws IOException;
+    ResponseEntity<LinkedFileResponseDto> upload(@ModelAttribute D linkedFile);
 
     /**
-     * Download response entity.
+     * Downloads a linked file.
      *
-     * @param requestContext the request context
-     * @param domain         the domain
-     * @param code           the code
-     * @return the response entity
-     * @throws IOException the io exception
+     * @param requestContext Optional user context.
+     * @param domain         Domain name associated with the file.
+     * @param code           Unique file identifier.
+     * @return Response containing the requested file as a resource.
      */
-    @Operation(summary = "Download linked file Api",
-            description = "Download linked file")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Resource.class))})
+    @Operation(summary = "Download linked file", description = "Downloads a linked file by domain and code.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "File downloaded successfully",
+                    content = @Content(mediaType = "application/octet-stream",
+                            schema = @Schema(implementation = Resource.class)))
     })
-    @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                      @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
+    @GetMapping(path = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<Resource> download(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestParam(RestApiConstants.DOMAIN_NAME) String domain,
+            @RequestParam(RestApiConstants.CODE) String code);
 
     /**
-     * Delete file response entity.
+     * Deletes a linked file.
      *
-     * @param requestContext the request context
-     * @param domain         the domain
-     * @param code           the code
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @param domain         Domain name associated with the file.
+     * @param code           Unique file identifier.
+     * @return Boolean indicating whether the deletion was successful.
      */
-    @Operation(summary = "Delete linked file Api",
-            description = "Delete linked file")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Boolean.class))})
+    @Operation(summary = "Delete linked file", description = "Deletes a linked file by domain and code.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "File deleted successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Boolean.class)))
     })
-    @DeleteMapping(path = "/deleteFile")
-    ResponseEntity<Boolean> deleteFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                       @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                       @RequestParam(name = RestApiConstants.CODE) String code);
-
+    @DeleteMapping(path = "/delete")
+    ResponseEntity<Boolean> delete(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestParam(RestApiConstants.DOMAIN_NAME) String domain,
+            @RequestParam(RestApiConstants.CODE) String code);
 }

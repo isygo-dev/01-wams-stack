@@ -70,7 +70,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param list the list
      * @return the list
      */
-    List<T> afterFindAll(List<T> list);
+    List<T> afterGetAll(List<T> list);
 
     /**
      * After find by id t.

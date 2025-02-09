@@ -43,7 +43,7 @@ public abstract class AbstractService<T extends NextCodeModel> implements IServi
         return initCodeGenerator()
                 .filter(generator -> StringUtils.hasText(generator.getEntity()))
                 .flatMap(generator -> {
-                    Optional<T> existingGenerator = nextCodeService.findByDomainAndEntityAndAttribute(
+                    Optional<T> existingGenerator = nextCodeService.getByDomainAndEntityAndAttribute(
                             generator.getDomain(), generator.getEntity(), generator.getAttribute());
                     return existingGenerator.isPresent() ? existingGenerator : Optional.ofNullable(nextCodeService.save(generator));
                 });

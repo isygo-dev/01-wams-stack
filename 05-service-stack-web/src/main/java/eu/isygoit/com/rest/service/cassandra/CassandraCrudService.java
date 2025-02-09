@@ -115,19 +115,19 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
+    public List<T> getAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
         return List.of();
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public List<T> getAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
         return List.of();
     }
 
     @Override
     public void delete(String senderDomain, I id) {
         validateId(id);
-        findById(id).ifPresent(object -> {
+        getById(id).ifPresent(object -> {
             checkSaaSDeletePermission(senderDomain, object);
             beforeDelete(id);
             performDelete(object, id);
@@ -139,7 +139,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
     @Transactional
     public void delete(I id) {
         validateId(id);
-        findById(id).ifPresent(object -> {
+        getById(id).ifPresent(object -> {
             beforeDelete(id);
             performDelete(object, id);
             afterDelete(id);
@@ -167,7 +167,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<T> findById(I id) {
+    public Optional<T> getById(I id) {
         validateId(id);
         Optional<T> optional = repository().findById(id);
         return optional.map(this::afterFindById);
@@ -175,25 +175,25 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll() {
-        return afterFindAll(repository().findAll());
+    public List<T> getAll() {
+        return afterGetAll(repository().findAll());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(Pageable pageable) {
-        return afterFindAll(repository().findAll(pageable).getContent());
+    public List<T> getAll(Pageable pageable) {
+        return afterGetAll(repository().findAll(pageable).getContent());
     }
 
     @Override
-    public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
+    public List<T> getAll(String domain, Pageable pageable) throws NotSupportedException {
         return List.of();
     }
 
     @Override
-    public List<T> findAll(String domain) throws NotSupportedException {
+    public List<T> getAll(String domain) throws NotSupportedException {
         if (ISAASEntity.class.isAssignableFrom(persistentClass) && repository() instanceof JpaPagingAndSortingSAASRepository) {
-            return afterFindAll(((JpaPagingAndSortingSAASRepository) repository()).findByDomainIgnoreCase(domain));
+            return afterGetAll(((JpaPagingAndSortingSAASRepository) repository()).findByDomainIgnoreCase(domain));
         } else {
             throw new NotSupportedException("find all by domain for: " + persistentClass.getSimpleName());
         }
@@ -283,7 +283,7 @@ public abstract class CassandraCrudService<I, T extends IIdEntity, R extends Cas
         return object;
     }
 
-    public List<T> afterFindAll(List<T> list) {
+    public List<T> afterGetAll(List<T> list) {
         return list;
     }
 

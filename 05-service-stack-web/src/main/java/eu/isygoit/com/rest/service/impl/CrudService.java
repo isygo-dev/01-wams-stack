@@ -195,7 +195,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        this.findById(id).ifPresent(object -> {
+        this.getById(id).ifPresent(object -> {
             //For SaaS Entity, check if delete ope is allowed : super domain or same domain
             if (ISAASEntity.class.isAssignableFrom(persistentClass)
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
@@ -246,7 +246,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        this.findById(id).ifPresent(object -> {
+        this.getById(id).ifPresent(object -> {
             this.beforeDelete(id);
 
             if (CancelableEntity.class.isAssignableFrom(persistentClass)) {
@@ -279,42 +279,42 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll() {
+    public List<T> getAll() {
         if (ISAASEntity.class.isAssignableFrom(persistentClass)
                 && repository() instanceof JpaPagingAndSortingSAASRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
         List<T> list = repository().findAll();
-        return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
+        return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterGetAll(list);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(Pageable pageable) {
+    public List<T> getAll(Pageable pageable) {
         if (ISAASEntity.class.isAssignableFrom(persistentClass)
                 && repository() instanceof JpaPagingAndSortingSAASRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
         Page<T> page = repository().findAll(pageable);
-        return page.isEmpty() ? Collections.emptyList() : this.afterFindAll(page.getContent());
+        return page.isEmpty() ? Collections.emptyList() : this.afterGetAll(page.getContent());
     }
 
     @Override
-    public List<T> findAll(String domain) throws NotSupportedException {
+    public List<T> getAll(String domain) throws NotSupportedException {
         if (ISAASEntity.class.isAssignableFrom(persistentClass) && repository() instanceof JpaPagingAndSortingSAASRepository) {
             List<T> list = ((JpaPagingAndSortingSAASRepository) repository()).findByDomainIgnoreCase(domain);
-            return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
+            return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterGetAll(list);
         } else {
             throw new NotSupportedException("find all by domain for: " + persistentClass.getSimpleName());
         }
     }
 
     @Override
-    public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
+    public List<T> getAll(String domain, Pageable pageable) throws NotSupportedException {
         if (ISAASEntity.class.isAssignableFrom(persistentClass) && repository() instanceof JpaPagingAndSortingSAASRepository) {
             Page<T> page = ((JpaPagingAndSortingSAASRepository) repository()).findByDomainIgnoreCase(domain, pageable);
-            return page.isEmpty() ? Collections.emptyList() : this.afterFindAll(page.getContent());
+            return page.isEmpty() ? Collections.emptyList() : this.afterGetAll(page.getContent());
         } else {
             throw new NotSupportedException("find all by domain for: " + persistentClass.getSimpleName());
         }
@@ -322,7 +322,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<T> findById(I id) {
+    public Optional<T> getById(I id) {
         return Objects.isNull(id) ? Optional.empty() : repository().findById(id);
     }
 
@@ -363,7 +363,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> afterFindAll(List<T> list) {
+    public List<T> afterGetAll(List<T> list) {
         return list;
     }
 
@@ -373,7 +373,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
+    public List<T> getAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
         if (!CollectionUtils.isEmpty(criteria)) {
             //get criteria data to validate filter
             Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
@@ -385,7 +385,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public List<T> getAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
         if (!CollectionUtils.isEmpty(criteria)) {
             //get criteria data to validate filter
             Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);

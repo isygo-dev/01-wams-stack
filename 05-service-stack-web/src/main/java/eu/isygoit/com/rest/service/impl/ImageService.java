@@ -43,7 +43,7 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
     @Transactional
     public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
         if (Objects.nonNull(file) && !file.isEmpty()) {
-            T entity = this.findById(id).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+            T entity = this.getById(id).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
             String imagePath = generateImagePath(entity, file);
             entity.setImagePath(imagePath);
             return this.update(entity);
@@ -55,7 +55,7 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        T entity = this.findById(id).orElseThrow(() -> new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+        T entity = this.getById(id).orElseThrow(() -> new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
         if (StringUtils.hasText(entity.getImagePath())) {
             Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
             if (!resource.exists()) {
@@ -97,7 +97,7 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
             entity.setImagePath(imagePath);
         } else {
             // Preserve existing image path if no file is provided
-            this.findById((I) entity.getId()).ifPresent(object -> entity.setImagePath(object.getImagePath()));
+            this.getById((I) entity.getId()).ifPresent(object -> entity.setImagePath(object.getImagePath()));
             log.warn("File is null or empty");
         }
 

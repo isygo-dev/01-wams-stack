@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * Abstract base processor for Apache Camel routes.
- *
+ * <p>
  * This class provides common processing logic for handling objects of a specific type (`T`)
  * within a Camel exchange. It automatically determines the generic type at runtime
  * and provides structured logging, error handling, and transaction management.
@@ -50,7 +50,7 @@ public abstract class AbstractCamelProcessor<T extends IIdentifiableDto> impleme
 
     /**
      * Processes the incoming exchange.
-     *
+     * <p>
      * - Extracts the DTO object from the exchange body.
      * - Calls {@link #performProcessor(Exchange, IIdentifiableDto)} to execute custom logic.
      * - Handles exceptions and logs errors appropriately.

@@ -109,7 +109,7 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
     }
 
     private NextCodeModel loadNextCodeFromDb(NextCodeModel initNextCode) {
-        return nextCodeService.findByDomainAndEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute())
+        return nextCodeService.getByDomainAndEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute())
                 .orElseGet(() -> nextCodeService.saveAndFlush(initNextCode));
     }
 

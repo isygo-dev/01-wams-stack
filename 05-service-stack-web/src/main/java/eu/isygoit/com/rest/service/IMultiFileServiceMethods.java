@@ -24,7 +24,7 @@ public interface IMultiFileServiceMethods<I, T extends IIdEntity & IMultiFileEnt
      * @return the list
      * @throws IOException the io exception
      */
-    List uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException;
+    List upload(I parentId, MultipartFile[] files) throws IOException;
 
     /**
      * Upload additional file list.
@@ -34,7 +34,7 @@ public interface IMultiFileServiceMethods<I, T extends IIdEntity & IMultiFileEnt
      * @return the list
      * @throws IOException the io exception
      */
-    List uploadAdditionalFile(I parentId, MultipartFile file) throws IOException;
+    List upload(I parentId, MultipartFile file) throws IOException;
 
     /**
      * Download file resource.
@@ -45,7 +45,7 @@ public interface IMultiFileServiceMethods<I, T extends IIdEntity & IMultiFileEnt
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadFile(I parentId, I fileId, Long version) throws IOException;
+    Resource download(I parentId, I fileId, Long version) throws IOException;
 
     /**
      * Delete additional file boolean.
@@ -55,5 +55,5 @@ public interface IMultiFileServiceMethods<I, T extends IIdEntity & IMultiFileEnt
      * @return the boolean
      * @throws IOException the io exception
      */
-    boolean deleteAdditionalFile(I parentId, I fileId) throws IOException;
+    boolean delete(I parentId, I fileId) throws IOException;
 }

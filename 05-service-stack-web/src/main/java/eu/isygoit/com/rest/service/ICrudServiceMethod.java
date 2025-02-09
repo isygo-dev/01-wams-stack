@@ -102,7 +102,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      *
      * @return the list
      */
-    List<T> findAll();
+    List<T> getAll();
 
     /**
      * Find all list.
@@ -111,7 +111,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String domain) throws NotSupportedException;
+    List<T> getAll(String domain) throws NotSupportedException;
 
     /**
      * Find all list.
@@ -119,7 +119,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param pageable the pageable
      * @return the list
      */
-    List<T> findAll(Pageable pageable);
+    List<T> getAll(Pageable pageable);
 
     /**
      * Find all list.
@@ -129,7 +129,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String domain, Pageable pageable) throws NotSupportedException;
+    List<T> getAll(String domain, Pageable pageable) throws NotSupportedException;
 
     /**
      * Find by id optional.
@@ -138,7 +138,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the optional
      * @throws ObjectNotFoundException the object not found exception
      */
-    Optional<T> findById(I id) throws ObjectNotFoundException;
+    Optional<T> getById(I id) throws ObjectNotFoundException;
 
     /**
      * Save or update t.
@@ -187,7 +187,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param criteria the criteria
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria);
+    List<T> getAllByCriteriaFilter(String domain, List<QueryCriteria> criteria);
 
     /**
      * Find all by criteria filter list.
@@ -197,5 +197,5 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param pageRequest the page request
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest);
+    List<T> getAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest);
 }

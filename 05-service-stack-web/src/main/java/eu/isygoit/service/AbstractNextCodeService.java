@@ -24,12 +24,12 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel, I extends
     public abstract NextCodeRepository<T, I> nextCodeRepository();
 
     @Override
-    public Optional<T> findByEntity(String entity) {
+    public Optional<T> getByEntity(String entity) {
         return nextCodeRepository().findByEntity(entity);
     }
 
     @Override
-    public Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
+    public Optional<T> getByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
         return nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
     }
 

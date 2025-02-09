@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Abstract base processor for handling String-based exchanges in Apache Camel.
- *
+ * <p>
  * This class provides a standardized structure for processing String-based payloads
  * within a Camel route. It includes transaction management, structured logging,
  * and error handling.
@@ -37,7 +37,7 @@ public abstract class AbstractStringProcessor implements Processor {
 
     /**
      * Processes the incoming exchange.
-     *
+     * <p>
      * - Extracts the String object from the exchange body.
      * - Calls {@link #performProcessor(Exchange, String)} to execute custom logic.
      * - Handles exceptions and logs errors appropriately.

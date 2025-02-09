@@ -18,6 +18,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 
 /**
  * The type Mapped file controller.
@@ -29,7 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
+public abstract class MappedFileController<I extends Serializable, T extends IIdEntity & IFileEntity,
         MIND extends IIdentifiableDto & IFileUploadDto,
         FULLD extends MIND,
         S extends IFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
@@ -49,12 +51,12 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
     }
 
     @Override
-    public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext,
-                                                 I id,
-                                                 Long version) {
+    public ResponseEntity<Resource> download(RequestContextDto requestContext,
+                                             I id,
+                                             Long version) {
         log.info("Download file request received");
         try {
-            Resource resource = crudService().downloadFile(id, version);
+            Resource resource = crudService().download(id, version);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, "multipart/form-data")
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")

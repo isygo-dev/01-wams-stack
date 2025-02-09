@@ -17,56 +17,68 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
- * The interface Mapped multi file upload api.
+ * The interface for managing file upload associated with an object.
  *
- * @param <L> the type parameter
- * @param <I> the type parameter
+ * @param <L> the type of the linked file DTO
+ * @param <I> the type of the identifier for the parent object and file
  */
-public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
+public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I extends Serializable> {
 
     /**
-     * Upload additional files response entity.
+     * Upload multiple files for a specific object.
      *
-     * @param requestContext the request context
-     * @param parentId       the parent id
-     * @param files          the files
-     * @return the response entity
+     * @param requestContext the context of the current request or user
+     * @param parentId       the identifier of the parent object
+     * @param files          the array of files to be uploaded
+     * @return a ResponseEntity containing the list of linked file DTOs for the uploaded files
      */
-    @Operation(summary = "Upload additional files for an object Api",
-            description = "Upload additional files for an object")
+    @Operation(
+            summary = "Upload multiple files associated with an object",
+            description = "Upload a list of additional files for an object by specifying the parent ID and file array."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                    description = "Files uploaded successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LinkedFileMinDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid request, one or more files or parameters are missing or incorrect",
+                    content = @Content(mediaType = "application/json"))
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFiles(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
-                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                  @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files);
-
+    ResponseEntity<List<L>> upload(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files
+    );
 
     /**
-     * Upload additional file response entity.
+     * Upload a single file for a specific object.
      *
-     * @param requestContext the request context
-     * @param parentId       the parent id
-     * @param file           the file
-     * @return the response entity
+     * @param requestContext the context of the current request or user
+     * @param parentId       the identifier of the parent object
+     * @param file           the file to be uploaded
+     * @return a ResponseEntity containing the list of linked file DTOs for the uploaded file
      */
-    @Operation(summary = "Upload additional file for an object Api",
-            description = "Upload additional file for an object")
+    @Operation(
+            summary = "Upload a single file associated with an object",
+            description = "Upload a single additional file for an object by specifying the parent ID and the file."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                    description = "File uploaded successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LinkedFileMinDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid request, missing or incorrect parameters",
+                    content = @Content(mediaType = "application/json"))
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
-                                                 @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                 @RequestPart(name = RestApiConstants.FILES) MultipartFile file);
+    ResponseEntity<List<L>> upload(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestPart(name = RestApiConstants.FILES) MultipartFile file
+    );
 }

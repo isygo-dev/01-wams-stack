@@ -1,13 +1,10 @@
 package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
-import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.dto.extendable.IdentifiableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
@@ -16,203 +13,151 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The interface Mapped crud fetch api.
+ * Generic API for fetching resources.
  *
- * @param <I>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <I>       Type of the resource identifier (must be serializable).
+ * @param <MinDto>  DTO for minimal data representation.
+ * @param <FullDto> DTO for full data representation.
  */
-public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD extends MIND> {
+public interface IMappedCrudFetchApi<I extends Serializable, MinDto extends IIdentifiableDto, FullDto extends MinDto> {
 
     /**
-     * Find all response entity.
+     * Retrieves all resources with minimal data.
      *
-     * @param requestContext the request context
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @return List of resources.
      */
-    @Operation(summary = "Find all objects with minimal data (uses Min Dto)",
-            description = "Find all objects with minimal data (uses Min Dto)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "")
-    ResponseEntity<List<MIND>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
+    @Operation(summary = "Fetch all resources (minimal data)")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping
+    ResponseEntity<List<MinDto>> getAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
     /**
-     * Find all default response entity.
+     * Retrieves all resources with minimal data.
      *
-     * @param requestContext the request context
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @return List of resources.
      */
-    @Operation(summary = "Find all default domain objects with minimal data (uses Min Dto)",
-            description = "Find all default domain objects with minimal data (uses Min Dto)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "/default")
-    ResponseEntity<List<MIND>> findAllDefault(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
-
+    @Operation(summary = "Fetch all resources (minimal data associated to default domain)")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping
+    ResponseEntity<List<MinDto>> getAssignedToDefaultDomain(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
     /**
-     * Find all response entity.
+     * Retrieves all resources with pagination.
      *
-     * @param requestContext the request context
-     * @param page           the page
-     * @param size           the size
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @param page           Page number (default = 0).
+     * @param size           Page size (default = 10).
+     * @return Paginated list of resources.
      */
-    @Operation(summary = "Find all objects with minimal data by page (uses Min Dto)",
-            description = "Find all objects with minimal data by page (uses Min Dto)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "/{page}/{size}")
-    ResponseEntity<List<MIND>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                       @PathVariable(name = RestApiConstants.PAGE) Integer page,
-                                       @PathVariable(name = RestApiConstants.SIZE) Integer size);
+    @Operation(summary = "Fetch paginated resources (minimal data)")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/paged")
+    ResponseEntity<List<MinDto>> getAllPaged(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size);
 
     /**
-     * Find all full response entity.
+     * Retrieves all resources with full data.
      *
-     * @param requestContext the request context
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @return List of resources.
      */
-    @Operation(summary = "Find all objects with full data (uses Full Dto)",
-            description = "Find all objects with full data (uses Full Dto)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "/full")
-    ResponseEntity<List<FULLD>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
+    @Operation(summary = "Fetch all resources (full data)")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/full")
+    ResponseEntity<List<FullDto>> getAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
     /**
-     * Find all full response entity.
+     * Retrieves all resources with full data and pagination.
      *
-     * @param requestContext the request context
-     * @param page           the page
-     * @param size           the size
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @param page           Page number (default = 0).
+     * @param size           Page size (default = 10).
+     * @return Paginated list of resources.
      */
-    @Operation(summary = "Find all objects with full data by page (uses Full Dto)",
-            description = "Find all objects with full data by page (uses Full Dto)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "/full/{page}/{size}")
-    ResponseEntity<List<FULLD>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                            @PathVariable(name = RestApiConstants.PAGE) Integer page,
-                                            @PathVariable(name = RestApiConstants.SIZE) Integer size);
+    @Operation(summary = "Fetch paginated resources (full data)")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/full/paged")
+    ResponseEntity<List<FullDto>> getAllFullPaged(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size);
 
     /**
-     * Find by id response entity.
+     * Retrieves a resource by ID.
      *
-     * @param requestContext the request context
-     * @param id             the id
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @param id             Resource identifier.
+     * @return The resource, if found.
      */
-    @Operation(summary = "Find object with full data by object identifier (uses Full Dto)",
-            description = "Find object with full data by object identifier (uses Full Dto)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+    @Operation(summary = "Fetch resource by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Resource found"),
+            @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @GetMapping(path = "/{id}")
-    ResponseEntity<FULLD> findById(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                   @PathVariable(name = RestApiConstants.ID) I id);
+    @GetMapping("/{id}")
+    ResponseEntity<FullDto> getById(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @PathVariable I id);
 
     /**
-     * Gets count.
+     * Retrieves the total count of resources.
      *
-     * @param requestContext the request context
-     * @return the count
+     * @param requestContext Optional user context.
+     * @return Count of resources.
      */
-    @Operation(summary = "Get objects count",
-            description = "Get objects count")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Long.class))})
-    })
-    @GetMapping(path = "/count")
+    @Operation(summary = "Get total resource count")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/count")
     ResponseEntity<Long> getCount(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
     /**
-     * Find all filtered by criteria response entity.
+     * Retrieves resources based on filter criteria.
      *
-     * @param requestContext the request context
-     * @param criteria       the criteria
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @param criteria       Filter criteria.
+     * @return List of matching resources.
      */
-    @Operation(summary = "Find all objects filtered by criteria cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5",
-            description = "Find all objects filtered by criteria cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "/filter")
-    ResponseEntity<List<FULLD>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                          @RequestParam(name = RestApiConstants.CRITERIA) String criteria);
+    @Operation(summary = "Fetch resources by filter criteria")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/filter")
+    ResponseEntity<List<FullDto>> getFiltered(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestParam String criteria);
 
     /**
-     * Find all filtered by criteria response entity.
+     * Retrieves filtered resources with pagination.
      *
-     * @param requestContext the request context
-     * @param criteria       the criteria
-     * @param page           the page
-     * @param size           the size
-     * @return the response entity
+     * @param requestContext Optional user context.
+     * @param criteria       Filter criteria.
+     * @param page           Page number (default = 0).
+     * @param size           Page size (default = 10).
+     * @return Paginated list of matching resources.
      */
-    @Operation(summary = "Find all objects filtered by criteria by page cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5",
-            description = "Find all objects filtered by criteria by page cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
-    })
-    @GetMapping(path = "/filter/{page}/{size}")
-    ResponseEntity<List<FULLD>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                          @RequestParam(name = RestApiConstants.CRITERIA) String criteria,
-                                                          @PathVariable(name = RestApiConstants.PAGE) Integer page,
-                                                          @PathVariable(name = RestApiConstants.SIZE) Integer size);
+    @Operation(summary = "Fetch paginated resources by filter criteria")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/filter/paged")
+    ResponseEntity<List<FullDto>> getFilteredPaged(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestParam String criteria,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size);
 
     /**
-     * Find all filter criteria response entity.
+     * Retrieves available filter criteria.
      *
-     * @return the response entity
+     * @return Available filter criteria.
      */
-    @Operation(summary = "Find all filter criteria",
-            description = "Find all filter criteria")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Map.class))})
-    })
-    @GetMapping(path = "/filter/criteria")
-    ResponseEntity<Map<String, String>> findAllFilterCriteria();
+    @Operation(summary = "Fetch available filter criteria")
+    @ApiResponse(responseCode = "200", description = "Successful retrieval")
+    @GetMapping("/filter/criteria")
+    ResponseEntity<Map<String, String>> getFilterCriteria();
 }

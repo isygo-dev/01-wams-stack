@@ -41,14 +41,14 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
     @Transactional
     public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
         validateFile(file);
-        T entity = this.findById(id).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id));
+        T entity = this.getById(id).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id));
         entity.setImagePath(storeImage(file, entity));
         return this.update(entity);
     }
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        T entity = this.findById(id).orElseThrow(() -> new ResourceNotFoundException("with id " + id));
+        T entity = this.getById(id).orElseThrow(() -> new ResourceNotFoundException("with id " + id));
         if (StringUtils.hasText(entity.getImagePath())) {
             Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
             if (!resource.exists()) {
@@ -80,7 +80,7 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
         if (Objects.nonNull(file) && !file.isEmpty()) {
             entity.setImagePath(storeImage(file, entity));
         } else {
-            this.findById((I) entity.getId()).ifPresent(object -> entity.setImagePath(object.getImagePath()));
+            this.getById((I) entity.getId()).ifPresent(object -> entity.setImagePath(object.getImagePath()));
             log.warn("File is null or empty");
         }
         return this.update(entity);

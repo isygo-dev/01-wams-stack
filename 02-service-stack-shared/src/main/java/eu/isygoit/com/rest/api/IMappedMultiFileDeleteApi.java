@@ -14,32 +14,43 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.Serializable;
+
 /**
- * The interface Mapped multi file delete api.
+ * The interface for managing the deletion of additional files associated with an object.
  *
- * @param <L> the type parameter
- * @param <I> the type parameter
+ * @param <L> the type of the linked file DTO
+ * @param <I> the type of the identifier for the files and parent objects
  */
-public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
+public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I extends Serializable> {
 
     /**
-     * Delete additional file response entity.
+     * Deletes an additional file associated with a given object.
      *
-     * @param requestContext the request context
-     * @param parentId       the parent id
-     * @param fileId         the file id
-     * @return the response entity
+     * @param requestContext the context of the current request or user
+     * @param parentId       the identifier of the parent object
+     * @param fileId         the identifier of the file to be deleted
+     * @return a ResponseEntity indicating success or failure of the deletion operation
      */
-    @Operation(summary = "Delete additional file for an object Api",
-            description = "Delete additional file for an object")
+    @Operation(
+            summary = "Delete an additional file associated with an object",
+            description = "Deletes an additional file linked to a specific object by its identifiers."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+            @ApiResponse(responseCode = "204",
+                    description = "File successfully deleted",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LinkedFileMinDto.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad request, invalid identifiers provided",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404",
+                    description = "File or object not found",
+                    content = @Content(mediaType = "application/json"))
     })
     @DeleteMapping(path = "/multi-files")
-    ResponseEntity<Boolean> deleteAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
-                                                 @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                 @RequestParam(name = RestApiConstants.FILE_ID) I fileId);
+    ResponseEntity<Boolean> delete(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestParam(name = RestApiConstants.FILE_ID) I fileId
+    );
 }

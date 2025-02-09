@@ -17,7 +17,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param entity the entity
      * @return the optional
      */
-    Optional<T> findByEntity(String entity);
+    Optional<T> getByEntity(String entity);
 
     /**
      * Find by domain and entity and attribute optional.
@@ -27,7 +27,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param attribute the attribute
      * @return the optional
      */
-    Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
+    Optional<T> getByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
 
     /**
      * Increment.

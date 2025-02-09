@@ -15,34 +15,45 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.Serializable;
+
 /**
- * The interface Mapped multi file download api.
+ * The interface for handling the download of additional files associated with an object.
  *
- * @param <L> the type parameter
- * @param <I> the type parameter
+ * @param <L> the type of the linked file DTO
+ * @param <I> the type of the identifier for the files and parent objects
  */
-public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
+public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I extends Serializable> {
 
     /**
-     * Download response entity.
+     * Downloads a file associated with a given object.
      *
-     * @param requestContext the request context
-     * @param parentId       the parent id
-     * @param fileId         the file id
-     * @param version        the version
-     * @return the response entity
+     * @param requestContext the context of the current request or user
+     * @param parentId       the identifier of the parent object
+     * @param fileId         the identifier of the file to be downloaded
+     * @param version        the version of the file to be downloaded
+     * @return a ResponseEntity containing the file resource and HTTP status
      */
-    @Operation(summary = "download Api",
-            description = "download")
+    @Operation(
+            summary = "Download a file associated with an object",
+            description = "Downloads a specific file linked to a parent object, identified by file ID and version."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                    description = "File downloaded successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LinkedFileMinDto.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "File or object not found",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400",
+                    description = "Bad request, invalid parameters",
+                    content = @Content(mediaType = "application/json"))
     })
     @GetMapping(path = "/multi-files/download")
-    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
-                                      @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                      @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
-                                      @RequestParam(name = RestApiConstants.VERSION) Long version);
+    ResponseEntity<Resource> download(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
+            @RequestParam(name = RestApiConstants.VERSION) Long version
+    );
 }

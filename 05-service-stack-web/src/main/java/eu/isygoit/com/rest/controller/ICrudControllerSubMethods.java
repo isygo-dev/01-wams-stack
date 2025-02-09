@@ -61,7 +61,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param id             the id
      * @return the response entity
      */
-    ResponseEntity<?> subDelete(RequestContextDto requestContext, I id);
+    ResponseEntity<String> subDelete(RequestContextDto requestContext, I id);
 
     /**
      * Sub delete response entity.
@@ -70,7 +70,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<?> subDelete(RequestContextDto requestContext, List<FULLD> objects);
+    ResponseEntity<String> subDelete(RequestContextDto requestContext, List<FULLD> objects);
 
     /**
      * Sub find all full response entity.
@@ -78,7 +78,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext);
+    ResponseEntity<List<FULLD>> subGetAllFull(RequestContextDto requestContext);
 
     /**
      * Sub find all full response entity.
@@ -88,7 +88,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size);
+    ResponseEntity<List<FULLD>> subGetAllFullPaged(RequestContextDto requestContext, int page, int size);
 
     /**
      * Sub find all response entity.
@@ -96,7 +96,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext);
+    ResponseEntity<List<MIND>> subGetAll(RequestContextDto requestContext);
 
     /**
      * Sub find all default response entity.
@@ -104,7 +104,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subFindAllDefault(RequestContextDto requestContext);
+    ResponseEntity<List<MIND>> subGetAllDefault(RequestContextDto requestContext);
 
     /**
      * Sub find all response entity.
@@ -114,7 +114,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext, Integer page, Integer size);
+    ResponseEntity<List<MIND>> subGetAllPaged(RequestContextDto requestContext, int page, int size);
 
     /**
      * Sub find by id response entity.
@@ -139,7 +139,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      *
      * @return the response entity
      */
-    ResponseEntity<Map<String, String>> subFindAllFilterCriteria();
+    ResponseEntity<Map<String, String>> subGetAllFilterCriteria();
 
     /**
      * Sub find all filtered by criteria response entity.
@@ -148,7 +148,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param criteria       the criteria
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria);
+    ResponseEntity<List<FULLD>> subGetAllFiltered(RequestContextDto requestContext, String criteria);
 
     /**
      * Sub find all filtered by criteria response entity.
@@ -159,5 +159,5 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size);
+    ResponseEntity<List<FULLD>> subGetAllFilteredPaged(RequestContextDto requestContext, String criteria, int page, int size);
 }

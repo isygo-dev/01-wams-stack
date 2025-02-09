@@ -101,7 +101,7 @@ public final class FileServiceDmsStaticMethods {
      */
     public static <L extends ILinkedFile & ICodifiable & IIdEntity> boolean delete(L entity, ILinkedFileApi linkedFileService) {
         String domain = getDomain(entity);
-        ResponseEntity<Boolean> result = linkedFileService.deleteFile(createRequestContext(entity), domain, entity.getCode());
+        ResponseEntity<Boolean> result = linkedFileService.delete(createRequestContext(entity), domain, entity.getCode());
 
         if (result.getStatusCode().is2xxSuccessful()) {
             log.info("File deleted successfully with domain {} and code {}", domain, entity.getCode());

@@ -18,7 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 
 
@@ -32,7 +32,7 @@ import java.nio.file.Files;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedImageController<I, T extends IIdEntity & IImageEntity,
+public abstract class MappedImageController<I extends Serializable, T extends IIdEntity & IImageEntity,
         MIND extends IIdentifiableDto & IImageUploadDto,
         FULLD extends MIND,
         S extends IImageServiceMethods<I, T> & ICrudServiceMethod<I, T>>
@@ -40,9 +40,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
         implements IMappedImageApi<I, FULLD> {
 
     @Override
-    public ResponseEntity<FULLD> uploadImage(RequestContextDto requestContext,
-                                             I id,
-                                             MultipartFile file) {
+    public ResponseEntity<FULLD> uploadImageAndLinkToObject(RequestContextDto requestContext,
+                                                            I id,
+                                                            MultipartFile file) {
         log.info("Upload image request received");
         try {
             return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderDomain(), id, file)));
@@ -54,7 +54,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
 
     @Override
     public ResponseEntity<Resource> downloadImage(RequestContextDto requestContext,
-                                                  I id) throws IOException {
+                                                  I id) {
         log.info("Download image request received");
         try {
             Resource imageResource = crudService().downloadImage(id);
@@ -69,9 +69,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
     }
 
     @Override
-    public ResponseEntity<FULLD> createWithImage(RequestContextDto requestContext,
-                                                 MultipartFile file,
-                                                 FULLD dto) {
+    public ResponseEntity<FULLD> createObjectWithImage(RequestContextDto requestContext,
+                                                       MultipartFile file,
+                                                       FULLD dto) {
         log.info("Create with image request received");
         try {
             if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getDomain())) {
@@ -88,9 +88,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
 
 
     @Override
-    public ResponseEntity<FULLD> updateWithImage(RequestContextDto requestContext,
-                                                 MultipartFile file,
-                                                 FULLD dto) {
+    public ResponseEntity<FULLD> updateObjectWithImage(RequestContextDto requestContext,
+                                                       MultipartFile file,
+                                                       FULLD dto) {
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);

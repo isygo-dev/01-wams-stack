@@ -61,5 +61,5 @@ public interface IFileServiceMethods<I, T extends IIdEntity & IFileEntity> {
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadFile(I id, Long version) throws IOException;
+    Resource download(I id, Long version) throws IOException;
 }

@@ -1,6 +1,5 @@
 package eu.isygoit.com.rest.api;
 
-
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdentifiableDto;
@@ -18,72 +17,85 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 /**
- * The interface Mapped image upload api.
+ * The interface for handling image upload operations for an object.
  *
- * @param <I> the type parameter
- * @param <D> the type parameter
+ * @param <I> the type of the identifier
+ * @param <D> the type of the DTO, which must implement both IIdentifiableDto and IImageUploadDto
  */
-public interface IMappedImageUploadApi<I, D extends IIdentifiableDto & IImageUploadDto> {
+public interface IMappedImageUploadApi<I extends Serializable, D extends IIdentifiableDto & IImageUploadDto> {
 
     /**
-     * Create with image response entity.
+     * Creates a new object and upload an associated image file.
      *
-     * @param requestContext the request context
-     * @param file           the file
-     * @param dto            the dto
-     * @return the response entity
+     * @param requestContext the context of the current user or request
+     * @param imageFile      the image file to be uploaded
+     * @param dto            the data transfer object containing the object details
+     * @return a ResponseEntity containing the created object and HTTP status
      */
-    @Operation(summary = "Create a new object and upload linked image file",
-            description = "Create a new object and upload linked image file")
+    @Operation(
+            summary = "Create a new object and upload its associated image",
+            description = "Create a new object and upload an associated image file"
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+            @ApiResponse(responseCode = "201",
+                    description = "Object created successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @Valid @RequestBody MultipartFile file, D dto);
+    ResponseEntity<D> createObjectWithImage(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @Valid @RequestParam("file") MultipartFile imageFile,
+            @Valid @RequestPart("dto") D dto
+    );
 
     /**
-     * Update with image response entity.
+     * Updates an existing object by uploading a new image file.
      *
-     * @param requestContext the request context
-     * @param file           the file
-     * @param dto            the dto
-     * @return the response entity
+     * @param requestContext the context of the current user or request
+     * @param imageFile      the new image file to upload
+     * @param dto            the data transfer object containing updated object details
+     * @return a ResponseEntity containing the updated object and HTTP status
      */
-    @Operation(summary = "Upload a new image file and update the linked object",
-            description = "Upload a new image file and update the linked object")
+    @Operation(
+            summary = "Update object with a new image",
+            description = "Upload a new image file and associate it with an existing object"
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                    description = "Object updated successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @Valid @RequestBody MultipartFile file, D dto);
+    ResponseEntity<D> updateObjectWithImage(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @Valid @RequestParam("file") MultipartFile imageFile,
+            @Valid @RequestPart("dto") D dto
+    );
 
     /**
-     * Upload image response entity.
+     * Uploads an image file and links it to an existing object by its identifier.
      *
-     * @param requestContext the request context
-     * @param id             the id
-     * @param file           the file
-     * @return the response entity
+     * @param requestContext the context of the current user or request
+     * @param objectId       the unique identifier of the object
+     * @param imageFile      the image file to be uploaded and linked
+     * @return a ResponseEntity containing the object with its new image link
      */
-    @Operation(summary = "Upload a new image file and link it to an object with object identifier",
-            description = "Upload a new image file and link it to an object with object identifier")
+    @Operation(
+            summary = "Upload image and link it to an object by identifier",
+            description = "Upload an image file and link it to an object identified by its ID"
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                    description = "Image uploaded and linked successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @PostMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                  @PathVariable(name = RestApiConstants.ID) I id,
-                                  @Valid @RequestBody MultipartFile file);
+    ResponseEntity<D> uploadImageAndLinkToObject(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @PathVariable(name = RestApiConstants.ID) I objectId,
+            @Valid @RequestParam("file") MultipartFile imageFile
+    );
 }

@@ -40,11 +40,11 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     private final Class<L> linkedFileClass = (Class<L>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
 
     @Override
-    public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) {
-        T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
+    public List<L> upload(I parentId, MultipartFile[] files) {
+        T entity = getById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
         Arrays.stream(files).forEach(file -> {
             try {
-                uploadAdditionalFile(parentId, file);
+                upload(parentId, file);
             } catch (IOException e) {
                 throw new UploadFileException(e);
             }
@@ -53,8 +53,8 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     }
 
     @Override
-    public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
-        T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
+    public List<L> upload(I parentId, MultipartFile file) throws IOException {
+        T entity = getById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
         if (Objects.nonNull(file) && !file.isEmpty()) {
             L linkedFile = createLinkedFile(entity, file);
             linkedFile = beforeUpload(entity, linkedFile, file);
@@ -74,8 +74,8 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     }
 
     @Override
-    public Resource downloadFile(I parentId, I fileId, Long version) throws IOException {
-        T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + parentId));
+    public Resource download(I parentId, I fileId, Long version) throws IOException {
+        T entity = getById(parentId).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + parentId));
         L linkedFile = findLinkedFileById(entity, fileId);
         if (linkedFile != null) {
             return subDownloadFile(linkedFile, version);
@@ -85,8 +85,8 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
     }
 
     @Override
-    public boolean deleteAdditionalFile(I parentId, I fileId) throws IOException {
-        T entity = findById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
+    public boolean delete(I parentId, I fileId) throws IOException {
+        T entity = getById(parentId).orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId));
         L linkedFile = findLinkedFileById(entity, fileId);
         if (linkedFile != null) {
             entity.getAdditionalFiles().removeIf(elm -> ((L) elm).getId().equals(fileId));

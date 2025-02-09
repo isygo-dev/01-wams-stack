@@ -96,7 +96,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param list           the list
      * @return the list
      */
-    List<FULLD> afterFindAllFull(RequestContextDto requestContext, List<FULLD> list);
+    List<FULLD> afterGetAllFull(RequestContextDto requestContext, List<FULLD> list);
 
     /**
      * After find all list.
@@ -105,5 +105,5 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param list           the list
      * @return the list
      */
-    List<MIND> afterFindAll(RequestContextDto requestContext, List<MIND> list);
+    List<MIND> afterGetAll(RequestContextDto requestContext, List<MIND> list);
 }

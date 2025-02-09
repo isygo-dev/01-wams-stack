@@ -99,7 +99,7 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
     @Transactional
     @Override
     public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
-        T entity = findById(id).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id));
+        T entity = getById(id).orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id));
 
         // Process the file (path, original filename, extension)
         if (Objects.nonNull(file) && !file.isEmpty()) {
@@ -118,8 +118,8 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
     }
 
     @Override
-    public Resource downloadFile(I id, Long version) throws IOException {
-        return subDownloadFile(findById(id)
+    public Resource download(I id, Long version) throws IOException {
+        return subDownloadFile(getById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id)), version);
     }
 
