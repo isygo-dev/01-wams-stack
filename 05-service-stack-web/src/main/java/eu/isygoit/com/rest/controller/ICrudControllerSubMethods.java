@@ -104,7 +104,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subGetAllDefault(RequestContextDto requestContext);
+    ResponseEntity<List<MIND>> subGetAssignedToDefaultDomain(RequestContextDto requestContext);
 
     /**
      * Sub find all response entity.

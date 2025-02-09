@@ -137,7 +137,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<MIND>> subGetAllDefault(RequestContextDto requestContext) {
+    public ResponseEntity<List<MIND>> subGetAssignedToDefaultDomain(RequestContextDto requestContext) {
         log.info("Find all {}s request received", persistentClass.getSimpleName());
         try {
             List<MIND> list = null;

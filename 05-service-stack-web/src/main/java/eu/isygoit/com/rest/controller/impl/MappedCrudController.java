@@ -78,7 +78,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     @Override
     public final ResponseEntity<List<MIND>> getAssignedToDefaultDomain(RequestContextDto requestContext) {
         log.info("Fetching entities assigned to default domain in context: {}", requestContext);
-        return subGetAllDefault(requestContext);
+        return subGetAssignedToDefaultDomain(requestContext);
     }
 
     /**
