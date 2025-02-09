@@ -41,6 +41,7 @@ public abstract class ControllerExceptionHandler implements IControllerException
      * @throws BeanNotFoundException if the exception handler bean is not found in the context
      * @throws ExceptionHandlerNotDefinedException if no handler is defined via annotations
      */
+    @Override
     public final IExceptionHandler getExceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
         if (Objects.isNull(this.handler)) {
             CtrlHandler ctrlHandlerAnnotation = this.getClass().getAnnotation(CtrlHandler.class);

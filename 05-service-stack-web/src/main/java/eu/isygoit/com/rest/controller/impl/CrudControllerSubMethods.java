@@ -2,25 +2,18 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -117,7 +110,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
                 afterDelete(entityId);
                 log.info("subDelete - Successfully deleted {} with I: {}", entityClass.getSimpleName(), entityId);
             }
-            return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+            return ResponseFactory.ResponseOk(getExceptionHandler().handleMessage("object.deleted.successfully"));
         } catch (Exception e) {
             // Log and return an error response if an exception occurs
             log.error("subDelete - Error occurred while deleting {} with I: {}. Exception: {}", entityClass.getSimpleName(), entityId, e.getMessage(), e);

@@ -17,7 +17,7 @@ public interface IControllerExceptionHandler {
      * @throws BeanNotFoundException               the bean not found exception
      * @throws ExceptionHandlerNotDefinedException the exception handler not defined exception
      */
-    IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException;
+    IExceptionHandler getExceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException;
 
     /**
      * Gets back exception response.
