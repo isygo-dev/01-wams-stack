@@ -123,7 +123,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param id             the id
      * @return the response entity
      */
-    ResponseEntity<FULLD> subFindById(RequestContextDto requestContext, I id);
+    ResponseEntity<FULLD> subGetById(RequestContextDto requestContext, I id);
 
 
     /**

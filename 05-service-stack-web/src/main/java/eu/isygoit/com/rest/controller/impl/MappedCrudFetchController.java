@@ -108,7 +108,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
     @Override
     public final ResponseEntity<FULLD> getById(RequestContextDto requestContext, I id) {
         log.info("Fetching entity by ID: {} with context: {}", id, requestContext);
-        return subFindById(requestContext, id);
+        return subGetById(requestContext, id);
     }
 
     /**
