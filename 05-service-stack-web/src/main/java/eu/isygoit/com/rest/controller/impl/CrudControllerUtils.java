@@ -20,10 +20,10 @@ import java.util.Objects;
 /**
  * The type Crud controller utils.
  *
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <T>     the type parameter for entity type
+ * @param <MIND>  the type parameter for minimal DTO
+ * @param <FULLD> the type parameter for full DTO
+ * @param <S>     the type parameter for service type
  */
 @Slf4j
 public abstract class CrudControllerUtils<T extends IIdEntity,
@@ -33,98 +33,98 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
         extends ControllerExceptionHandler
         implements ICrudControllerUtils<T, MIND, FULLD, S> {
 
-    /**
-     * The constant ERROR_BEAN_NOT_FOUND.
-     */
     public static final String ERROR_BEAN_NOT_FOUND = "<Error>: bean {} not found";
-    /**
-     * The constant CONTROLLER_SERVICE.
-     */
     public static final String CONTROLLER_SERVICE = "encrypt service";
+
     @Getter
     private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+
     @Getter
     private final Class<T> minDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-    private EntityMapper<T, FULLD> fullEntityMapper;
-    private EntityMapper<T, MIND> minEntityMapper;
-    private S crudService;
+
+    private EntityMapper<T, FULLD> fullDtoMapper;
+    private EntityMapper<T, MIND> minDtoMapper;
+    private S serviceInstance;
 
     @Override
     public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
-        if (Objects.isNull(this.crudService)) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (Objects.nonNull(ctrlDef)) {
-                this.crudService = (S) getApplicationContextService().getBean(ctrlDef.service());
-                if (Objects.isNull(this.crudService)) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.service().getSimpleName());
+        if (serviceInstance == null) {
+            var controllerDef = getClass().getAnnotation(CtrlDef.class);
+
+            if (controllerDef != null) {
+                serviceInstance = (S) getApplicationContextService().getBean(controllerDef.service());
+                if (serviceInstance == null) {
+                    log.error(ERROR_BEAN_NOT_FOUND, controllerDef.service().getSimpleName());
                     throw new BeanNotFoundException(CONTROLLER_SERVICE);
                 }
             } else {
-                CtrlService ctrlService = this.getClass().getAnnotation(CtrlService.class);
-                if (Objects.nonNull(ctrlService)) {
-                    this.crudService = (S) getApplicationContextService().getBean(ctrlService.value());
-                    if (Objects.isNull(this.crudService)) {
-                        log.error(ERROR_BEAN_NOT_FOUND, ctrlService.value().getSimpleName());
+                var controllerService = getClass().getAnnotation(CtrlService.class);
+                if (controllerService != null) {
+                    serviceInstance = (S) getApplicationContextService().getBean(controllerService.value());
+                    if (serviceInstance == null) {
+                        log.error(ERROR_BEAN_NOT_FOUND, controllerService.value().getSimpleName());
                         throw new BeanNotFoundException(CONTROLLER_SERVICE);
                     }
+                } else {
+                    log.error("<Error>: Service bean not defined");
+                    throw new ServiceNotDefinedException(CONTROLLER_SERVICE);
                 }
-                log.error("<Error>: Service bean not defined");
-                throw new ServiceNotDefinedException(CONTROLLER_SERVICE);
             }
         }
-
-        return this.crudService;
+        return serviceInstance;
     }
 
     @Override
     public final EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException {
-        if (Objects.isNull(this.fullEntityMapper)) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (Objects.nonNull(ctrlDef)) {
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlDef.mapper());
-                if (Objects.isNull(this.fullEntityMapper)) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.mapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlDef.mapper().getSimpleName());
+        if (fullDtoMapper == null) {
+            var controllerDef = getClass().getAnnotation(CtrlDef.class);
+
+            if (controllerDef != null) {
+                fullDtoMapper = getApplicationContextService().getBean(controllerDef.mapper());
+                if (fullDtoMapper == null) {
+                    log.error(ERROR_BEAN_NOT_FOUND, controllerDef.mapper().getSimpleName());
+                    throw new BeanNotFoundException(controllerDef.mapper().getSimpleName());
                 }
             } else {
-                CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlMapper.mapper());
-                if (Objects.isNull(this.fullEntityMapper)) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.mapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlMapper.mapper().getSimpleName());
+                var controllerMapper = getClass().getAnnotation(CtrlMapper.class);
+                fullDtoMapper = getApplicationContextService().getBean(controllerMapper.mapper());
+
+                if (fullDtoMapper == null) {
+                    log.error(ERROR_BEAN_NOT_FOUND, controllerMapper.mapper().getSimpleName());
+                    throw new BeanNotFoundException(controllerMapper.mapper().getSimpleName());
                 } else {
                     log.error("<Error>: FullDto Mapper bean not defined");
-                    throw new MapperNotDefinedException("Mapper");
+                    throw new MapperNotDefinedException("FullDto Mapper");
                 }
             }
         }
-
-        return this.fullEntityMapper;
+        return fullDtoMapper;
     }
 
     @Override
     public final EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
-        if (Objects.isNull(this.minEntityMapper)) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (Objects.nonNull(ctrlDef)) {
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlDef.minMapper());
-                if (Objects.isNull(this.minEntityMapper)) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.minMapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlDef.minMapper().getSimpleName());
+        if (minDtoMapper == null) {
+            var controllerDef = getClass().getAnnotation(CtrlDef.class);
+
+            if (controllerDef != null) {
+                minDtoMapper = getApplicationContextService().getBean(controllerDef.minMapper());
+                if (minDtoMapper == null) {
+                    log.error(ERROR_BEAN_NOT_FOUND, controllerDef.minMapper().getSimpleName());
+                    throw new BeanNotFoundException(controllerDef.minMapper().getSimpleName());
                 }
             } else {
-                CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlMapper.minMapper());
-                if (Objects.isNull(this.minEntityMapper)) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.minMapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlMapper.minMapper().getSimpleName());
+                var controllerMapper = getClass().getAnnotation(CtrlMapper.class);
+                minDtoMapper = getApplicationContextService().getBean(controllerMapper.minMapper());
+
+                if (minDtoMapper == null) {
+                    log.error(ERROR_BEAN_NOT_FOUND, controllerMapper.minMapper().getSimpleName());
+                    throw new BeanNotFoundException(controllerMapper.minMapper().getSimpleName());
                 } else {
                     log.error("<Error>: MinDto Mapper bean not defined");
                     throw new MapperNotDefinedException("MinDto Mapper");
                 }
             }
         }
-
-        return this.minEntityMapper;
+        return minDtoMapper;
     }
 }

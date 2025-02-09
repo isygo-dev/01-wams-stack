@@ -27,76 +27,76 @@ public abstract class FakeCrudController<I extends Serializable, T extends IIdEn
 
 
     @Override
-    public ResponseEntity<String> delete(RequestContextDto requestContext,
+    public final ResponseEntity<String> delete(RequestContextDto requestContext,
                                          I id) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<MIND>> getAll(RequestContextDto requestContext) {
+    public final ResponseEntity<List<MIND>> getAll(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<MIND>> getAllPaged(RequestContextDto requestContext,
+    public final ResponseEntity<List<MIND>> getAllPaged(RequestContextDto requestContext,
                                                   int page,
                                                   int size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> getAllFull(RequestContextDto requestContext) {
+    public final ResponseEntity<List<FULLD>> getAllFull(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> getAllFullPaged(RequestContextDto requestContext,
+    public final ResponseEntity<List<FULLD>> getAllFullPaged(RequestContextDto requestContext,
                                                        int page,
                                                        int size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<FULLD> getById(RequestContextDto requestContext,
+    public final ResponseEntity<FULLD> getById(RequestContextDto requestContext,
                                          I id) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<Long> getCount(RequestContextDto requestContext) {
+    public final ResponseEntity<Long> getCount(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<FULLD> create(//RequestContextDto requestContext,
+    public final ResponseEntity<FULLD> create(//RequestContextDto requestContext,
                                         FULLD object) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<FULLD> update(//RequestContextDto requestContext,
+    public final ResponseEntity<FULLD> update(//RequestContextDto requestContext,
                                         I id,
                                         FULLD object) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<MIND>> getAssignedToDefaultDomain(RequestContextDto requestContext) {
+    public final ResponseEntity<List<MIND>> getAssignedToDefaultDomain(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> getFiltered(RequestContextDto requestContext, String criteria) {
+    public final ResponseEntity<List<FULLD>> getFiltered(RequestContextDto requestContext, String criteria) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> getFilteredPaged(RequestContextDto requestContext, String criteria, int page, int size) {
+    public final ResponseEntity<List<FULLD>> getFilteredPaged(RequestContextDto requestContext, String criteria, int page, int size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> getFilterCriteria() {
+    public final ResponseEntity<Map<String, String>> getFilterCriteria() {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 }

@@ -11,13 +11,17 @@ import org.springframework.http.ResponseEntity;
 import java.io.Serializable;
 
 /**
- * The type Mapped crud delete controller.
+ * The type Mapped CRUD delete controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * This abstract controller handles the deletion of entities. It implements
+ * the logic for deleting entities by their ID and provides a base for deletion
+ * operations in subclasses.
+ *
+ * @param <I>     the type parameter representing the ID of the entity
+ * @param <T>     the type parameter representing the entity
+ * @param <MIND>  the type parameter representing the minimal DTO (view model)
+ * @param <FULLD> the type parameter representing the full DTO (detailed model)
+ * @param <S>     the type parameter representing the service interface
  */
 @Slf4j
 public abstract class MappedCrudDeleteController<I extends Serializable, T extends IIdEntity,
@@ -27,9 +31,18 @@ public abstract class MappedCrudDeleteController<I extends Serializable, T exten
         extends CrudControllerSubMethods<I, T, MIND, FULLD, S>
         implements IMappedCrudDeleteApi<I> {
 
+    /**
+     * Deletes an entity by its ID.
+     *
+     * @param requestContext the context of the current request, typically includes domain, user info, etc.
+     * @param id the ID of the entity to be deleted
+     * @return ResponseEntity containing a confirmation message
+     */
     @Override
-    public final ResponseEntity<String> delete(RequestContextDto requestContext,
-                                               I id) {
+    public final ResponseEntity<String> delete(RequestContextDto requestContext, I id) {
+        log.info("Received delete request for entity with ID: {} in context: {}", id, requestContext);
+
+        // Delegate the deletion logic to the corresponding method in the subclass
         return subDelete(requestContext, id);
     }
 }
