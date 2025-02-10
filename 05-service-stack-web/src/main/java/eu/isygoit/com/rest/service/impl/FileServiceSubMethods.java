@@ -28,93 +28,95 @@ import java.util.Optional;
 public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
         extends CodifiableService<I, T, R> {
 
-    // Cached instance of the linked file service, for efficiency
     private ILinkedFileApi linkedFileApi;
 
     // Abstract method to obtain an instance of the ApplicationContextService
     protected abstract ApplicationContextService getApplicationContextServiceInstance();
 
-    // Returns an Optional containing the ApplicationContextService, if present
     protected Optional<ApplicationContextService> getApplicationContextService() {
         return Optional.ofNullable(getApplicationContextServiceInstance());
     }
 
-    /**
-     * Retrieves the linked file service based on the class annotation, or falls back
-     * to using local storage if no external service is defined.
-     *
-     * @return the linked file service instance
-     * @throws LinkedFileServiceNotDefinedException if the linked file service cannot be found
-     */
+    // Method to get the linked file service from the context, falls back to null if not found
     private ILinkedFileApi getLinkedFileService() throws LinkedFileServiceNotDefinedException {
-        // If the linked file service is not yet fetched, attempt to retrieve it
         if (this.linkedFileApi == null) {
-            // Check if the DmsLinkFileService annotation is present on the class
             var annotation = getClass().getAnnotation(DmsLinkFileService.class);
 
-            // If annotation is found, try to obtain the bean from the application context
+            // If annotation is present, fetch the linked file service bean from the context
             if (annotation != null) {
                 var applicationContextService = getApplicationContextService()
                         .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
 
-                this.linkedFileApi = applicationContextService.getBean(annotation.value()); // Fetch the bean by the class specified in the annotation
+                this.linkedFileApi = applicationContextService.getBean(annotation.value());
                 if (Objects.isNull(this.linkedFileApi)) {
-                    // Log the error and throw an exception if the bean is not found
-                    String errorMessage = String.format("The linked file service bean '%s' could not be found in the application context.", annotation.value().getSimpleName());
+                    String errorMessage = String.format("The linked file service bean '%s' could not be found.", annotation.value().getSimpleName());
                     log.error(errorMessage);
                     throw new LinkedFileServiceNotDefinedException(errorMessage);
                 }
             } else {
-                // If no annotation is found, log that local storage will be used instead
-                log.warn("No linked file service defined for class '{}'. Local storage will be used as fallback.", getClass().getSimpleName());
+                log.warn("No linked file service defined for class '{}'. Local storage will be used.", getClass().getSimpleName());
             }
         }
         return this.linkedFileApi;
     }
 
+    // Functional Interface for file upload
+    @FunctionalInterface
+    interface FileUploadAction<T> {
+        Optional<String> upload(MultipartFile file, T entity) throws Exception;
+    }
+
+    // Functional Interface for file download
+    @FunctionalInterface
+    interface FileDownloadAction<T> {
+        Resource download(T entity, Long version) throws Exception;
+    }
+
     /**
-     * Handles file upload for an entity, either to an external file service (if available)
-     * or to local storage if no external service is defined.
+     * Handles file upload, using either a linked file service or local storage.
+     * Logs details about the upload process for traceability.
      *
      * @param file   the file to upload
-     * @param entity the entity to associate the uploaded file with
+     * @param entity the entity to associate with the uploaded file
      * @return an Optional containing the file code if the upload is successful, or empty if it fails
      */
     final Optional<String> subUploadFile(MultipartFile file, T entity) {
         try {
-            // Log the file upload initiation with entity information
-            log.info("Initiating file upload for entity '{}', file: '{}'.", entity.getClass().getSimpleName(), file.getOriginalFilename());
+            log.info("Starting file upload for entity '{}', file: '{}'.", entity.getClass().getSimpleName(), file.getOriginalFilename());
 
-            // Attempt to retrieve the linked file service
+            // Get the linked file service if available
             ILinkedFileApi linkedFileService = getLinkedFileService();
+            FileUploadAction<T> uploadAction;
 
-            // If a linked file service is available, upload the file to the external service
+            // If a linked file service exists, upload the file to it
             if (linkedFileService != null) {
                 log.info("Uploading file to external file service.");
-                return FileServiceDmsStaticMethods.upload(file, entity, linkedFileService)
+                uploadAction = (f, e) -> FileServiceDmsStaticMethods.upload(f, e, linkedFileService)
                         .map(response -> {
-                            // Log a success message and return the file code upon successful upload
-                            log.info("File uploaded to external service successfully with code '{}'.", response.getCode());
+                            log.info("File successfully uploaded to external service with code '{}'.", response.getCode());
                             return response.getCode();
                         });
             } else {
-                // If no external service is available, fall back to uploading the file locally
+                // If no external service is available, upload the file locally
                 log.info("No external file service found, uploading file to local storage.");
-                String fileCode = FileServiceLocalStaticMethods.upload(file, entity);
-                log.info("File uploaded locally with code '{}'.", fileCode);
-                return Optional.of(fileCode);
+                uploadAction = (f, e) -> {
+                    String fileCode = FileServiceLocalStaticMethods.upload(f, e);
+                    log.info("File successfully uploaded locally with code '{}'.", fileCode);
+                    return Optional.of(fileCode);
+                };
             }
+
+            // Execute the upload action
+            return uploadAction.upload(file, entity);
         } catch (Exception e) {
-            // Log the error message in case of an exception during the upload process
-            String errorMessage = String.format("File upload failed for entity '%s'. File: '%s'", entity.getClass().getSimpleName(), file.getOriginalFilename());
-            log.error(errorMessage, e);
+            log.error("File upload failed for entity '{}'. File: '{}'. Error: {}", entity.getClass().getSimpleName(), file.getOriginalFilename(), e.getMessage(), e);
         }
-        return Optional.empty();  // Return empty Optional if upload fails
+        return Optional.empty();  // Return an empty Optional if upload fails
     }
 
     /**
-     * Handles file download for an entity, either from an external file service (if available)
-     * or from local storage if no external service is defined.
+     * Handles file download, using either a linked file service or local storage.
+     * Logs details about the download process for traceability.
      *
      * @param entity  the entity associated with the file
      * @param version the version of the file to download
@@ -122,26 +124,27 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
      */
     final Resource subDownloadFile(T entity, Long version) {
         try {
-            // Log the file download initiation with entity and version information
-            log.info("Initiating download for entity '{}', version: '{}'.", entity.getClass().getSimpleName(), version);
+            log.info("Starting file download for entity '{}', version: '{}'.", entity.getClass().getSimpleName(), version);
 
-            // Attempt to retrieve the linked file service
+            // Get the linked file service if available
             ILinkedFileApi linkedFileService = getLinkedFileService();
+            FileDownloadAction<T> downloadAction;
 
-            // If a linked file service is available, attempt to download the file from it
+            // If a linked file service exists, download the file from it
             if (linkedFileService != null) {
                 log.info("Downloading file from external file service.");
-                return FileServiceDmsStaticMethods.download(entity, version, linkedFileService);
+                downloadAction = (e, v) -> FileServiceDmsStaticMethods.download(e, v, linkedFileService);
             } else {
-                // If no external service is available, fall back to downloading the file locally
+                // If no external service is available, download the file locally
                 log.info("No external file service found, downloading file from local storage.");
-                return FileServiceLocalStaticMethods.download(entity, version);
+                downloadAction = (e, v) -> FileServiceLocalStaticMethods.download(e, v);
             }
+
+            // Execute the download action
+            return downloadAction.download(entity, version);
         } catch (Exception e) {
-            // Log an error message if the download process fails
-            String errorMessage = String.format("File download failed for entity '%s', version '%d'.", entity.getClass().getSimpleName(), version);
-            log.error(errorMessage, e);
+            log.error("File download failed for entity '{}', version '{}'. Error: {}", entity.getClass().getSimpleName(), version, e.getMessage(), e);
         }
-        return null;  // Return null if download fails (you could consider throwing an exception instead)
+        return null;  // Return null if download fails
     }
 }
