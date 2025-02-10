@@ -8,12 +8,12 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.ExceptionHandlerNotDefinedException;
 import eu.isygoit.exception.handler.IExceptionHandler;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Abstract base class for handling exceptions in controllers.
@@ -22,13 +22,16 @@ import java.util.Objects;
 @Slf4j
 public abstract class ControllerExceptionHandler implements IControllerExceptionHandler {
 
-    // Service for fetching beans from the Spring application context
-    @Getter
-    @Autowired
-    private ApplicationContextService applicationContextService;
 
     // The handler responsible for processing exceptions
     private IExceptionHandler handler;
+
+    protected abstract ApplicationContextService getApplicationContextServiceInstance();
+
+    // Returns an Optional containing the ApplicationContextService, if present
+    protected Optional<ApplicationContextService> getApplicationContextService() {
+        return Optional.ofNullable(getApplicationContextServiceInstance());
+    }
 
     /**
      * Retrieves the appropriate exception handler for the controller.
@@ -44,7 +47,10 @@ public abstract class ControllerExceptionHandler implements IControllerException
     @Override
     public final IExceptionHandler getExceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
         if (Objects.isNull(this.handler)) {
-            CtrlHandler ctrlHandlerAnnotation = this.getClass().getAnnotation(CtrlHandler.class);
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
+            var ctrlHandlerAnnotation = this.getClass().getAnnotation(CtrlHandler.class);
+            
             if (Objects.nonNull(ctrlHandlerAnnotation)) {
                 // Fetch the handler bean from the application context
                 this.handler = applicationContextService.getBean(ctrlHandlerAnnotation.value());
@@ -54,7 +60,8 @@ public abstract class ControllerExceptionHandler implements IControllerException
                 }
             } else {
                 // If CtrlHandler annotation is absent, check for CtrlDef annotation
-                CtrlDef ctrlDefAnnotation = this.getClass().getAnnotation(CtrlDef.class);
+                var ctrlDefAnnotation = this.getClass().getAnnotation(CtrlDef.class);
+                
                 if (Objects.nonNull(ctrlDefAnnotation)) {
                     this.handler = applicationContextService.getBean(ctrlDefAnnotation.handler());
                     if (Objects.isNull(this.handler)) {

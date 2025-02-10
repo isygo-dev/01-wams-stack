@@ -43,5 +43,5 @@ public interface IExceptionHandler {
      *
      * @return the entity map
      */
-    Map<String, Class<?>> getEntityMap();
+    Map<String, Class<?>> getEntityClasses();
 }

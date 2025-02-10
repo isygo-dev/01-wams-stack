@@ -16,14 +16,14 @@ public interface IService {
      * @param <T> the type parameter
      * @return the optional
      */
-    <T extends NextCodeModel> Optional<T> initCodeGenerator();
+    <T extends NextCodeModel> Optional<T> initializeCodeGenerator();
 
     /**
      * Gets next code.
      *
      * @return the next code
      */
-    Optional<String> getNextCode();
+    Optional<String> generateNextCode();
 
     /**
      * Before persist e.
@@ -32,5 +32,5 @@ public interface IService {
      * @param entity the entity
      * @return the e
      */
-    <E extends IIdEntity> E beforePersist(E entity);
+    <E extends IIdEntity> E beforeSave(E entity);
 }

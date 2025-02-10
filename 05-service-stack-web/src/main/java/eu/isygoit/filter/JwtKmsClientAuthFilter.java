@@ -4,35 +4,50 @@ import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.enums.IEnumAppToken;
 import eu.isygoit.exception.RemoteCallFailedException;
 import eu.isygoit.exception.TokenInvalidException;
-import eu.isygoit.service.TokenServiceApi;
+import eu.isygoit.service.token.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The type Jwt kms client auth filter.
+ * <p>
+ * Inherited services should autowire:
+ * private TokenServiceApi tokenService;
  */
 @Slf4j
-public class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
+public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
-    @Autowired
-    private TokenServiceApi tokenService;
+    /**
+     * Gets repository instance.
+     *
+     * @return the repository instance
+     */
+    protected abstract TokenServiceApi getTokenServiceInstance();
+
+    /**
+     * Gets token service.
+     *
+     * @return the token service
+     */
+    protected Optional<TokenServiceApi> getTokenService() {
+        return Optional.ofNullable(getTokenServiceInstance());
+    }
 
     @Override
     public boolean isTokenValid(String jwt, String domain, String application, String userName) {
-        if (Objects.isNull(tokenService)) {
-            log.error("Token service is unavailable for domain: {}, application: {}, user: {}", domain, application, userName);
-            throw new TokenInvalidException("No token validator available");
-        }
+        var tokenService = getTokenService()
+                .orElseThrow(() -> {
+                    log.error("Token service is unavailable for domain: {}, application: {}, user: {}", domain, application, userName);
+                    return new TokenInvalidException("No token validator available");
+                });
 
         try {
-            ResponseEntity<Boolean> result = tokenService.isTokenValid(RequestContextDto.builder().build(),
-                    domain, application, IEnumAppToken.Types.ACCESS, jwt,
+            var requestContext = RequestContextDto.builder().build();
+            var result = tokenService.validateToken(requestContext, domain, application, IEnumAppToken.Types.ACCESS, jwt,
                     userName.toLowerCase() + "@" + domain);
 
             if (!result.getStatusCode().is2xxSuccessful() || !result.hasBody() || Boolean.FALSE.equals(result.getBody())) {

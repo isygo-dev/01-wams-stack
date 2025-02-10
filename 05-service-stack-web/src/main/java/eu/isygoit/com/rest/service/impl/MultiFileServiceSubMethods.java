@@ -10,11 +10,12 @@ import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The type Multi file service sub methods.
@@ -28,14 +29,22 @@ import java.util.Objects;
 public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & ICodifiable & IIdEntity, R extends JpaPagingAndSortingRepository>
         extends CodifiableService<I, T, R> {
 
-    @Autowired
-    private ApplicationContextService applicationContextService;
-
     private ILinkedFileApi linkedFileApi;
+
+    protected abstract ApplicationContextService getApplicationContextServiceInstance();
+
+    // Returns an Optional containing the ApplicationContextService, if present
+    protected Optional<ApplicationContextService> getApplicationContextService() {
+        return Optional.ofNullable(getApplicationContextServiceInstance());
+    }
 
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
         if (Objects.isNull(this.linkedFileApi)) {
-            DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
+            
+            var annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
+            
             if (Objects.nonNull(annotation)) {
                 this.linkedFileApi = applicationContextService.getBean(annotation.value());
                 if (Objects.isNull(this.linkedFileApi)) {
@@ -67,7 +76,8 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
      */
     final L subUploadFile(MultipartFile file, L entity) {
         return executeFileOperation(() -> {
-            ILinkedFileApi linkedFileService = this.linkedFileService();
+            var linkedFileService = this.linkedFileService();
+
             if (Objects.nonNull(linkedFileService)) {
                 FileServiceDmsStaticMethods.upload(file, entity, linkedFileService)
                         .ifPresent(linkedFileResponseDto -> entity.setCode(linkedFileResponseDto.getCode()));
@@ -87,7 +97,8 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
      */
     final Resource subDownloadFile(L entity, Long version) {
         return executeFileOperation(() -> {
-            ILinkedFileApi linkedFileService = this.linkedFileService();
+            var linkedFileService = this.linkedFileService();
+
             if (Objects.nonNull(linkedFileService)) {
                 return FileServiceDmsStaticMethods.download(entity, version, linkedFileService);
             } else {
@@ -105,7 +116,8 @@ public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity &
     final boolean subDeleteFile(L entity) {
         return executeFileOperation(() -> {
             repository().delete(entity);
-            ILinkedFileApi linkedFileService = this.linkedFileService();
+
+            var linkedFileService = this.linkedFileService();
             if (Objects.nonNull(linkedFileService)) {
                 return FileServiceDmsStaticMethods.delete(entity, linkedFileService);
             } else {

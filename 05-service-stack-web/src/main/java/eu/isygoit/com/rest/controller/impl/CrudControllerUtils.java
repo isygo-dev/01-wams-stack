@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.annotation.CtrlDef;
 import eu.isygoit.annotation.CtrlMapper;
 import eu.isygoit.annotation.CtrlService;
+import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IIdentifiableDto;
@@ -13,6 +14,7 @@ import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContextException;
 
 import java.lang.reflect.ParameterizedType;
 
@@ -48,10 +50,12 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     @Override
     public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
         if (serviceInstance == null) {
-            var controllerDef = getClass().getAnnotation(CtrlDef.class);
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
 
+            var controllerDef = getClass().getAnnotation(CtrlDef.class);
             if (controllerDef != null) {
-                serviceInstance = (S) getApplicationContextService().getBean(controllerDef.service());
+                serviceInstance = (S) applicationContextService.getBean(controllerDef.service());
                 if (serviceInstance == null) {
                     log.error(ERROR_BEAN_NOT_FOUND, controllerDef.service().getSimpleName());
                     throw new BeanNotFoundException(CONTROLLER_SERVICE);
@@ -59,7 +63,7 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
             } else {
                 var controllerService = getClass().getAnnotation(CtrlService.class);
                 if (controllerService != null) {
-                    serviceInstance = (S) getApplicationContextService().getBean(controllerService.value());
+                    serviceInstance = (S) applicationContextService.getBean(controllerService.value());
                     if (serviceInstance == null) {
                         log.error(ERROR_BEAN_NOT_FOUND, controllerService.value().getSimpleName());
                         throw new BeanNotFoundException(CONTROLLER_SERVICE);
@@ -76,17 +80,20 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     @Override
     public final EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (fullDtoMapper == null) {
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
+
             var controllerDef = getClass().getAnnotation(CtrlDef.class);
 
             if (controllerDef != null) {
-                fullDtoMapper = getApplicationContextService().getBean(controllerDef.mapper());
+                fullDtoMapper = applicationContextService.getBean(controllerDef.mapper());
                 if (fullDtoMapper == null) {
                     log.error(ERROR_BEAN_NOT_FOUND, controllerDef.mapper().getSimpleName());
                     throw new BeanNotFoundException(controllerDef.mapper().getSimpleName());
                 }
             } else {
                 var controllerMapper = getClass().getAnnotation(CtrlMapper.class);
-                fullDtoMapper = getApplicationContextService().getBean(controllerMapper.mapper());
+                fullDtoMapper = applicationContextService.getBean(controllerMapper.mapper());
 
                 if (fullDtoMapper == null) {
                     log.error(ERROR_BEAN_NOT_FOUND, controllerMapper.mapper().getSimpleName());
@@ -103,17 +110,20 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     @Override
     public final EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (minDtoMapper == null) {
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
+            
             var controllerDef = getClass().getAnnotation(CtrlDef.class);
 
             if (controllerDef != null) {
-                minDtoMapper = getApplicationContextService().getBean(controllerDef.minMapper());
+                minDtoMapper = applicationContextService.getBean(controllerDef.minMapper());
                 if (minDtoMapper == null) {
                     log.error(ERROR_BEAN_NOT_FOUND, controllerDef.minMapper().getSimpleName());
                     throw new BeanNotFoundException(controllerDef.minMapper().getSimpleName());
                 }
             } else {
                 var controllerMapper = getClass().getAnnotation(CtrlMapper.class);
-                minDtoMapper = getApplicationContextService().getBean(controllerMapper.minMapper());
+                minDtoMapper = applicationContextService.getBean(controllerMapper.minMapper());
 
                 if (minDtoMapper == null) {
                     log.error(ERROR_BEAN_NOT_FOUND, controllerMapper.minMapper().getSimpleName());

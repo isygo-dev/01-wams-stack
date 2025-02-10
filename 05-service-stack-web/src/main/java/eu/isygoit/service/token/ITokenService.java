@@ -1,4 +1,4 @@
-package eu.isygoit.service;
+package eu.isygoit.service.token;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.isygoit.dto.common.TokenDto;

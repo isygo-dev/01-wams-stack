@@ -66,7 +66,8 @@ public abstract class ManagedException extends RuntimeException {
      */
     public String getMsgLocale() {
         String value = null;
-        MsgLocale msgLocale = this.getClass().getAnnotation(MsgLocale.class);
+        var msgLocale = this.getClass().getAnnotation(MsgLocale.class);
+
         if (Objects.nonNull(msgLocale) && StringUtils.hasText(msgLocale.value())) {
             value = msgLocale.value();
         } else {

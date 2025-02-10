@@ -15,8 +15,8 @@ import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.INextCodeService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,13 +41,15 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
      * The In memo next code.
      */
     static final Map<String, NextCodeModel> inMemoNextCode = new HashMap<>();
-
-    @Autowired
-    private ApplicationContextService applicationContextServie;
-
     private INextCodeService<NextCodeModel> nextCodeService;
-
     private IRemoteNextCodeService remoteNextCodeService;
+
+    protected abstract ApplicationContextService getApplicationContextServiceInstance();
+
+    // Returns an Optional containing the ApplicationContextService, if present
+    protected Optional<ApplicationContextService> getApplicationContextService() {
+        return Optional.ofNullable(getApplicationContextServiceInstance());
+    }
 
     /**
      * Register incremental next code.
@@ -101,7 +103,7 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
         NextCodeModel nextCode = inMemoNextCode.computeIfAbsent(key, k -> loadNextCodeFromDb(initNextCode));
 
         if (nextCode != null) {
-            nextCodeService.increment(nextCode.getDomain(), nextCode.getEntity(), nextCode.getIncrement());
+            nextCodeService.incrementNextCode(nextCode.getDomain(), nextCode.getEntity(), nextCode.getIncrement());
             return Optional.ofNullable(nextCode.nextCode().getCode());
         }
 
@@ -109,7 +111,7 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
     }
 
     private NextCodeModel loadNextCodeFromDb(NextCodeModel initNextCode) {
-        return nextCodeService.getByDomainAndEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute())
+        return nextCodeService.getByDomainEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute())
                 .orElseGet(() -> nextCodeService.saveAndFlush(initNextCode));
     }
 
@@ -147,10 +149,16 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
 
     @Override
     public final IRemoteNextCodeService remoteNextCodeService() {
+
+
         if (remoteNextCodeService == null) {
-            CodeGenKms annotation = this.getClass().getAnnotation(CodeGenKms.class);
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
+            
+            var annotation = this.getClass().getAnnotation(CodeGenKms.class);
+            
             if (annotation != null) {
-                remoteNextCodeService = applicationContextServie.getBean(annotation.value());
+                remoteNextCodeService = applicationContextService.getBean(annotation.value());
                 if (remoteNextCodeService == null) {
                     log.error("Bean {} not found", annotation.value().getSimpleName());
                     throw new RemoteNextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName());
@@ -162,10 +170,16 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
 
     @Override
     public final INextCodeService<NextCodeModel> nextCodeService() {
+
+
         if (nextCodeService == null) {
-            CodeGenLocal annotation = this.getClass().getAnnotation(CodeGenLocal.class);
+            var applicationContextService = getApplicationContextService()
+                    .orElseThrow(() -> new ApplicationContextException("ApplicationContextService not found"));
+            
+            var annotation = this.getClass().getAnnotation(CodeGenLocal.class);
+            
             if (annotation != null) {
-                nextCodeService = applicationContextServie.getBean(annotation.value());
+                nextCodeService = applicationContextService.getBean(annotation.value());
                 if (nextCodeService == null) {
                     log.error("Bean {} not found", annotation.value().getSimpleName());
                     throw new NextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName());

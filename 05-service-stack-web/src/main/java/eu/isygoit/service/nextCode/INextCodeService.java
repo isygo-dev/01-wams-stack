@@ -27,7 +27,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param attribute the attribute
      * @return the optional
      */
-    Optional<T> getByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
+    Optional<T> getByDomainEntityAndAttribute(String domain, String entity, String attribute);
 
     /**
      * Increment.
@@ -36,7 +36,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param entity    the entity
      * @param increment the increment
      */
-    void increment(String domain, String entity, Integer increment);
+    void incrementNextCode(String domain, String entity, Integer increment);
 
     /**
      * Save and flush t.
@@ -52,5 +52,5 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param nextCode the next code
      * @return the t
      */
-    T save(T nextCode);
+    T saveNextCode(T nextCode);
 }
