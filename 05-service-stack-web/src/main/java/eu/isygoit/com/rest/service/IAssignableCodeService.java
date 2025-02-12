@@ -7,14 +7,16 @@ import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.INextCodeService;
 
+import java.io.Serializable;
+
 /**
  * The interface Codifiable service.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface ICodifiableService<I, T extends IIdEntity>
-        extends ICrudServiceMethod<I, T> {
+public interface IAssignableCodeService<I extends Serializable, E extends IIdEntity>
+        extends ICrudServiceMethod<I, E> {
 
     /**
      * Init code generator next code model.

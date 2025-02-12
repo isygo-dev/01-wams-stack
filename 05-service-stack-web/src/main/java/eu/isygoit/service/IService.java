@@ -11,10 +11,10 @@ public interface IService {
     /**
      * Init code generator t.
      *
-     * @param <T> the type parameter
+     * @param <E> the type parameter
      * @return the t
      */
-    <T extends NextCodeModel> T initCodeGenerator();
+    <E extends NextCodeModel> E initCodeGenerator();
 
     /**
      * Gets next code.

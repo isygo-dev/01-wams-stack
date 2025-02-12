@@ -18,14 +18,14 @@ import java.io.Serializable;
 /**
  * The type Field process param model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class FieldProcessParamModel<T extends Serializable> extends AuditableEntity<T> {
+public abstract class FieldProcessParamModel<I extends Serializable> extends AuditableEntity<I> {
 
     @Length(max = ComSchemaConstantSize.S_NAME)
     @Column(name = ComSchemaColumnConstantName.C_PROCESS_NAME, length = ComSchemaConstantSize.S_NAME, nullable = false)

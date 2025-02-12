@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.Serializable;
+
 /**
  * The interface Mapped file download api.
  *
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedFileDownloadApi<I, D extends IFileUploadDto> {
+public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileUploadDto> {
 
 
     /**

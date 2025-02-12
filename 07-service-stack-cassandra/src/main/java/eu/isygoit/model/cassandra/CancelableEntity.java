@@ -15,14 +15,14 @@ import java.util.Date;
 /**
  * The type Cancelable entity.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class CancelableEntity<T> extends AbstractEntity<T> {
+public abstract class CancelableEntity<I> extends AbstractEntity<I> {
 
     @Builder.Default
     @CassandraType(type = CassandraType.Name.BOOLEAN)

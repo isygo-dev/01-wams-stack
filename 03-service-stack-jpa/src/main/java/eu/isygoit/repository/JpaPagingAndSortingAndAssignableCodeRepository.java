@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IIdEntity;
 import org.springframework.data.repository.NoRepositoryBean;
 
@@ -12,13 +12,13 @@ import java.util.Optional;
 /**
  * The interface Jpa paging and sorting codifiable repository.
  *
- * @param <T> the type parameter
  * @param <I> the type parameter
+ * @param <E> the type parameter
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingCodifiableRepository<T extends ICodifiable & IIdEntity, I extends Serializable>
-        extends JpaPagingAndSortingRepository<T, I> {
+public interface JpaPagingAndSortingAndAssignableCodeRepository<I extends Serializable, E extends IAssignableCode & IIdEntity>
+        extends JpaPagingAndSortingRepository<I, E> {
 
     /**
      * Exists by code ignore case boolean.
@@ -34,7 +34,7 @@ public interface JpaPagingAndSortingCodifiableRepository<T extends ICodifiable &
      * @param code the code
      * @return the optional
      */
-    Optional<T> findByCodeIgnoreCase(String code);
+    Optional<E> findByCodeIgnoreCase(String code);
 
     /**
      * Find by code ignore case in list.
@@ -42,5 +42,5 @@ public interface JpaPagingAndSortingCodifiableRepository<T extends ICodifiable &
      * @param codeList the code list
      * @return the list
      */
-    List<T> findByCodeIgnoreCaseIn(List<String> codeList);
+    List<E> findByCodeIgnoreCaseIn(List<String> codeList);
 }

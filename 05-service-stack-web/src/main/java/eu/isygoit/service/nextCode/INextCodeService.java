@@ -5,9 +5,9 @@ import eu.isygoit.model.extendable.NextCodeModel;
 /**
  * The interface Next code service.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface INextCodeService<T extends NextCodeModel> {
+public interface INextCodeService<E extends NextCodeModel> {
 
     /**
      * Find by entity t.
@@ -15,7 +15,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param entity the entity
      * @return the t
      */
-    T findByEntity(String entity);
+    E findByEntity(String entity);
 
     /**
      * Find by domain and entity and attribute t.
@@ -25,7 +25,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param attribute the attribute
      * @return the t
      */
-    T findByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
+    E findByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
 
     /**
      * Increment.
@@ -42,7 +42,7 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param nextCodeModel the next code model
      * @return the t
      */
-    T saveAndFlush(T nextCodeModel);
+    E saveAndFlush(E nextCodeModel);
 
     /**
      * Save t.
@@ -50,5 +50,5 @@ public interface INextCodeService<T extends NextCodeModel> {
      * @param nextCode the next code
      * @return the t
      */
-    T save(T nextCode);
+    E save(E nextCode);
 }

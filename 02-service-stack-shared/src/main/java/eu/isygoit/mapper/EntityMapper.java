@@ -10,10 +10,10 @@ import java.util.Set;
 /**
  * The interface Entity mapper.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <D> the type parameter
  */
-public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
+public interface EntityMapper<E extends IIdEntity, D extends IIdentifiableDto> {
 
     /**
      * Dto to entity t.
@@ -21,7 +21,7 @@ public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
      * @param object the object
      * @return the t
      */
-    T dtoToEntity(D object);
+    E dtoToEntity(D object);
 
     /**
      * Entity to dto d.
@@ -29,7 +29,7 @@ public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
      * @param object the object
      * @return the d
      */
-    D entityToDto(T object);
+    D entityToDto(E object);
 
     /**
      * List dto to entity list.
@@ -37,7 +37,7 @@ public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
      * @param list the list
      * @return the list
      */
-    List<T> listDtoToEntity(List<D> list);
+    List<E> listDtoToEntity(List<D> list);
 
     /**
      * List dto to entity set.
@@ -45,7 +45,7 @@ public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
      * @param list the list
      * @return the set
      */
-    Set<T> listDtoToEntity(Set<D> list);
+    Set<E> listDtoToEntity(Set<D> list);
 
     /**
      * List entity to dto list.
@@ -53,7 +53,7 @@ public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
      * @param list the list
      * @return the list
      */
-    List<D> listEntityToDto(List<T> list);
+    List<D> listEntityToDto(List<E> list);
 
     /**
      * List entity to dto set.
@@ -61,6 +61,6 @@ public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
      * @param list the list
      * @return the set
      */
-    Set<D> listEntityToDto(Set<T> list);
+    Set<D> listEntityToDto(Set<E> list);
 
 }

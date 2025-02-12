@@ -6,14 +6,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * The interface Image service methods.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface IImageServiceMethods<I, T extends IIdEntity & IImageEntity> {
+public interface IImageServiceMethods<I extends Serializable, E extends IIdEntity & IImageEntity> {
 
     /**
      * Upload image t.
@@ -24,7 +25,7 @@ public interface IImageServiceMethods<I, T extends IIdEntity & IImageEntity> {
      * @return the t
      * @throws IOException the io exception
      */
-    T uploadImage(String senderDomain, I id, MultipartFile image) throws IOException;
+    E uploadImage(String senderDomain, I id, MultipartFile image) throws IOException;
 
     /**
      * Download image resource.
@@ -44,7 +45,7 @@ public interface IImageServiceMethods<I, T extends IIdEntity & IImageEntity> {
      * @return the t
      * @throws IOException the io exception
      */
-    T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException;
+    E createWithImage(String senderDomain, E entity, MultipartFile file) throws IOException;
 
     /**
      * Update with image t.
@@ -55,5 +56,5 @@ public interface IImageServiceMethods<I, T extends IIdEntity & IImageEntity> {
      * @return the t
      * @throws IOException the io exception
      */
-    T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException;
+    E updateWithImage(String senderDomain, E entity, MultipartFile file) throws IOException;
 }

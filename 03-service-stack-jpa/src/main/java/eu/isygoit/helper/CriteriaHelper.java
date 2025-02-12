@@ -81,15 +81,15 @@ public class CriteriaHelper {
     /**
      * Build specification specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param domain    the domain
      * @param criteria  the criteria
      * @param classType the class type
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
+    public static <E extends IIdEntity> Specification<E> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
         Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(classType);
-        Specification<T> specification = Specification.where(null);
+        Specification<E> specification = Specification.where(null);
         for (QueryCriteria cr : criteria) {
             String name = cr.getName();
             String value = cr.getValue();
@@ -97,7 +97,7 @@ public class CriteriaHelper {
                 throw new WrongCriteriaFilterException("with name: " + name);
             }
 
-            Specification<T> criteriaSpec;
+            Specification<E> criteriaSpec;
             switch (cr.getOperator()) {
                 case EQ:
                     criteriaSpec = CriteriaHelper.equal(name, value);
@@ -147,96 +147,96 @@ public class CriteriaHelper {
     /**
      * Like specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> like(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> like(String valueName, String value) {
         return (entity, cq, cb) -> cb.like(entity.get(valueName), "%" + value + "%");
     }
 
     /**
      * Not like specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> notLike(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> notLike(String valueName, String value) {
         return (entity, cq, cb) -> cb.notLike(entity.get(valueName), "%" + value + "%");
     }
 
     /**
      * Equal specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> equal(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> equal(String valueName, String value) {
         return (entity, cq, cb) -> cb.equal(entity.get(valueName), value);
     }
 
     /**
      * Not equal specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> notEqual(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> notEqual(String valueName, String value) {
         return (entity, cq, cb) -> cb.notEqual(entity.get(valueName), value);
     }
 
     /**
      * Less than specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> lessThan(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> lessThan(String valueName, String value) {
         return (entity, cq, cb) -> cb.lessThan(entity.get(valueName), value);
     }
 
     /**
      * Less than or equal to specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> lessThanOrEqualTo(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> lessThanOrEqualTo(String valueName, String value) {
         return (entity, cq, cb) -> cb.lessThanOrEqualTo(entity.get(valueName), value);
     }
 
     /**
      * Greater than specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> greaterThan(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> greaterThan(String valueName, String value) {
         return (entity, cq, cb) -> cb.greaterThan(entity.get(valueName), value);
     }
 
     /**
      * Greater than or equal to specification.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param valueName the value name
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> greaterThanOrEqualTo(String valueName, String value) {
+    public static <E extends IIdEntity> Specification<E> greaterThanOrEqualTo(String valueName, String value) {
         return (entity, cq, cb) -> cb.greaterThanOrEqualTo(entity.get(valueName), value);
     }
 }

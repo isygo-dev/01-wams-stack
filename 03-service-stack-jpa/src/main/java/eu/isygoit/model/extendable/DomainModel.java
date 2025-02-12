@@ -20,14 +20,14 @@ import java.io.Serializable;
 /**
  * The type Domain model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class DomainModel<T extends Serializable> extends AuditableCancelableEntity<T> {
+public abstract class DomainModel<I extends Serializable> extends AuditableCancelableEntity<I> {
 
     @Column(name = ComSchemaColumnConstantName.C_NAME, length = ComSchemaConstantSize.S_NAME, updatable = false)
     private String name;

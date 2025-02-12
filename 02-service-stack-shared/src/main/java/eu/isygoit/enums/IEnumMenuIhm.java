@@ -8,9 +8,9 @@ public interface IEnumMenuIhm {
     /**
      * The interface Menu.
      *
-     * @param <T> the type parameter
+     * @param <E> the type parameter
      */
-    interface IMenu<T extends IRootMenu> extends IEnumType<IMenu> {
+    interface IMenu<E extends IRootMenu> extends IEnumType<IMenu> {
 
         /**
          * Gets code.
@@ -45,7 +45,7 @@ public interface IEnumMenuIhm {
          *
          * @return the root menu
          */
-        T getRootMenu();
+        E getRootMenu();
 
         /**
          * Gets url.

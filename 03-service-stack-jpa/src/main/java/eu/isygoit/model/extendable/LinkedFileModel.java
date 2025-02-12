@@ -16,14 +16,14 @@ import java.io.Serializable;
 /**
  * The type Linked file model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class LinkedFileModel<T extends Serializable> extends FileEntity<T> implements ILinkedFile {
+public abstract class LinkedFileModel<I extends Serializable> extends FileEntity<I> implements ILinkedFile {
 
     @Column(name = ComSchemaColumnConstantName.C_CRC_16, updatable = false, nullable = true)
     private Long crc16;

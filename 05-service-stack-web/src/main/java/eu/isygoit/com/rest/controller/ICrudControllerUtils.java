@@ -8,18 +8,21 @@ import eu.isygoit.exception.ServiceNotDefinedException;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdEntity;
 
+import java.io.Serializable;
+
 /**
  * The interface Crud controller utils.
  *
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
-public interface ICrudControllerUtils<T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
-        S extends ICrudServiceUtils<T>> {
+public interface ICrudControllerUtils<I extends Serializable, E extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M,
+        S extends ICrudServiceUtils<I, E>> {
 
     /**
      * Mapper entity mapper.
@@ -28,7 +31,7 @@ public interface ICrudControllerUtils<T extends IIdEntity,
      * @throws BeanNotFoundException     the bean not found exception
      * @throws MapperNotDefinedException the mapper not defined exception
      */
-    EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException;
+    EntityMapper<E, F> mapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
      * Min dto mapper entity mapper.
@@ -37,7 +40,7 @@ public interface ICrudControllerUtils<T extends IIdEntity,
      * @throws BeanNotFoundException     the bean not found exception
      * @throws MapperNotDefinedException the mapper not defined exception
      */
-    EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
+    EntityMapper<E, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
      * Crud service s.

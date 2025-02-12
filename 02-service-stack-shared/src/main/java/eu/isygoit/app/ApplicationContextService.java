@@ -14,12 +14,12 @@ public interface ApplicationContextService {
     /**
      * Gets bean.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param beanClass the bean class
      * @return the bean
      * @throws BeanNotFoundException the bean not found exception
      */
-    <T> T getBean(Class<T> beanClass) throws BeanNotFoundException;
+    <E> E getBean(Class<E> beanClass) throws BeanNotFoundException;
 
     /**
      * Gets beans with annotation.

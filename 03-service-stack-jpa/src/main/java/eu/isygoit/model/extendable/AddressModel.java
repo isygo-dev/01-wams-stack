@@ -16,14 +16,14 @@ import java.util.List;
 /**
  * The type Address model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AddressModel<T extends Serializable> extends AuditableEntity<T> {
+public abstract class AddressModel<I extends Serializable> extends AuditableEntity<I> {
 
 
     @ElementCollection

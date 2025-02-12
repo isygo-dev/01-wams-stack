@@ -14,19 +14,19 @@ import java.io.Serializable;
 /**
  * The type Locale message model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public class LocaleMessageModel<T extends Serializable> implements IIdEntity<T> {
+public class LocaleMessageModel<I extends Serializable> implements IIdEntity<I> {
 
     @Id
     @SequenceGenerator(name = "message_sequence_generator", sequenceName = "message_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_sequence_generator")
-    private T id;
+    private I id;
 
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.XXL_VALUE, nullable = false)
     private String code;

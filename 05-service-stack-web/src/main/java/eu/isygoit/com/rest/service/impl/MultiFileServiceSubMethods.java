@@ -4,7 +4,7 @@ import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.IMultiFileEntity;
@@ -14,17 +14,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 /**
  * The type Multi file service sub methods.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <L> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileServiceSubMethods<I, T extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & ICodifiable & IIdEntity, R extends JpaPagingAndSortingRepository>
-        extends CodifiableService<I, T, R> {
+public abstract class MultiFileServiceSubMethods<I extends Serializable, E extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & IAssignableCode & IIdEntity, R extends JpaPagingAndSortingRepository>
+        extends AssignableCodeService<I, E, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;

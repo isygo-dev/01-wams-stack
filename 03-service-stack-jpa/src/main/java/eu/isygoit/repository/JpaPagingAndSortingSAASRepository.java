@@ -14,13 +14,13 @@ import java.util.Optional;
 /**
  * The interface Jpa paging and sorting saas repository.
  *
- * @param <T> the type parameter
  * @param <I> the type parameter
+ * @param <E> the type parameter
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEntity, I extends Serializable>
-        extends JpaPagingAndSortingRepository<T, I> {
+public interface JpaPagingAndSortingSAASRepository<I extends Serializable, E extends ISAASEntity & IIdEntity>
+        extends JpaPagingAndSortingRepository<I, E> {
 
 
     /**
@@ -29,7 +29,7 @@ public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEn
      * @param domain the domain
      * @return the list
      */
-    List<T> findByDomainIgnoreCase(String domain);
+    List<E> findByDomainIgnoreCase(String domain);
 
     /**
      * Find by domain ignore case page.
@@ -38,7 +38,7 @@ public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEn
      * @param pageable the pageable
      * @return the page
      */
-    Page<T> findByDomainIgnoreCase(String domain, Pageable pageable);
+    Page<E> findByDomainIgnoreCase(String domain, Pageable pageable);
 
     /**
      * Find first by domain ignore case optional.
@@ -46,7 +46,7 @@ public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEn
      * @param domain the domain
      * @return the optional
      */
-    Optional<T> findFirstByDomainIgnoreCase(String domain);
+    Optional<E> findFirstByDomainIgnoreCase(String domain);
 
     /**
      * Find by domain ignore case in list.
@@ -54,7 +54,7 @@ public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEn
      * @param domain the domain
      * @return the list
      */
-    List<T> findByDomainIgnoreCaseIn(List<String> domain);
+    List<E> findByDomainIgnoreCaseIn(List<String> domain);
 
     /**
      * Find by domain ignore case in page.
@@ -63,7 +63,7 @@ public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEn
      * @param pageable   the pageable
      * @return the page
      */
-    Page<T> findByDomainIgnoreCaseIn(List<String> domainList, Pageable pageable);
+    Page<E> findByDomainIgnoreCaseIn(List<String> domainList, Pageable pageable);
 
     /**
      * Count by domain ignore case long.

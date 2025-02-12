@@ -4,7 +4,7 @@ import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
@@ -13,16 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 /**
  * The type File service sub methods.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
-        extends CodifiableService<I, T, R> {
+public abstract class FileServiceSubMethods<I extends Serializable, E extends IFileEntity & IIdEntity & IAssignableCode, R extends JpaPagingAndSortingRepository>
+        extends AssignableCodeService<I, E, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;
@@ -53,7 +55,7 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
      * @param entity the entity
      * @return the string
      */
-    final String subUploadFile(MultipartFile file, T entity) {
+    final String subUploadFile(MultipartFile file, E entity) {
         try {
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (linkedFileService != null) {
@@ -75,7 +77,7 @@ public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity
      * @param version the version
      * @return the resource
      */
-    final Resource subDownloadFile(T entity, Long version) {
+    final Resource subDownloadFile(E entity, Long version) {
         try {
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (linkedFileService != null) {

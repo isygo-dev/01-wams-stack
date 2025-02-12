@@ -18,14 +18,14 @@ import java.util.Date;
 /**
  * The type Cancelable entity.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class CancelableEntity<T extends Serializable> extends AbstractEntity<T> {
+public abstract class CancelableEntity<I extends Serializable> extends AbstractEntity<I> {
 
     @Builder.Default
     @ColumnDefault("'false'")

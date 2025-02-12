@@ -12,13 +12,13 @@ import java.io.Serializable;
 /**
  * The type Linked file min dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class LinkedFileMinDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public class LinkedFileMinDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String code;
     private String originalFileName;

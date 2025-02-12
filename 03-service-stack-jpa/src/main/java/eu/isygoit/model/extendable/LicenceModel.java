@@ -20,14 +20,14 @@ import java.util.Date;
 /**
  * The type Licence model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class LicenceModel<T extends Serializable> extends AuditableEntity<T> {
+public abstract class LicenceModel<I extends Serializable> extends AuditableEntity<I> {
 
     @Column(name = ComSchemaColumnConstantName.C_PROVIDER)
     private String provider;

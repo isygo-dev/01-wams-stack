@@ -13,13 +13,13 @@ import java.io.Serializable;
 /**
  * The type Api permission model dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class ApiPermissionModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class ApiPermissionModelDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String serviceName;
     private String object;

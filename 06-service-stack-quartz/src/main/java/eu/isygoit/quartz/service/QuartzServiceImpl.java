@@ -51,8 +51,8 @@ public class QuartzServiceImpl implements QuartzService {
     /**
      * Creates a job detail with the given job class and job data map.
      *
-     * @param jobClass     the job class
-     * @param jobDataMap   the job data map
+     * @param jobClass   the job class
+     * @param jobDataMap the job data map
      * @return the job detail
      */
     @Override
@@ -64,10 +64,10 @@ public class QuartzServiceImpl implements QuartzService {
     /**
      * Creates a job detail with the given identity, group, and job data map.
      *
-     * @param jobClass     the job class
-     * @param identity     the identity of the job
-     * @param group        the group of the job
-     * @param jobDataMap   the job data map
+     * @param jobClass   the job class
+     * @param identity   the identity of the job
+     * @param group      the group of the job
+     * @param jobDataMap the job data map
      * @return the job detail
      */
     @Override
@@ -79,9 +79,9 @@ public class QuartzServiceImpl implements QuartzService {
     /**
      * Creates a job detail using SingleJobData, with type-specific handling.
      *
-     * @param jobClass     the job class
-     * @param identity     the identity of the job
-     * @param group        the group of the job
+     * @param jobClass      the job class
+     * @param identity      the identity of the job
+     * @param group         the group of the job
      * @param singleJobData the single job data containing key-value pair
      * @return the job detail or null if data is invalid
      */
@@ -98,11 +98,11 @@ public class QuartzServiceImpl implements QuartzService {
     /**
      * Creates a job detail based on a value from SingleJobData.
      *
-     * @param jobClass     the job class
-     * @param identity     the identity of the job
-     * @param group        the group of the job
-     * @param key          the job data key
-     * @param value        the value of the job data
+     * @param jobClass the job class
+     * @param identity the identity of the job
+     * @param group    the group of the job
+     * @param key      the job data key
+     * @param value    the value of the job data
      * @return the job detail
      */
     private JobDetail createJobDetailWithValue(Class<? extends Job> jobClass, String identity, String group, String key, Object value) {
@@ -112,7 +112,7 @@ public class QuartzServiceImpl implements QuartzService {
             return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
         } else if (value instanceof Float data) {
             return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
-        }else if (value instanceof Long data) {
+        } else if (value instanceof Long data) {
             return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
         } else if (value instanceof Double data) {
             return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
@@ -120,7 +120,7 @@ public class QuartzServiceImpl implements QuartzService {
             return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
         } else if (value instanceof JobDataMap data) {
             return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(data).storeDurably().build();
-        }else {
+        } else {
             log.error("Job data type {} is invalid, job will not be created", value.getClass().getSimpleName());
             return null;
         }
@@ -129,11 +129,11 @@ public class QuartzServiceImpl implements QuartzService {
     /**
      * Creates a job trigger with the specified schedule and start time.
      *
-     * @param jobDetail    the job detail
-     * @param identity     the identity of the job
-     * @param group        the group of the job
+     * @param jobDetail       the job detail
+     * @param identity        the identity of the job
+     * @param group           the group of the job
      * @param scheduleBuilder the schedule builder
-     * @param startAt      the start date of the job
+     * @param startAt         the start date of the job
      * @return the trigger
      */
     @Override
@@ -145,9 +145,9 @@ public class QuartzServiceImpl implements QuartzService {
     /**
      * Creates a job trigger with the specified schedule.
      *
-     * @param jobDetail    the job detail
-     * @param identity     the identity of the job
-     * @param group        the group of the job
+     * @param jobDetail       the job detail
+     * @param identity        the identity of the job
+     * @param group           the group of the job
      * @param scheduleBuilder the schedule builder
      * @return the trigger
      */

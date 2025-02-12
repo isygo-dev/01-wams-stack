@@ -18,7 +18,7 @@ import java.util.Date;
 /**
  * The type Auditable entity.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
@@ -26,7 +26,7 @@ import java.util.Date;
 @NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class AuditableEntity<T extends Serializable> extends AbstractEntity<T> {
+public abstract class AuditableEntity<I extends Serializable> extends AbstractEntity<I> {
 
     @CreatedDate
     @Temporal(value = TemporalType.TIMESTAMP)

@@ -11,13 +11,13 @@ import java.io.Serializable;
 /**
  * The type Annex model dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AnnexModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class AnnexModelDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String tableCode;
     private IEnumLanguage.Types language;

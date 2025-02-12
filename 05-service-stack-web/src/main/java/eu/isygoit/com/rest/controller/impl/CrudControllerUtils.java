@@ -14,23 +14,25 @@ import eu.isygoit.model.IIdEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 
 /**
  * The type Crud controller utils.
  *
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerUtils<T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
-        S extends ICrudServiceUtils<T>>
+public abstract class CrudControllerUtils<I extends Serializable, E extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M,
+        S extends ICrudServiceUtils<I, E>>
         extends ControllerExceptionHandler
-        implements ICrudControllerUtils<T, MIND, FULLD, S> {
+        implements ICrudControllerUtils<I, E, M, F, S> {
 
     /**
      * The constant ERROR_BEAN_NOT_FOUND.
@@ -41,11 +43,13 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
      */
     public static final String CONTROLLER_SERVICE = "controller service";
     @Getter
-    private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+    private final Class<E> persistentClass = (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
     @Getter
-    private final Class<T> minDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-    private EntityMapper<T, FULLD> fullEntityMapper;
-    private EntityMapper<T, MIND> minEntityMapper;
+    private final Class<M> minDtoClass = (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+    @Getter
+    private final Class<F> fullDtoClass = (Class<F>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[3];
+    private EntityMapper<E, F> fullEntityMapper;
+    private EntityMapper<E, M> minEntityMapper;
     private S crudService;
 
     @Override
@@ -76,7 +80,7 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     }
 
     @Override
-    public final EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<E, F> mapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.fullEntityMapper == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {
@@ -102,7 +106,7 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     }
 
     @Override
-    public final EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<E, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.minEntityMapper == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {

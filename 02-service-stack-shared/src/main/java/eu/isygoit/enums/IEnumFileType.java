@@ -5,9 +5,9 @@ import java.io.Serializable;
 /**
  * The interface Enum file type.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface IEnumFileType<T> extends Serializable {
+public interface IEnumFileType<E> extends Serializable {
 
     /**
      * The constant STR_ENUM_SIZE.

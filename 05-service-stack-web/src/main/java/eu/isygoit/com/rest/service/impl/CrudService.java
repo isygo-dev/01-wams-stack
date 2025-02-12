@@ -1,13 +1,13 @@
 package eu.isygoit.com.rest.service.impl;
 
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.IAssignableCodeService;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
 import eu.isygoit.model.jakarta.CancelableEntity;
@@ -16,6 +16,7 @@ import eu.isygoit.repository.JpaPagingAndSortingSAASRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.NotSupportedException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
@@ -32,15 +34,16 @@ import java.util.*;
  * The type Crud service.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAndSortingRepository> extends CrudServiceUtils<T, R>
-        implements ICrudServiceMethod<I, T> {
+public abstract class CrudService<I extends Serializable, E extends IIdEntity, R extends JpaPagingAndSortingRepository> extends CrudServiceUtils<I, E, R>
+        implements ICrudServiceMethod<I, E> {
 
     //Attention !!! should get the class type of th persist entity
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    @Getter
+    private final Class<E> persistentClass = (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
     @Transactional(readOnly = true)
@@ -64,30 +67,30 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public T beforeCreate(T object) {
+    public E beforeCreate(E object) {
         return object;
     }
 
     @Override
-    public T afterCreate(T object) {
+    public E afterCreate(E object) {
         return object;
     }
 
     @Override
     @Transactional
-    public T create(T object) {
+    public E create(E object) {
         if (Objects.isNull(object)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
         if (object.getId() == null) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
-                    object instanceof ICodifiable codifiable &&
+            if (this instanceof IAssignableCodeService assignableCodeService &&
+                    object instanceof IAssignableCode codifiable &&
                     !StringUtils.hasText(codifiable.getCode())) {
-                codifiable.setCode(iCodifiableService.getNextCode());
+                codifiable.setCode(assignableCodeService.getNextCode());
             }
-            return this.afterCreate((T) repository().save(object));
+            return this.afterCreate((E) repository().save(object));
         } else {
             throw new EntityExistsException();
         }
@@ -95,31 +98,31 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public T createAndFlush(T object) {
+    public E createAndFlush(E object) {
         if (Objects.isNull(object)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
         if (object.getId() == null) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
-                    object instanceof ICodifiable codifiable &&
+            if (this instanceof IAssignableCodeService assignableCodeService &&
+                    object instanceof IAssignableCode codifiable &&
                     !StringUtils.hasText(codifiable.getCode())) {
-                codifiable.setCode(iCodifiableService.getNextCode());
+                codifiable.setCode(assignableCodeService.getNextCode());
             }
-            return this.afterCreate((T) repository().saveAndFlush(object));
+            return this.afterCreate((E) repository().saveAndFlush(object));
         } else {
             throw new EntityExistsException();
         }
     }
 
     @Override
-    public List<T> create(List<T> objects) {
+    public List<E> create(List<E> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        List<T> createdObjects = new ArrayList<>();
+        List<E> createdObjects = new ArrayList<>();
         objects.forEach(object -> {
             createdObjects.add(this.create(object));
         });
@@ -129,19 +132,19 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public T update(T object) {
+    public E update(E object) {
         if (Objects.isNull(object)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
         if (object.getId() != null) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
-                    object instanceof ICodifiable codifiable &&
+            if (this instanceof IAssignableCodeService assignableCodeService &&
+                    object instanceof IAssignableCode codifiable &&
                     !StringUtils.hasText(codifiable.getCode())) {
-                codifiable.setCode(iCodifiableService.getNextCode());
+                codifiable.setCode(assignableCodeService.getNextCode());
             }
-            return this.afterUpdate((T) repository().save(object));
+            return this.afterUpdate((E) repository().save(object));
         } else {
             throw new EntityNotFoundException();
         }
@@ -149,19 +152,19 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public T updateAndFlush(T object) {
+    public E updateAndFlush(E object) {
         if (Objects.isNull(object)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
         if (object.getId() != null) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
-                    object instanceof ICodifiable codifiable &&
+            if (this instanceof IAssignableCodeService assignableCodeService &&
+                    object instanceof IAssignableCode codifiable &&
                     !StringUtils.hasText(codifiable.getCode())) {
-                codifiable.setCode(iCodifiableService.getNextCode());
+                codifiable.setCode(assignableCodeService.getNextCode());
             }
-            return this.afterUpdate((T) repository().saveAndFlush(object));
+            return this.afterUpdate((E) repository().saveAndFlush(object));
         } else {
             throw new EntityNotFoundException();
         }
@@ -169,11 +172,11 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public List<T> update(List<T> objects) {
+    public List<E> update(List<E> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
-        List<T> updatedObjects = new ArrayList<>();
+        List<E> updatedObjects = new ArrayList<>();
         objects.forEach(object -> {
             updatedObjects.add(this.update(object));
         });
@@ -183,16 +186,16 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public void delete(String senderDomain, List<T> objects) {
+    public void delete(String senderDomain, List<E> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             objects.forEach(object -> {
                 if (!senderDomain.equals(((ISAASEntity) object).getDomain())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
+                    throw new OperationNotAllowedException("Delete " + getPersistentClass().getSimpleName() + " with id: " + object.getId());
                 }
             });
         }
@@ -209,17 +212,17 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        T object = this.findById(id);
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        E object = this.findById(id);
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             if (!senderDomain.equals(((ISAASEntity) object).getDomain())) {
-                throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
+                throw new OperationNotAllowedException("Delete " + getPersistentClass().getSimpleName() + " with id: " + id);
             }
         }
 
         this.beforeDelete(id);
-        if (CancelableEntity.class.isAssignableFrom(persistentClass)
-                || CancelableEntity.class.isAssignableFrom(persistentClass)) {
+        if (CancelableEntity.class.isAssignableFrom(getPersistentClass())
+                || CancelableEntity.class.isAssignableFrom(getPersistentClass())) {
             ((CancelableEntity) object).setCheckCancel(true);
             ((CancelableEntity) object).setCancelDate(new Date());
             this.update(object);
@@ -231,9 +234,9 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public void delete(List<T> objects) {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)) {
-            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
+    public void delete(List<E> objects) {
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())) {
+            throw new OperationNotAllowedException("Delete " + getPersistentClass().getSimpleName() + " should use SAAS delete");
         }
 
         if (CollectionUtils.isEmpty(objects)) {
@@ -247,18 +250,18 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     @Override
     @Transactional
     public void delete(I id) {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)) {
-            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())) {
+            throw new OperationNotAllowedException("Delete " + getPersistentClass().getSimpleName() + " should use SAAS delete");
         }
 
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        T object = this.findById(id);
+        E object = this.findById(id);
         this.beforeDelete(id);
-        if (CancelableEntity.class.isAssignableFrom(persistentClass)
-                || CancelableEntity.class.isAssignableFrom(persistentClass)) {
+        if (CancelableEntity.class.isAssignableFrom(getPersistentClass())
+                || CancelableEntity.class.isAssignableFrom(getPersistentClass())) {
             ((CancelableEntity) object).setCheckCancel(true);
             ((CancelableEntity) object).setCancelDate(new Date());
             this.update(object);
@@ -277,21 +280,21 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public void beforeDelete(List<T> objects) {
+    public void beforeDelete(List<E> objects) {
     }
 
     @Override
-    public void afterDelete(List<T> objects) {
+    public void afterDelete(List<E> objects) {
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll() {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+    public List<E> findAll() {
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && repository() instanceof JpaPagingAndSortingSAASRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
-        List<T> list = repository().findAll();
+        List<E> list = repository().findAll();
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
 
@@ -302,13 +305,13 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(Pageable pageable) {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+    public List<E> findAll(Pageable pageable) {
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && repository() instanceof JpaPagingAndSortingSAASRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
-        Page<T> page = repository().findAll(pageable);
+        Page<E> page = repository().findAll(pageable);
         if (page.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
@@ -317,40 +320,40 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> findAll(String domain) throws NotSupportedException {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+    public List<E> findAll(String domain) throws NotSupportedException {
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            List<T> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
+            List<E> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
             }
             return this.afterFindAll(list);
         } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+            throw new NotSupportedException("find all by domain for :" + getPersistentClass().getSimpleName());
         }
     }
 
     @Override
-    public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+    public List<E> findAll(String domain, Pageable pageable) throws NotSupportedException {
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            Page<T> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
+            Page<E> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
             if (page.isEmpty()) {
                 return Collections.EMPTY_LIST;
             }
             return this.afterFindAll(page.getContent());
         } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+            throw new NotSupportedException("find all by domain for :" + getPersistentClass().getSimpleName());
         }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public T findById(I id) throws ObjectNotFoundException {
+    public E findById(I id) throws ObjectNotFoundException {
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
-        Optional<T> optional = repository().findById(id);
+        Optional<E> optional = repository().findById(id);
         if (optional.isPresent()) {
             return this.afterFindById(optional.get());
         }
@@ -359,7 +362,7 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public T saveOrUpdate(T object) {
+    public E saveOrUpdate(E object) {
         if (Objects.isNull(object)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
@@ -373,12 +376,12 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional
-    public List<T> saveOrUpdate(List<T> objects) {
+    public List<E> saveOrUpdate(List<E> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        List<T> updatedObjects = new ArrayList<>();
+        List<E> updatedObjects = new ArrayList<>();
         objects.forEach(object -> {
             updatedObjects.add(this.saveOrUpdate(object));
         });
@@ -387,30 +390,30 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public T beforeUpdate(T object) {
+    public E beforeUpdate(E object) {
         return object;
     }
 
     @Override
-    public T afterUpdate(T object) {
+    public E afterUpdate(E object) {
         return object;
     }
 
     @Override
-    public List<T> afterFindAll(List<T> list) {
+    public List<E> afterFindAll(List<E> list) {
         return list;
     }
 
     @Override
-    public T afterFindById(T object) {
+    public E afterFindById(E object) {
         return object;
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
+    public List<E> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
         if (!CollectionUtils.isEmpty(criteria)) {
             //get criteria data to validate filter
-            Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
+            Specification<E> specification = CriteriaHelper.buildSpecification(domain, criteria, getPersistentClass());
             return repository().findAll(specification);
         } else {
             log.error("Criteria filter map is null");
@@ -419,10 +422,10 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public List<E> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
         if (!CollectionUtils.isEmpty(criteria)) {
             //get criteria data to validate filter
-            Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
+            Specification<E> specification = CriteriaHelper.buildSpecification(domain, criteria, getPersistentClass());
             return repository().findAll(specification, pageRequest).getContent();
         } else {
             log.error("Criteria filter map is null");

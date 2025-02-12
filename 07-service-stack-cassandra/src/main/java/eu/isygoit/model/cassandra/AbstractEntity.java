@@ -9,12 +9,12 @@ import lombok.experimental.SuperBuilder;
 /**
  * The type Abstract entity.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AbstractEntity<T> implements IIdEntity<T> {
+public abstract class AbstractEntity<I> implements IIdEntity<I> {
 
 }

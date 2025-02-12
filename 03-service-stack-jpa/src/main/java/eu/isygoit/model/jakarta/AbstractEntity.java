@@ -11,12 +11,12 @@ import java.io.Serializable;
 /**
  * The type Abstract entity.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AbstractEntity<T extends Serializable> implements IIdEntity<T> {
+public abstract class AbstractEntity<I extends Serializable> implements IIdEntity<I> {
 
 }

@@ -12,14 +12,14 @@ import java.io.Serializable;
 /**
  * The type Identifiable dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class IdentifiableDto<T extends Serializable> extends AbstractDto
-        implements IIdentifiableDto<T> {
+public abstract class IdentifiableDto<I extends Serializable> extends AbstractDto
+        implements IIdentifiableDto<I> {
 
-    private T id;
+    private I id;
 }

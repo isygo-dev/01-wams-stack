@@ -20,28 +20,26 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
+import java.io.Serializable;
 import java.nio.file.Path;
 
 /**
  * The type File image service.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileImageService<I, T extends IImageEntity & IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
-        extends FileService<I, T, R>
-        implements IFileServiceMethods<I, T>, IImageServiceMethods<I, T> {
-
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+public abstract class FileImageService<I extends Serializable, E extends IImageEntity & IFileEntity & IIdEntity & IAssignableCode, R extends JpaPagingAndSortingRepository>
+        extends FileService<I, E, R>
+        implements IFileServiceMethods<I, E>, IImageServiceMethods<I, E> {
 
     @Override
     @Transactional
-    public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
+    public E uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
-            T entity = this.findById(id);
+            E entity = this.findById(id);
             if (entity != null) {
                 entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
                                 File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
@@ -50,7 +48,7 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
                         (entity).getCode() + "_" + file.getOriginalFilename(), file, "png").toString());
                 return this.update(entity);
             } else {
-                throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
+                throw new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id);
             }
         } else {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
@@ -61,7 +59,7 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        T entity = this.findById(id);
+        E entity = this.findById(id);
         if (entity != null) {
             if (StringUtils.hasText(entity.getImagePath())) {
                 Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
@@ -79,9 +77,9 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
 
     @Override
     @Transactional
-    public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
+    public E createWithImage(String senderDomain, E entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
@@ -103,9 +101,9 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
 
     @Override
     @Transactional
-    public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
+    public E updateWithImage(String senderDomain, E entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }

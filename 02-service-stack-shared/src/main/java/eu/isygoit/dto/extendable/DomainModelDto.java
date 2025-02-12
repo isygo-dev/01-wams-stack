@@ -13,13 +13,13 @@ import java.io.Serializable;
 /**
  * The type Domain model dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class DomainModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class DomainModelDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     @NotEmpty
     private String name;

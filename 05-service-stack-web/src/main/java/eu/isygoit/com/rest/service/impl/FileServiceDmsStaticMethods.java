@@ -24,16 +24,16 @@ public final class FileServiceDmsStaticMethods {
     /**
      * Upload linked file response dto.
      *
-     * @param <T>               the type parameter
+     * @param <E>               the type parameter
      * @param file              the file
      * @param entity            the entity
      * @param linkedFileService the linked file service
      * @return the linked file response dto
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> LinkedFileResponseDto upload(MultipartFile file,
-                                                                                          T entity,
-                                                                                          ILinkedFileApi linkedFileService) throws IOException {
+    static <E extends IFileEntity & IIdEntity & IAssignableCode> LinkedFileResponseDto upload(MultipartFile file,
+                                                                                              E entity,
+                                                                                              ILinkedFileApi linkedFileService) throws IOException {
         ResponseEntity<LinkedFileResponseDto> result = linkedFileService.upload(//RequestContextDto.builder().build(),
                 LinkedFileRequestDto.builder()
                         .domain((entity instanceof ISAASEntity isaasEntity
@@ -56,14 +56,14 @@ public final class FileServiceDmsStaticMethods {
     /**
      * Download resource.
      *
-     * @param <T>               the type parameter
+     * @param <E>               the type parameter
      * @param entity            the entity
      * @param version           the version
      * @param linkedFileService the linked file service
      * @return the resource
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> Resource download(T entity, Long version, ILinkedFileApi linkedFileService) throws IOException {
+    static <E extends IFileEntity & IIdEntity & IAssignableCode> Resource download(E entity, Long version, ILinkedFileApi linkedFileService) throws IOException {
         String domain = entity instanceof ISAASEntity isaasEntity
                 ? isaasEntity.getDomain()
                 : DomainConstants.DEFAULT_DOMAIN_NAME;
@@ -86,7 +86,7 @@ public final class FileServiceDmsStaticMethods {
      * @param linkedFileService the linked file service
      * @return the boolean
      */
-    public static <L extends ILinkedFile & ICodifiable & IIdEntity> boolean delete(L entity, ILinkedFileApi linkedFileService) {
+    public static <L extends ILinkedFile & IAssignableCode & IIdEntity> boolean delete(L entity, ILinkedFileApi linkedFileService) {
         String domain = entity instanceof ISAASEntity isaasEntity
                 ? isaasEntity.getDomain()
                 : DomainConstants.DEFAULT_DOMAIN_NAME;

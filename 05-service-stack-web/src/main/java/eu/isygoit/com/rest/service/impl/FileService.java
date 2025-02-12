@@ -1,10 +1,10 @@
 package eu.isygoit.com.rest.service.impl;
 
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.IAssignableCodeService;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
@@ -18,21 +18,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
+import java.io.Serializable;
 
 /**
  * The type File service.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
-        extends FileServiceSubMethods<I, T, R>
-        implements IFileServiceMethods<I, T> {
-
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+public abstract class FileService<I extends Serializable, E extends IFileEntity & IIdEntity & IAssignableCode, R extends JpaPagingAndSortingRepository>
+        extends FileServiceSubMethods<I, E, R>
+        implements IFileServiceMethods<I, E> {
 
     /**
      * Before upload t.
@@ -43,7 +41,7 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
      * @return the t
      * @throws IOException the io exception
      */
-    public T beforeUpload(String domain, T entity, MultipartFile file) throws IOException {
+    public E beforeUpload(String domain, E entity, MultipartFile file) throws IOException {
         return entity;
     }
 
@@ -56,15 +54,15 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
      * @return the t
      * @throws IOException the io exception
      */
-    public T afterUpload(String domain, T entity, MultipartFile file) throws IOException {
+    public E afterUpload(String domain, E entity, MultipartFile file) throws IOException {
         return entity;
     }
 
     @Transactional
     @Override
-    public T createWithFile(String senderDomain, T entity, MultipartFile file) throws IOException {
+    public E createWithFile(String senderDomain, E entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
@@ -76,12 +74,12 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
             entity.setPath(this.getUploadDirectory() +
                     File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                    File.separator + this.persistentClass.getSimpleName().toLowerCase());
+                    File.separator + this.getPersistentClass().getSimpleName().toLowerCase());
 
             entity.setOriginalFileName(file.getOriginalFilename());
             entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
         } else {
-            log.warn("Create with file ({}) :File is null or empty", this.persistentClass.getSimpleName());
+            log.warn("Create with file ({}) :File is null or empty", this.getPersistentClass().getSimpleName());
         }
         //Creating entity
         entity = this.createAndFlush(entity);
@@ -106,9 +104,9 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
     @Transactional
     @Override
-    public T updateWithFile(String senderDomain, I id, T entity, MultipartFile file) throws IOException {
+    public E updateWithFile(String senderDomain, I id, E entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((ISAASEntity) entity).setDomain(senderDomain);
         }
@@ -117,16 +115,16 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
             entity.setId(id);
             if (file != null && !file.isEmpty()) {
                 if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodifiableService) this).getNextCode());
+                    entity.setCode(((IAssignableCodeService) this).getNextCode());
                 }
 
                 entity.setPath(this.getUploadDirectory() +
                         File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                        File.separator + this.persistentClass.getSimpleName().toLowerCase());
+                        File.separator + this.getPersistentClass().getSimpleName().toLowerCase());
                 entity.setOriginalFileName(file.getOriginalFilename());
                 entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
             } else {
-                log.warn("Update with file ({}) :File is null or empty", this.persistentClass.getSimpleName());
+                log.warn("Update with file ({}) :File is null or empty", this.getPersistentClass().getSimpleName());
             }
             entity = this.updateAndFlush(entity);
 
@@ -147,23 +145,23 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
             return entity;
         } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
+            throw new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id);
         }
     }
 
     @Transactional
     @Override
-    public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
-        T entity = findById(id);
+    public E uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
+        E entity = findById(id);
         if (entity != null) {
             if (file != null && !file.isEmpty()) {
                 if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodifiableService) this).getNextCode());
+                    entity.setCode(((IAssignableCodeService) this).getNextCode());
                 }
 
                 entity.setPath(this.getUploadDirectory() +
                         File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                        File.separator + this.persistentClass.getSimpleName().toLowerCase());
+                        File.separator + this.getPersistentClass().getSimpleName().toLowerCase());
                 entity.setOriginalFileName(file.getOriginalFilename());
                 entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
 
@@ -182,22 +180,22 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
                         entity,
                         file);
             } else {
-                log.warn("Upload file ({}) :File is null or empty", this.persistentClass.getSimpleName());
+                log.warn("Upload file ({}) :File is null or empty", this.getPersistentClass().getSimpleName());
             }
 
             return entity;
         } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
+            throw new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id);
         }
     }
 
     @Override
     public Resource downloadFile(I id, Long version) throws IOException {
-        T entity = findById(id);
+        E entity = findById(id);
         if (entity != null) {
             return subDownloadFile(entity, version);
         } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
+            throw new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id);
         }
     }
 
@@ -208,19 +206,19 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
      */
     protected abstract String getUploadDirectory();
 
-    public T beforeUpdate(T object) {
+    public E beforeUpdate(E object) {
         return object;
     }
 
-    public T afterUpdate(T object) {
+    public E afterUpdate(E object) {
         return object;
     }
 
-    public T beforeCreate(T object) {
+    public E beforeCreate(E object) {
         return object;
     }
 
-    public T afterCreate(T object) {
+    public E afterCreate(E object) {
         return object;
     }
 }

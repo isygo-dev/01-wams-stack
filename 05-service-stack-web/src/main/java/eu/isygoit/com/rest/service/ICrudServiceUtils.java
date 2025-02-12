@@ -4,12 +4,15 @@ import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.model.IIdEntity;
 import org.springframework.data.repository.Repository;
 
+import java.io.Serializable;
+
 /**
  * The interface Crud service utils.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
  */
-public interface ICrudServiceUtils<T extends IIdEntity> {
+public interface ICrudServiceUtils<I extends Serializable, E extends IIdEntity> {
 
     /**
      * Repository repository.

@@ -10,13 +10,13 @@ import java.io.Serializable;
 /**
  * The type Field process param model dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class FieldProcessParamModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class FieldProcessParamModelDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String processName;
     private String fieldName;

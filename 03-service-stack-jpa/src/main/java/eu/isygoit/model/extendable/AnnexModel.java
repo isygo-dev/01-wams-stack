@@ -22,14 +22,14 @@ import java.io.Serializable;
 /**
  * The type Annex model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AnnexModel<T extends Serializable> extends AuditableEntity<T> implements ISAASEntity {
+public abstract class AnnexModel<I extends Serializable> extends AuditableEntity<I> implements ISAASEntity {
 
     @Length(max = ComSchemaConstantSize.TABLE_CODE)
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_CODE, length = ComSchemaConstantSize.TABLE_CODE, nullable = false)

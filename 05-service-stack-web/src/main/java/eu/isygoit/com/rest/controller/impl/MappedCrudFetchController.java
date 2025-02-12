@@ -8,54 +8,55 @@ import eu.isygoit.model.IIdEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 /**
  * The type Mapped crud fetch controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedCrudFetchController<I, T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
-        S extends ICrudServiceMethod<I, T>>
-        extends CrudControllerSubMethods<I, T, MIND, FULLD, S>
-        implements IMappedCrudFetchApi<I, MIND, FULLD> {
+public abstract class MappedCrudFetchController<I extends Serializable, E extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M,
+        S extends ICrudServiceMethod<I, E>>
+        extends CrudControllerSubMethods<I, E, M, F, S>
+        implements IMappedCrudFetchApi<I, M, F> {
 
 
     @Override
-    public final ResponseEntity<List<MIND>> findAll(RequestContextDto requestContext) {
+    public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext) {
         return subFindAll(requestContext);
     }
 
     @Override
-    public final ResponseEntity<List<MIND>> findAllDefault(RequestContextDto requestContext) {
+    public final ResponseEntity<List<M>> findAllDefault(RequestContextDto requestContext) {
         return subFindAll(requestContext);
     }
 
     @Override
-    public final ResponseEntity<List<FULLD>> findAllFull(RequestContextDto requestContext) {
+    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext) {
         return subFindAllFull(requestContext);
     }
 
     @Override
-    public final ResponseEntity<List<MIND>> findAll(RequestContextDto requestContext, Integer page, Integer size) {
+    public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext, Integer page, Integer size) {
         return subFindAll(requestContext, page, size);
     }
 
     @Override
-    public final ResponseEntity<List<FULLD>> findAllFull(RequestContextDto requestContext, Integer page, Integer size) {
+    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext, Integer page, Integer size) {
         return subFindAllFull(requestContext, page, size);
     }
 
     @Override
-    public final ResponseEntity<FULLD> findById(RequestContextDto requestContext, I id) {
+    public final ResponseEntity<F> findById(RequestContextDto requestContext, I id) {
         return subFindById(requestContext, id);
     }
 
@@ -65,12 +66,12 @@ public abstract class MappedCrudFetchController<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         return subFindAllFilteredByCriteria(requestContext, criteria);
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
         return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 

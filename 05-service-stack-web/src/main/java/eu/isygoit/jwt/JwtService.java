@@ -101,13 +101,13 @@ public class JwtService implements IJwtService {
     }
 
     @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
+    public <E> E extractClaim(String token, Function<Claims, E> claimsResolver, String key) {
         final Claims claims = extractAllClaims(token, key);
         return claimsResolver.apply(claims);
     }
 
     @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <E> E extractClaim(String token, Function<Claims, E> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }

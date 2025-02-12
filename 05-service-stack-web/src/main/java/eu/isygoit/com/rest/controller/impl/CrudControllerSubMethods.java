@@ -16,33 +16,27 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.ParameterizedType;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 /**
  * The type Crud controller sub methods.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND, S
-        extends ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements ICrudControllerSubMethods<I, T, MIND, FULLD, S> {
-
-    //Attention !!! should get the class type of th persist entity
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+public abstract class CrudControllerSubMethods<I extends Serializable, E extends IIdEntity, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, E>>
+        extends CrudControllerUtils<I, E, M, F, S>
+        implements ICrudControllerSubMethods<I, E, M, F, S> {
 
     @Override
-    public ResponseEntity<FULLD> subCreate(FULLD object) {
-        log.info("Create {} request received", persistentClass.getSimpleName());
+    public ResponseEntity<F> subCreate(F object) {
+        log.info("Create {} request received", getPersistentClass().getSimpleName());
         if (object == null) {
             return ResponseFactory.ResponseBadRequest();
         }
@@ -57,15 +51,15 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subCreate(List<FULLD> objects) {
-        log.info("Create {} request received", persistentClass.getSimpleName());
+    public ResponseEntity<List<F>> subCreate(List<F> objects) {
+        log.info("Create {} request received", getPersistentClass().getSimpleName());
         if (CollectionUtils.isEmpty(objects)) {
             return ResponseFactory.ResponseBadRequest();
         }
 
         try {
-            objects.forEach(FULLD -> this.beforeCreate(FULLD));
-            List<T> entities = this.crudService().create(mapper().listDtoToEntity(objects));
+            objects.forEach(F -> this.beforeCreate(F));
+            List<E> entities = this.crudService().create(mapper().listDtoToEntity(objects));
             entities.forEach(t -> this.afterCreate(t));
             return ResponseFactory.ResponseOk(mapper().listEntityToDto(entities));
         } catch (Throwable e) {
@@ -76,7 +70,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
 
     @Override
     public ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
-        log.info("Delete {} request received", persistentClass.getSimpleName());
+        log.info("Delete {} request received", getPersistentClass().getSimpleName());
         if (id == null) {
             return ResponseFactory.ResponseBadRequest();
         }
@@ -94,8 +88,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<?> subDelete(RequestContextDto requestContext, List<FULLD> objects) {
-        log.info("Delete {} request received", persistentClass.getSimpleName());
+    public ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
+        log.info("Delete {} request received", getPersistentClass().getSimpleName());
         if (CollectionUtils.isEmpty(objects)) {
             return ResponseFactory.ResponseBadRequest();
         }
@@ -113,15 +107,15 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext) {
-        log.info("Find all {}s request received", persistentClass.getSimpleName());
+    public ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
+        log.info("Find all {}s request received", getPersistentClass().getSimpleName());
         try {
-            List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<M> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
+                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
             } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
+                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -137,15 +131,15 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<MIND>> subFindAllDefault(RequestContextDto requestContext) {
-        log.info("Find all {}s request received", persistentClass.getSimpleName());
+    public ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
+        log.info("Find all {}s request received", getPersistentClass().getSimpleName());
         try {
-            List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<M> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
+                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
             } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
+                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -161,15 +155,15 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
-        log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
+    public ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
+        log.info("Find all {}s by page/size request received {}/{}", getPersistentClass().getSimpleName(), page, size);
         try {
-            List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<M> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -185,11 +179,11 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext) {
-        log.info("Find all {}s request received", persistentClass.getSimpleName());
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
+        log.info("Find all {}s request received", getPersistentClass().getSimpleName());
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<F> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
             } else {
@@ -209,15 +203,15 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
-        log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
+        log.info("Find all {}s by page/size request received {}/{}", getPersistentClass().getSimpleName(), page, size);
         if (page == null || size == null) {
             return ResponseFactory.ResponseBadRequest();
         }
 
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<F> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
@@ -238,10 +232,10 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
 
 
     @Override
-    public ResponseEntity<FULLD> subFindById(RequestContextDto requestContext, I id) {
-        log.info("Find {} by id request received", persistentClass.getSimpleName());
+    public ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
+        log.info("Find {} by id request received", getPersistentClass().getSimpleName());
         try {
-            final FULLD object = this.mapper().entityToDto(this.crudService().findById(id));
+            final F object = this.mapper().entityToDto(this.crudService().findById(id));
             if (object == null) {
                 return ResponseFactory.ResponseNoContent();
             }
@@ -255,10 +249,10 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
 
     @Override
     public ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
-        log.info("Get count {} request received", persistentClass.getSimpleName());
+        log.info("Get count {} request received", getPersistentClass().getSimpleName());
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<F> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 return ResponseFactory.ResponseOk(this.crudService().count(requestContext.getSenderDomain()));
             } else {
@@ -271,8 +265,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<FULLD> subUpdate(I id, FULLD object) {
-        log.info("Update {} request received", persistentClass.getSimpleName());
+    public ResponseEntity<F> subUpdate(I id, F object) {
+        log.info("Update {} request received", getPersistentClass().getSimpleName());
         if (object == null || id == null) {
             return ResponseFactory.ResponseBadRequest();
         }
@@ -288,8 +282,8 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subUpdate(List<FULLD> objects) {
-        log.info("Update {} request received", persistentClass.getSimpleName());
+    public ResponseEntity<List<F>> subUpdate(List<F> objects) {
+        log.info("Update {} request received", getPersistentClass().getSimpleName());
         if (CollectionUtils.isEmpty(objects)) {
             return ResponseFactory.ResponseBadRequest();
         }
@@ -303,10 +297,10 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<F> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")));
             } else {
@@ -326,11 +320,11 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
-                                                                    Integer page, Integer size) {
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
+                                                                Integer page, Integer size) {
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
+            List<F> list = null;
+            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
                 list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")
                         , PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
@@ -350,7 +344,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     @Override
     public ResponseEntity<Map<String, String>> subFindAllFilterCriteria() {
         try {
-            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
+            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(getPersistentClass());
             if (CollectionUtils.isEmpty(criteriaMap)) {
                 return ResponseFactory.ResponseNoContent();
             }
@@ -361,22 +355,22 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public FULLD beforeCreate(FULLD object) {
+    public F beforeCreate(F object) {
         return object;
     }
 
     @Override
-    public T afterCreate(T object) {
+    public E afterCreate(E object) {
         return object;
     }
 
     @Override
-    public FULLD beforeUpdate(I id, FULLD object) {
+    public F beforeUpdate(I id, F object) {
         return object;
     }
 
     @Override
-    public T afterUpdate(T object) {
+    public E afterUpdate(E object) {
         return object;
     }
 
@@ -391,27 +385,27 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public boolean beforeDelete(List<FULLD> objects) {
+    public boolean beforeDelete(List<F> objects) {
         return true;
     }
 
     @Override
-    public boolean afterDelete(List<FULLD> objects) {
+    public boolean afterDelete(List<F> objects) {
         return true;
     }
 
     @Override
-    public FULLD afterFindById(FULLD object) {
+    public F afterFindById(F object) {
         return object;
     }
 
     @Override
-    public List<FULLD> afterFindAllFull(RequestContextDto requestContext, List<FULLD> list) {
+    public List<F> afterFindAllFull(RequestContextDto requestContext, List<F> list) {
         return list;
     }
 
     @Override
-    public List<MIND> afterFindAll(RequestContextDto requestContext, List<MIND> list) {
+    public List<M> afterFindAll(RequestContextDto requestContext, List<M> list) {
         return list;
     }
 }

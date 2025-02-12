@@ -16,13 +16,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 /**
  * The interface Mapped file upload api.
  *
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedFileUploadApi<I, D extends IFileUploadDto> {
+public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUploadDto> {
 
     /**
      * Upload file response entity.

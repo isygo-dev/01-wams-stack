@@ -3,20 +3,20 @@ package eu.isygoit.factory;
 /**
  * The interface Factory.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface Factory<T> {
+public interface Factory<E> {
     /**
      * Instance t.
      *
      * @return the t
      */
-    T instance();
+    E instance();
 
     /**
      * New instance t.
      *
      * @return the t
      */
-    T newInstance();
+    E newInstance();
 }

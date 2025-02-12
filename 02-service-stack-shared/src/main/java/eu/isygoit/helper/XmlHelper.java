@@ -21,43 +21,43 @@ public interface XmlHelper {
     /**
      * Xml to object t.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param xmlString the xml string
      * @param objClass  the obj class
      * @return the t
      * @throws JAXBException the jaxb exception
      */
-    static <T> T xmlToObject(String xmlString, Class<T> objClass) throws JAXBException {
+    static <E> E xmlToObject(String xmlString, Class<E> objClass) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(objClass);
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        return (T) jaxbUnmarshaller.unmarshal(new StringReader(xmlString));
+        return (E) jaxbUnmarshaller.unmarshal(new StringReader(xmlString));
     }
 
     /**
      * Xml to object t.
      *
-     * @param <T>            the type parameter
+     * @param <E>            the type parameter
      * @param file           the file
      * @param unmarshalClass the unmarshal class
      * @return the t
      * @throws JAXBException the jaxb exception
      */
-    static <T> T xmlToObject(InputStream file, Class<T> unmarshalClass) throws JAXBException {
+    static <E> E xmlToObject(InputStream file, Class<E> unmarshalClass) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(unmarshalClass);
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        return (T) jaxbUnmarshaller.unmarshal(file);
+        return (E) jaxbUnmarshaller.unmarshal(file);
     }
 
     /**
      * Object to xml string.
      *
-     * @param <T>      the type parameter
+     * @param <E>      the type parameter
      * @param object   the object
      * @param objClass the obj class
      * @return the string
      * @throws JAXBException the jaxb exception
      */
-    static <T> String objectToXml(T object, Class<T> objClass) throws JAXBException {
+    static <E> String objectToXml(E object, Class<E> objClass) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(objClass);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -69,13 +69,13 @@ public interface XmlHelper {
     /**
      * Object to xml file file.
      *
-     * @param <T>      the type parameter
+     * @param <E>      the type parameter
      * @param object   the object
      * @param objClass the obj class
      * @return the file
      * @throws JAXBException the jaxb exception
      */
-    static <T> File objectToXmlFile(T object, Class<T> objClass) throws JAXBException {
+    static <E> File objectToXmlFile(E object, Class<E> objClass) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext.newInstance(objClass);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         File file = new File("test.xml");

@@ -5,9 +5,9 @@ import java.io.Serializable;
 /**
  * The interface Enum type.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface IEnumType<T> extends Serializable {
+public interface IEnumType<E> extends Serializable {
 
     /**
      * Name string.

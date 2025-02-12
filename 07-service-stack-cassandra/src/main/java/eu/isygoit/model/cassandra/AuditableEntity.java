@@ -18,14 +18,14 @@ import java.util.Date;
 /**
  * The type Auditable entity.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class AuditableEntity<T> extends AbstractEntity<T> {
+public abstract class AuditableEntity<I> extends AbstractEntity<I> {
 
     @CreatedDate
     @CassandraType(type = CassandraType.Name.TIMESTAMP)

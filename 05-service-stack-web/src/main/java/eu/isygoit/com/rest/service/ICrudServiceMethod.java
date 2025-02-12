@@ -7,17 +7,18 @@ import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * The interface Crud service method.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface ICrudServiceMethod<I, T extends IIdEntity>
-        extends ICrudServiceEvents<I, T>,
-        ICrudServiceUtils<T> {
+public interface ICrudServiceMethod<I extends Serializable, E extends IIdEntity>
+        extends ICrudServiceEvents<I, E>,
+        ICrudServiceUtils<I, E> {
 
     /**
      * Count long.
@@ -48,7 +49,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param object the object
      * @return the t
      */
-    T create(T object);
+    E create(E object);
 
     /**
      * Create and flush t.
@@ -56,7 +57,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param object the object
      * @return the t
      */
-    T createAndFlush(T object);
+    E createAndFlush(E object);
 
     /**
      * Create list.
@@ -64,7 +65,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param objects the objects
      * @return the list
      */
-    List<T> create(List<T> objects);
+    List<E> create(List<E> objects);
 
     /**
      * Delete.
@@ -80,7 +81,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param senderDomain the sender domain
      * @param objects      the objects
      */
-    void delete(String senderDomain, List<T> objects);
+    void delete(String senderDomain, List<E> objects);
 
     /**
      * Delete.
@@ -94,14 +95,14 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      *
      * @param objects the objects
      */
-    void delete(List<T> objects);
+    void delete(List<E> objects);
 
     /**
      * Find all list.
      *
      * @return the list
      */
-    List<T> findAll();
+    List<E> findAll();
 
     /**
      * Find all list.
@@ -110,7 +111,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String domain) throws NotSupportedException;
+    List<E> findAll(String domain) throws NotSupportedException;
 
     /**
      * Find all list.
@@ -118,7 +119,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param pageable the pageable
      * @return the list
      */
-    List<T> findAll(Pageable pageable);
+    List<E> findAll(Pageable pageable);
 
     /**
      * Find all list.
@@ -128,7 +129,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String domain, Pageable pageable) throws NotSupportedException;
+    List<E> findAll(String domain, Pageable pageable) throws NotSupportedException;
 
     /**
      * Find by id t.
@@ -137,7 +138,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the t
      * @throws ObjectNotFoundException the object not found exception
      */
-    T findById(I id) throws ObjectNotFoundException;
+    E findById(I id) throws ObjectNotFoundException;
 
     /**
      * Save or update t.
@@ -145,7 +146,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param object the object
      * @return the t
      */
-    T saveOrUpdate(T object);
+    E saveOrUpdate(E object);
 
     /**
      * Save or update list.
@@ -153,7 +154,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param objects the objects
      * @return the list
      */
-    List<T> saveOrUpdate(List<T> objects);
+    List<E> saveOrUpdate(List<E> objects);
 
     /**
      * Update t.
@@ -161,7 +162,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param object the object
      * @return the t
      */
-    T update(T object);
+    E update(E object);
 
     /**
      * Update and flush t.
@@ -169,7 +170,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param object the object
      * @return the t
      */
-    T updateAndFlush(T object);
+    E updateAndFlush(E object);
 
     /**
      * Update list.
@@ -177,7 +178,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param objects the objects
      * @return the list
      */
-    List<T> update(List<T> objects);
+    List<E> update(List<E> objects);
 
     /**
      * Find all by criteria filter list.
@@ -186,7 +187,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param criteria the criteria
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria);
+    List<E> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria);
 
     /**
      * Find all by criteria filter list.
@@ -196,5 +197,5 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @param pageRequest the page request
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest);
+    List<E> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest);
 }

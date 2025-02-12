@@ -9,15 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
 
+import java.io.Serializable;
+
 /**
  * The type Crud service utils.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudServiceUtils<T extends IIdEntity, R extends Repository>
-        implements ICrudServiceUtils<T> {
+public abstract class CrudServiceUtils<I extends Serializable, E extends IIdEntity, R extends Repository>
+        implements ICrudServiceUtils<I, E> {
 
     @Autowired
     private ApplicationContextService applicationContextServie;

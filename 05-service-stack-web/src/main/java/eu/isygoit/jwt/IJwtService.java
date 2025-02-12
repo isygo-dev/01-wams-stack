@@ -74,23 +74,23 @@ public interface IJwtService {
     /**
      * Extract claim t.
      *
-     * @param <T>            the type parameter
+     * @param <E>            the type parameter
      * @param token          the token
      * @param claimsResolver the claims resolver
      * @param key            the key
      * @return the t
      */
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver, String key);
+    <E> E extractClaim(String token, Function<Claims, E> claimsResolver, String key);
 
     /**
      * Extract claim t.
      *
-     * @param <T>            the type parameter
+     * @param <E>            the type parameter
      * @param token          the token
      * @param claimsResolver the claims resolver
      * @return the t
      */
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver);
+    <E> E extractClaim(String token, Function<Claims, E> claimsResolver);
 
     /**
      * Extract all claims claims.

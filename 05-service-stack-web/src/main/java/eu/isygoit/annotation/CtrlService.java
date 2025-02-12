@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.IAssignableCodeService;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,5 +18,5 @@ public @interface CtrlService {
      *
      * @return the class
      */
-    Class<? extends ICodifiableService> value(); // service class
+    Class<? extends IAssignableCodeService> value(); // service class
 }

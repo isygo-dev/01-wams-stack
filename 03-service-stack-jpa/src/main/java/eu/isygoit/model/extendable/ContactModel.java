@@ -19,14 +19,14 @@ import java.io.Serializable;
 /**
  * The type Contact model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class ContactModel<T extends Serializable> extends AuditableEntity<T> {
+public abstract class ContactModel<I extends Serializable> extends AuditableEntity<I> {
 
     @Enumerated(EnumType.STRING)
     @Column(name = ComSchemaColumnConstantName.C_CONTACT_TYPE, length = IEnumContact.STR_ENUM_SIZE, nullable = false)

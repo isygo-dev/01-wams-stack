@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.service.impl;
 import eu.isygoit.annotation.CodeGenKms;
 import eu.isygoit.annotation.CodeGenLocal;
 import eu.isygoit.app.ApplicationContextService;
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.IAssignableCodeService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,12 +30,12 @@ import java.util.Map;
  * The type Codifiable service.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPagingAndSortingRepository> extends CrudService<I, T, R>
-        implements ICodifiableService<I, T> {
+public abstract class AssignableCodeService<I extends Serializable, E extends IIdEntity, R extends JpaPagingAndSortingRepository> extends CrudService<I, E, R>
+        implements IAssignableCodeService<I, E> {
 
     /**
      * The In memo next code.

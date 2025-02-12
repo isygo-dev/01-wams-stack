@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,34 +25,33 @@ import java.util.List;
  * The type Multi file service.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  * @param <L> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & ICodifiable & IIdEntity, R extends JpaPagingAndSortingRepository>
-        extends MultiFileServiceSubMethods<I, T, L, R>
-        implements IMultiFileServiceMethods<I, T> {
+public abstract class MultiFileService<I extends Serializable, E extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & IAssignableCode & IIdEntity, R extends JpaPagingAndSortingRepository>
+        extends MultiFileServiceSubMethods<I, E, L, R>
+        implements IMultiFileServiceMethods<I, E> {
 
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
     private final Class<L> linkedFileClass = (Class<L>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
 
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException {
-        T entity = findById(parentId);
+        E entity = findById(parentId);
         if (entity != null) {
             for (MultipartFile file : files) {
                 this.uploadAdditionalFile(parentId, file);
             }
             return entity.getAdditionalFiles();
         } else {
-            throw new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId);
+            throw new ObjectNotFoundException(getPersistentClass().getSimpleName() + " with id: " + parentId);
         }
     }
 
     @Override
     public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
-        T entity = findById(parentId);
+        E entity = findById(parentId);
         if (entity != null) {
             if (file != null && !file.isEmpty()) {
                 try {
@@ -66,7 +66,7 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
                         linkedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
                         linkedFile.setPath(this.getUploadDirectory() +
                                 File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                                File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional");
+                                File.separator + getPersistentClass().getSimpleName().toLowerCase() + File.separator + "additional");
                         linkedFile.setMimetype(file.getContentType());
                         linkedFile.setCrc16(CRC16Helper.calculate(file.getBytes()));
                         linkedFile.setCrc32(CRC32Helper.calculate(file.getBytes()));
@@ -91,7 +91,7 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
                         }
                         entity.getAdditionalFiles().add(linkedFile);
                     } else {
-                        log.warn("Upload file ({}) :File is null or empty", this.persistentClass.getSimpleName());
+                        log.warn("Upload file ({}) :File is null or empty", this.getPersistentClass().getSimpleName());
                     }
                 } catch (Exception e) {
                     log.error("Update additional files failed : ", e);
@@ -102,13 +102,13 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
             entity = this.update(entity);
             return entity.getAdditionalFiles();
         } else {
-            throw new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId);
+            throw new ObjectNotFoundException(getPersistentClass().getSimpleName() + " with id: " + parentId);
         }
     }
 
     @Override
     public Resource downloadFile(I parentId, I fileId, Long version) throws IOException {
-        T entity = findById(parentId);
+        E entity = findById(parentId);
         if (entity != null) {
             L linkedFile = (L) entity.getAdditionalFiles().stream()
                     .filter(item -> ((L) item).getId().equals(fileId)).findAny()
@@ -120,13 +120,13 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
             }
 
         } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + parentId);
+            throw new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + parentId);
         }
     }
 
     @Override
     public boolean deleteAdditionalFile(I parentId, I fileId) throws IOException {
-        T entity = findById(parentId);
+        E entity = findById(parentId);
         if (entity != null) {
             L linkedFile = (L) entity.getAdditionalFiles().stream()
                     .filter(item -> ((L) item).getId().equals(fileId)).findAny()
@@ -140,7 +140,7 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
                 throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with id " + fileId);
             }
         } else {
-            throw new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + parentId);
+            throw new ObjectNotFoundException(getPersistentClass().getSimpleName() + " with id: " + parentId);
         }
     }
 

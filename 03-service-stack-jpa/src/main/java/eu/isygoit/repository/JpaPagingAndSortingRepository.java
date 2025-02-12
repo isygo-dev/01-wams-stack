@@ -11,11 +11,11 @@ import java.io.Serializable;
 /**
  * The interface Jpa paging and sorting repository.
  *
- * @param <T> the type parameter
  * @param <I> the type parameter
+ * @param <E> the type parameter
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingRepository<T extends IIdEntity, I extends Serializable>
-        extends JpaRepository<T, I>, JpaSpecificationExecutor<T> {
+public interface JpaPagingAndSortingRepository<I extends Serializable, E extends IIdEntity>
+        extends JpaRepository<E, I>, JpaSpecificationExecutor<E> {
 }

@@ -3,7 +3,7 @@ package eu.isygoit.model;
 /**
  * The interface Codifiable.
  */
-public interface ICodifiable {
+public interface IAssignableCode {
 
     /**
      * Gets code.

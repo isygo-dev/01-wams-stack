@@ -11,19 +11,19 @@ import java.util.Date;
 /**
  * The type Licence model dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class LicenceModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class LicenceModelDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String domain;
     private String provider;
     private String type;
     private String user;
     private Date expiryDate;
-    private Integer crc16;
-    private Integer crc32;
+    private Long crc16;
+    private Long crc32;
 }

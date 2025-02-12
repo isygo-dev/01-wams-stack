@@ -18,27 +18,29 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 
 /**
  * The type Mapped file controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
-        MIND extends IIdentifiableDto & IFileUploadDto,
-        FULLD extends MIND,
-        S extends IFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements IMappedFileApi<I, FULLD> {
+public abstract class MappedFileController<I extends Serializable, E extends IIdEntity & IFileEntity,
+        M extends IIdentifiableDto & IFileUploadDto,
+        F extends M,
+        S extends IFileServiceMethods<I, E> & ICrudServiceMethod<I, E>>
+        extends CrudControllerUtils<I, E, M, F, S>
+        implements IMappedFileApi<I, F> {
 
     @Override
-    public ResponseEntity<FULLD> uploadFile(RequestContextDto requestContext,
-                                            I id, MultipartFile file) {
+    public ResponseEntity<F> uploadFile(RequestContextDto requestContext,
+                                        I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
             return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderDomain(), id, file)));
@@ -66,15 +68,15 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
     }
 
     @Override
-    public ResponseEntity<FULLD> createWithFile(RequestContextDto requestContext,
-                                                FULLD dto) {
+    public ResponseEntity<F> createWithFile(RequestContextDto requestContext,
+                                            F dto) {
         log.info("Create with file request received");
         try {
             if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getDomain())) {
                 ISAASDto.setDomain(requestContext.getSenderDomain());
             }
             dto = this.beforeCreate(dto);
-            FULLD savedResume = mapper().entityToDto(this.afterCreate(
+            F savedResume = mapper().entityToDto(this.afterCreate(
                     crudService().createWithFile(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), dto.getFile())));
             return ResponseFactory.ResponseOk(savedResume);
         } catch (Exception ex) {
@@ -83,13 +85,13 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
     }
 
     @Override
-    public ResponseEntity<FULLD> updateWithFile(RequestContextDto requestContext,
-                                                I id,
-                                                FULLD dto) {
+    public ResponseEntity<F> updateWithFile(RequestContextDto requestContext,
+                                            I id,
+                                            F dto) {
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);
-            FULLD savedResume = mapper().entityToDto(
+            F savedResume = mapper().entityToDto(
                     this.afterUpdate(crudService().updateWithFile(requestContext.getSenderDomain(), id, mapper().dtoToEntity(dto), dto.getFile())));
             return ResponseFactory.ResponseOk(savedResume);
         } catch (Exception ex) {
@@ -104,7 +106,7 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
      * @return the fulld
      * @throws Exception the exception
      */
-    public FULLD beforeCreate(FULLD object) throws Exception {
+    public F beforeCreate(F object) throws Exception {
         return object;
     }
 
@@ -115,7 +117,7 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
      * @return the t
      * @throws Exception the exception
      */
-    public T afterCreate(T object) throws Exception {
+    public E afterCreate(E object) throws Exception {
         return object;
     }
 
@@ -126,7 +128,7 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
      * @return the fulld
      * @throws Exception the exception
      */
-    public FULLD beforeUpdate(FULLD object) throws Exception {
+    public F beforeUpdate(F object) throws Exception {
         return object;
     }
 
@@ -137,7 +139,7 @@ public abstract class MappedFileController<I, T extends IIdEntity & IFileEntity,
      * @return the t
      * @throws Exception the exception
      */
-    public T afterUpdate(T object) throws Exception {
+    public E afterUpdate(E object) throws Exception {
         return object;
     }
 }

@@ -13,19 +13,20 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Column;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * The type Auditable cancelable entity.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class AuditableCancelableEntity<T> extends CancelableEntity<T> {
+public abstract class AuditableCancelableEntity<I extends Serializable> extends CancelableEntity<I> {
 
     @CreatedDate
     @CassandraType(type = CassandraType.Name.TIMESTAMP)

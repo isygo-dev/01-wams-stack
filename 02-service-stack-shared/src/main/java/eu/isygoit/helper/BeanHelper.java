@@ -36,16 +36,16 @@ public final class BeanHelper {
     /**
      * Call getter t.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param obj       the obj
      * @param fieldName the field name
      * @return the t
      */
-    public static <T> T callGetter(Object obj, String fieldName) {
+    public static <E> E callGetter(Object obj, String fieldName) {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(fieldName, obj.getClass());
-            return (T) pd.getReadMethod().invoke(obj);
+            return (E) pd.getReadMethod().invoke(obj);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
             log.error("<Error>: calling getter/is for {}/{}", obj.getClass().getSimpleName(), fieldName);

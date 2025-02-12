@@ -5,20 +5,20 @@ import java.io.Serializable;
 /**
  * The interface Id entity.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
-public interface IIdEntity<T> extends Serializable {
+public interface IIdEntity<I> extends Serializable {
     /**
      * Gets id.
      *
      * @return the id
      */
-    T getId();
+    I getId();
 
     /**
      * Sets id.
      *
      * @param id the id
      */
-    void setId(T id);
+    void setId(I id);
 }

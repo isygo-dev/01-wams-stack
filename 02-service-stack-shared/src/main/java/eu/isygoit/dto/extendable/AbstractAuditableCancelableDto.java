@@ -12,13 +12,13 @@ import java.util.Date;
 /**
  * The type Abstract auditable cancelable dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractAuditableCancelableDto<T extends Serializable> extends AbstractCancelableDto<T> {
+public abstract class AbstractAuditableCancelableDto<I extends Serializable> extends AbstractCancelableDto<I> {
 
     private Date createDate;
     private String createdBy;

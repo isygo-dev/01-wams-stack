@@ -12,13 +12,13 @@ import java.io.Serializable;
 /**
  * The type File entity dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class FileEntityDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public class FileEntityDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String fileName;
     private String originalFileName;

@@ -19,30 +19,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 
 
 /**
  * The type Mapped image controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedImageController<I, T extends IIdEntity & IImageEntity,
-        MIND extends IIdentifiableDto & IImageUploadDto,
-        FULLD extends MIND,
-        S extends IImageServiceMethods<I, T> & ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements IMappedImageApi<I, FULLD> {
+public abstract class MappedImageController<I extends Serializable, E extends IIdEntity & IImageEntity,
+        M extends IIdentifiableDto & IImageUploadDto,
+        F extends M,
+        S extends IImageServiceMethods<I, E> & ICrudServiceMethod<I, E>>
+        extends CrudControllerUtils<I, E, M, F, S>
+        implements IMappedImageApi<I, F> {
 
     @Override
-    public ResponseEntity<FULLD> uploadImage(RequestContextDto requestContext,
-                                             I id,
-                                             MultipartFile file) {
+    public ResponseEntity<F> uploadImage(RequestContextDto requestContext,
+                                         I id,
+                                         MultipartFile file) {
         log.info("Upload image request received");
         try {
             return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderDomain(), id, file)));
@@ -69,9 +70,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
     }
 
     @Override
-    public ResponseEntity<FULLD> createWithImage(RequestContextDto requestContext,
-                                                 MultipartFile file,
-                                                 FULLD dto) {
+    public ResponseEntity<F> createWithImage(RequestContextDto requestContext,
+                                             MultipartFile file,
+                                             F dto) {
         log.info("Create with image request received");
         try {
             if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getDomain())) {
@@ -88,9 +89,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
 
 
     @Override
-    public ResponseEntity<FULLD> updateWithImage(RequestContextDto requestContext,
-                                                 MultipartFile file,
-                                                 FULLD dto) {
+    public ResponseEntity<F> updateWithImage(RequestContextDto requestContext,
+                                             MultipartFile file,
+                                             F dto) {
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);
@@ -109,7 +110,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
      * @return the fulld
      * @throws Exception the exception
      */
-    public FULLD beforeCreate(FULLD object) throws Exception {
+    public F beforeCreate(F object) throws Exception {
         return object;
     }
 
@@ -120,7 +121,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
      * @return the t
      * @throws Exception the exception
      */
-    public T afterCreate(T object) throws Exception {
+    public E afterCreate(E object) throws Exception {
         return object;
     }
 
@@ -131,7 +132,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
      * @return the fulld
      * @throws Exception the exception
      */
-    public FULLD beforeUpdate(FULLD object) throws Exception {
+    public F beforeUpdate(F object) throws Exception {
         return object;
     }
 
@@ -142,7 +143,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
      * @return the t
      * @throws Exception the exception
      */
-    public T afterUpdate(T object) throws Exception {
+    public E afterUpdate(E object) throws Exception {
         return object;
     }
 }

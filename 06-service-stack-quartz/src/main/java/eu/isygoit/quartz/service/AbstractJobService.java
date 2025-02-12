@@ -3,6 +3,7 @@ package eu.isygoit.quartz.service;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 
 /**

@@ -14,13 +14,13 @@ import java.io.Serializable;
 /**
  * The type Account model dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AccountModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class AccountModelDto<I extends Serializable> extends AbstractAuditableDto<I> {
 
     private String code;
     @NotEmpty

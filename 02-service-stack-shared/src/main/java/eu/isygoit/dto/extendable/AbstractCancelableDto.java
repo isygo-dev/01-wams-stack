@@ -12,13 +12,13 @@ import java.util.Date;
 /**
  * The type Abstract cancelable dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractCancelableDto<T extends Serializable> extends IdentifiableDto<T> {
+public abstract class AbstractCancelableDto<I extends Serializable> extends IdentifiableDto<I> {
 
     private Boolean checkCancel = Boolean.FALSE;
     private Date cancelDate;

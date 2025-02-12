@@ -10,9 +10,9 @@ import java.util.Optional;
 /**
  * The type Abstract next code service.
  *
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public abstract class AbstractNextCodeService<T extends NextCodeModel> implements INextCodeService<T> {
+public abstract class AbstractNextCodeService<E extends NextCodeModel> implements INextCodeService<E> {
 
     /**
      * Next code repository next code repository.
@@ -22,8 +22,8 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel> implement
     public abstract NextCodeRepository nextCodeRepository();
 
     @Override
-    public T findByEntity(String entity) {
-        Optional<T> nextCode = nextCodeRepository().findByEntity(entity);
+    public E findByEntity(String entity) {
+        Optional<E> nextCode = nextCodeRepository().findByEntity(entity);
         if (nextCode.isPresent()) {
             return nextCode.get();
         }
@@ -31,8 +31,8 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel> implement
     }
 
     @Override
-    public T findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
-        Optional<T> nextCode = nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
+    public E findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
+        Optional<E> nextCode = nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
         if (nextCode.isPresent()) {
             return nextCode.get();
         }
@@ -46,11 +46,11 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel> implement
         nextCodeRepository().flush();
     }
 
-    public T saveAndFlush(T appNextCode) {
-        return (T) nextCodeRepository().saveAndFlush(appNextCode);
+    public E saveAndFlush(E appNextCode) {
+        return (E) nextCodeRepository().saveAndFlush(appNextCode);
     }
 
-    public T save(T appNextCode) {
-        return (T) nextCodeRepository().save(appNextCode);
+    public E save(E appNextCode) {
+        return (E) nextCodeRepository().save(appNextCode);
     }
 }

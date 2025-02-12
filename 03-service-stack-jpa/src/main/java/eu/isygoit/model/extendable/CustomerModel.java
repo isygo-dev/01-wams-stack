@@ -2,7 +2,7 @@ package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.enums.IEnumBinaryStatus;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ISAASEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
@@ -24,14 +24,14 @@ import java.io.Serializable;
 /**
  * The type Customer model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class CustomerModel<T extends Serializable> extends AuditableEntity<T> implements ISAASEntity, ICodifiable, IImageEntity {
+public abstract class CustomerModel<I extends Serializable> extends AuditableEntity<I> implements ISAASEntity, IAssignableCode, IImageEntity {
 
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")

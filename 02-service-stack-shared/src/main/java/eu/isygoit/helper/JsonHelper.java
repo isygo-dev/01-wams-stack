@@ -31,7 +31,7 @@ public final class JsonHelper {
     /**
      * From json t.
      *
-     * @param <T>       the type parameter
+     * @param <E>       the type parameter
      * @param json      the json
      * @param valueType the value type
      * @return the t
@@ -39,7 +39,7 @@ public final class JsonHelper {
      * @throws JsonMappingException the json mapping exception
      * @throws IOException          the io exception
      */
-    public static <T> T fromJson(String json, Class<T> valueType) throws JsonParseException, JsonMappingException, IOException {
+    public static <E> E fromJson(String json, Class<E> valueType) throws JsonParseException, JsonMappingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, valueType);
     }
@@ -61,7 +61,7 @@ public final class JsonHelper {
     /**
      * From json file t.
      *
-     * @param <T>        the type parameter
+     * @param <E>        the type parameter
      * @param jsonReader the json reader
      * @param valueType  the value type
      * @return the t
@@ -69,7 +69,7 @@ public final class JsonHelper {
      * @throws JsonMappingException the json mapping exception
      * @throws IOException          the io exception
      */
-    public static <T> T fromJsonFile(FileReader jsonReader, Class<T> valueType) throws JsonParseException, JsonMappingException, IOException {
+    public static <E> E fromJsonFile(FileReader jsonReader, Class<E> valueType) throws JsonParseException, JsonMappingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(jsonReader, valueType);
     }

@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.IAssignableCode;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -12,13 +12,13 @@ import java.util.Optional;
 /**
  * The interface Jpa paging and sorting saas codifiable repository.
  *
- * @param <T> the type parameter
  * @param <I> the type parameter
+ * @param <E> the type parameter
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingSAASCodifiableRepository<T extends ISAASEntity & ICodifiable & IIdEntity, I extends Serializable>
-        extends JpaPagingAndSortingSAASRepository<T, I>, JpaPagingAndSortingCodifiableRepository<T, I> {
+public interface JpaPagingAndSortingSAASAndAssignableCodeRepository<I extends Serializable, E extends ISAASEntity & IAssignableCode & IIdEntity>
+        extends JpaPagingAndSortingSAASRepository<I, E>, JpaPagingAndSortingAndAssignableCodeRepository<I, E> {
 
     /**
      * Find by domain ignore case and code ignore case optional.
@@ -27,5 +27,5 @@ public interface JpaPagingAndSortingSAASCodifiableRepository<T extends ISAASEnti
      * @param code   the code
      * @return the optional
      */
-    Optional<T> findByDomainIgnoreCaseAndCodeIgnoreCase(String domain, String code);
+    Optional<E> findByDomainIgnoreCaseAndCodeIgnoreCase(String domain, String code);
 }

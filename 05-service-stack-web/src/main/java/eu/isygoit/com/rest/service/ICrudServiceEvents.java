@@ -2,15 +2,16 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.model.IIdEntity;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * The interface Crud service events.
  *
  * @param <I> the type parameter
- * @param <T> the type parameter
+ * @param <E> the type parameter
  */
-public interface ICrudServiceEvents<I, T extends IIdEntity> {
+public interface ICrudServiceEvents<I extends Serializable, E extends IIdEntity> {
 
     /**
      * Before update t.
@@ -18,7 +19,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param object the object
      * @return the t
      */
-    T beforeUpdate(T object);
+    E beforeUpdate(E object);
 
     /**
      * After update t.
@@ -26,7 +27,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param object the object
      * @return the t
      */
-    T afterUpdate(T object);
+    E afterUpdate(E object);
 
     /**
      * Before delete.
@@ -47,14 +48,14 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      *
      * @param objects the objects
      */
-    void beforeDelete(List<T> objects);
+    void beforeDelete(List<E> objects);
 
     /**
      * After delete.
      *
      * @param objects the objects
      */
-    void afterDelete(List<T> objects);
+    void afterDelete(List<E> objects);
 
     /**
      * Before create t.
@@ -62,7 +63,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param object the object
      * @return the t
      */
-    T beforeCreate(T object);
+    E beforeCreate(E object);
 
     /**
      * After find all list.
@@ -70,7 +71,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param list the list
      * @return the list
      */
-    List<T> afterFindAll(List<T> list);
+    List<E> afterFindAll(List<E> list);
 
     /**
      * After find by id t.
@@ -78,7 +79,7 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param object the object
      * @return the t
      */
-    T afterFindById(T object);
+    E afterFindById(E object);
 
     /**
      * After create t.
@@ -86,5 +87,5 @@ public interface ICrudServiceEvents<I, T extends IIdEntity> {
      * @param object the object
      * @return the t
      */
-    T afterCreate(T object);
+    E afterCreate(E object);
 }

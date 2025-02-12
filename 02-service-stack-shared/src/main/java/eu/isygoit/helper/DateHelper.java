@@ -34,27 +34,27 @@ public class DateHelper {
     /**
      * The constant DATE_WITH_TIME_ZONE_RFC_EN.
      */
-    public static final String DATE_WITH_TIME_ZONE_RFC_EN = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
+    public static final String DATE_WITH_TIME_ZONE_RFC_EN = "yyyy-MM-dd'E'HH:mm:ss.SSSZZ";
     /**
      * The constant DATE_WITH_TIME_ZONE_ISO_EN.
      */
-    public static final String DATE_WITH_TIME_ZONE_ISO_EN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    public static final String DATE_WITH_TIME_ZONE_ISO_EN = "yyyy-MM-dd'E'HH:mm:ss.SSSXXX";
     /**
      * The constant DATE_WITH_TIME_ZONE_RFC_FR.
      */
-    public static final String DATE_WITH_TIME_ZONE_RFC_FR = "dd-MM-yyyy'T'HH:mm:ss.SSSZZ";
+    public static final String DATE_WITH_TIME_ZONE_RFC_FR = "dd-MM-yyyy'E'HH:mm:ss.SSSZZ";
     /**
      * The constant DATE_WITH_TIME_ZONE_ISO_FR.
      */
-    public static final String DATE_WITH_TIME_ZONE_ISO_FR = "dd-MM-yyyy'T'HH:mm:ss.SSSXXX";
+    public static final String DATE_WITH_TIME_ZONE_ISO_FR = "dd-MM-yyyy'E'HH:mm:ss.SSSXXX";
     /**
      * The constant DATE_WITH_TIME_EN.
      */
-    public static final String DATE_WITH_TIME_EN = "yyyy-MM-dd'T'HH:mm";
+    public static final String DATE_WITH_TIME_EN = "yyyy-MM-dd'E'HH:mm";
     /**
      * The constant DATE_WITH_TIME_FR.
      */
-    public static final String DATE_WITH_TIME_FR = "dd-MM-yyyy'T'HH:mm";
+    public static final String DATE_WITH_TIME_FR = "dd-MM-yyyy'E'HH:mm";
     /**
      * The constant SIMPLE_DATE_FORMAT_FR.
      */

@@ -18,13 +18,13 @@ import java.io.Serializable;
 /**
  * The type Next code model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @NoArgsConstructor
 @SuperBuilder
 @MappedSuperclass
-public abstract class NextCodeModel<T extends Serializable> implements IIdEntity<T>, ISAASEntity {
+public abstract class NextCodeModel<I extends Serializable> implements IIdEntity<I>, ISAASEntity {
 
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")

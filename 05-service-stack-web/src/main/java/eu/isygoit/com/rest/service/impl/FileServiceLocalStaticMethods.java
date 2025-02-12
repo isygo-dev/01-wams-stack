@@ -28,13 +28,13 @@ public final class FileServiceLocalStaticMethods {
     /**
      * Upload string.
      *
-     * @param <T>    the type parameter
+     * @param <E>    the type parameter
      * @param file   the file
      * @param entity the entity
      * @return the string
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> String upload(MultipartFile file, T entity) throws IOException {
+    static <E extends IFileEntity & IIdEntity & IAssignableCode> String upload(MultipartFile file, E entity) throws IOException {
         Path filePath = Path.of(entity.getPath());
         if (!Files.exists(filePath)) {
             Files.createDirectories(filePath);
@@ -47,13 +47,13 @@ public final class FileServiceLocalStaticMethods {
     /**
      * Download resource.
      *
-     * @param <T>     the type parameter
+     * @param <E>     the type parameter
      * @param entity  the entity
      * @param version the version
      * @return the resource
      * @throws MalformedURLException the malformed url exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> Resource download(T entity, Long version) throws MalformedURLException {
+    static <E extends IFileEntity & IIdEntity & IAssignableCode> Resource download(E entity, Long version) throws MalformedURLException {
         if (StringUtils.hasText(entity.getPath())) {
             Resource resource = new UrlResource(Path.of(entity.getPath() +
                     File.separator + entity.getFileName()).toUri());
@@ -84,7 +84,7 @@ public final class FileServiceLocalStaticMethods {
      * @return the boolean
      * @throws IOException the io exception
      */
-    public static <L extends ILinkedFile & ICodifiable & IIdEntity> boolean delete(L entity) throws IOException {
+    public static <L extends ILinkedFile & IAssignableCode & IIdEntity> boolean delete(L entity) throws IOException {
         File file = new File(entity.getPath()
                 + File.separator + entity.getFileName());
         if (file.exists()) {

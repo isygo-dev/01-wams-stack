@@ -4,21 +4,21 @@ package eu.isygoit.dto;
 /**
  * The interface Identifiable dto.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
-public interface IIdentifiableDto<T> extends IDto {
+public interface IIdentifiableDto<I> extends IDto {
 
     /**
      * Gets id.
      *
      * @return the id
      */
-    T getId();
+    I getId();
 
     /**
      * Sets id.
      *
      * @param id the id
      */
-    void setId(T id);
+    void setId(I id);
 }

@@ -17,26 +17,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.util.List;
 
 
 /**
  * The type Mapped multi file controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <L>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
- * @param <S>     the type parameter
+ * @param <I> the type parameter
+ * @param <E> the type parameter
+ * @param <L> the type parameter
+ * @param <M> the type parameter
+ * @param <F> the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedMultiFileController<I, T extends IIdEntity & IMultiFileEntity,
+public abstract class MappedMultiFileController<I extends Serializable, E extends IIdEntity & IMultiFileEntity,
         L extends LinkedFileMinDto,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
-        S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, MIND, FULLD, S>
+        M extends IIdentifiableDto,
+        F extends M,
+        S extends IMultiFileServiceMethods<I, E> & ICrudServiceMethod<I, E>>
+        extends CrudControllerUtils<I, E, M, F, S>
         implements IMappedMultiFileApi<L, I> {
 
     /**

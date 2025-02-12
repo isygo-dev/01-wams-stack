@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.Serializable;
+
 /**
  * The interface Mapped crud persist api.
  *
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedCrudPersistApi<I, D extends IIdentifiableDto> {
+public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdentifiableDto> {
 
     /**
      * Create response entity.
