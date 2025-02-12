@@ -3,14 +3,14 @@ package eu.isygoit.factory;
 /**
  * The type Abstract factory.
  *
- * @param <E> the type parameter
+ * @param <T> the type parameter
  */
-public abstract class AbstractFactory<E> implements Factory<E> {
+public abstract class AbstractFactory<T> implements Factory<T> {
 
-    private E instance;
+    private T instance;
 
     @Override
-    public E instance() {
+    public T instance() {
         if (this.instance == null) {
             this.instance = newInstance();
         }

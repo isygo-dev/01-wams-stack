@@ -8,16 +8,16 @@ import java.util.List;
 /**
  * The interface Api extractor.
  *
- * @param <E> the type parameter
+ * @param <T> the type parameter
  */
-public interface IApiExtractor<E extends ApiPermissionModel> {
+public interface IApiExtractor<T extends ApiPermissionModel> {
 
     /**
      * New instance e.
      *
      * @return the e
      */
-    E newInstance();
+    T newInstance();
 
     /**
      * Extract apis list.
@@ -29,5 +29,5 @@ public interface IApiExtractor<E extends ApiPermissionModel> {
      * @throws InstantiationException    the instantiation exception
      * @throws IllegalAccessException    the illegal access exception
      */
-    List<E> extractApis(Class<?> controller) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException;
+    List<T> extractApis(Class<?> controller) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException;
 }

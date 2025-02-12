@@ -5,14 +5,14 @@ import java.util.Optional;
 /**
  * The interface Audit awere service.
  *
- * @param <E> the type parameter
+ * @param <T> the type parameter
  */
-public interface IAuditAwereService<E> {
+public interface IAuditAwereService<T> {
 
     /**
      * Gets current auditor.
      *
      * @return the current auditor
      */
-    Optional<E> getCurrentAuditor();
+    Optional<T> getCurrentAuditor();
 }

@@ -94,61 +94,61 @@ public class ResponseFactory {
     /**
      * Response accepted response entity.
      *
-     * @param <E> the type parameter
+     * @param <T> the type parameter
      * @return the response entity
      */
     /*
      * 202 OK.
      */
-    public static <E> ResponseEntity<E> ResponseAccepted() {
+    public static <T> ResponseEntity<T> ResponseAccepted() {
         return ResponseEntity.accepted().build();
     }
 
     /**
      * Response accepted response entity.
      *
-     * @param <E>      the type parameter
+     * @param <T>      the type parameter
      * @param location the location
      * @return the response entity
      */
     /*
      * 202 OK.
      */
-    public static <E> ResponseEntity<E> ResponseAccepted(URI location) {
+    public static <T> ResponseEntity<T> ResponseAccepted(URI location) {
         return ResponseEntity.accepted().location(location).build();
     }
 
     /**
      * Response ok response entity.
      *
-     * @param <E> the type parameter
+     * @param <T> the type parameter
      * @return the response entity
      */
     /*
      * 200 OK.
      */
-    public static <E> ResponseEntity<E> ResponseOk() {
+    public static <T> ResponseEntity<T> ResponseOk() {
         return ResponseEntity.ok().build();
     }
 
     /**
      * Response ok response entity.
      *
-     * @param <E>  the type parameter
+     * @param <T>  the type parameter
      * @param body the body
      * @return the response entity
      */
     /*
      * 200 OK.
      */
-    public static <E> ResponseEntity<E> ResponseOk(E body) {
+    public static <T> ResponseEntity<T> ResponseOk(T body) {
         return ResponseEntity.ok(body);
     }
 
     /**
      * Response ok response entity.
      *
-     * @param <E>          the type parameter
+     * @param <T>          the type parameter
      * @param body         the body
      * @param headerName   the header name
      * @param headerValues the header values
@@ -157,127 +157,127 @@ public class ResponseFactory {
     /*
      * 200 OK.
      */
-    public static <E> ResponseEntity<E> ResponseOk(E body, String headerName, String... headerValues) {
+    public static <T> ResponseEntity<T> ResponseOk(T body, String headerName, String... headerValues) {
         return ResponseEntity.ok().header(headerName, headerValues).body(body);
     }
 
     /**
      * Response created response entity.
      *
-     * @param <E>  the type parameter
+     * @param <T>  the type parameter
      * @param body the body
      * @return the response entity
      */
     /*
      * 201 Created.
      */
-    public static <E> ResponseEntity<E> ResponseCreated(E body) {
+    public static <T> ResponseEntity<T> ResponseCreated(T body) {
         return ResponseEntity.created(null).body(body);
     }
 
     /**
      * Response created redirection response entity.
      *
-     * @param <E>      the type parameter
+     * @param <T>      the type parameter
      * @param location the location
      * @param body     the body
      * @return the response entity
      */
-    public static <E> ResponseEntity<E> ResponseCreatedRedirection(URI location, E body) {
+    public static <T> ResponseEntity<T> ResponseCreatedRedirection(URI location, T body) {
         return ResponseEntity.created(location).body(body);
     }
 
     /**
      * Response no content response entity.
      *
-     * @param <E> the type parameter
+     * @param <T> the type parameter
      * @return the response entity
      */
     /*
      * 204 No Content.
      */
-    public static <E> ResponseEntity<E> ResponseNoContent() {
+    public static <T> ResponseEntity<T> ResponseNoContent() {
         return ResponseEntity.noContent().build();
     }
 
     /**
      * Response bad request response entity.
      *
-     * @param <E> the type parameter
+     * @param <T> the type parameter
      * @return the response entity
      */
     /*
      * 400 Bad request
      */
-    public static <E> ResponseEntity<E> ResponseBadRequest() {
+    public static <T> ResponseEntity<T> ResponseBadRequest() {
         return ResponseEntity.badRequest().build();
     }
 
     /**
      * Response bad request response entity.
      *
-     * @param <E>  the type parameter
+     * @param <T>  the type parameter
      * @param body the body
      * @return the response entity
      */
     /*
      * 400 Bad request
      */
-    public static <E> ResponseEntity<E> ResponseBadRequest(E body) {
+    public static <T> ResponseEntity<T> ResponseBadRequest(T body) {
         return ResponseEntity.badRequest().body(body);
     }
 
     /**
      * Response not found response entity.
      *
-     * @param <E> the type parameter
+     * @param <T> the type parameter
      * @return the response entity
      */
     /*
      * 404 Not Found
      */
-    public static <E> ResponseEntity<E> ResponseNotFound() {
+    public static <T> ResponseEntity<T> ResponseNotFound() {
         return ResponseEntity.notFound().build();
     }
 
     /**
      * Response not acceptable response entity.
      *
-     * @param <E>  the type parameter
+     * @param <T>  the type parameter
      * @param body the body
      * @return the response entity
      */
     /*
      * 406 Not Acceptable.
      */
-    public static <E> ResponseEntity<E> ResponseNotAcceptable(E body) {
-        return new ResponseEntity<E>(body, HttpStatus.NOT_ACCEPTABLE);
+    public static <T> ResponseEntity<T> ResponseNotAcceptable(T body) {
+        return new ResponseEntity<T>(body, HttpStatus.NOT_ACCEPTABLE);
     }
 
     /**
      * Response internal error response entity.
      *
-     * @param <E> the type parameter
+     * @param <T> the type parameter
      * @return the response entity
      */
     /*
      * 500 Internal Server Error.
      */
-    public static <E> ResponseEntity<E> ResponseInternalError() {
-        return new ResponseEntity<E>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public static <T> ResponseEntity<T> ResponseInternalError() {
+        return new ResponseEntity<T>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
      * Response internal error response entity.
      *
-     * @param <E>  the type parameter
+     * @param <T>  the type parameter
      * @param body the body
      * @return the response entity
      */
     /*
      * 500 Internal Server Error.
      */
-    public static <E> ResponseEntity<E> ResponseInternalError(E body) {
-        return new ResponseEntity<E>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    public static <T> ResponseEntity<T> ResponseInternalError(T body) {
+        return new ResponseEntity<T>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

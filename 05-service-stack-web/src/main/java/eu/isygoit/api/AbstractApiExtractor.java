@@ -17,21 +17,21 @@ import java.util.List;
 /**
  * The type Abstract api extractor.
  *
- * @param <E> the type parameter
+ * @param <T> the type parameter
  */
 @Slf4j
-public abstract class AbstractApiExtractor<E extends ApiPermissionModel> implements IApiExtractor<E> {
+public abstract class AbstractApiExtractor<T extends ApiPermissionModel> implements IApiExtractor<T> {
 
     @Transactional
-    public List<E> extractApis(Class<?> controller) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        List<E> list = new ArrayList<>();
+    public List<T> extractApis(Class<?> controller) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        List<T> list = new ArrayList<>();
         String ctrlName = ClassUtils.getUserClass(controller).getSimpleName().replace("Controller", "");
         //Get controller url
         RequestMapping requestMapping = AnnotationUtils.findAnnotation(controller, RequestMapping.class);
         if (requestMapping != null && !ArrayUtils.isEmpty(requestMapping.path())) {
             String url = requestMapping.path()[0];
             for (Method method : controller.getMethods()) {
-                E api = newInstance();
+                T api = newInstance();
                 //Set api object
                 api.setObject(ctrlName);
                 //Set api method
@@ -52,7 +52,7 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
         return list;
     }
 
-    private boolean isGetApi(String url, Method method, E api) {
+    private boolean isGetApi(String url, Method method, T api) {
         GetMapping mapping = AnnotationUtils.findAnnotation(method, GetMapping.class);
         if (mapping != null && !ArrayUtils.isEmpty(mapping.path())) {
             api.setRqType(IEnumRequest.Types.GET);
@@ -62,7 +62,7 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
         return false;
     }
 
-    private boolean isDeleteApi(String url, Method method, E api) {
+    private boolean isDeleteApi(String url, Method method, T api) {
         DeleteMapping mapping = AnnotationUtils.findAnnotation(method, DeleteMapping.class);
         if (mapping != null && !ArrayUtils.isEmpty(mapping.path())) {
             api.setRqType(IEnumRequest.Types.DELETE);
@@ -72,7 +72,7 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
         return false;
     }
 
-    private boolean isPostApi(String url, Method method, E api) {
+    private boolean isPostApi(String url, Method method, T api) {
         PostMapping mapping = AnnotationUtils.findAnnotation(method, PostMapping.class);
         if (mapping != null && !ArrayUtils.isEmpty(mapping.path())) {
             api.setRqType(IEnumRequest.Types.POST);
@@ -82,7 +82,7 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
         return false;
     }
 
-    private boolean isPutApi(String url, Method method, E api) {
+    private boolean isPutApi(String url, Method method, T api) {
         PutMapping mapping = AnnotationUtils.findAnnotation(method, PutMapping.class);
         if (mapping != null && !ArrayUtils.isEmpty(mapping.path())) {
             api.setRqType(IEnumRequest.Types.PUT);
@@ -92,7 +92,7 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
         return false;
     }
 
-    private boolean isPatchApi(String url, Method method, E api) {
+    private boolean isPatchApi(String url, Method method, T api) {
         PatchMapping mapping = AnnotationUtils.findAnnotation(method, PatchMapping.class);
         if (mapping != null && !ArrayUtils.isEmpty(mapping.path())) {
             api.setRqType(IEnumRequest.Types.PATCH);
@@ -102,7 +102,7 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
         return false;
     }
 
-    private void isAPermission(String url, Method method, E api) {
+    private void isAPermission(String url, Method method, T api) {
         if (!isGetApi(url, method, api)
                 && !isPostApi(url, method, api)
                 && !isPutApi(url, method, api)
@@ -118,5 +118,5 @@ public abstract class AbstractApiExtractor<E extends ApiPermissionModel> impleme
      * @param api the api
      * @return the e
      */
-    public abstract E saveApi(E api);
+    public abstract T saveApi(T api);
 }
