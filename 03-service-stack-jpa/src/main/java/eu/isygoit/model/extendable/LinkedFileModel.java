@@ -26,10 +26,10 @@ import java.io.Serializable;
 public abstract class LinkedFileModel<T extends Serializable> extends FileEntity<T> implements ILinkedFile {
 
     @Column(name = ComSchemaColumnConstantName.C_CRC_16, updatable = false, nullable = true)
-    private Integer crc16;
+    private Long crc16;
 
     @Column(name = ComSchemaColumnConstantName.C_CRC_32, updatable = false, nullable = true)
-    private Integer crc32;
+    private Long crc32;
 
     @Column(name = ComSchemaColumnConstantName.C_SIZE, updatable = false, nullable = false)
     private Long size;

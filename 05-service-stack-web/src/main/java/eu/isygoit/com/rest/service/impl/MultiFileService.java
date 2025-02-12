@@ -2,8 +2,8 @@ package eu.isygoit.com.rest.service.impl;
 
 import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
 import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.encrypt.helper.CRC16;
-import eu.isygoit.encrypt.helper.CRC32;
+import eu.isygoit.encrypt.helper.CRC16Helper;
+import eu.isygoit.encrypt.helper.CRC32Helper;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
@@ -68,8 +68,8 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
                                 File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                                 File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional");
                         linkedFile.setMimetype(file.getContentType());
-                        linkedFile.setCrc16(CRC16.calculate(file.getBytes()));
-                        linkedFile.setCrc32(CRC32.calculate(file.getBytes()));
+                        linkedFile.setCrc16(CRC16Helper.calculate(file.getBytes()));
+                        linkedFile.setCrc32(CRC32Helper.calculate(file.getBytes()));
                         linkedFile.setSize(file.getSize());
                         linkedFile.setVersion(1L);
 

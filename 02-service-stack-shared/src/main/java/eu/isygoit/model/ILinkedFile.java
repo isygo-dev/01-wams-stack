@@ -11,28 +11,28 @@ public interface ILinkedFile extends IFileEntity {
      *
      * @return the crc 16
      */
-    public Integer getCrc16();
+    public Long getCrc16();
 
     /**
      * Sets crc 16.
      *
      * @param crc16 the crc 16
      */
-    public void setCrc16(Integer crc16);
+    public void setCrc16(Long crc16);
 
     /**
      * Gets crc 32.
      *
      * @return the crc 32
      */
-    public Integer getCrc32();
+    public Long getCrc32();
 
     /**
      * Sets crc 32.
      *
      * @param crc32 the crc 32
      */
-    public void setCrc32(Integer crc32);
+    public void setCrc32(Long crc32);
 
     /**
      * Gets size.
