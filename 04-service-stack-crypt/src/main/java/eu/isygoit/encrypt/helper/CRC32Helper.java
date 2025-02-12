@@ -1,13 +1,14 @@
 package eu.isygoit.encrypt.helper;
 
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
-import java.io.FileInputStream;
 
 /**
  * Utility class for calculating CRC-32 checksums.

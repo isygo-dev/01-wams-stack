@@ -2,198 +2,254 @@ package eu.isygoit.encrypt.config;
 
 import eu.isygoit.encrypt.generator.IKeyGenerator;
 import eu.isygoit.encrypt.generator.KeyGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.jasypt.digest.config.SimpleDigesterConfig;
 import org.jasypt.encryption.pbe.*;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
-import org.jasypt.salt.SaltGenerator;
 import org.jasypt.util.password.ConfigurablePasswordEncryptor;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Optional;
+
 /**
- * The type Jasypt config.
+ * Configuration class for Jasypt encryption setup.
+ * This class defines various encryptor beans and configurations using Jasypt library.
  */
 @Configuration
 @EnableConfigurationProperties(JasyptProperties.class)
+@Slf4j  // Lombok annotation automatically creates a logger named 'log'
 public class JasyptConfig {
 
+    // Standard default values
+    public static final String DEFAULT_ENCRYPTOR_PASSWORD = "defaultEncryptorPassword";
+    public static final String DEFAULT_ALGORITHM = "PBEWithMD5AndDES";
+    public static final int DEFAULT_POOL_SIZE = 1;
+    public static final String DEFAULT_SALT_GENERATOR_CLASS = "org.jasypt.salt.RandomSaltGenerator";
+    public static final String DEFAULT_PASSWORD_ALGORITHM = "SHA-256";
+    public static final String DEFAULT_PROVIDER_NAME = "SunJCE";
+    public static final String DEFAULT_STRING_OUTPUT_TYPE = "base64";
+    public static final int DEFAULT_KEY_OBTENTION_ITERATIONS = 1000;
+    public static final int DEFAULT_SALT_SIZE_BYTES = 8;
+    public static final boolean DEFAULT_INVERT_POSITION_OF_PLAIN_SALT = false;
     private final JasyptProperties jasyptProperties;
 
     /**
-     * Instantiates a new Jasypt config.
+     * Constructor to initialize the JasyptConfig with the given JasyptProperties.
      *
-     * @param jasyptProperties the jasypt properties
+     * @param jasyptProperties The Jasypt properties to configure encryption settings.
      */
     public JasyptConfig(JasyptProperties jasyptProperties) {
         this.jasyptProperties = jasyptProperties;
+        log.info("JasyptConfig initialized with provided properties: {}", jasyptProperties);
     }
 
     /**
-     * Configurable password encryptor configurable password encryptor.
+     * Bean for ConfigurablePasswordEncryptor.
+     * Configures a password encryptor with the provided settings.
      *
-     * @return the configurable password encryptor
+     * @return ConfigurablePasswordEncryptor the configured password encryptor.
      */
     @Bean(name = "configurablePasswordEncryptor")
     public ConfigurablePasswordEncryptor configurablePasswordEncryptor() {
-        ConfigurablePasswordEncryptor encryptor = new ConfigurablePasswordEncryptor();
+        var encryptor = new ConfigurablePasswordEncryptor();
         encryptor.setConfig(getPasswordEncryptorConfiguration());
+        log.info("ConfigurablePasswordEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Gets encryptor configuration.
+     * Bean for configuring the general encryptor settings.
+     * Uses default values where applicable.
      *
-     * @return the encryptor configuration
+     * @return SimpleStringPBEConfig the encryptor configuration.
      */
     @Bean
     public SimpleStringPBEConfig getEncryptorConfiguration() {
-        SimpleStringPBEConfig config = new SimpleStringPBEConfig();
-        config.setPassword(jasyptProperties.getEncryptorPassword());
-        config.setAlgorithm(jasyptProperties.getAlgorithm());
-        config.setKeyObtentionIterations("1000");
-        config.setPoolSize(jasyptProperties.getPoolSize());
-        config.setProviderName("SunJCE");
-        config.setSaltGeneratorClassName(jasyptProperties.getSaltGeneratorClassName());
-        SaltGenerator saltGenerator = config.getSaltGenerator();
-        saltGenerator.generateSalt(jasyptProperties.getSalt());
-        config.setStringOutputType("base64");
+        var config = new SimpleStringPBEConfig();
+        // Use property or default for each setting
+        config.setPassword(Optional.ofNullable(jasyptProperties.getEncryptorPassword())
+                .orElse(DEFAULT_ENCRYPTOR_PASSWORD));
+        config.setAlgorithm(Optional.ofNullable(jasyptProperties.getAlgorithm())
+                .orElse(DEFAULT_ALGORITHM));
+        config.setKeyObtentionIterations(Optional.ofNullable(jasyptProperties.getKeyObtentionIterations())
+                .orElse(DEFAULT_KEY_OBTENTION_ITERATIONS));
+        config.setPoolSize(Optional.ofNullable(jasyptProperties.getPoolSize())
+                .orElse(DEFAULT_POOL_SIZE));
+        config.setProviderName(DEFAULT_PROVIDER_NAME);
+        config.setSaltGeneratorClassName(Optional.ofNullable(jasyptProperties.getSaltGeneratorClassName())
+                .orElse(DEFAULT_SALT_GENERATOR_CLASS));
+        config.setStringOutputType(DEFAULT_STRING_OUTPUT_TYPE);
+
+        // Use Optional to safely handle salt generator
+        Optional.ofNullable(config.getSaltGenerator())
+                .ifPresent(saltGen -> saltGen.generateSalt(jasyptProperties.getSalt()));
+
+        log.info("Encryptor configuration initialized with algorithm: {}, pool size: {}",
+                config.getAlgorithm(), config.getPoolSize());
         return config;
     }
 
     /**
-     * Gets guid generator.
+     * Bean for GUID generator.
+     * Configures a key generator for GUIDs with size from properties or defaults.
      *
-     * @return the guid generator
+     * @return IKeyGenerator the GUID generator.
      */
     @Bean
     public IKeyGenerator getGuidGenerator() {
+        log.info("GUID Generator bean created with size: {}", jasyptProperties.getKeyGeneratorSize());
         return new KeyGenerator(jasyptProperties.getKeyGeneratorSize());
     }
 
     /**
-     * Gets password encryptor configuration.
+     * Bean for password encryptor configuration.
+     * Uses a default password algorithm when none is specified.
      *
-     * @return the password encryptor configuration
+     * @return SimpleDigesterConfig the password encryptor configuration.
      */
     @Bean
     public SimpleDigesterConfig getPasswordEncryptorConfiguration() {
-        SimpleDigesterConfig simpleDigesterConfig = new SimpleDigesterConfig();
-        // DIGEST ALGORITHMS: [MD2, MD5, SHA, SHA-256, SHA-384, SHA-512]
-        simpleDigesterConfig.setAlgorithm(jasyptProperties.getPasswordAlgorithm());
-        simpleDigesterConfig.setSaltGeneratorClassName(jasyptProperties.getSaltGeneratorClassName());
-        SaltGenerator saltGenerator = simpleDigesterConfig.getSaltGenerator();
-        saltGenerator.generateSalt(jasyptProperties.getSalt());
-        simpleDigesterConfig.setSaltSizeBytes(8);
-        simpleDigesterConfig.setInvertPositionOfPlainSaltInEncryptionResults(false);
-        return simpleDigesterConfig;
+        var config = new SimpleDigesterConfig();
+        // Use default or provided password algorithm
+        config.setAlgorithm(Optional.ofNullable(jasyptProperties.getPasswordAlgorithm())
+                .orElse(DEFAULT_PASSWORD_ALGORITHM));
+        config.setSaltGeneratorClassName(Optional.ofNullable(jasyptProperties.getSaltGeneratorClassName())
+                .orElse(DEFAULT_SALT_GENERATOR_CLASS));
+        config.setSaltSizeBytes(DEFAULT_SALT_SIZE_BYTES);
+        config.setInvertPositionOfPlainSaltInEncryptionResults(DEFAULT_INVERT_POSITION_OF_PLAIN_SALT);
+
+        // Using Optional to safely handle salt generator
+        Optional.ofNullable(config.getSaltGenerator())
+                .ifPresent(saltGen -> saltGen.generateSalt(jasyptProperties.getSalt()));
+
+        log.info("Password encryptor configuration initialized with algorithm: {}",
+                config.getAlgorithm());
+        return config;
     }
 
     /**
-     * Password encryptor strong password encryptor.
+     * Bean for StrongPasswordEncryptor.
      *
-     * @return the strong password encryptor
+     * @return StrongPasswordEncryptor the strong password encryptor.
      */
     @Bean(name = "passwordEncryptor")
     public StrongPasswordEncryptor passwordEncryptor() {
-        StrongPasswordEncryptor encryptor = new StrongPasswordEncryptor();
-        return encryptor;
+        log.info("StrongPasswordEncryptor bean created.");
+        return new StrongPasswordEncryptor();
     }
 
     /**
-     * Pooled pbe big decimal encryptor pooled pbe big decimal encryptor.
+     * Bean for PooledPBEBigDecimalEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the pooled pbe big decimal encryptor
+     * @return PooledPBEBigDecimalEncryptor the pooled BigDecimal encryptor.
      */
     @Bean(name = "pooledBigDecimalEncryptor")
     public PooledPBEBigDecimalEncryptor pooledPBEBigDecimalEncryptor() {
-        PooledPBEBigDecimalEncryptor encryptor = new PooledPBEBigDecimalEncryptor();
+        var encryptor = new PooledPBEBigDecimalEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("PooledPBEBigDecimalEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Pooled pbe big integer encryptor pooled pbe big integer encryptor.
+     * Bean for PooledPBEBigIntegerEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the pooled pbe big integer encryptor
+     * @return PooledPBEBigIntegerEncryptor the pooled BigInteger encryptor.
      */
     @Bean(name = "pooledBigIntegerEncryptor")
     public PooledPBEBigIntegerEncryptor pooledPBEBigIntegerEncryptor() {
-        PooledPBEBigIntegerEncryptor encryptor = new PooledPBEBigIntegerEncryptor();
+        var encryptor = new PooledPBEBigIntegerEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("PooledPBEBigIntegerEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Pooled pbe byte encryptor pooled pbe byte encryptor.
+     * Bean for PooledPBEByteEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the pooled pbe byte encryptor
+     * @return PooledPBEByteEncryptor the pooled Byte encryptor.
      */
     @Bean(name = "pooledByteEncryptor")
     public PooledPBEByteEncryptor pooledPBEByteEncryptor() {
-        PooledPBEByteEncryptor encryptor = new PooledPBEByteEncryptor();
+        var encryptor = new PooledPBEByteEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("PooledPBEByteEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Pooled pbe string encryptor pooled pbe string encryptor.
+     * Bean for PooledPBEStringEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the pooled pbe string encryptor
+     * @return PooledPBEStringEncryptor the pooled String encryptor.
      */
     @Bean(name = "pooledStringEncryptor")
     public PooledPBEStringEncryptor pooledPBEStringEncryptor() {
-        PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+        var encryptor = new PooledPBEStringEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("PooledPBEStringEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Standard pbe big decimal encryptor standard pbe big decimal encryptor.
+     * Bean for StandardPBEBigDecimalEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the standard pbe big decimal encryptor
+     * @return StandardPBEBigDecimalEncryptor the standard BigDecimal encryptor.
      */
     @Bean(name = "standardPBEBigDecimalEncryptor")
     public StandardPBEBigDecimalEncryptor standardPBEBigDecimalEncryptor() {
-        StandardPBEBigDecimalEncryptor encryptor = new StandardPBEBigDecimalEncryptor();
+        var encryptor = new StandardPBEBigDecimalEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("StandardPBEBigDecimalEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Standard pbe big integer encryptor standard pbe big integer encryptor.
+     * Bean for StandardPBEBigIntegerEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the standard pbe big integer encryptor
+     * @return StandardPBEBigIntegerEncryptor the standard BigInteger encryptor.
      */
     @Bean(name = "standardPBEBigIntegerEncryptor")
     public StandardPBEBigIntegerEncryptor standardPBEBigIntegerEncryptor() {
-        StandardPBEBigIntegerEncryptor encryptor = new StandardPBEBigIntegerEncryptor();
+        var encryptor = new StandardPBEBigIntegerEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("StandardPBEBigIntegerEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Standard pbe byte encryptor standard pbe byte encryptor.
+     * Bean for StandardPBEByteEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the standard pbe byte encryptor
+     * @return StandardPBEByteEncryptor the standard Byte encryptor.
      */
     @Bean(name = "standardPBEByteEncryptor")
     public StandardPBEByteEncryptor standardPBEByteEncryptor() {
-        StandardPBEByteEncryptor encryptor = new StandardPBEByteEncryptor();
+        var encryptor = new StandardPBEByteEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("StandardPBEByteEncryptor bean created and configured.");
         return encryptor;
     }
 
     /**
-     * Standard pbe string encryptor standard pbe string encryptor.
+     * Bean for StandardPBEStringEncryptor.
+     * Configures the encryptor using the provided settings or defaults.
      *
-     * @return the standard pbe string encryptor
+     * @return StandardPBEStringEncryptor the standard String encryptor.
      */
     @Bean(name = "standardPBEStringEncryptor")
     public StandardPBEStringEncryptor standardPBEStringEncryptor() {
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+        var encryptor = new StandardPBEStringEncryptor();
         encryptor.setConfig(getEncryptorConfiguration());
+        log.info("StandardPBEStringEncryptor bean created and configured.");
         return encryptor;
     }
 }

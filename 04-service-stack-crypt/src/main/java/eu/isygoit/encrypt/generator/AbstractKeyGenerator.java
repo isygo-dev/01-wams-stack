@@ -1,113 +1,116 @@
 package eu.isygoit.encrypt.generator;
 
 import eu.isygoit.enums.IEnumCharSet;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * The type Abstract key generator.
+ * Abstract base class for key generation.
+ * Provides methods to generate random keys using different character sets.
  */
+@Slf4j
 public abstract class AbstractKeyGenerator implements IKeyGenerator {
 
-    private static final char[] allsymbols;
-    private static final char[] alphanumsymbols;
-    private static final char[] alphasymbols;
-    private static final char[] numsymbols;
+    // Character sets used for key generation
+    private static final char[] NUMERIC_CHARACTERS = IntStream.rangeClosed('0', '9')
+            .mapToObj(c -> (char) c)
+            .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+            .toString().toCharArray();
 
-    static {
-        //numeric symbols
-        StringBuilder numsymbolsSB = new StringBuilder();
-        for (char ch = '0'; ch <= '9'; ++ch) {
-            numsymbolsSB.append(ch);
-        }
-        numsymbols = numsymbolsSB.toString().toCharArray();
+    private static final char[] ALPHABETIC_CHARACTERS = (IntStream.rangeClosed('A', 'Z')
+            .mapToObj(c -> String.valueOf((char) c))
+            .collect(Collectors.joining()) +
+            IntStream.rangeClosed('a', 'z')
+                    .mapToObj(c -> String.valueOf((char) c))
+                    .collect(Collectors.joining()))
+            .toCharArray();
 
-        //alphabet symbols
-        StringBuilder alphasymbolsSB = new StringBuilder();
-        for (char ch = 'A'; ch <= 'Z'; ++ch) {
-            alphasymbolsSB.append(ch);
-        }
-        for (char ch = 'a'; ch <= 'z'; ++ch) {
-            alphasymbolsSB.append(ch);
-        }
-        alphasymbols = alphasymbolsSB.toString().toCharArray();
+    private static final char[] ALPHANUMERIC_CHARACTERS = (new String(NUMERIC_CHARACTERS) + new String(ALPHABETIC_CHARACTERS)).toCharArray();
 
-        //alphanumeric symbols
-        StringBuilder alphanumsymbolsSB = new StringBuilder();
-        alphanumsymbolsSB.append(Arrays.toString(numsymbols))
-                .append(alphasymbols);
-        alphanumsymbols = alphanumsymbolsSB.toString().toCharArray();
+    private static final char[] ALL_CHARACTERS = (new String(ALPHANUMERIC_CHARACTERS) + "$#&@/-+={}[]()")
+            .toCharArray();
 
-        //all symbols
-        StringBuilder allsymbolsSB = new StringBuilder();
-        allsymbolsSB.append(Arrays.toString(alphanumsymbols));
-        allsymbolsSB.append('$');
-        allsymbolsSB.append('#');
-        allsymbolsSB.append('&');
-        allsymbolsSB.append('@');
-        allsymbolsSB.append('/');
-        allsymbolsSB.append('-');
-        allsymbolsSB.append('+');
-        allsymbolsSB.append('=');
-        allsymbolsSB.append('{');
-        allsymbolsSB.append('}');
-        allsymbolsSB.append(']');
-        allsymbolsSB.append('[');
-        allsymbolsSB.append('(');
-        allsymbolsSB.append(')');
-        allsymbols = allsymbolsSB.toString().toCharArray();
-    }
-
-    private final Random random = new Random();
-    private char[] buf;
+    private final SecureRandom secureRandom = new SecureRandom();
+    private char[] keyBuffer;
 
     /**
-     * Sets bufferlength.
+     * Sets the length of the key buffer used for key generation.
      *
-     * @param length the length
+     * @param length The desired buffer length.
+     * @throws IllegalArgumentException if length is less than 1.
      */
-    public void setBufferlength(int length) {
-        if (length < 1)
-            throw new IllegalArgumentException("textLength < 1: " + length);
-        if (buf == null || buf.length != length) {
-            buf = new char[length];
+    public void setKeyBufferLength(int length) {
+        if (length < 1) {
+            log.error("Invalid key buffer length: {}", length);
+            throw new IllegalArgumentException("keyBufferLength < 1: " + length);
         }
+        log.info("Key buffer length set to: {}", length);
+        keyBuffer = new char[length];
     }
 
+    /**
+     * Retrieves the current generated key.
+     *
+     * @return The current key stored in the buffer.
+     */
     @Override
-    public String currentGuid() {
-        return new String(buf);
+    public String getCurrentKey() {
+        return new String(keyBuffer);
     }
 
+    /**
+     * Generates a new key using all available characters.
+     *
+     * @return A newly generated key.
+     */
     @Override
-    public String nextGuid() {
-        for (int idx = 0; idx < buf.length; ++idx) {
-            buf[idx] = allsymbols[random.nextInt(allsymbols.length)];
-        }
-        return new String(buf);
+    public String generateKey() {
+        log.info("Generating new key using all available characters.");
+        return populateKeyBuffer(ALL_CHARACTERS);
     }
 
+    /**
+     * Generates a new key based on the specified character set type.
+     *
+     * @param charSetType The type of character set to use.
+     * @return A newly generated key using the specified character set.
+     */
     @Override
-    public String nextGuid(IEnumCharSet.Types charSetType) {
-        for (int idx = 0; idx < buf.length; ++idx) {
-            switch (charSetType) {
-                case NUMERIC:
-                    buf[idx] = numsymbols[random.nextInt(numsymbols.length)];
-                    break;
-                case ALPHA:
-                    buf[idx] = alphasymbols[random.nextInt(alphasymbols.length)];
-                    break;
-                case ALPHANUM:
-                    buf[idx] = alphanumsymbols[random.nextInt(alphanumsymbols.length)];
-                    break;
-                case ALL:
-                    buf[idx] = allsymbols[random.nextInt(allsymbols.length)];
-                    break;
-                default:
-                    buf[idx] = allsymbols[random.nextInt(allsymbols.length)];
-            }
+    public String generateKey(IEnumCharSet.Types charSetType) {
+        log.info("Generating new key with character set: {}", charSetType);
+        char[] symbols;
+        switch (charSetType) {
+            case NUMERIC:
+                symbols = NUMERIC_CHARACTERS;
+                break;
+            case ALPHA:
+                symbols = ALPHABETIC_CHARACTERS;
+                break;
+            case ALPHANUM:
+                symbols = ALPHANUMERIC_CHARACTERS;
+                break;
+            case ALL:
+            default:
+                symbols = ALL_CHARACTERS;
+                break;
         }
-        return new String(buf);
+        return populateKeyBuffer(symbols);
+    }
+
+    /**
+     * Populates the key buffer with randomly selected characters from the given character set.
+     *
+     * @param symbols The array of characters to randomly select from.
+     * @return The newly generated key as a string.
+     */
+    private String populateKeyBuffer(char[] symbols) {
+        log.debug("Populating key buffer with random characters.");
+        IntStream.range(0, keyBuffer.length)
+                .forEach(idx -> keyBuffer[idx] = symbols[secureRandom.nextInt(symbols.length)]);
+        log.debug("Key buffer populated successfully.");
+        return new String(keyBuffer);
     }
 }

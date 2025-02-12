@@ -11,14 +11,14 @@ public interface IKeyGenerator {
      *
      * @return the string
      */
-    String currentGuid();
+    String getCurrentKey();
 
     /**
      * Next guid string.
      *
      * @return the string
      */
-    String nextGuid();
+    String generateKey();
 
     /**
      * Next guid string.
@@ -26,5 +26,5 @@ public interface IKeyGenerator {
      * @param charSetType the char set type
      * @return the string
      */
-    String nextGuid(IEnumCharSet.Types charSetType);
+    String generateKey(IEnumCharSet.Types charSetType);
 }

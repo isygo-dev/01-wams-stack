@@ -8,6 +8,6 @@ public class Key32Generator extends AbstractKeyGenerator {
      * Instantiates a new Key 32 generator.
      */
     public Key32Generator() {
-        this.setBufferlength(32);
+        this.setKeyBufferLength(32);
     }
 }
