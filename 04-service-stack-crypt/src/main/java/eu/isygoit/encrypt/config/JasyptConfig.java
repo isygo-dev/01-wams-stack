@@ -23,16 +23,45 @@ import java.util.Optional;
 @Slf4j  // Lombok annotation automatically creates a logger named 'log'
 public class JasyptConfig {
 
-    // Standard default values
+    /**
+     * The constant DEFAULT_ENCRYPTOR_PASSWORD.
+     */
     public static final String DEFAULT_ENCRYPTOR_PASSWORD = "defaultEncryptorPassword";
+    /**
+     * The constant DEFAULT_ALGORITHM.
+     */
     public static final String DEFAULT_ALGORITHM = "PBEWithMD5AndDES";
+    /**
+     * The constant DEFAULT_POOL_SIZE.
+     */
     public static final int DEFAULT_POOL_SIZE = 1;
+    /**
+     * The constant DEFAULT_SALT_GENERATOR_CLASS.
+     */
     public static final String DEFAULT_SALT_GENERATOR_CLASS = "org.jasypt.salt.RandomSaltGenerator";
+    /**
+     * The constant DEFAULT_PASSWORD_ALGORITHM.
+     */
     public static final String DEFAULT_PASSWORD_ALGORITHM = "SHA-256";
+    /**
+     * The constant DEFAULT_PROVIDER_NAME.
+     */
     public static final String DEFAULT_PROVIDER_NAME = "SunJCE";
+    /**
+     * The constant DEFAULT_STRING_OUTPUT_TYPE.
+     */
     public static final String DEFAULT_STRING_OUTPUT_TYPE = "base64";
+    /**
+     * The constant DEFAULT_KEY_OBTENTION_ITERATIONS.
+     */
     public static final int DEFAULT_KEY_OBTENTION_ITERATIONS = 1000;
+    /**
+     * The constant DEFAULT_SALT_SIZE_BYTES.
+     */
     public static final int DEFAULT_SALT_SIZE_BYTES = 8;
+    /**
+     * The constant DEFAULT_INVERT_POSITION_OF_PLAIN_SALT.
+     */
     public static final boolean DEFAULT_INVERT_POSITION_OF_PLAIN_SALT = false;
     private final JasyptProperties jasyptProperties;
 
