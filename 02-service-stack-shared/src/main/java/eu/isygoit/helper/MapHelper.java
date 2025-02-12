@@ -62,8 +62,8 @@ public interface MapHelper {
     /**
      * Merges two maps, with the option to provide a custom merge strategy for conflicting keys.
      *
-     * @param map1 the first map
-     * @param map2 the second map
+     * @param map1          the first map
+     * @param map2          the second map
      * @param mergeFunction the function to merge conflicting values
      * @return a new map containing merged key-value pairs
      */
@@ -82,7 +82,7 @@ public interface MapHelper {
     /**
      * Filters the map based on the provided value condition.
      *
-     * @param map the map to filter
+     * @param map       the map to filter
      * @param condition the condition to filter the values
      * @return a new map containing only the entries that satisfy the condition
      */
@@ -97,7 +97,7 @@ public interface MapHelper {
     /**
      * Converts a Map to a string representation using the specified delimiter.
      *
-     * @param map the map to convert
+     * @param map   the map to convert
      * @param delim the delimiter to separate key-value pairs
      * @return a string representation of the map
      */
@@ -139,8 +139,8 @@ public interface MapHelper {
     /**
      * Retrieves the value associated with the given key, returning a default value if the key doesn't exist.
      *
-     * @param map the map to search
-     * @param key the key to look for
+     * @param map          the map to search
+     * @param key          the key to look for
      * @param defaultValue the value to return if the key is not found
      * @return the value associated with the key or the default value
      */
@@ -195,7 +195,7 @@ public interface MapHelper {
     /**
      * Checks if a value exists in the map.
      *
-     * @param map the map to check
+     * @param map   the map to check
      * @param value the value to check for existence
      * @return true if the value exists, otherwise false
      */
@@ -206,7 +206,7 @@ public interface MapHelper {
     /**
      * Removes entries from the map by keys provided in a list.
      *
-     * @param map the map to remove entries from
+     * @param map  the map to remove entries from
      * @param keys the list of keys whose entries should be removed
      * @return a new map with the specified entries removed
      */
@@ -236,8 +236,8 @@ public interface MapHelper {
     /**
      * Replaces the value associated with a given key if it exists.
      *
-     * @param map the map to update
-     * @param key the key whose value needs to be replaced
+     * @param map      the map to update
+     * @param key      the key whose value needs to be replaced
      * @param newValue the new value to assign to the key
      * @return the previous value associated with the key or null if the key did not exist
      */
@@ -250,7 +250,7 @@ public interface MapHelper {
     /**
      * Retrieves a subset of the map based on a list of keys.
      *
-     * @param map the map to filter
+     * @param map  the map to filter
      * @param keys the list of keys to retrieve from the map
      * @return a new map containing only the specified entries
      */
@@ -265,7 +265,7 @@ public interface MapHelper {
     /**
      * Retrieves a map with keys that start with a specified prefix.
      *
-     * @param map the map to filter
+     * @param map    the map to filter
      * @param prefix the prefix to match for keys
      * @return a new map containing entries whose keys start with the prefix
      */
@@ -280,8 +280,8 @@ public interface MapHelper {
     /**
      * Merges two maps and includes entries based on a custom predicate.
      *
-     * @param map1 the first map
-     * @param map2 the second map
+     * @param map1      the first map
+     * @param map2      the second map
      * @param predicate the condition to include entries
      * @return a new map with merged entries satisfying the predicate
      */

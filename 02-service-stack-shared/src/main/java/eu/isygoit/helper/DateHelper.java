@@ -1,531 +1,278 @@
 package eu.isygoit.helper;
 
-import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import javax.xml.datatype.Duration;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
- * The type Date helper.
+ * Utility class for performing common date-related operations.
+ * Provides methods to manipulate, compare, and format dates efficiently.
  */
 public interface DateHelper {
 
     Logger logger = LoggerFactory.getLogger(DateHelper.class);
 
-    /**
-     * The constant BEGIN_OF_CALENDAR.
-     */
-    public static final LocalDateTime BEGIN_OF_CALENDAR = new LocalDateTime(1900, 01, 01, 0, 0, 0);
-    /**
-     * The constant END_OF_CALENDAR.
-     */
-    public static final LocalDateTime END_OF_CALENDAR = new LocalDateTime(2999, 12, 31, 0, 0, 0);
+    // Constants for defining the valid calendar range
+    LocalDateTime CALENDAR_START = LocalDateTime.of(1900, 1, 1, 0, 0);
+    LocalDateTime CALENDAR_END = LocalDateTime.of(2999, 12, 31, 23, 59);
+
+    // List of date formats to attempt when parsing date strings
+    List<String> DATE_PATTERNS = List.of(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", // ISO 8601 with millisecond precision
+            "yyyy-MM-dd'T'HH:mm:ssXXX",     // ISO 8601 with time zone offset
+            "yyyy-MM-dd'T'HH:mm",           // ISO 8601 without time zone
+            "yyyy-MM-dd",                   // ISO 8601 date format
+            "yyyy/MM/dd",                   // Date with slashes as separators
+            "dd-MM-yyyy'T'HH:mm:ss.SSSXXX", // Custom format with day first
+            "dd-MM-yyyy'T'HH:mm:ssXXX",     // Custom format with day first
+            "dd-MM-yyyy'T'HH:mm",           // Custom format with day first
+            "dd-MM-yyyy",                   // Day first with hyphen separator
+            "dd/MM/yyyy",                   // Day first with slashes separator
+            "dd/MM/yyyy HH:mm",             // Day first with time (24-hour format)
+            "yyyyMMdd",                     // Compact date format with no delimiters
+            "ddMMyyyy",                     // Compact day-first format with no delimiters
+            "yyyyMMddHHmm",                 // Compact date-time format
+            "yyyyMMddHHmmss",               // Full date-time format
+            "MM-dd-yyyy",                   // US format with month first
+            "MM/dd/yyyy",                   // US format with slashes
+            "MM/dd/yyyy HH:mm",             // US format with time
+            "EEEE, dd MMM yyyy HH:mm:ss z", // RFC 1123 date format (e.g., Wed, 02 Feb 2025 15:00:00 GMT)
+            "MMMM dd, yyyy",                // Full month name (e.g. February 12, 2025)
+            "yyyy/MM/dd HH:mm:ss",          // Date-time with slashes
+            "epoch",                         // Unix epoch timestamp
+            "epoch_second"                   // Unix epoch timestamp in seconds
+    );
+
+    // --- Date Transformation Methods ---
 
     /**
-     * The constant DATE_WITH_TIME_ZONE_RFC_EN.
-     */
-    public static final String DATE_WITH_TIME_ZONE_RFC_EN = "yyyy-MM-dd'E'HH:mm:ss.SSSZZ";
-    /**
-     * The constant DATE_WITH_TIME_ZONE_ISO_EN.
-     */
-    public static final String DATE_WITH_TIME_ZONE_ISO_EN = "yyyy-MM-dd'E'HH:mm:ss.SSSXXX";
-    /**
-     * The constant DATE_WITH_TIME_ZONE_RFC_FR.
-     */
-    public static final String DATE_WITH_TIME_ZONE_RFC_FR = "dd-MM-yyyy'E'HH:mm:ss.SSSZZ";
-    /**
-     * The constant DATE_WITH_TIME_ZONE_ISO_FR.
-     */
-    public static final String DATE_WITH_TIME_ZONE_ISO_FR = "dd-MM-yyyy'E'HH:mm:ss.SSSXXX";
-    /**
-     * The constant DATE_WITH_TIME_EN.
-     */
-    public static final String DATE_WITH_TIME_EN = "yyyy-MM-dd'E'HH:mm";
-    /**
-     * The constant DATE_WITH_TIME_FR.
-     */
-    public static final String DATE_WITH_TIME_FR = "dd-MM-yyyy'E'HH:mm";
-    /**
-     * The constant SIMPLE_DATE_FORMAT_FR.
-     */
-    public static final String SIMPLE_DATE_FORMAT_FR = "dd/MM/yyyy";
-    /**
-     * The constant SIMPLE_DATE_FORMAT_EN.
-     */
-    public static final String SIMPLE_DATE_FORMAT_EN = "yyyy/MM/dd";
-    /**
-     * The constant URL_DATE_FORMAT_FR.
-     */
-    public static final String URL_DATE_FORMAT_FR = "dd-MM-yyyy";
-    /**
-     * The constant URL_DATE_FORMAT_EN.
-     */
-    public static final String URL_DATE_FORMAT_EN = "yyyy-MM-dd";
-    /**
-     * The constant COMPACT_DATE_FORMAT_FR.
-     */
-    public static final String COMPACT_DATE_FORMAT_FR = "ddMMyyyy";
-    /**
-     * The constant COMPACT_DATE_FORMAT_EN.
-     */
-    public static final String COMPACT_DATE_FORMAT_EN = "yyyyMMdd";
-    /**
-     * The constant TIME_HHmm.
-     */
-    public static final String TIME_HHmm = "HH:mm";
-    /**
-     * The constant MAX_DATE.
-     */
-    public static Date MAX_DATE = new Date(Long.MAX_VALUE);
-
-    /**
-     * Convert absolute date to date date.
+     * Converts an absolute date string to a Date object using known patterns.
+     * If parsing fails, the method returns a default date or throws an exception.
+     * Logs each parsing attempt and provides useful debugging information.
      *
-     * @param absDate   the abs date
-     * @param defIfNull the def if null
-     * @return the date
-     * @throws ParseException the parse exception
+     * @param dateString    the date string to parse
+     * @param defaultIfNull the default value to return if parsing fails
+     * @return the parsed Date object or the default value if parsing fails
      */
-    public static Date convertAbsoluteDateToDate(String absDate, Date defIfNull) throws ParseException {
-        if (!StringUtils.hasText(absDate) || "null".equals(absDate)) {
-            return defIfNull;
+    static Date parseDateString(String dateString, Date defaultIfNull) {
+        logger.debug("Attempting to parse date string: {}", dateString);
+
+        if (!StringUtils.hasText(dateString) || "null".equalsIgnoreCase(dateString)) {
+            logger.warn("Input date string is empty or null, returning default date.");
+            return defaultIfNull;
         }
 
-        final List<SimpleDateFormat> knownPatterns = new ArrayList<>();
-        knownPatterns.add(new SimpleDateFormat(DATE_WITH_TIME_ZONE_ISO_EN));
-        knownPatterns.add(new SimpleDateFormat(DATE_WITH_TIME_ZONE_ISO_FR));
-        knownPatterns.add(new SimpleDateFormat(DATE_WITH_TIME_ZONE_RFC_EN));
-        knownPatterns.add(new SimpleDateFormat(DATE_WITH_TIME_ZONE_RFC_FR));
-        knownPatterns.add(new SimpleDateFormat(URL_DATE_FORMAT_EN));
-        knownPatterns.add(new SimpleDateFormat(URL_DATE_FORMAT_FR));
-        knownPatterns.add(new SimpleDateFormat(SIMPLE_DATE_FORMAT_EN));
-        knownPatterns.add(new SimpleDateFormat(SIMPLE_DATE_FORMAT_FR));
-        knownPatterns.add(new SimpleDateFormat(COMPACT_DATE_FORMAT_EN));
-        knownPatterns.add(new SimpleDateFormat(COMPACT_DATE_FORMAT_FR));
-        for (final SimpleDateFormat pattern : knownPatterns) {
-            try {
-                return pattern.parse(absDate);
-            } catch (final Exception e) {
-
-            }
-        }
-
-        throw new IllegalArgumentException();
+        // Try each pattern and log the process
+        return DATE_PATTERNS.stream()
+                .map(pattern -> {
+                    try {
+                        logger.debug("Trying to parse with pattern: {}", pattern);
+                        return new SimpleDateFormat(pattern).parse(dateString);
+                    } catch (ParseException e) {
+                        logger.debug("Failed to parse date with pattern {}: {}", pattern, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> {
+                    String errorMessage = "Invalid date format for input string: " + dateString;
+                    logger.error(errorMessage);
+                    return new IllegalArgumentException(errorMessage);
+                });
     }
 
     /**
-     * Convert date to absole date string.
+     * Converts a Date to an ISO 8601 formatted date string.
+     * Logs the conversion process and the formatted result.
      *
-     * @param date the date
-     * @return the string
+     * @param date the date to convert
+     * @return the ISO 8601 formatted date string
      */
-    public static String convertDateToAbsoleDate(Date date) {
-        if (date != null) {
-            final DateTime dateTime = new DateTime(date);
-            final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(DATE_WITH_TIME_ZONE_ISO_FR);
-            return dateTime.toString(dateTimeFormatter);
-        }
-        return null;
+    static String formatDateToIsoString(Date date) {
+        logger.debug("Attempting to format date: {}", date);
+
+        return Optional.ofNullable(date)
+                .map(d -> {
+                    String formattedDate = d.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                    logger.debug("Successfully formatted date {} to ISO string: {}", date, formattedDate);
+                    return formattedDate;
+                })
+                .orElseGet(() -> {
+                    logger.warn("Provided date is null, returning null.");
+                    return null;
+                });
     }
 
     /**
-     * Convert date to simple date string.
+     * Determines if the given date occurred within the last specified number of hours.
+     * Logs the check, including the calculated threshold and the result.
      *
-     * @param date       the date
-     * @param dateFormat the date format
-     * @return the string
+     * @param date  the date to check
+     * @param hours the number of hours to check against
+     * @return true if the date is within the last specified hours, false otherwise
      */
-    public static String convertDateToSimpleDate(Date date, String dateFormat) {
-        if (date != null) {
-            final DateTime dateTime = new DateTime(date);
-            final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(dateFormat /*SIMPLE_DATE_FORMAT_FR*/);
-            return dateTime.toString(dateTimeFormatter);
-        }
-        return null;
+    static boolean occurredInLastXHours(Date date, int hours) {
+        Objects.requireNonNull(date, "Date must not be null");
+
+        Instant threshold = Instant.now().minus(hours, ChronoUnit.HOURS);
+        boolean isRecent = date.toInstant().isAfter(threshold);
+
+        logger.debug("Checking if date {} occurred in the last {} hours. Threshold: {}, Result: {}", date, hours, threshold, isRecent);
+        return isRecent;
     }
 
     /**
-     * Duration to seconds int.
+     * Checks if two dates fall on the same calendar day.
+     * Logs the comparison result.
      *
-     * @param duration the duration
-     * @return the int
+     * @param date1 the first date
+     * @param date2 the second date
+     * @return true if both dates are on the same day, false otherwise
      */
-    public static int durationToSeconds(Duration duration) {
-        final int hours = duration.getHours();
-        final int days = duration.getDays();
-        final int minutes = duration.getMinutes();
-        final int seconds = duration.getSeconds();
-        return seconds + minutes * 60 + hours * 3600 + days * 86400;
+    static boolean areDatesOnSameDay(Date date1, Date date2) {
+        Objects.requireNonNull(date1, "First date must not be null");
+        Objects.requireNonNull(date2, "Second date must not be null");
+
+        boolean isSameDay = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                .isEqual(date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+
+        logger.debug("Comparing dates {} and {}: Are they on the same day? {}", date1, date2, isSameDay);
+        return isSameDay;
     }
 
     /**
-     * Sets first time.
+     * Checks if the given date is today's date.
+     * Logs the comparison and result.
      *
-     * @param date the date
-     * @return the first time
+     * @param date the date to check
+     * @return true if the date is today, false otherwise
      */
-    public static Date setFirstTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        LocalDateTime dateTime = LocalDateTime.fromDateFields(date);
-        return dateTime.withTime(0, 0, 0, 0).toDate();
+    static boolean isToday(Date date) {
+        boolean isToday = areDatesOnSameDay(date, new Date());
+        logger.debug("Checking if date {} is today. Result: {}", date, isToday);
+        return isToday;
     }
 
     /**
-     * Sets last time.
+     * Adds or subtracts a specific number of days to/from a given date.
+     * Logs the calculation process.
      *
-     * @param date the date
-     * @return the last time
+     * @param date the original date
+     * @param days the number of days to add (can be negative to subtract)
+     * @return the new date with days added/subtracted
      */
-    public static Date setLastTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        LocalDateTime dateTime = LocalDateTime.fromDateFields(date);
-        return dateTime.withTime(23, 59, 0, 0).toDate();
+    static Date addDaysToDate(Date date, int days) {
+        Objects.requireNonNull(date, "Date must not be null");
+
+        LocalDate newDate = date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .plusDays(days);
+
+        Date result = Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        logger.debug("Adding {} days to {} results in new date: {}", days, date, result);
+        return result;
     }
 
     /**
-     * Is in last hours boolean.
+     * Adds or subtracts a specific number of months to/from a given date.
+     * Logs the calculation process.
      *
-     * @param date  the date
-     * @param hours the hours
-     * @return the boolean
+     * @param date   the original date
+     * @param months the number of months to add (can be negative to subtract)
+     * @return the new date with months added/subtracted
      */
-    public static boolean isInLastHours(Date date, Integer hours) {
-        if (date == null || hours == null) {
-            throw new IllegalArgumentException("Date and hours must not be null");
-        }
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.HOUR_OF_DAY, -hours);
-        return date.after(cal.getTime());
+    static Date addMonthsToDate(Date date, int months) {
+        Objects.requireNonNull(date, "Date must not be null");
+
+        LocalDate newDate = date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .plusMonths(months);
+
+        Date result = Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        logger.debug("Adding {} months to {} results in new date: {}", months, date, result);
+        return result;
     }
 
     /**
-     * Is same day boolean.
+     * Checks if a given year is a leap year.
+     * Logs the check and result.
      *
-     * @param date1 the date 1
-     * @param date2 the date 2
-     * @return the boolean
+     * @param year the year to check
+     * @return true if it's a leap year, false otherwise
      */
-    public static boolean isSameDay(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
-            throw new IllegalArgumentException("The dates must not be null");
-        }
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(date1);
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(date2);
-        return isSameDay(cal1, cal2);
+    static boolean isLeapYear(int year) {
+        boolean leapYear = Year.isLeap(year);
+        logger.debug("Is the year {} a leap year? {}", year, leapYear);
+        return leapYear;
     }
 
     /**
-     * Is same day boolean.
+     * Returns the start of the week for a given date (00:00:00 on Monday).
+     * Logs the transformation and result.
      *
-     * @param cal1 the cal 1
-     * @param cal2 the cal 2
-     * @return the boolean
+     * @param date the date to find the start of the week
+     * @return the start of the week (Monday at 00:00:00)
      */
-    public static boolean isSameDay(Calendar cal1, Calendar cal2) {
-        if (cal1 == null || cal2 == null) {
-            throw new IllegalArgumentException("The dates must not be null");
-        }
-        return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
-                cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
+    static Date getStartOfWeek(Date date) {
+        Objects.requireNonNull(date, "Date must not be null");
+
+        LocalDate startOfWeek = date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .with(DayOfWeek.MONDAY);
+
+        Date result = Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        logger.debug("Start of the week for {} is: {}", date, result);
+        return result;
     }
 
     /**
-     * Is today boolean.
+     * Returns the end of the week for a given date (23:59:59 on Sunday).
+     * Logs the transformation and result.
      *
-     * @param date the date
-     * @return the boolean
+     * @param date the date to find the end of the week
+     * @return the end of the week (Sunday at 23:59:59)
      */
-    public static boolean isToday(Date date) {
-        return isSameDay(date, Calendar.getInstance().getTime());
+    static Date getEndOfWeek(Date date) {
+        Objects.requireNonNull(date, "Date must not be null");
+
+        LocalDate endOfWeek = date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+                .with(DayOfWeek.SUNDAY)
+                .plusDays(1); // Set to Sunday end of the day
+
+        Date result = Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        logger.debug("End of the week for {} is: {}", date, result);
+        return result;
     }
 
     /**
-     * Is today boolean.
+     * Converts a Date to a human-readable format (e.g., "February 12, 2025").
+     * Logs the conversion process.
      *
-     * @param cal the cal
-     * @return the boolean
+     * @param date the date to convert
+     * @return the formatted string
      */
-    public static boolean isToday(Calendar cal) {
-        return isSameDay(cal, Calendar.getInstance());
-    }
+    static String formatDateToHumanReadable(Date date) {
+        Objects.requireNonNull(date, "Date must not be null");
 
-    /**
-     * Is before day boolean.
-     *
-     * @param date1 the date 1
-     * @param date2 the date 2
-     * @return the boolean
-     */
-    public static boolean isBeforeDay(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
-            throw new IllegalArgumentException("The dates must not be null");
-        }
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(date1);
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(date2);
-        return isBeforeDay(cal1, cal2);
-    }
-
-    /**
-     * Is before day boolean.
-     *
-     * @param cal1 the cal 1
-     * @param cal2 the cal 2
-     * @return the boolean
-     */
-    public static boolean isBeforeDay(Calendar cal1, Calendar cal2) {
-        if (cal1 == null || cal2 == null) {
-            throw new IllegalArgumentException("The dates must not be null");
-        }
-        if (cal1.get(Calendar.ERA) < cal2.get(Calendar.ERA)) return true;
-        if (cal1.get(Calendar.ERA) > cal2.get(Calendar.ERA)) return false;
-        if (cal1.get(Calendar.YEAR) < cal2.get(Calendar.YEAR)) return true;
-        if (cal1.get(Calendar.YEAR) > cal2.get(Calendar.YEAR)) return false;
-        return cal1.get(Calendar.DAY_OF_YEAR) < cal2.get(Calendar.DAY_OF_YEAR);
-    }
-
-    /**
-     * Is after day boolean.
-     *
-     * @param date1 the date 1
-     * @param date2 the date 2
-     * @return the boolean
-     */
-    public static boolean isAfterDay(Date date1, Date date2) {
-        if (date1 == null || date2 == null) {
-            throw new IllegalArgumentException("The dates must not be null");
-        }
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(date1);
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(date2);
-        return isAfterDay(cal1, cal2);
-    }
-
-    /**
-     * Is after day boolean.
-     *
-     * @param cal1 the cal 1
-     * @param cal2 the cal 2
-     * @return the boolean
-     */
-    public static boolean isAfterDay(Calendar cal1, Calendar cal2) {
-        if (cal1 == null || cal2 == null) {
-            throw new IllegalArgumentException("The dates must not be null");
-        }
-        if (cal1.get(Calendar.ERA) < cal2.get(Calendar.ERA)) return false;
-        if (cal1.get(Calendar.ERA) > cal2.get(Calendar.ERA)) return true;
-        if (cal1.get(Calendar.YEAR) < cal2.get(Calendar.YEAR)) return false;
-        if (cal1.get(Calendar.YEAR) > cal2.get(Calendar.YEAR)) return true;
-        return cal1.get(Calendar.DAY_OF_YEAR) > cal2.get(Calendar.DAY_OF_YEAR);
-    }
-
-    /**
-     * Is within days future boolean.
-     *
-     * @param date the date
-     * @param days the days
-     * @return the boolean
-     */
-    public static boolean isWithinDaysFuture(Date date, int days) {
-        if (date == null) {
-            throw new IllegalArgumentException("The date must not be null");
-        }
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return isWithinDaysFuture(cal, days);
-    }
-
-    /**
-     * Is within days future boolean.
-     *
-     * @param cal  the cal
-     * @param days the days
-     * @return the boolean
-     */
-    public static boolean isWithinDaysFuture(Calendar cal, int days) {
-        if (cal == null) {
-            throw new IllegalArgumentException("The date must not be null");
-        }
-        Calendar today = Calendar.getInstance();
-        Calendar future = Calendar.getInstance();
-        future.add(Calendar.DAY_OF_YEAR, days);
-        return (isAfterDay(cal, today) && !isAfterDay(cal, future));
-    }
-
-    /**
-     * Gets start.
-     *
-     * @param date the date
-     * @return the start
-     */
-    public static Date getStart(Date date) {
-        return clearTime(date);
-    }
-
-    /**
-     * Clear time date.
-     *
-     * @param date the date
-     * @return the date
-     */
-    public static Date clearTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        return c.getTime();
-    }
-
-    /**
-     * Has time boolean.
-     *
-     * @param date the date
-     * @return the boolean
-     */
-    public static boolean hasTime(Date date) {
-        if (date == null) {
-            return false;
-        }
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        if (c.get(Calendar.HOUR_OF_DAY) > 0) {
-            return true;
-        }
-        if (c.get(Calendar.MINUTE) > 0) {
-            return true;
-        }
-        if (c.get(Calendar.SECOND) > 0) {
-            return true;
-        }
-        return c.get(Calendar.MILLISECOND) > 0;
-    }
-
-    /**
-     * Gets end.
-     *
-     * @param date the date
-     * @return the end
-     */
-    public static Date getEnd(Date date) {
-        if (date == null) {
-            return null;
-        }
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.set(Calendar.HOUR_OF_DAY, 23);
-        c.set(Calendar.MINUTE, 59);
-        c.set(Calendar.SECOND, 59);
-        c.set(Calendar.MILLISECOND, 999);
-        return c.getTime();
-    }
-
-    /**
-     * Max date.
-     *
-     * @param d1 the d 1
-     * @param d2 the d 2
-     * @return the date
-     */
-    public static Date max(Date d1, Date d2) {
-        if (d1 == null && d2 == null) return null;
-        if (d1 == null) return d2;
-        if (d2 == null) return d1;
-        return (d1.after(d2)) ? d1 : d2;
-    }
-
-    /**
-     * Min date.
-     *
-     * @param d1 the d 1
-     * @param d2 the d 2
-     * @return the date
-     */
-    public static Date min(Date d1, Date d2) {
-        if (d1 == null && d2 == null) return null;
-        if (d1 == null) return d2;
-        if (d2 == null) return d1;
-        return (d1.before(d2)) ? d1 : d2;
-    }
-
-    /**
-     * To date date.
-     *
-     * @param localDateTime the local date time
-     * @return the date
-     */
-    public static Date toDate(java.time.LocalDateTime localDateTime) {
-        if (localDateTime != null) {
-            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-        }
-        return null;
-    }
-
-    /**
-     * Convert to local date time java . time . local date time.
-     *
-     * @param dateToConvert the date to convert
-     * @return the java . time . local date time
-     */
-    public static java.time.LocalDateTime convertToLocalDateTime(Date dateToConvert) {
-        if (dateToConvert != null) {
-            return Instant.ofEpochMilli(dateToConvert.getTime())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-        }
-        return null;
-    }
-
-    /**
-     * Convert to local date java . time . local date.
-     *
-     * @param dateToConvert the date to convert
-     * @return the java . time . local date
-     */
-    public static java.time.LocalDate convertToLocalDate(Date dateToConvert) {
-        if (dateToConvert != null) {
-            return Instant.ofEpochMilli(dateToConvert.getTime())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
-        }
-        return null;
-    }
-
-    /**
-     * Between long.
-     *
-     * @param lowDate  the low date
-     * @param highDate the high date
-     * @return the long
-     */
-    public static long between(Date lowDate, Date highDate) {
-        return ChronoUnit.SECONDS.between(lowDate.toInstant(), highDate.toInstant());
+        String formatted = DateTimeFormatter.ofPattern("MMMM dd, yyyy")
+                .format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        logger.debug("Formatted date {} to human-readable format: {}", date, formatted);
+        return formatted;
     }
 }

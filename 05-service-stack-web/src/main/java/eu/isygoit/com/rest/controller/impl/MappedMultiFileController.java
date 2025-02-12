@@ -12,8 +12,6 @@ import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.IMultiFileEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;

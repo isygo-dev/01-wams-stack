@@ -11,8 +11,6 @@ import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.ISAASEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;

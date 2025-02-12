@@ -6,8 +6,6 @@ import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;

@@ -1,26 +1,33 @@
 package eu.isygoit.helper;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.FileAttribute;
+import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.*;
-import java.util.zip.*;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Utility class for handling file operations, including directory management,
  * file storage, multipart file handling, and ZIP compression/extraction.
  */
-@Slf4j
-public class FileHelper {
+public interface FileHelper {
 
+    Logger logger = LoggerFactory.getLogger(FileHelper.class);
     //------------------- Directory Management -------------------
 
     /**
@@ -32,9 +39,9 @@ public class FileHelper {
         File directory = new File(directoryPath);
         if (!directory.exists()) {
             directory.mkdirs();
-            log.info("Directory created: {}", directoryPath);
+            logger.info("Directory created: {}", directoryPath);
         } else {
-            log.debug("Directory already exists: {}", directoryPath);
+            logger.debug("Directory already exists: {}", directoryPath);
         }
     }
 
@@ -61,10 +68,10 @@ public class FileHelper {
             Path filePath = Paths.get(targetDirectory, finalFileName);
             Files.write(filePath, multipartFile.getBytes());
 
-            log.info("File saved at: {}", filePath);
+            logger.info("File saved at: {}", filePath);
             return filePath;
         } else {
-            log.warn("Attempted to save an empty MultipartFile.");
+            logger.warn("Attempted to save an empty MultipartFile.");
             throw new IllegalArgumentException("Provided file is empty.");
         }
     }
@@ -79,7 +86,7 @@ public class FileHelper {
         try (InputStream inputStream = new FileInputStream(propertiesFilePath)) {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            log.error("Failed to read properties file: {}", propertiesFilePath, e);
+            logger.error("Failed to read properties file: {}", propertiesFilePath, e);
             return null;
         }
     }
@@ -100,7 +107,7 @@ public class FileHelper {
             }
             boolean deleted = directoryPath.delete();
             if (deleted) {
-                log.info("Deleted directory: {}", directoryPath);
+                logger.info("Deleted directory: {}", directoryPath);
             }
             return deleted;
         }
@@ -112,7 +119,7 @@ public class FileHelper {
     /**
      * Compresses a single file into a ZIP archive.
      *
-     * @param inputFile    the file to compress
+     * @param inputFile     the file to compress
      * @param outputZipPath the destination ZIP file path
      * @throws IOException if an I/O error occurs
      */
@@ -123,14 +130,14 @@ public class FileHelper {
                 IOUtils.copy(fileInputStream, zipOutputStream);
             }
             zipOutputStream.closeEntry();
-            log.info("Compressed file to: {}", outputZipPath);
+            logger.info("Compressed file to: {}", outputZipPath);
         }
     }
 
     /**
      * Compresses multiple files into a ZIP archive.
      *
-     * @param inputFiles   the list of files to compress
+     * @param inputFiles    the list of files to compress
      * @param outputZipPath the destination ZIP file path
      * @throws IOException if an I/O error occurs
      */
@@ -143,14 +150,14 @@ public class FileHelper {
                     zipOutputStream.closeEntry();
                 }
             }
-            log.info("Compressed files into ZIP: {}", outputZipPath);
+            logger.info("Compressed files into ZIP: {}", outputZipPath);
         }
     }
 
     /**
      * Extracts a ZIP archive to a specified directory.
      *
-     * @param zipFilePath the ZIP file path
+     * @param zipFilePath    the ZIP file path
      * @param destinationDir the directory where extracted files will be saved
      * @throws IOException if an I/O error occurs
      */
@@ -168,7 +175,7 @@ public class FileHelper {
                 }
                 zipInputStream.closeEntry();
             }
-            log.info("Extracted ZIP file to: {}", destinationDir);
+            logger.info("Extracted ZIP file to: {}", destinationDir);
         }
     }
 
@@ -199,7 +206,7 @@ public class FileHelper {
                 basePathValid + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted
         );
 
-        log.debug("Generated file paths: {}", filePaths);
+        logger.debug("Generated file paths: {}", filePaths);
         return filePaths;
     }
 }

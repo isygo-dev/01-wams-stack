@@ -1,18 +1,18 @@
 package eu.isygoit.helper;
 
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.spec.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 /**
  * The SecurityHelper class provides various cryptographic utilities such as key generation,
@@ -21,7 +21,7 @@ import java.security.spec.*;
 public interface SecurityHelper {
 
     Logger logger = LoggerFactory.getLogger(SecurityHelper.class);
-    
+
     static final String AES_ALGORITHM = "AES";
     static final String AES_WRAP_TRANSFORMATION = "AESWrap";
     static final String AES_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
@@ -34,7 +34,7 @@ public interface SecurityHelper {
      */
     public static ECPrivateKey generateECPrivateKeyFromHex(String hexPrivateKey) {
         try {
-            var encodedKey = ByteArrayHelper.hexStringToByteArray(hexPrivateKey);
+            var encodedKey = ByteArrayHelper.convertHexToBytes(hexPrivateKey);
             var keyFactory = KeyFactory.getInstance("ECDSA");
             var privateKeySpec = new PKCS8EncodedKeySpec(encodedKey);
             return (ECPrivateKey) keyFactory.generatePrivate(privateKeySpec);
@@ -52,7 +52,7 @@ public interface SecurityHelper {
      */
     public static ECPublicKey generateECPublicKeyFromHex(String hexPublicKey) {
         try {
-            var encodedKey = ByteArrayHelper.hexStringToByteArray(hexPublicKey);
+            var encodedKey = ByteArrayHelper.convertHexToBytes(hexPublicKey);
             var keyFactory = KeyFactory.getInstance("ECDSA");
             var publicKeySpec = new X509EncodedKeySpec(encodedKey);
             return (ECPublicKey) keyFactory.generatePublic(publicKeySpec);
@@ -83,7 +83,7 @@ public interface SecurityHelper {
             byteSequence[i] = byteArray[0];
         }
 
-        logger.debug("Generated random byte sequence: {}", ByteArrayHelper.byteArrayToHexString(byteSequence));
+        logger.debug("Generated random byte sequence: {}", ByteArrayHelper.convertBytesToHex(byteSequence));
         return byteSequence;
     }
 
@@ -91,23 +91,24 @@ public interface SecurityHelper {
      * Wraps the given AES key using the specified secret key.
      *
      * @param hexSecretKey the secret key in hexadecimal format
-     * @param hexDataKey the AES key data to be wrapped, in hexadecimal format
+     * @param hexDataKey   the AES key data to be wrapped, in hexadecimal format
      * @return the wrapped key as a hexadecimal string or null if an error occurs
      */
     public static String wrapAESKeyWithSecretKey(String hexSecretKey, String hexDataKey) {
         try {
-            var secretKey = new SecretKeySpec(ByteArrayHelper.hexStringToByteArray(hexSecretKey), AES_ALGORITHM);
-            var dataKey = new SecretKeySpec(ByteArrayHelper.hexStringToByteArray(hexDataKey), AES_ALGORITHM);
+            var secretKey = new SecretKeySpec(ByteArrayHelper.convertHexToBytes(hexSecretKey), AES_ALGORITHM);
+            var dataKey = new SecretKeySpec(ByteArrayHelper.convertHexToBytes(hexDataKey), AES_ALGORITHM);
 
             // Initialize the cipher in wrap mode
             var cipher = Cipher.getInstance(AES_WRAP_TRANSFORMATION);
             cipher.init(Cipher.WRAP_MODE, secretKey);
             var wrappedKeyBytes = cipher.wrap(dataKey);
 
-            var wrappedKeyHex = ByteArrayHelper.byteArrayToHexString(wrappedKeyBytes);
+            var wrappedKeyHex = ByteArrayHelper.convertBytesToHex(wrappedKeyBytes);
             logger.debug("Wrapped AES key: {}", wrappedKeyHex);
             return wrappedKeyHex;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
+                 IllegalBlockSizeException e) {
             logger.error("Error wrapping AES key: {}", e.getMessage());
         }
         return null;
@@ -117,17 +118,17 @@ public interface SecurityHelper {
      * Encrypts the given plaintext using AES encryption.
      *
      * @param hexSecretKey the AES key in hexadecimal format
-     * @param plaintext the plaintext to encrypt
+     * @param plaintext    the plaintext to encrypt
      * @return the encrypted ciphertext as a hexadecimal string
      */
     public static String encryptWithAES(String hexSecretKey, String plaintext) {
         try {
-            var secretKey = new SecretKeySpec(ByteArrayHelper.hexStringToByteArray(hexSecretKey), AES_ALGORITHM);
+            var secretKey = new SecretKeySpec(ByteArrayHelper.convertHexToBytes(hexSecretKey), AES_ALGORITHM);
             var cipher = Cipher.getInstance(AES_CIPHER_TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             var encryptedBytes = cipher.doFinal(plaintext.getBytes());
 
-            return ByteArrayHelper.byteArrayToHexString(encryptedBytes);
+            return ByteArrayHelper.convertBytesToHex(encryptedBytes);
         } catch (Exception e) {
             logger.error("Error encrypting with AES: {}", e.getMessage());
         }
@@ -137,17 +138,17 @@ public interface SecurityHelper {
     /**
      * Decrypts the given ciphertext using AES decryption.
      *
-     * @param hexSecretKey the AES key in hexadecimal format
+     * @param hexSecretKey  the AES key in hexadecimal format
      * @param hexCiphertext the ciphertext to decrypt
      * @return the decrypted plaintext as a string
      */
     public static String decryptWithAES(String hexSecretKey, String hexCiphertext) {
         try {
-            var secretKey = new SecretKeySpec(ByteArrayHelper.hexStringToByteArray(hexSecretKey), AES_ALGORITHM);
+            var secretKey = new SecretKeySpec(ByteArrayHelper.convertHexToBytes(hexSecretKey), AES_ALGORITHM);
             var cipher = Cipher.getInstance(AES_CIPHER_TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
 
-            var decryptedBytes = cipher.doFinal(ByteArrayHelper.hexStringToByteArray(hexCiphertext));
+            var decryptedBytes = cipher.doFinal(ByteArrayHelper.convertHexToBytes(hexCiphertext));
             return new String(decryptedBytes);
         } catch (Exception e) {
             logger.error("Error decrypting with AES: {}", e.getMessage());
@@ -182,7 +183,7 @@ public interface SecurityHelper {
      * Generates a KeyPair for asymmetric encryption (e.g., RSA, ECDSA).
      *
      * @param algorithm the encryption algorithm to use (e.g., RSA)
-     * @param keySize the size of the key (e.g., 2048 for RSA)
+     * @param keySize   the size of the key (e.g., 2048 for RSA)
      * @return the generated KeyPair or null if an error occurs
      */
     public static KeyPair generateKeyPairForAlgorithm(String algorithm, int keySize) {

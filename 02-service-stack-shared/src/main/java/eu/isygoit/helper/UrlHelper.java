@@ -2,9 +2,6 @@ package eu.isygoit.helper;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -15,7 +12,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -26,7 +24,7 @@ import java.util.stream.Collectors;
 public interface UrlHelper {
 
     Logger logger = LoggerFactory.getLogger(UrlHelper.class);
-    
+
     static final String[][] SPECIAL_CHARACTERS = {
             {" ", "#", "$", "%", "&", "@", "`", "/", ":", ";", "<", "=", ">", "?", "[", "\\", "]", "^", "{", "|", "}", "~", "“", "‘", "+", ","},
             {"20%", "24%", "26%", "60%", "%3A", "%3C", "%3E", "%5B", "%5D", "%7B", "%7D", "22%", "%2B", "23%", "25%", "40%", "%2F", "%3B", "%3D", "%3F", "%5C", "%5E", "%7C", "%7E", "27%", "%2C"}

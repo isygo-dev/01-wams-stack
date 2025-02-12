@@ -3,21 +3,21 @@ package eu.isygoit.helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.util.Optional;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
-import org.w3c.dom.*;
+import java.io.*;
+import java.util.Optional;
 
 /**
  * The interface XmlHelper provides utility methods to convert between XML and objects,
@@ -30,9 +30,9 @@ public interface XmlHelper {
     /**
      * Converts an XML string to an object of type E.
      *
-     * @param xmlContent the XML string to convert.
+     * @param xmlContent  the XML string to convert.
      * @param targetClass the class of the object to convert to.
-     * @param <E> the type of object to return.
+     * @param <E>         the type of object to return.
      * @return the object represented by the XML string.
      * @throws JAXBException if the conversion fails.
      */
@@ -46,9 +46,9 @@ public interface XmlHelper {
     /**
      * Converts an XML file to an object of type E.
      *
-     * @param xmlFile the XML file to convert.
+     * @param xmlFile     the XML file to convert.
      * @param targetClass the class of the object to convert to.
-     * @param <E> the type of object to return.
+     * @param <E>         the type of object to return.
      * @return the object represented by the XML file.
      * @throws JAXBException if the conversion fails.
      */
@@ -62,12 +62,12 @@ public interface XmlHelper {
     /**
      * Converts an object to its corresponding XML string representation.
      *
-     * @param object the object to convert to XML.
+     * @param object      the object to convert to XML.
      * @param targetClass the class of the object.
-     * @param <E> the type of object.
+     * @param <E>         the type of object.
      * @return the XML string representation of the object.
      * @throws JAXBException if the conversion fails.
-     * @throws IOException if writing to the string fails.
+     * @throws IOException   if writing to the string fails.
      */
     static <E> String convertObjectToXmlString(E object, Class<E> targetClass) throws JAXBException, IOException {
         logger.debug("Converting object of class {} to XML string", targetClass.getName());
@@ -83,9 +83,9 @@ public interface XmlHelper {
     /**
      * Converts an object to an XML file.
      *
-     * @param object the object to convert to XML.
+     * @param object      the object to convert to XML.
      * @param targetClass the class of the object.
-     * @param <E> the type of object.
+     * @param <E>         the type of object.
      * @return the generated XML file.
      * @throws JAXBException if the conversion fails.
      */
@@ -101,11 +101,11 @@ public interface XmlHelper {
     /**
      * Validates an XML string against the provided XSD schema.
      *
-     * @param xmlContent the XML string to validate.
-     * @param xsdPath the XSD file path.
+     * @param xmlContent     the XML string to validate.
+     * @param xsdPath        the XSD file path.
      * @param schemaLanguage the schema language.
      * @return true if the XML is valid; false otherwise.
-     * @throws IOException if reading the files fails.
+     * @throws IOException  if reading the files fails.
      * @throws SAXException if validation fails.
      */
     static boolean validateXmlContent(String xmlContent, String xsdPath, String schemaLanguage) throws IOException, SAXException {
@@ -116,11 +116,11 @@ public interface XmlHelper {
     /**
      * Validates an XML string against the provided XSD schema.
      *
-     * @param xmlContent the XML string to validate.
-     * @param xsdFile the XSD file.
+     * @param xmlContent     the XML string to validate.
+     * @param xsdFile        the XSD file.
      * @param schemaLanguage the schema language.
      * @return true if the XML is valid; false otherwise.
-     * @throws IOException if reading the files fails.
+     * @throws IOException  if reading the files fails.
      * @throws SAXException if validation fails.
      */
     static boolean validateXmlContent(String xmlContent, File xsdFile, String schemaLanguage) throws IOException, SAXException {
@@ -131,11 +131,11 @@ public interface XmlHelper {
     /**
      * Helper method to validate XML against the provided schema.
      *
-     * @param xmlContent the XML string.
-     * @param xsdFile the XSD file.
+     * @param xmlContent     the XML string.
+     * @param xsdFile        the XSD file.
      * @param schemaLanguage the schema language.
      * @return true if the XML is valid.
-     * @throws IOException if reading the files fails.
+     * @throws IOException  if reading the files fails.
      * @throws SAXException if validation fails.
      */
     private static boolean validateXmlWithSchema(String xmlContent, File xsdFile, String schemaLanguage) throws IOException, SAXException {
@@ -150,8 +150,8 @@ public interface XmlHelper {
     /**
      * Adds a new element to the given XML file.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the name of the tag.
+     * @param xmlFile  the XML file.
+     * @param tagName  the name of the tag.
      * @param tagValue the value of the tag.
      * @throws Exception if writing to the file fails.
      */
@@ -167,8 +167,8 @@ public interface XmlHelper {
     /**
      * Updates an existing element's value in the given XML file.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the name of the tag.
+     * @param xmlFile     the XML file.
+     * @param tagName     the name of the tag.
      * @param newTagValue the new value of the tag.
      * @throws Exception if writing to the file fails.
      */
@@ -241,7 +241,7 @@ public interface XmlHelper {
      * Helper method to write a Document back to the XML file.
      *
      * @param document the Document to write.
-     * @param xmlFile the XML file.
+     * @param xmlFile  the XML file.
      * @throws Exception if writing to the file fails.
      */
     private static void writeDocumentToXmlFile(Document document, File xmlFile) throws Exception {
@@ -268,8 +268,8 @@ public interface XmlHelper {
     /**
      * Moves an element to a new position within the XML file.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the name of the tag to move.
+     * @param xmlFile       the XML file.
+     * @param tagName       the name of the tag to move.
      * @param targetTagName the target element where the tag will be moved.
      * @throws Exception if the operation fails.
      */
@@ -292,7 +292,7 @@ public interface XmlHelper {
     /**
      * Renames an element's tag in the XML file.
      *
-     * @param xmlFile the XML file.
+     * @param xmlFile    the XML file.
      * @param oldTagName the current name of the tag.
      * @param newTagName the new name of the tag.
      * @throws Exception if the operation fails.
@@ -338,10 +338,10 @@ public interface XmlHelper {
     /**
      * Replaces the value of a specific element's attribute.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the tag name of the element.
+     * @param xmlFile       the XML file.
+     * @param tagName       the tag name of the element.
      * @param attributeName the name of the attribute.
-     * @param newValue the new value of the attribute.
+     * @param newValue      the new value of the attribute.
      * @throws Exception if the operation fails.
      */
     static void updateElementAttributeInXml(File xmlFile, String tagName, String attributeName, String newValue) throws Exception {
@@ -361,8 +361,8 @@ public interface XmlHelper {
     /**
      * Retrieves the attribute value of an element.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the tag name of the element.
+     * @param xmlFile       the XML file.
+     * @param tagName       the tag name of the element.
      * @param attributeName the name of the attribute.
      * @return the attribute value, or Optional.empty if not found.
      * @throws Exception if the operation fails.
@@ -382,9 +382,9 @@ public interface XmlHelper {
     /**
      * Adds an attribute to an element in the XML file.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the tag name of the element.
-     * @param attributeName the name of the attribute.
+     * @param xmlFile        the XML file.
+     * @param tagName        the tag name of the element.
+     * @param attributeName  the name of the attribute.
      * @param attributeValue the value of the attribute.
      * @throws Exception if the operation fails.
      */
@@ -405,8 +405,8 @@ public interface XmlHelper {
     /**
      * Removes an attribute from an element in the XML file.
      *
-     * @param xmlFile the XML file.
-     * @param tagName the tag name of the element.
+     * @param xmlFile       the XML file.
+     * @param tagName       the tag name of the element.
      * @param attributeName the name of the attribute to remove.
      * @throws Exception if the operation fails.
      */

@@ -3,8 +3,6 @@ package eu.isygoit.api;
 import eu.isygoit.enums.IEnumRequest;
 import eu.isygoit.model.extendable.ApiPermissionModel;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.transaction.annotation.Transactional;

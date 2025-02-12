@@ -1,12 +1,8 @@
 package eu.isygoit.helper;
 
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -16,7 +12,7 @@ import java.util.regex.Pattern;
 public interface RegExValidationHelper {
 
     Logger logger = LoggerFactory.getLogger(SecurityHelper.class);
-    
+
     /**
      * Validate a string against a given regular expression.
      * This method checks if the provided string matches the given regex pattern.
@@ -43,7 +39,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate UUID format.
-     *
+     * <p>
      * This method checks if the given string is a valid UUID.
      * UUIDs are typically 36 characters with 32 hexadecimal digits and hyphens separating certain sections.
      *
@@ -63,7 +59,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate Credit Card number using Luhn's algorithm.
-     *
+     * <p>
      * This method validates the credit card number format and performs a checksum validation based on Luhn's algorithm.
      *
      * @param cardNumber the credit card number to validate
@@ -109,7 +105,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate email format.
-     *
+     * <p>
      * This method checks if the given email address matches a basic email format.
      *
      * @param email the email to validate
@@ -128,7 +124,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate phone number format.
-     *
+     * <p>
      * This method validates phone numbers that may include a country code, area code, and local number.
      *
      * @param phoneNumber the phone number to validate
@@ -147,7 +143,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate date format (yyyy-MM-dd).
-     *
+     * <p>
      * This method checks if the date string is in the standard "yyyy-MM-dd" format.
      *
      * @param date the date string to validate
@@ -166,7 +162,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate IPv4 address format.
-     *
+     * <p>
      * This method checks if the provided string is a valid IPv4 address.
      * IPv4 addresses consist of four numbers between 0 and 255, separated by dots.
      *
@@ -186,7 +182,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate IPv6 address format.
-     *
+     * <p>
      * This method checks if the provided string is a valid IPv6 address.
      * IPv6 addresses consist of eight groups of four hexadecimal digits separated by colons.
      *
@@ -205,9 +201,10 @@ public interface RegExValidationHelper {
     }
 
     // ISIN validation methods
+
     /**
      * Validate ISIN format.
-     *
+     * <p>
      * This method checks if the given ISIN string matches the standard ISIN format (2 letters + 10 digits).
      *
      * @param isin the ISIN to validate
@@ -226,7 +223,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate ISIN checksum.
-     *
+     * <p>
      * This method checks the checksum of the ISIN using the Luhn algorithm.
      *
      * @param isin the ISIN to validate
@@ -281,7 +278,7 @@ public interface RegExValidationHelper {
 
     /**
      * Validate ISIN (format and checksum).
-     *
+     * <p>
      * This method validates both the ISIN format and its checksum. It returns {@code true}
      * only if both the format and the checksum are valid.
      *

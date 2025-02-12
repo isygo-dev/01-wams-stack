@@ -6,8 +6,6 @@ import eu.isygoit.enums.IEnumWebToken;
 import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;

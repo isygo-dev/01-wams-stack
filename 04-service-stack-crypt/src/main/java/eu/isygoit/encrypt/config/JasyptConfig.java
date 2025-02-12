@@ -3,8 +3,6 @@ package eu.isygoit.encrypt.config;
 import eu.isygoit.encrypt.generator.IKeyGenerator;
 import eu.isygoit.encrypt.generator.KeyGenerator;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jasypt.digest.config.SimpleDigesterConfig;
 import org.jasypt.encryption.pbe.*;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;

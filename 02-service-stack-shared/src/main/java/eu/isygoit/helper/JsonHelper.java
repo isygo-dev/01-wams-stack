@@ -3,18 +3,17 @@ package eu.isygoit.helper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * The JsonHelper class provides utility methods for handling JSON data,
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 public interface JsonHelper {
 
     Logger logger = LoggerFactory.getLogger(JsonHelper.class);
-    
+
     static final ObjectMapper mapper = new ObjectMapper();
     static final XmlMapper xmlMapper = new XmlMapper();
     static final YAMLMapper yamlMapper = new YAMLMapper();
@@ -57,7 +56,8 @@ public interface JsonHelper {
 
         // Ensure the JSON is an array of objects (records)
         if (!jsonNode.isArray()) {
-            throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {};
+            throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {
+            };
         }
 
         List<String> headers = new ArrayList<>();

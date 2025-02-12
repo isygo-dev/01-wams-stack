@@ -10,8 +10,6 @@ import jakarta.persistence.PersistenceException;
 import jakarta.persistence.RollbackException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
 import org.postgresql.util.PSQLException;

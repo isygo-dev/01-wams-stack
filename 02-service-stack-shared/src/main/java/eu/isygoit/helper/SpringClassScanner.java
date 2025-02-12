@@ -1,8 +1,6 @@
 package eu.isygoit.helper;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -10,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.Annotation;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +63,7 @@ public class SpringClassScanner {
      * Scans the specified package for candidate components using the given provider.
      * This method centralizes the scanning logic.
      *
-     * @param provider the configured component provider
+     * @param provider    the configured component provider
      * @param scanPackage the package to scan
      * @return a set of BeanDefinitions representing the matching classes
      */
@@ -78,9 +76,9 @@ public class SpringClassScanner {
      * Logs the result of the annotation class scan.
      * This utility method ensures consistent logging of scan results.
      *
-     * @param candidates the set of candidate classes found
+     * @param candidates      the set of candidate classes found
      * @param annotationClass the annotation class being searched for
-     * @param scanPackage the package that was scanned
+     * @param scanPackage     the package that was scanned
      */
     private void logCandidateScanResult(Set<BeanDefinition> candidates, Class<? extends Annotation> annotationClass, String scanPackage) {
         Optional.ofNullable(candidates)
@@ -117,9 +115,9 @@ public class SpringClassScanner {
      * Utility method to log a message for an empty or null set of candidates.
      * This method centralizes logging logic to ensure consistency and avoid repetition.
      *
-     * @param candidates the set of candidates to check
+     * @param candidates      the set of candidates to check
      * @param annotationClass the annotation class being looked for
-     * @param scanPackage the package being scanned
+     * @param scanPackage     the package being scanned
      */
     private void logEmptyCandidateSet(Set<BeanDefinition> candidates, Class<? extends Annotation> annotationClass, String scanPackage) {
         if (candidates == null || candidates.isEmpty()) {
