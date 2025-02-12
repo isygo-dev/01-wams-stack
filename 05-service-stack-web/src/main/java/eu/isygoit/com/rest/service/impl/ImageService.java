@@ -14,6 +14,8 @@ import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ISAASEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +45,7 @@ public abstract class ImageService<I extends Serializable, E extends IImageEntit
         if (file != null && !file.isEmpty()) {
             E entity = this.findById(id);
             if (entity != null) {
-                entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
+                entity.setImagePath(FileHelper.saveMultipartFile(this.getUploadDirectory() +
                                 File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                                 File.separator + entity.getClass().getSimpleName().toLowerCase() +
                                 File.separator + "image",
@@ -90,7 +92,7 @@ public abstract class ImageService<I extends Serializable, E extends IImageEntit
             ((IAssignableCode) entity).setCode(this.getNextCode());
         }
         if (file != null && !file.isEmpty()) {
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
+            entity.setImagePath(FileHelper.saveMultipartFile(this.getUploadDirectory() +
                             File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                             File.separator + entity.getClass().getSimpleName().toLowerCase() +
                             File.separator + "image",
@@ -111,7 +113,7 @@ public abstract class ImageService<I extends Serializable, E extends IImageEntit
         }
 
         if (file != null && !file.isEmpty()) {
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
+            entity.setImagePath(FileHelper.saveMultipartFile(this.getUploadDirectory() +
                             File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                             File.separator + entity.getClass().getSimpleName().toLowerCase() +
                             File.separator + "image",

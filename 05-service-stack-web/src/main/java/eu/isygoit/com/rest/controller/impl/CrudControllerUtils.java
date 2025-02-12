@@ -13,6 +13,8 @@ import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;

@@ -2,6 +2,8 @@ package eu.isygoit.helper;
 
 import eu.isygoit.exception.BackupCommandException;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.BufferedReader;

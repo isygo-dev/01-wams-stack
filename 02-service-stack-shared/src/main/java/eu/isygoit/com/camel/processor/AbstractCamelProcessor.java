@@ -3,6 +3,8 @@ package eu.isygoit.com.camel.processor;
 import eu.isygoit.dto.IIdentifiableDto;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.transaction.annotation.Transactional;

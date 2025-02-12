@@ -1,7 +1,5 @@
 package eu.isygoit.helper;
 
-import eu.isygoit.constants.LogConstants;
-import eu.isygoit.exception.BadArgumentException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -9,270 +7,199 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.FileAttribute;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.*;
+import java.util.zip.*;
 
 /**
- * The type File helper.
+ * Utility class for handling file operations, including directory management,
+ * file storage, multipart file handling, and ZIP compression/extraction.
  */
 @Slf4j
 public class FileHelper {
 
+    //------------------- Directory Management -------------------
+
     /**
-     * Make directory if not exist.
+     * Creates a directory if it does not exist.
      *
-     * @param dirPath the dir path
+     * @param directoryPath the directory path
      */
-    public static void makeDirectoryIfNotExist(String dirPath) {
-        File directory = new File(dirPath);
+    public static void createDirectoryIfAbsent(String directoryPath) {
+        File directory = new File(directoryPath);
         if (!directory.exists()) {
             directory.mkdirs();
-        }
-    }
-
-    /**
-     * Store multipart file path.
-     *
-     * @param directory the directory
-     * @param fileName  the file name
-     * @param file      the file
-     * @param extension the extension
-     * @return the path
-     * @throws IOException the io exception
-     */
-    public static Path storeMultipartFile(String directory, String fileName, MultipartFile file, String extension) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            makeDirectoryIfNotExist(directory);
-
-            Path fileNamePath = Paths.get(directory
-                            + File.separator,
-                    StringUtils.hasText(fileName)
-                            ? fileName.concat(".").concat(StringUtils.hasText(extension) ? extension : FilenameUtils.getExtension(file.getOriginalFilename()))
-                            : file.getOriginalFilename());
-            Files.write(fileNamePath, file.getBytes());
-            return fileNamePath;
+            log.info("Directory created: {}", directoryPath);
         } else {
-            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
-            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
+            log.debug("Directory already exists: {}", directoryPath);
+        }
+    }
+
+    //------------------- File Storage & Retrieval -------------------
+
+    /**
+     * Saves a MultipartFile to the specified directory with a given filename and extension.
+     *
+     * @param targetDirectory the directory where the file will be saved
+     * @param fileName        the desired filename
+     * @param multipartFile   the file to save
+     * @param fileExtension   the file extension (optional)
+     * @return the Path of the saved file
+     * @throws IOException if an I/O error occurs
+     */
+    public static Path saveMultipartFile(String targetDirectory, String fileName, MultipartFile multipartFile, String fileExtension) throws IOException {
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            createDirectoryIfAbsent(targetDirectory);
+
+            String finalFileName = StringUtils.hasText(fileName)
+                    ? fileName + "." + (StringUtils.hasText(fileExtension) ? fileExtension : FilenameUtils.getExtension(multipartFile.getOriginalFilename()))
+                    : multipartFile.getOriginalFilename();
+
+            Path filePath = Paths.get(targetDirectory, finalFileName);
+            Files.write(filePath, multipartFile.getBytes());
+
+            log.info("File saved at: {}", filePath);
+            return filePath;
+        } else {
+            log.warn("Attempted to save an empty MultipartFile.");
+            throw new IllegalArgumentException("Provided file is empty.");
         }
     }
 
     /**
-     * Gets properties.
+     * Reads the contents of a properties file.
      *
-     * @param filename the filename
-     * @return the properties
+     * @param propertiesFilePath the properties file path
+     * @return file contents as a string
      */
-    public static String getProperties(String filename) {
-        InputStream input;
-        try {
-            input = new FileInputStream(filename);
-            String theString = "";
-            try {
-                theString = IOUtils.toString(input, StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return theString;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    public static String readPropertiesFile(String propertiesFilePath) {
+        try (InputStream inputStream = new FileInputStream(propertiesFilePath)) {
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("Failed to read properties file: {}", propertiesFilePath, e);
             return null;
         }
     }
 
     /**
-     * Delete dir boolean.
+     * Deletes a directory and its contents recursively.
      *
-     * @param dir   the dir
-     * @param force the force
-     * @return the boolean
-     * @throws NotDirectoryException the not directory exception
+     * @param directoryPath the directory path
+     * @param forceDelete   whether to force deletion
+     * @return true if deletion was successful, false otherwise
+     * @throws NotDirectoryException if the given path is not a directory
      */
-    public static boolean deleteDir(File dir, boolean force) throws NotDirectoryException {
-        if (dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]), force);
-                if (!success)
-                    return false;
+    public static boolean deleteDirectoryRecursively(File directoryPath, boolean forceDelete) throws NotDirectoryException {
+        if (directoryPath.isDirectory()) {
+            for (File file : Objects.requireNonNull(directoryPath.listFiles())) {
+                boolean success = deleteDirectoryRecursively(file, forceDelete);
+                if (!success) return false;
             }
-            return dir.delete();
+            boolean deleted = directoryPath.delete();
+            if (deleted) {
+                log.info("Deleted directory: {}", directoryPath);
+            }
+            return deleted;
         }
+        throw new NotDirectoryException(directoryPath.getName());
+    }
 
-        throw new NotDirectoryException(dir.getName());
+    //------------------- ZIP Compression & Extraction -------------------
+
+    /**
+     * Compresses a single file into a ZIP archive.
+     *
+     * @param inputFile    the file to compress
+     * @param outputZipPath the destination ZIP file path
+     * @throws IOException if an I/O error occurs
+     */
+    public static void zipSingleFile(File inputFile, String outputZipPath) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(outputZipPath))) {
+            zipOutputStream.putNextEntry(new ZipEntry(inputFile.getName()));
+            try (FileInputStream fileInputStream = new FileInputStream(inputFile)) {
+                IOUtils.copy(fileInputStream, zipOutputStream);
+            }
+            zipOutputStream.closeEntry();
+            log.info("Compressed file to: {}", outputZipPath);
+        }
     }
 
     /**
-     * Zip folder.
+     * Compresses multiple files into a ZIP archive.
      *
-     * @param srcFolder   the src folder
-     * @param destZipFile the dest zip file
-     * @throws Exception the exception
+     * @param inputFiles   the list of files to compress
+     * @param outputZipPath the destination ZIP file path
+     * @throws IOException if an I/O error occurs
      */
-    static public void zipFolder(String srcFolder, String destZipFile) throws Exception {
-        ZipOutputStream zip = null;
-        FileOutputStream fileWriter = null;
-        fileWriter = new FileOutputStream(destZipFile);
-        zip = new ZipOutputStream(fileWriter);
-        addFolderToZip("", srcFolder, zip);
-        zip.flush();
-        zip.close();
-    }
-
-    static private void addFileToZip(String path, String srcFile, ZipOutputStream zip) throws Exception {
-        File folder = new File(srcFile);
-        if (folder.isDirectory()) {
-            addFolderToZip(path, srcFile, zip);
-        } else {
-            byte[] buf = new byte[1024];
-            int len;
-            try (FileInputStream in = new FileInputStream(srcFile)) {
-                zip.putNextEntry(new ZipEntry(path
-                        + File.separator + folder.getName()));
-                while ((len = in.read(buf)) > 0) {
-                    zip.write(buf, 0, len);
+    public static void zipMultipleFiles(List<File> inputFiles, String outputZipPath) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(outputZipPath))) {
+            for (File file : inputFiles) {
+                try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                    zipOutputStream.putNextEntry(new ZipEntry(file.getName()));
+                    IOUtils.copy(fileInputStream, zipOutputStream);
+                    zipOutputStream.closeEntry();
                 }
-            } catch (FileNotFoundException e) {
-                log.error("<Error>: {} ", e);
-            } catch (IOException e) {
-                log.error("<Error>: {} ", e);
             }
+            log.info("Compressed files into ZIP: {}", outputZipPath);
         }
     }
 
     /**
-     * Add files to zip.
+     * Extracts a ZIP archive to a specified directory.
      *
-     * @param path     the path
-     * @param srcFiles the src files
-     * @param zip      the zip
-     * @throws Exception the exception
+     * @param zipFilePath the ZIP file path
+     * @param destinationDir the directory where extracted files will be saved
+     * @throws IOException if an I/O error occurs
      */
-    static public void addFilesToZip(String path, List<String> srcFiles, ZipOutputStream zip) throws Exception {
-        try {
-            srcFiles.forEach(srcFile -> {
-                File folder = new File(srcFile);
-                if (folder.isDirectory()) {
-                    try {
-                        addFolderToZip(path, srcFile, zip);
-                    } catch (Exception e) {
-                        log.error("<Error>: {} ", e);
-                    }
+    public static void unzipFile(String zipFilePath, String destinationDir) throws IOException {
+        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFilePath))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                File outputFile = new File(destinationDir, entry.getName());
+                if (entry.isDirectory()) {
+                    outputFile.mkdirs();
                 } else {
-                    byte[] buf = new byte[1024];
-                    int len;
-                    try (FileInputStream in = new FileInputStream(srcFile)) {
-                        zip.putNextEntry(new ZipEntry(path
-                                + File.separator + folder.getName()));
-                        while ((len = in.read(buf)) > 0) {
-                            zip.write(buf, 0, len);
-                        }
-                    } catch (FileNotFoundException e) {
-                        log.error("<Error>: {} ", e);
-                    } catch (IOException e) {
-                        log.error("<Error>: {} ", e);
+                    try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputFile))) {
+                        IOUtils.copy(zipInputStream, bos);
                     }
                 }
-            });
-        } catch (Throwable e) {
-            log.error("<Error>: {} ", e);
-        }
-    }
-
-    static private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws Exception {
-        File folder = new File(srcFolder);
-
-        for (String fileName : folder.list()) {
-            if (path.equals("")) {
-                addFileToZip(folder.getName(), srcFolder
-                        + File.separator + fileName, zip);
-            } else {
-                addFileToZip(path
-                        + File.separator + folder.getName(), srcFolder + File.separator + fileName, zip);
+                zipInputStream.closeEntry();
             }
+            log.info("Extracted ZIP file to: {}", destinationDir);
         }
     }
+
+    //------------------- Utility Methods -------------------
 
     /**
-     * Build list path results list.
+     * Builds a list of daily-generated file paths based on given base directories.
      *
-     * @param fileCompleteRemotePath  the file complete remote path
-     * @param fileCompleteRemotePath2 the file complete remote path 2
-     * @return the list
+     * @param basePathValid   the base path for valid files
+     * @param basePathInvalid the base path for invalid files
+     * @return the list of generated file paths
      */
-    public static List<String> buildListPathResults(String fileCompleteRemotePath, String fileCompleteRemotePath2) {
-        Date now = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(now);
-        String generatedPathResult = cal.get(Calendar.YEAR) + "_";
-        DecimalFormat formatter = new DecimalFormat("#00.###");
-        int month = cal.get(Calendar.MONTH) + 1;
-        generatedPathResult += formatter.format(month);
-        int today = cal.get(Calendar.DAY_OF_MONTH);
+    public static List<String> generateDailyFilePaths(String basePathValid, String basePathInvalid) {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int today = calendar.get(Calendar.DAY_OF_MONTH);
         int yesterday = today - 1;
-        String validGeneratedFileForToday = fileCompleteRemotePath
-                + File.separator + generatedPathResult
-                + File.separator + formatter.format(today);
-        String validGeneratedFileForYesterday = fileCompleteRemotePath
-                + File.separator + generatedPathResult
-                + File.separator + formatter.format(yesterday);
-        String invalidGeneratedFileForToday = fileCompleteRemotePath2
-                + File.separator + generatedPathResult
-                + File.separator + formatter.format(today);
-        String invalidGeneratedFileForYesterday = fileCompleteRemotePath2
-                + File.separator + generatedPathResult
-                + File.separator + formatter.format(yesterday);
-        List<String> listPaths = new ArrayList<>();
-        listPaths.add(invalidGeneratedFileForYesterday);
-        listPaths.add(invalidGeneratedFileForToday);
-        listPaths.add(validGeneratedFileForYesterday);
-        listPaths.add(validGeneratedFileForToday);
-        return listPaths;
-    }
 
-    /**
-     * Add empty folder.
-     *
-     * @param srcFolder the src folder
-     * @throws Exception the exception
-     */
-    public static void addEmptyFolder(String srcFolder) throws Exception {
-        File folder = new File(srcFolder);
-        folder.mkdir();
-    }
+        String monthFormatted = new DecimalFormat("#00").format(month);
+        String todayFormatted = new DecimalFormat("#00").format(today);
+        String yesterdayFormatted = new DecimalFormat("#00").format(yesterday);
 
-    /**
-     * Checksum mapped file long.
-     *
-     * @param filepath the filepath
-     * @return the long
-     * @throws IOException the io exception
-     */
-    public static Long checksumMappedFile(String filepath) throws IOException {
-        try (FileInputStream inputStream = new FileInputStream(filepath)) {
-            FileChannel fileChannel = inputStream.getChannel();
-            int len = (int) fileChannel.size();
-            MappedByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, len);
-            CRC32 crc = new CRC32();
-            for (int cnt = 0; cnt < len; cnt++) {
-                int i = buffer.get(cnt);
-                crc.update(i);
-            }
+        List<String> filePaths = List.of(
+                basePathInvalid + File.separator + year + "_" + monthFormatted + File.separator + yesterdayFormatted,
+                basePathInvalid + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted,
+                basePathValid + File.separator + year + "_" + monthFormatted + File.separator + yesterdayFormatted,
+                basePathValid + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted
+        );
 
-            return crc.getValue();
-        }
+        log.debug("Generated file paths: {}", filePaths);
+        return filePaths;
     }
 }

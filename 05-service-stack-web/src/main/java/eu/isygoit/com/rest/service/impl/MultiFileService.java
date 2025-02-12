@@ -8,6 +8,8 @@ import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.util.CollectionUtils;

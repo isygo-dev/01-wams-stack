@@ -4,6 +4,8 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import javax.xml.datatype.Duration;
@@ -20,7 +22,9 @@ import java.util.List;
 /**
  * The type Date helper.
  */
-public class DateHelper {
+public interface DateHelper {
+
+    Logger logger = LoggerFactory.getLogger(DateHelper.class);
 
     /**
      * The constant BEGIN_OF_CALENDAR.

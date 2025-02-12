@@ -1,15 +1,18 @@
 package eu.isygoit.helper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.*;
 
 /**
  * The type Elliptic curve processor helper.
  */
-@Slf4j
-public class EllipticCurveProcessorHelper {
+public interface EllipticCurveProcessorHelper {
 
+    Logger logger = LoggerFactory.getLogger(EllipticCurveProcessorHelper.class);
+    
     /**
      * Sign data byte [ ].
      *
@@ -24,7 +27,7 @@ public class EllipticCurveProcessorHelper {
             signature.update(data);
             return signature.sign();
         } catch (GeneralSecurityException e) {
-            log.error("<Error>: an Error occured when signing data", e);
+            logger.error("<Error>: an Error occured when signing data", e);
             return null;
         }
     }
@@ -44,7 +47,7 @@ public class EllipticCurveProcessorHelper {
             signature.update(message);
             return signature.verify(tokenSignature);
         } catch (GeneralSecurityException e) {
-            log.error("<Error>: Signature verification failed", e);
+            logger.error("<Error>: Signature verification failed", e);
             return false;
         }
     }

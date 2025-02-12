@@ -24,6 +24,8 @@
 package eu.isygoit.helper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.zip.CRC32;
@@ -32,10 +34,11 @@ import java.util.zip.Checksum;
 /**
  * The type Byte array helper.
  */
-@Slf4j
-public final class ByteArrayHelper {
+public interface ByteArrayHelper {
 
-    private static final int SUFFIX_HEX_BYTE = 0xf;
+    Logger logger = LoggerFactory.getLogger(ByteArrayHelper.class);
+    
+    static final int SUFFIX_HEX_BYTE = 0xf;
 
     /**
      * Byte array to hex string string.
@@ -67,7 +70,7 @@ public final class ByteArrayHelper {
         Checksum checksum = new CRC32();
         checksum.update(bytes, 0, bytes.length);
         long checksumValue = checksum.getValue();
-        log.debug("checksumMappedFile :CRC checksum for byte[] is: {}" + checksumValue);
+        logger.debug("checksumMappedFile :CRC checksum for byte[] is: {}" + checksumValue);
         return checksumValue;
     }
 

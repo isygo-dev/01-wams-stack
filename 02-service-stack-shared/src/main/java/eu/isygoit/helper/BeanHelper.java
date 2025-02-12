@@ -1,7 +1,8 @@
 package eu.isygoit.helper;
 
 import eu.isygoit.dto.IIdentifiableDto;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -12,9 +13,10 @@ import java.util.*;
 /**
  * The type Bean helper.
  */
-@Slf4j
-public final class BeanHelper {
+public interface BeanHelper {
 
+    Logger logger = LoggerFactory.getLogger(BeanHelper.class);
+    
     /**
      * Call setter.
      *
@@ -29,7 +31,7 @@ public final class BeanHelper {
             pd.getWriteMethod().invoke(obj, value);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
-            log.error("<Error>: calling setter for {}/{}", obj.getClass().getSimpleName(), fieldName);
+            logger.error("<Error>: calling setter for {}/{}", obj.getClass().getSimpleName(), fieldName);
         }
     }
 
@@ -48,7 +50,7 @@ public final class BeanHelper {
             return (E) pd.getReadMethod().invoke(obj);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
-            log.error("<Error>: calling getter/is for {}/{}", obj.getClass().getSimpleName(), fieldName);
+            logger.error("<Error>: calling getter/is for {}/{}", obj.getClass().getSimpleName(), fieldName);
         }
 
         return null;
@@ -63,7 +65,7 @@ public final class BeanHelper {
      */
     public static IIdentifiableDto merge(IIdentifiableDto source, IIdentifiableDto destination) {
         if (source == null || destination == null) {
-            log.error("<Error>: merging null objects");
+            logger.error("<Error>: merging null objects");
             return destination;
         }
         if (destination.getClass().isAssignableFrom(source.getClass())
@@ -91,7 +93,7 @@ public final class BeanHelper {
                 }
             }
         } else {
-            log.error("<Error>: Error merging object icompatible {}/{}", source.getClass().getSimpleName(), destination.getClass().getSimpleName());
+            logger.error("<Error>: Error merging object icompatible {}/{}", source.getClass().getSimpleName(), destination.getClass().getSimpleName());
         }
         return destination;
     }

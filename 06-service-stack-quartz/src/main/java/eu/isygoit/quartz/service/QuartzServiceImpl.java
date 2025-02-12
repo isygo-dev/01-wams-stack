@@ -2,6 +2,8 @@ package eu.isygoit.quartz.service;
 
 import eu.isygoit.quartz.types.SingleJobData;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.quartz.*;
 import org.quartz.utils.Key;
 import org.springframework.stereotype.Service;

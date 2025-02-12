@@ -3,6 +3,8 @@ package eu.isygoit.app.impl;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.exception.BeanNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

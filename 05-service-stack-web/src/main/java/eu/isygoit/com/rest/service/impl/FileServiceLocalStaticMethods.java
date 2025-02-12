@@ -6,6 +6,8 @@ import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

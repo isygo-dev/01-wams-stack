@@ -12,6 +12,8 @@ import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdEntity;
 import eu.isygoit.model.IImageEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
