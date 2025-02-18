@@ -75,7 +75,7 @@ public interface QuartzService {
      * @param startAt         the start at
      * @return the trigger
      */
-    Trigger createJobTrigger(JobDetail jobDetail, String identity, String group, ScheduleBuilder scheduleBuilder, Date startAt);
+    Trigger createJobTrigger(JobDetail jobDetail, String identity, String group, ScheduleBuilder<?> scheduleBuilder, Date startAt);
 
     /**
      * Create job trigger trigger.
@@ -86,7 +86,7 @@ public interface QuartzService {
      * @param scheduleBuilder the schedule builder
      * @return the trigger
      */
-    Trigger createJobTrigger(JobDetail jobDetail, String identity, String group, ScheduleBuilder scheduleBuilder);
+    Trigger createJobTrigger(JobDetail jobDetail, String identity, String group, ScheduleBuilder<?> scheduleBuilder);
 
     /**
      * Create simple schedule builder simple schedule builder.

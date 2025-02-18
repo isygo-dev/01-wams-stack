@@ -11,164 +11,151 @@ import java.util.Date;
 import java.util.Optional;
 
 /**
- * The QuartzService implementation.
- * Provides methods to create job details, triggers, and schedule builders.
+ * Enhanced QuartzService implementation using Java 17 features.
+ * Provides methods to manage Quartz job scheduling components.
  */
 @Slf4j
 @Service
 public class QuartzServiceImpl implements QuartzService {
 
-    /**
-     * Creates a cron schedule builder using a CronExpression.
-     *
-     * @param jobDetail      the job detail
-     * @param identity       the identity of the job
-     * @param group          the group of the job
-     * @param cronExpression the cron expression
-     * @return the cron schedule builder
-     */
     @Override
     public CronScheduleBuilder createCronScheduleBuilder(JobDetail jobDetail, String identity, String group, CronExpression cronExpression) {
-        log.debug("Creating CronScheduleBuilder with expression: {}", cronExpression);
+        var jobIdentity = new JobIdentity(identity, group);
+        log.debug("Creating CronScheduleBuilder for job [{}:{}] with expression: {}",
+                jobIdentity.identity(), jobIdentity.group(), cronExpression);
         return CronScheduleBuilder.cronSchedule(cronExpression);
     }
 
-    /**
-     * Creates a cron schedule builder using a cron expression in string format.
-     *
-     * @param jobDetail the job detail
-     * @param identity  the identity of the job
-     * @param group     the group of the job
-     * @param cron      the cron string
-     * @return the cron schedule builder
-     */
     @Override
     public CronScheduleBuilder createCronScheduleBuilder(JobDetail jobDetail, String identity, String group, String cron) {
-        log.debug("Creating CronScheduleBuilder with cron string: {}", cron);
+        var jobIdentity = new JobIdentity(identity, group);
+        log.debug("Creating CronScheduleBuilder for job [{}:{}] with cron: {}",
+                jobIdentity.identity(), jobIdentity.group(), cron);
         return CronScheduleBuilder.cronSchedule(cron);
     }
 
-    /**
-     * Creates a job detail with the given job class and job data map.
-     *
-     * @param jobClass   the job class
-     * @param jobDataMap the job data map
-     * @return the job detail
-     */
     @Override
     public JobDetail createJobDetail(Class<? extends Job> jobClass, JobDataMap jobDataMap) {
-        log.debug("Creating job detail for class: {}", jobClass.getSimpleName());
-        return JobBuilder.newJob(jobClass).withIdentity(Key.createUniqueName(null)).usingJobData(jobDataMap).storeDurably().build();
+        log.debug("Creating job detail for class: {} with {} data entries",
+                jobClass.getSimpleName(), jobDataMap.size());
+        return JobBuilder.newJob(jobClass)
+                .withIdentity(Key.createUniqueName(null))
+                .usingJobData(jobDataMap)
+                .storeDurably()
+                .build();
     }
 
-    /**
-     * Creates a job detail with the given identity, group, and job data map.
-     *
-     * @param jobClass   the job class
-     * @param identity   the identity of the job
-     * @param group      the group of the job
-     * @param jobDataMap the job data map
-     * @return the job detail
-     */
     @Override
     public JobDetail createJobDetail(Class<? extends Job> jobClass, String identity, String group, JobDataMap jobDataMap) {
-        log.debug("Creating job detail with identity: {} and group: {}", identity, group);
-        return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(jobDataMap).storeDurably().build();
+        var jobIdentity = new JobIdentity(identity, group);
+        log.debug("Creating job detail [{}:{}] for class: {} with {} data entries",
+                jobIdentity.identity(), jobIdentity.group(), jobClass.getSimpleName(), jobDataMap.size());
+        return JobBuilder.newJob(jobClass)
+                .withIdentity(identity, group)
+                .usingJobData(jobDataMap)
+                .storeDurably()
+                .build();
     }
 
-    /**
-     * Creates a job detail using SingleJobData, with type-specific handling.
-     *
-     * @param jobClass      the job class
-     * @param identity      the identity of the job
-     * @param group         the group of the job
-     * @param singleJobData the single job data containing key-value pair
-     * @return the job detail or null if data is invalid
-     */
     @Override
     public JobDetail createJobDetail(Class<? extends Job> jobClass, String identity, String group, SingleJobData singleJobData) {
         return Optional.ofNullable(singleJobData)
-                .map(data -> createJobDetailWithValue(jobClass, identity, group, singleJobData.getKey(), data.getValue()))
+                .map(data -> {
+                    log.debug("Creating job detail [{}:{}] with single job data key: {}",
+                            identity, group, data.getKey());
+                    return createJobDetailWithValue(jobClass, identity, group, data.getKey(), data.getValue());
+                })
                 .orElseGet(() -> {
-                    log.error("Job data is null, job will not be created");
+                    log.error("Failed to create job detail - SingleJobData is null");
                     return null;
                 });
     }
 
     /**
-     * Creates a job detail based on a value from SingleJobData.
+     * Creates a job detail based on the type of value provided.
+     * Optimized version with better type handling and reduced complexity.
      *
-     * @param jobClass the job class
-     * @param identity the identity of the job
-     * @param group    the group of the job
-     * @param key      the job data key
-     * @param value    the value of the job data
-     * @return the job detail
+     * @param jobClass Job class to be executed
+     * @param identity Job identity name
+     * @param group    Job group name
+     * @param key      Job data key
+     * @param value    Job data value
+     * @return JobDetail instance or null if value type is unsupported
      */
     private JobDetail createJobDetailWithValue(Class<? extends Job> jobClass, String identity, String group, String key, Object value) {
+        JobBuilder jobBuilder = JobBuilder.newJob(jobClass).withIdentity(identity, group).storeDurably();
+
         if (value instanceof String data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
+            jobBuilder.usingJobData(key, data);
         } else if (value instanceof Integer data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
+            jobBuilder.usingJobData(key, data);
         } else if (value instanceof Float data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
+            jobBuilder.usingJobData(key, data);
         } else if (value instanceof Long data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
+            jobBuilder.usingJobData(key, data);
         } else if (value instanceof Double data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
+            jobBuilder.usingJobData(key, data);
         } else if (value instanceof Boolean data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(key, data).storeDurably().build();
+            jobBuilder.usingJobData(key, data);
         } else if (value instanceof JobDataMap data) {
-            return JobBuilder.newJob(jobClass).withIdentity(identity, group).usingJobData(data).storeDurably().build();
+            jobBuilder.usingJobData(data);
         } else {
             log.error("Job data type {} is invalid, job will not be created", value.getClass().getSimpleName());
             return null;
         }
+
+        return jobBuilder.build();
     }
 
     /**
-     * Creates a job trigger with the specified schedule and start time.
-     *
-     * @param jobDetail       the job detail
-     * @param identity        the identity of the job
-     * @param group           the group of the job
-     * @param scheduleBuilder the schedule builder
-     * @param startAt         the start date of the job
-     * @return the trigger
+     * Creates a job detail based on the type of value provided.
+     * Uses Java 17 enhanced instanceof pattern matching for type checking.
      */
+
     @Override
-    public Trigger createJobTrigger(JobDetail jobDetail, String identity, String group, ScheduleBuilder scheduleBuilder, Date startAt) {
-        log.info("Job {} triggered and will start on {}", identity, startAt);
-        return TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(identity, group).withSchedule(scheduleBuilder).startAt(startAt).build();
+    public Trigger createJobTrigger(JobDetail jobDetail, String identity, String group,
+                                    ScheduleBuilder<?> scheduleBuilder, Date startAt) {
+        var jobIdentity = new JobIdentity(identity, group);
+        log.info("Creating triggered job [{}:{}] scheduled to start at: {}",
+                jobIdentity.identity(), jobIdentity.group(), startAt);
+
+        return TriggerBuilder.newTrigger()
+                .forJob(jobDetail)
+                .withIdentity(identity, group)
+                .withSchedule(scheduleBuilder)
+                .startAt(startAt)
+                .build();
     }
 
-    /**
-     * Creates a job trigger with the specified schedule.
-     *
-     * @param jobDetail       the job detail
-     * @param identity        the identity of the job
-     * @param group           the group of the job
-     * @param scheduleBuilder the schedule builder
-     * @return the trigger
-     */
     @Override
-    public Trigger createJobTrigger(JobDetail jobDetail, String identity, String group, ScheduleBuilder scheduleBuilder) {
-        log.debug("Creating job trigger for job: {} in group: {}", identity, group);
-        return TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(identity, group).withSchedule(scheduleBuilder).build();
+    public Trigger createJobTrigger(JobDetail jobDetail, String identity, String group,
+                                    ScheduleBuilder<?> scheduleBuilder) {
+        var jobIdentity = new JobIdentity(identity, group);
+        log.debug("Creating immediate trigger for job [{}:{}]",
+                jobIdentity.identity(), jobIdentity.group());
+
+        return TriggerBuilder.newTrigger()
+                .forJob(jobDetail)
+                .withIdentity(identity, group)
+                .withSchedule(scheduleBuilder)
+                .build();
     }
 
-    /**
-     * Creates a simple schedule builder with a fixed interval in seconds.
-     *
-     * @param jobDetail the job detail
-     * @param identity  the identity of the job
-     * @param group     the group of the job
-     * @param duration  the interval duration
-     * @return the simple schedule builder
-     */
     @Override
-    public SimpleScheduleBuilder createSimpleScheduleBuilder(JobDetail jobDetail, String identity, String group, Duration duration) {
-        log.debug("Creating SimpleScheduleBuilder with interval: {} seconds", duration.getSeconds());
-        return SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds((int) duration.getSeconds()).repeatForever();
+    public SimpleScheduleBuilder createSimpleScheduleBuilder(JobDetail jobDetail, String identity,
+                                                             String group, Duration duration) {
+        var jobIdentity = new JobIdentity(identity, group);
+        var seconds = duration.getSeconds();
+
+        log.debug("Creating SimpleScheduleBuilder for job [{}:{}] with interval: {} seconds",
+                jobIdentity.identity(), jobIdentity.group(), seconds);
+
+        return SimpleScheduleBuilder.simpleSchedule()
+                .withIntervalInSeconds((int) seconds)
+                .repeatForever();
+    }
+
+    // Record for job identity information to ensure immutability
+    private record JobIdentity(String identity, String group) {
     }
 }
