@@ -22,7 +22,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class Cancelable<I> extends Abstract<I> {
+public abstract class Cancelable<I> extends AbstractEntity<I> {
 
     @Builder.Default
     @CassandraType(type = CassandraType.Name.BOOLEAN)

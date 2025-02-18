@@ -25,7 +25,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class Auditable<I> extends Abstract<I> {
+public abstract class Auditable<I> extends AbstractEntity<I> {
 
     @CreatedDate
     @CassandraType(type = CassandraType.Name.TIMESTAMP)

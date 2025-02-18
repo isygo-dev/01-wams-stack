@@ -15,6 +15,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class Abstract<I> implements AssignableId<I> {
+public abstract class AbstractEntity<I> implements AssignableId<I> {
 
 }
