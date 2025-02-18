@@ -17,10 +17,10 @@ import java.util.stream.IntStream;
 public final class CRC16Helper {
 
     // CRC-16 standard polynomial (CCITT)
-    private static final int POLYNOMIAL = 0x1021;
+    public static final int POLYNOMIAL = 0x1021;
 
     // Initial CRC value (commonly set to 0x0000)
-    private static final int INITIAL_VALUE = 0x0000;
+    public static final int INITIAL_VALUE = 0x0000;
 
     /**
      * Private constructor to prevent instantiation.

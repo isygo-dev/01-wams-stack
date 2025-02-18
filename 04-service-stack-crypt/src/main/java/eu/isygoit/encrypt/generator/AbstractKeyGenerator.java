@@ -15,12 +15,12 @@ import java.util.stream.IntStream;
 public abstract class AbstractKeyGenerator implements IKeyGenerator {
 
     // Character sets used for key generation
-    private static final char[] NUMERIC_CHARACTERS = IntStream.rangeClosed('0', '9')
+    public static final char[] NUMERIC_CHARACTERS = IntStream.rangeClosed('0', '9')
             .mapToObj(c -> (char) c)
             .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
             .toString().toCharArray();
 
-    private static final char[] ALPHABETIC_CHARACTERS = (IntStream.rangeClosed('A', 'Z')
+    public static final char[] ALPHABETIC_CHARACTERS = (IntStream.rangeClosed('A', 'Z')
             .mapToObj(c -> String.valueOf((char) c))
             .collect(Collectors.joining()) +
             IntStream.rangeClosed('a', 'z')
@@ -28,9 +28,9 @@ public abstract class AbstractKeyGenerator implements IKeyGenerator {
                     .collect(Collectors.joining()))
             .toCharArray();
 
-    private static final char[] ALPHANUMERIC_CHARACTERS = (new String(NUMERIC_CHARACTERS) + new String(ALPHABETIC_CHARACTERS)).toCharArray();
+    public static final char[] ALPHANUMERIC_CHARACTERS = (new String(NUMERIC_CHARACTERS) + new String(ALPHABETIC_CHARACTERS)).toCharArray();
 
-    private static final char[] ALL_CHARACTERS = (new String(ALPHANUMERIC_CHARACTERS) + "$#&@/-+={}[]()")
+    public static final char[] ALL_CHARACTERS = (new String(ALPHANUMERIC_CHARACTERS) + "$#&@/-+={}[]()")
             .toCharArray();
 
     private final SecureRandom secureRandom = new SecureRandom();

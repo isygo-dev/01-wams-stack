@@ -32,10 +32,6 @@ public class JasyptConfig {
      */
     public static final String DEFAULT_ALGORITHM = "PBEWithMD5AndDES";
     /**
-     * The constant DEFAULT_POOL_SIZE.
-     */
-    public static final int DEFAULT_POOL_SIZE = 1;
-    /**
      * The constant DEFAULT_SALT_GENERATOR_CLASS.
      */
     public static final String DEFAULT_SALT_GENERATOR_CLASS = "org.jasypt.salt.RandomSaltGenerator";
@@ -51,6 +47,10 @@ public class JasyptConfig {
      * The constant DEFAULT_STRING_OUTPUT_TYPE.
      */
     public static final String DEFAULT_STRING_OUTPUT_TYPE = "base64";
+    /**
+     * The constant DEFAULT_POOL_SIZE.
+     */
+    public static final int DEFAULT_POOL_SIZE = 1;
     /**
      * The constant DEFAULT_KEY_OBTENTION_ITERATIONS.
      */
