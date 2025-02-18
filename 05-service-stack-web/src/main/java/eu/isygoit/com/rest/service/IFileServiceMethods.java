@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableFile;
+import eu.isygoit.model.AssignableId;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,40 +15,40 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IFileServiceMethods<I extends Serializable, E extends IIdEntity & IFileEntity> {
+public interface IFileServiceMethods<I extends Serializable, E extends AssignableId & AssignableFile> {
 
     /**
-     * Create with file t.
+     * Create with file e.
      *
      * @param senderDomain the sender domain
      * @param entity       the entity
      * @param file         the file
-     * @return the t
+     * @return the e
      * @throws IOException the io exception
      */
     @Transactional
     E createWithFile(String senderDomain, E entity, MultipartFile file) throws IOException;
 
     /**
-     * Update with file t.
+     * Update with file e.
      *
      * @param senderDomain the sender domain
      * @param id           the id
      * @param entity       the entity
      * @param file         the file
-     * @return the t
+     * @return the e
      * @throws IOException the io exception
      */
     @Transactional
     E updateWithFile(String senderDomain, I id, E entity, MultipartFile file) throws IOException;
 
     /**
-     * Upload file t.
+     * Upload file e.
      *
      * @param senderDomain the sender domain
      * @param id           the id
      * @param file         the file
-     * @return the t
+     * @return the e
      * @throws IOException the io exception
      */
     @Transactional

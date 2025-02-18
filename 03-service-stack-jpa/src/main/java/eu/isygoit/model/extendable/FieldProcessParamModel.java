@@ -1,6 +1,6 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -25,7 +25,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class FieldProcessParamModel<I extends Serializable> extends AuditableEntity<I> {
+public abstract class FieldProcessParamModel<I extends Serializable> extends Auditable<I> {
 
     @Length(max = ComSchemaConstantSize.S_NAME)
     @Column(name = ComSchemaColumnConstantName.C_PROCESS_NAME, length = ComSchemaConstantSize.S_NAME, nullable = false)

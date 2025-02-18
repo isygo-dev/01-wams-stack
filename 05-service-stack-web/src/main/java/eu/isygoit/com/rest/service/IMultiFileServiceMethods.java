@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.IMultiFileEntity;
+import eu.isygoit.model.AssignableId;
+import eu.isygoit.model.AssignableMultiFile;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,27 +15,27 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IMultiFileServiceMethods<I extends Serializable, E extends IIdEntity & IMultiFileEntity> {
+public interface IMultiFileServiceMethods<I extends Serializable, E extends AssignableId & AssignableMultiFile> {
 
     /**
-     * Upload additional files list.
+     * Upload file list.
      *
      * @param parentId the parent id
      * @param files    the files
      * @return the list
      * @throws IOException the io exception
      */
-    List uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException;
+    List uploadFile(I parentId, MultipartFile[] files) throws IOException;
 
     /**
-     * Upload additional file list.
+     * Upload file list.
      *
      * @param parentId the parent id
      * @param file     the file
      * @return the list
      * @throws IOException the io exception
      */
-    List uploadAdditionalFile(I parentId, MultipartFile file) throws IOException;
+    List uploadFile(I parentId, MultipartFile file) throws IOException;
 
     /**
      * Download file resource.
@@ -49,12 +49,12 @@ public interface IMultiFileServiceMethods<I extends Serializable, E extends IIdE
     Resource downloadFile(I parentId, I fileId, Long version) throws IOException;
 
     /**
-     * Delete additional file boolean.
+     * Delete file boolean.
      *
      * @param parentId the parent id
      * @param fileId   the file id
      * @return the boolean
      * @throws IOException the io exception
      */
-    boolean deleteAdditionalFile(I parentId, I fileId) throws IOException;
+    boolean deleteFile(I parentId, I fileId) throws IOException;
 }

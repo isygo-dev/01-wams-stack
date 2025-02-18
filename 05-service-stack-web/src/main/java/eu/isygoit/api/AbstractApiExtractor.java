@@ -113,10 +113,10 @@ public abstract class AbstractApiExtractor<T extends ApiPermissionModel> impleme
     }
 
     /**
-     * Save api e.
+     * Save api t.
      *
      * @param api the api
-     * @return the e
+     * @return the t
      */
     public abstract T saveApi(T api);
 }

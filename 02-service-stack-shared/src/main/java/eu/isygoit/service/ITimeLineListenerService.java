@@ -1,6 +1,6 @@
 package eu.isygoit.service;
 
-import eu.isygoit.model.ITLEntity;
+import eu.isygoit.model.Trackable;
 
 
 /**
@@ -14,20 +14,20 @@ public interface ITimeLineListenerService {
      *
      * @param entity the entity
      */
-    void performPostPersistTL(ITLEntity entity);
+    void performPostPersistTL(Trackable entity);
 
     /**
      * Perform post remove tl.
      *
      * @param entity the entity
      */
-    void performPostRemoveTL(ITLEntity entity);
+    void performPostRemoveTL(Trackable entity);
 
     /**
      * Perform post update tl.
      *
      * @param entity the entity
      */
-    void performPostUpdateTL(ITLEntity entity);
+    void performPostUpdateTL(Trackable entity);
 
 }

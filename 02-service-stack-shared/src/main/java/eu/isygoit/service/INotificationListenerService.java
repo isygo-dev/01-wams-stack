@@ -1,7 +1,7 @@
 package eu.isygoit.service;
 
 import eu.isygoit.dto.common.NotificationDto;
-import eu.isygoit.model.INotifiableEntity;
+import eu.isygoit.model.Notifiable;
 
 import java.io.IOException;
 
@@ -16,21 +16,21 @@ public interface INotificationListenerService {
      *
      * @param entity the entity
      */
-    void performPostPersistNotification(INotifiableEntity entity);
+    void performPostPersistNotification(Notifiable entity);
 
     /**
      * Perform post remove notification.
      *
      * @param entity the entity
      */
-    void performPostRemoveNotification(INotifiableEntity entity);
+    void performPostRemoveNotification(Notifiable entity);
 
     /**
      * Perform post update notification.
      *
      * @param entity the entity
      */
-    void performPostUpdateNotification(INotifiableEntity entity);
+    void performPostUpdateNotification(Notifiable entity);
 
     /**
      * Send notification.

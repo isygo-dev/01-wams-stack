@@ -8,8 +8,8 @@ import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.ISAASEntity;
+import eu.isygoit.model.AssignableDomain;
+import eu.isygoit.model.AssignableId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,7 +30,7 @@ import java.util.Map;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I extends Serializable, E extends IIdEntity, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, E>>
+public abstract class CrudControllerSubMethods<I extends Serializable, E extends AssignableId, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, E>>
         extends CrudControllerUtils<I, E, M, F, S>
         implements ICrudControllerSubMethods<I, E, M, F, S> {
 
@@ -43,7 +43,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
 
         try {
             object = this.beforeCreate(object);
-            return ResponseFactory.ResponseOk(mapper().entityToDto(this.afterCreate(this.crudService().create(mapper().dtoToEntity(object)))));
+            return ResponseFactory.ResponseOk(getMapper().entityToDto(this.afterCreate(this.getCrudService().create(getMapper().dtoToEntity(object)))));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -59,9 +59,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
 
         try {
             objects.forEach(F -> this.beforeCreate(F));
-            List<E> entities = this.crudService().create(mapper().listDtoToEntity(objects));
+            List<E> entities = this.getCrudService().create(getMapper().listDtoToEntity(objects));
             entities.forEach(t -> this.afterCreate(t));
-            return ResponseFactory.ResponseOk(mapper().listEntityToDto(entities));
+            return ResponseFactory.ResponseOk(getMapper().listEntityToDto(entities));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -77,10 +77,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
 
         try {
             if (this.beforeDelete(id)) {
-                this.crudService().delete(requestContext.getSenderDomain(), id);
+                this.getCrudService().delete(requestContext.getSenderDomain(), id);
                 this.afterDelete(id);
             }
-            return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+            return ResponseFactory.ResponseOk(getExceptionHandler().handleMessage("object.deleted.successfully"));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -96,10 +96,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
 
         try {
             if (this.beforeDelete(objects)) {
-                this.crudService().delete(requestContext.getSenderDomain(), mapper().listDtoToEntity(objects));
+                this.getCrudService().delete(requestContext.getSenderDomain(), getMapper().listDtoToEntity(objects));
                 this.afterDelete(objects);
             }
-            return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+            return ResponseFactory.ResponseOk(getExceptionHandler().handleMessage("object.deleted.successfully"));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -111,11 +111,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         log.info("Find all {}s request received", getPersistentClass().getSimpleName());
         try {
             List<M> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
+                list = this.getMinDtoMapper().listEntityToDto(this.getCrudService().findAll(requestContext.getSenderDomain()));
             } else {
-                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
+                list = this.getMinDtoMapper().listEntityToDto(this.getCrudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -135,11 +135,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         log.info("Find all {}s request received", getPersistentClass().getSimpleName());
         try {
             List<M> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
+                list = this.getMinDtoMapper().listEntityToDto(this.getCrudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
             } else {
-                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
+                list = this.getMinDtoMapper().listEntityToDto(this.getCrudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -159,11 +159,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         log.info("Find all {}s by page/size request received {}/{}", getPersistentClass().getSimpleName(), page, size);
         try {
             List<M> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = this.getMinDtoMapper().listEntityToDto(this.getCrudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
-                list = (List<M>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = this.getMinDtoMapper().listEntityToDto(this.getCrudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -183,11 +183,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         log.info("Find all {}s request received", getPersistentClass().getSimpleName());
         try {
             List<F> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAll(requestContext.getSenderDomain()));
             } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAll());
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAll());
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -211,11 +211,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
 
         try {
             List<F> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -235,7 +235,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
     public ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
         log.info("Find {} by id request received", getPersistentClass().getSimpleName());
         try {
-            final F object = this.mapper().entityToDto(this.crudService().findById(id));
+            final F object = this.getMapper().entityToDto(this.getCrudService().findById(id).get());
             if (object == null) {
                 return ResponseFactory.ResponseNoContent();
             }
@@ -252,11 +252,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         log.info("Get count {} request received", getPersistentClass().getSimpleName());
         try {
             List<F> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                return ResponseFactory.ResponseOk(this.crudService().count(requestContext.getSenderDomain()));
+                return ResponseFactory.ResponseOk(this.getCrudService().count(requestContext.getSenderDomain()));
             } else {
-                return ResponseFactory.ResponseOk(this.crudService().count());
+                return ResponseFactory.ResponseOk(this.getCrudService().count());
             }
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -274,7 +274,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         try {
             object.setId(id);
             object = this.beforeUpdate(id, object);
-            return ResponseFactory.ResponseOk(this.mapper().entityToDto(this.afterUpdate(this.crudService().update(mapper().dtoToEntity(object)))));
+            return ResponseFactory.ResponseOk(this.getMapper().entityToDto(this.afterUpdate(this.getCrudService().update(getMapper().dtoToEntity(object)))));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -289,7 +289,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
         }
 
         try {
-            return ResponseFactory.ResponseOk(mapper().listEntityToDto(this.crudService().update(mapper().listDtoToEntity(objects))));
+            return ResponseFactory.ResponseOk(getMapper().listEntityToDto(this.getCrudService().update(getMapper().listDtoToEntity(objects))));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -300,11 +300,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
     public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         try {
             List<F> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")));
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")));
             } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")));
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")));
             }
 
             if (CollectionUtils.isEmpty(list)) {
@@ -324,12 +324,12 @@ public abstract class CrudControllerSubMethods<I extends Serializable, E extends
                                                                 Integer page, Integer size) {
         try {
             List<F> list = null;
-            if (ISAASEntity.class.isAssignableFrom(getPersistentClass())
+            if (AssignableDomain.class.isAssignableFrom(getPersistentClass())
                     && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")
                         , PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")
+                list = this.getMapper().listEntityToDto(this.getCrudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")
                         , PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
             }
             if (CollectionUtils.isEmpty(list)) {

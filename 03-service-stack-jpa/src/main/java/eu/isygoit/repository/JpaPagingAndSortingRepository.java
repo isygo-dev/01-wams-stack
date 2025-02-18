@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -16,6 +16,6 @@ import java.io.Serializable;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingRepository<I extends Serializable, E extends IIdEntity>
+public interface JpaPagingAndSortingRepository<I extends Serializable, E extends AssignableId>
         extends JpaRepository<E, I>, JpaSpecificationExecutor<E> {
 }

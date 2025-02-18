@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.IImageEntity;
+import eu.isygoit.model.AssignableId;
+import eu.isygoit.model.AssignableImage;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,15 +14,15 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IImageServiceMethods<I extends Serializable, E extends IIdEntity & IImageEntity> {
+public interface IImageServiceMethods<I extends Serializable, E extends AssignableId & AssignableImage> {
 
     /**
-     * Upload image t.
+     * Upload image e.
      *
      * @param senderDomain the sender domain
      * @param id           the id
      * @param image        the image
-     * @return the t
+     * @return the e
      * @throws IOException the io exception
      */
     E uploadImage(String senderDomain, I id, MultipartFile image) throws IOException;
@@ -37,23 +37,23 @@ public interface IImageServiceMethods<I extends Serializable, E extends IIdEntit
     Resource downloadImage(I id) throws IOException;
 
     /**
-     * Create with image t.
+     * Create with image e.
      *
      * @param senderDomain the sender domain
      * @param entity       the entity
      * @param file         the file
-     * @return the t
+     * @return the e
      * @throws IOException the io exception
      */
     E createWithImage(String senderDomain, E entity, MultipartFile file) throws IOException;
 
     /**
-     * Update with image t.
+     * Update with image e.
      *
      * @param senderDomain the sender domain
      * @param entity       the entity
      * @param file         the file
-     * @return the t
+     * @return the e
      * @throws IOException the io exception
      */
     E updateWithImage(String senderDomain, E entity, MultipartFile file) throws IOException;

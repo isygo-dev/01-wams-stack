@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.service.IRemoteNextCodeService;
+import eu.isygoit.service.IKmsCodeService;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,5 +19,5 @@ public @interface CodeGenKms {
      *
      * @return the class
      */
-    Class<? extends IRemoteNextCodeService> value();
+    Class<? extends IKmsCodeService> value();
 }

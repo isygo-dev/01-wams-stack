@@ -2,8 +2,8 @@ package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.enums.IEnumLanguage;
-import eu.isygoit.model.ISAASEntity;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.AssignableDomain;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -29,7 +29,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AnnexModel<I extends Serializable> extends AuditableEntity<I> implements ISAASEntity {
+public abstract class AnnexModel<I extends Serializable> extends Auditable<I> implements AssignableDomain {
 
     @Length(max = ComSchemaConstantSize.TABLE_CODE)
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_CODE, length = ComSchemaConstantSize.TABLE_CODE, nullable = false)

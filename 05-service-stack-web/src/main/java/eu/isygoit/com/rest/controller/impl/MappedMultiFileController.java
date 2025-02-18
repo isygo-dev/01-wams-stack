@@ -9,8 +9,8 @@ import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.mapper.EntityMapper;
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.IMultiFileEntity;
+import eu.isygoit.model.AssignableId;
+import eu.isygoit.model.AssignableMultiFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -32,7 +32,7 @@ import java.util.List;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedMultiFileController<I extends Serializable, E extends IIdEntity & IMultiFileEntity,
+public abstract class MappedMultiFileController<I extends Serializable, E extends AssignableId & AssignableMultiFile,
         L extends LinkedFileMinDto,
         M extends IIdentifiableDto,
         F extends M,
@@ -53,7 +53,7 @@ public abstract class MappedMultiFileController<I extends Serializable, E extend
                                                          MultipartFile[] files) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(parentId, files)));
+            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(getCrudService().uploadFile(parentId, files)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -66,7 +66,7 @@ public abstract class MappedMultiFileController<I extends Serializable, E extend
                                                         MultipartFile file) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(parentId, file)));
+            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(getCrudService().uploadFile(parentId, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -79,7 +79,7 @@ public abstract class MappedMultiFileController<I extends Serializable, E extend
                                                         I fileId) {
         log.info("delete additional file");
         try {
-            return ResponseFactory.ResponseOk(crudService().deleteAdditionalFile(parentId, fileId));
+            return ResponseFactory.ResponseOk(getCrudService().deleteFile(parentId, fileId));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -95,7 +95,7 @@ public abstract class MappedMultiFileController<I extends Serializable, E extend
         try {
             log.info("download file ");
             try {
-                Resource resource = crudService().downloadFile(parentId, fileId, version);
+                Resource resource = getCrudService().downloadFile(parentId, fileId, version);
                 if (resource != null) {
                     log.info("File downloaded successfully {}", resource.getFilename());
                     return ResponseEntity.ok()

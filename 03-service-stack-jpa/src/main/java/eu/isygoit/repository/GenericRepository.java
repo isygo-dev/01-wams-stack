@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
@@ -64,7 +64,7 @@ public class GenericRepository {
      * @param entity the entity
      * @return the object
      */
-    public Object save(IIdEntity entity) {
+    public Object save(AssignableId entity) {
         return getRepository(entity.getClass()).save(entity);
     }
 
@@ -74,7 +74,7 @@ public class GenericRepository {
      * @param entity the entity
      * @return the object
      */
-    public Object findAll(IIdEntity entity) {
+    public Object findAll(AssignableId entity) {
         return getRepository(entity.getClass()).findAll();
     }
 
@@ -83,7 +83,7 @@ public class GenericRepository {
      *
      * @param entity the entity
      */
-    public void delete(IIdEntity entity) {
+    public void delete(AssignableId entity) {
         getRepository(entity.getClass()).delete(entity);
     }
 }

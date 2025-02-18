@@ -11,13 +11,13 @@ import org.springframework.http.ResponseEntity;
 public interface IControllerExceptionHandler {
 
     /**
-     * Exception handler exception handler.
+     * Gets exception handler.
      *
      * @return the exception handler
      * @throws BeanNotFoundException               the bean not found exception
      * @throws ExceptionHandlerNotDefinedException the exception handler not defined exception
      */
-    IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException;
+    IExceptionHandler getExceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException;
 
     /**
      * Gets back exception response.

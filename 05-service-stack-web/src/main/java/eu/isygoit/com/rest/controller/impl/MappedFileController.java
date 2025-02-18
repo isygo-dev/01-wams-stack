@@ -5,12 +5,12 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
+import eu.isygoit.dto.DomainAssignableDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdentifiableDto;
-import eu.isygoit.dto.ISAASDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableFile;
+import eu.isygoit.model.AssignableId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -31,7 +31,7 @@ import java.io.Serializable;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedFileController<I extends Serializable, E extends IIdEntity & IFileEntity,
+public abstract class MappedFileController<I extends Serializable, E extends AssignableId & AssignableFile,
         M extends IIdentifiableDto & IFileUploadDto,
         F extends M,
         S extends IFileServiceMethods<I, E> & ICrudServiceMethod<I, E>>
@@ -43,7 +43,7 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
                                         I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
-            return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderDomain(), id, file)));
+            return ResponseFactory.ResponseOk(getMapper().entityToDto(getCrudService().uploadFile(requestContext.getSenderDomain(), id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -56,7 +56,7 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
                                                  Long version) {
         log.info("Download file request received");
         try {
-            Resource resource = crudService().downloadFile(id, version);
+            Resource resource = getCrudService().downloadFile(id, version);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, "multipart/form-data")
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
@@ -72,12 +72,12 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
                                             F dto) {
         log.info("Create with file request received");
         try {
-            if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getDomain())) {
-                ISAASDto.setDomain(requestContext.getSenderDomain());
+            if (dto instanceof DomainAssignableDto DomainAssignableDto && StringUtils.isEmpty(DomainAssignableDto.getDomain())) {
+                DomainAssignableDto.setDomain(requestContext.getSenderDomain());
             }
             dto = this.beforeCreate(dto);
-            F savedResume = mapper().entityToDto(this.afterCreate(
-                    crudService().createWithFile(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), dto.getFile())));
+            F savedResume = getMapper().entityToDto(this.afterCreate(
+                    getCrudService().createWithFile(requestContext.getSenderDomain(), getMapper().dtoToEntity(dto), dto.getFile())));
             return ResponseFactory.ResponseOk(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
@@ -91,8 +91,8 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);
-            F savedResume = mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithFile(requestContext.getSenderDomain(), id, mapper().dtoToEntity(dto), dto.getFile())));
+            F savedResume = getMapper().entityToDto(
+                    this.afterUpdate(getCrudService().updateWithFile(requestContext.getSenderDomain(), id, getMapper().dtoToEntity(dto), dto.getFile())));
             return ResponseFactory.ResponseOk(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
@@ -100,10 +100,10 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
     }
 
     /**
-     * Before create fulld.
+     * Before create f.
      *
      * @param object the object
-     * @return the fulld
+     * @return the f
      * @throws Exception the exception
      */
     public F beforeCreate(F object) throws Exception {
@@ -111,10 +111,10 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
     }
 
     /**
-     * After create t.
+     * After create e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      * @throws Exception the exception
      */
     public E afterCreate(E object) throws Exception {
@@ -122,10 +122,10 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
     }
 
     /**
-     * Before update fulld.
+     * Before update f.
      *
      * @param object the object
-     * @return the fulld
+     * @return the f
      * @throws Exception the exception
      */
     public F beforeUpdate(F object) throws Exception {
@@ -133,10 +133,10 @@ public abstract class MappedFileController<I extends Serializable, E extends IId
     }
 
     /**
-     * After update t.
+     * After update e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      * @throws Exception the exception
      */
     public E afterUpdate(E object) throws Exception {

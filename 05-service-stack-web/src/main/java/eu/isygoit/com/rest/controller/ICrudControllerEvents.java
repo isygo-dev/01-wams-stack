@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.controller;
 
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,38 +15,38 @@ import java.util.List;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-interface ICrudControllerEvents<I extends Serializable, E extends IIdEntity, M extends IIdentifiableDto, F extends M> {
+interface ICrudControllerEvents<I extends Serializable, E extends AssignableId, M extends IIdentifiableDto, F extends M> {
 
     /**
-     * Before create fulld.
+     * Before create f.
      *
      * @param object the object
-     * @return the fulld
+     * @return the f
      */
     F beforeCreate(F object);
 
     /**
-     * After create t.
+     * After create e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E afterCreate(E object);
 
     /**
-     * Before update fulld.
+     * Before update f.
      *
      * @param id     the id
      * @param object the object
-     * @return the fulld
+     * @return the f
      */
     F beforeUpdate(I id, F object);
 
     /**
-     * After update t.
+     * After update e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E afterUpdate(E object);
 
@@ -83,10 +83,10 @@ interface ICrudControllerEvents<I extends Serializable, E extends IIdEntity, M e
     boolean afterDelete(List<F> objects);
 
     /**
-     * After find by id fulld.
+     * After find by id f.
      *
      * @param object the object
-     * @return the fulld
+     * @return the f
      */
     F afterFindById(F object);
 

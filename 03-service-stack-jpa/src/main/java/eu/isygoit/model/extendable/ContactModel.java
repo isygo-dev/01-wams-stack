@@ -1,7 +1,7 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.enums.IEnumContact;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -26,7 +26,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class ContactModel<I extends Serializable> extends AuditableEntity<I> {
+public abstract class ContactModel<I extends Serializable> extends Auditable<I> {
 
     @Enumerated(EnumType.STRING)
     @Column(name = ComSchemaColumnConstantName.C_CONTACT_TYPE, length = IEnumContact.STR_ENUM_SIZE, nullable = false)

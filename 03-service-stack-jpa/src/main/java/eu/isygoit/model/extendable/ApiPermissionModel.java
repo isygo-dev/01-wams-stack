@@ -2,7 +2,7 @@ package eu.isygoit.model.extendable;
 
 import eu.isygoit.enums.IEnumBinaryStatus;
 import eu.isygoit.enums.IEnumRequest;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -28,7 +28,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class ApiPermissionModel<I extends Serializable> extends AuditableEntity<I> {
+public abstract class ApiPermissionModel<I extends Serializable> extends Auditable<I> {
 
     @Column(name = ComSchemaColumnConstantName.C_SERVICE, length = ComSchemaConstantSize.S_NAME, nullable = false)
     private String serviceName;

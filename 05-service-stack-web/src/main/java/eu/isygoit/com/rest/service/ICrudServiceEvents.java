@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,21 +11,21 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface ICrudServiceEvents<I extends Serializable, E extends IIdEntity> {
+public interface ICrudServiceEvents<I extends Serializable, E extends AssignableId> {
 
     /**
-     * Before update t.
+     * Before update e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E beforeUpdate(E object);
 
     /**
-     * After update t.
+     * After update e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E afterUpdate(E object);
 
@@ -58,10 +58,10 @@ public interface ICrudServiceEvents<I extends Serializable, E extends IIdEntity>
     void afterDelete(List<E> objects);
 
     /**
-     * Before create t.
+     * Before create e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E beforeCreate(E object);
 
@@ -74,18 +74,18 @@ public interface ICrudServiceEvents<I extends Serializable, E extends IIdEntity>
     List<E> afterFindAll(List<E> list);
 
     /**
-     * After find by id t.
+     * After find by id e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E afterFindById(E object);
 
     /**
-     * After create t.
+     * After create e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E afterCreate(E object);
 }

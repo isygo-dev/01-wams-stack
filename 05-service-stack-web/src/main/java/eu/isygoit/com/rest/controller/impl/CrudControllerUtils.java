@@ -10,12 +10,13 @@ import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.MapperNotDefinedException;
 import eu.isygoit.exception.ServiceNotDefinedException;
 import eu.isygoit.mapper.EntityMapper;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.util.Optional;
 
 /**
  * The type Crud controller utils.
@@ -27,7 +28,7 @@ import java.lang.reflect.ParameterizedType;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerUtils<I extends Serializable, E extends IIdEntity,
+public abstract class CrudControllerUtils<I extends Serializable, E extends AssignableId,
         M extends IIdentifiableDto,
         F extends M,
         S extends ICrudServiceUtils<I, E>>
@@ -43,91 +44,138 @@ public abstract class CrudControllerUtils<I extends Serializable, E extends IIdE
      */
     public static final String CONTROLLER_SERVICE = "controller service";
     @Getter
-    private final Class<E> persistentClass = (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<E> persistentClass = Optional.ofNullable(getClass().getGenericSuperclass())
+            .filter(type -> type instanceof ParameterizedType)
+            .map(type -> (ParameterizedType) type)
+            .map(paramType -> paramType.getActualTypeArguments())
+            .filter(args -> args.length > 1)
+            .map(args -> args[1])
+            .filter(Class.class::isInstance)
+            .map(clazz -> (Class<E>) clazz)
+            .orElseThrow(() -> new IllegalStateException("Could not determine persistent class"));
+
     @Getter
-    private final Class<M> minDtoClass = (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+    private final Class<M> minDtoClass = Optional.ofNullable(getClass().getGenericSuperclass())
+            .filter(type -> type instanceof ParameterizedType)
+            .map(type -> (ParameterizedType) type)
+            .map(paramType -> paramType.getActualTypeArguments())
+            .filter(args -> args.length > 1)
+            .map(args -> args[2])
+            .filter(Class.class::isInstance)
+            .map(clazz -> (Class<M>) clazz)
+            .orElseThrow(() -> new IllegalStateException("Could not determine min DTO class"));
+
     @Getter
-    private final Class<F> fullDtoClass = (Class<F>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[3];
+    private final Class<F> fullDtoClass = Optional.ofNullable(getClass().getGenericSuperclass())
+            .filter(type -> type instanceof ParameterizedType)
+            .map(type -> (ParameterizedType) type)
+            .map(paramType -> paramType.getActualTypeArguments())
+            .filter(args -> args.length > 1)
+            .map(args -> args[3])
+            .filter(Class.class::isInstance)
+            .map(clazz -> (Class<F>) clazz)
+            .orElseThrow(() -> new IllegalStateException("Could not determine full DTO class"));
+
     private EntityMapper<E, F> fullEntityMapper;
     private EntityMapper<E, M> minEntityMapper;
     private S crudService;
 
     @Override
-    public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
+    public final S getCrudService() throws BeanNotFoundException, ServiceNotDefinedException {
         if (this.crudService == null) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
-                this.crudService = (S) getApplicationContextService().getBean(ctrlDef.service());
-                if (this.crudService == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.service().getSimpleName());
-                    throw new BeanNotFoundException(CONTROLLER_SERVICE);
-                }
-            } else {
-                CtrlService ctrlService = this.getClass().getAnnotation(CtrlService.class);
-                if (ctrlService != null) {
-                    this.crudService = (S) getApplicationContextService().getBean(ctrlService.value());
-                    if (this.crudService == null) {
-                        log.error(ERROR_BEAN_NOT_FOUND, ctrlService.value().getSimpleName());
-                        throw new BeanNotFoundException(CONTROLLER_SERVICE);
-                    }
-                }
-                log.error("<Error>: Service bean not defined");
-                throw new ServiceNotDefinedException(CONTROLLER_SERVICE);
-            }
+            getCrudService(this.getClass().getAnnotation(CtrlDef.class));
         }
 
         return this.crudService;
     }
 
+    private void getCrudService(CtrlDef ctrlDef) {
+        Optional.ofNullable(ctrlDef)
+                .map(CtrlDef::service)
+                .map(serviceType -> getContextService().getBean(serviceType))
+                .ifPresentOrElse(
+                        bean -> this.crudService = (S) bean,
+                        () -> getCrudService(this.getClass().getAnnotation(CtrlService.class))
+                );
+    }
+
+    private void getCrudService(CtrlService ctrlService) {
+        Optional.ofNullable(ctrlService)
+                .map(CtrlService::value)
+                .map(serviceType -> getContextService().getBean(serviceType))
+                .ifPresentOrElse(
+                        bean -> this.crudService = (S) bean,
+                        () -> {
+                            log.error(ERROR_BEAN_NOT_FOUND, ctrlService == null ? "Unknown" : ctrlService.value().getSimpleName());
+                            throw new ServiceNotDefinedException(CONTROLLER_SERVICE);
+                        }
+                );
+    }
+
+
     @Override
-    public final EntityMapper<E, F> mapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<E, F> getMapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.fullEntityMapper == null) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlDef.mapper());
-                if (this.fullEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.mapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlDef.mapper().getSimpleName());
-                }
-            } else {
-                CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlMapper.mapper());
-                if (this.fullEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.mapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlMapper.mapper().getSimpleName());
-                } else {
-                    log.error("<Error>: FullDto Mapper bean not defined");
-                    throw new MapperNotDefinedException("Mapper");
-                }
-            }
+            getMapper(this.getClass().getAnnotation(CtrlDef.class));
         }
 
         return this.fullEntityMapper;
     }
 
+    private void getMapper(CtrlDef ctrlDef) {
+        Optional.ofNullable(ctrlDef)
+                .map(CtrlDef::mapper)
+                .map(mapperType -> getContextService().getBean(mapperType))
+                .ifPresentOrElse(
+                        bean -> this.fullEntityMapper = (EntityMapper<E, F>) bean,
+                        () -> getMapper(this.getClass().getAnnotation(CtrlMapper.class))
+                );
+    }
+
+    private void getMapper(CtrlMapper ctrlMapper) {
+        Optional.ofNullable(ctrlMapper)
+                .map(CtrlMapper::mapper)
+                .map(mapperType -> getContextService().getBean(mapperType))
+                .ifPresentOrElse(
+                        bean -> this.fullEntityMapper = (EntityMapper<E, F>) bean,
+                        () -> {
+                            log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper == null ? "Unknown" : ctrlMapper.mapper().getSimpleName());
+                            throw new MapperNotDefinedException("Mapper");
+                        }
+                );
+    }
+
+
     @Override
-    public final EntityMapper<E, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<E, M> getMinDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.minEntityMapper == null) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlDef.minMapper());
-                if (this.minEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.minMapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlDef.minMapper().getSimpleName());
-                }
-            } else {
-                CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlMapper.minMapper());
-                if (this.minEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.minMapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlMapper.minMapper().getSimpleName());
-                } else {
-                    log.error("<Error>: MinDto Mapper bean not defined");
-                    throw new MapperNotDefinedException("MinDto Mapper");
-                }
-            }
+            getMinDtoMapper(this.getClass().getAnnotation(CtrlDef.class));
         }
 
         return this.minEntityMapper;
     }
+
+    private void getMinDtoMapper(CtrlDef ctrlDef) {
+        Optional.ofNullable(ctrlDef)
+                .map(CtrlDef::minMapper)
+                .map(mapperType -> getContextService().getBean(mapperType))
+                .ifPresentOrElse(
+                        bean -> this.minEntityMapper = (EntityMapper<E, M>) bean,
+                        () -> getMinDtoMapper(this.getClass().getAnnotation(CtrlMapper.class))
+                );
+    }
+
+    private void getMinDtoMapper(CtrlMapper ctrlMapper) {
+        Optional.ofNullable(ctrlMapper)
+                .map(CtrlMapper::minMapper)
+                .map(mapperType -> getContextService().getBean(mapperType))
+                .ifPresentOrElse(
+                        bean -> this.minEntityMapper = (EntityMapper<E, M>) bean,
+                        () -> {
+                            log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper == null ? "Unknown" : ctrlMapper.minMapper().getSimpleName());
+                            throw new MapperNotDefinedException("MinDto Mapper");
+                        }
+                );
+    }
+
 }

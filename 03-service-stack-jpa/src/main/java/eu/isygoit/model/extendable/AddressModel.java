@@ -1,6 +1,6 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaFkConstantName;
 import eu.isygoit.model.schema.ComSchemaTableConstantName;
@@ -23,7 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AddressModel<I extends Serializable> extends AuditableEntity<I> {
+public abstract class AddressModel<I extends Serializable> extends Auditable<I> {
 
 
     @ElementCollection

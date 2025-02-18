@@ -13,9 +13,9 @@ import java.util.List;
 public interface IApiExtractor<T extends ApiPermissionModel> {
 
     /**
-     * New instance e.
+     * New instance t.
      *
-     * @return the e
+     * @return the t
      */
     T newInstance();
 

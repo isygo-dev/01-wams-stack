@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.com.rest.api.IDmsLinkedFileService;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,5 +19,5 @@ public @interface DmsLinkFileService {
      *
      * @return the class
      */
-    Class<? extends ILinkedFileApi> value();
+    Class<? extends IDmsLinkedFileService> value();
 }

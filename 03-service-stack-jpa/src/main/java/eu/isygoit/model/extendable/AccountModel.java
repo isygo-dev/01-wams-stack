@@ -3,9 +3,9 @@ package eu.isygoit.model.extendable;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.enums.IEnumAccountSystemStatus;
 import eu.isygoit.enums.IEnumBinaryStatus;
-import eu.isygoit.model.IAssignableCode;
-import eu.isygoit.model.ISAASEntity;
-import eu.isygoit.model.jakarta.AuditableCancelableEntity;
+import eu.isygoit.model.AssignableCode;
+import eu.isygoit.model.AssignableDomain;
+import eu.isygoit.model.jakarta.AuditableCancelable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -32,7 +32,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AccountModel<I extends Serializable> extends AuditableCancelableEntity<I> implements ISAASEntity, IAssignableCode {
+public abstract class AccountModel<I extends Serializable> extends AuditableCancelable<I> implements AssignableDomain, AssignableCode {
 
     //@Convert(converter = LowerCaseConverter.class)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)

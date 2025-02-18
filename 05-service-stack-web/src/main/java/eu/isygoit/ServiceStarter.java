@@ -2,6 +2,7 @@ package eu.isygoit;
 
 import eu.isygoit.api.IApiExtractor;
 import eu.isygoit.app.ApplicationContextService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -21,8 +22,10 @@ public class ServiceStarter {
      */
     public static final String ERROR_EXTRACT_API_FAILS = "<Error>: Extract api fails {}";
 
+    @Getter
     @Autowired
-    private ApplicationContextService applicationContextService;
+    private ApplicationContextService contextService;
+
     @Autowired
     private IApiExtractor apiExtractor;
 
@@ -32,7 +35,7 @@ public class ServiceStarter {
     @EventListener(ApplicationReadyEvent.class)
     public final void extractApis() {
         //Extract controller apis to build permission list
-        applicationContextService.getBeansWithAnnotation(RestController.class).values().forEach(ctrl -> {
+        getContextService().getBeansWithAnnotation(RestController.class).values().forEach(ctrl -> {
             try {
                 if (apiExtractor != null) {
                     apiExtractor.extractApis(ctrl.getClass());

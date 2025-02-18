@@ -2,10 +2,10 @@ package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.enums.IEnumBinaryStatus;
-import eu.isygoit.model.IAssignableCode;
-import eu.isygoit.model.IImageEntity;
-import eu.isygoit.model.ISAASEntity;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.AssignableCode;
+import eu.isygoit.model.AssignableDomain;
+import eu.isygoit.model.AssignableImage;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -31,7 +31,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class CustomerModel<I extends Serializable> extends AuditableEntity<I> implements ISAASEntity, IAssignableCode, IImageEntity {
+public abstract class CustomerModel<I extends Serializable> extends Auditable<I> implements AssignableDomain, AssignableCode, AssignableImage {
 
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")

@@ -1,7 +1,7 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.Auditable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -27,7 +27,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class LicenceModel<I extends Serializable> extends AuditableEntity<I> {
+public abstract class LicenceModel<I extends Serializable> extends Auditable<I> {
 
     @Column(name = ComSchemaColumnConstantName.C_PROVIDER)
     private String provider;

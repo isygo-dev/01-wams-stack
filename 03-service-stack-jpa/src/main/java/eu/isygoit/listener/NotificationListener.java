@@ -1,6 +1,6 @@
 package eu.isygoit.listener;
 
-import eu.isygoit.model.INotifiableEntity;
+import eu.isygoit.model.Notifiable;
 import eu.isygoit.service.INotificationListenerService;
 import jakarta.persistence.*;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PostLoad
-    void onPostLoad(INotifiableEntity entity) {
+    void onPostLoad(Notifiable entity) {
     }
 
     /**
@@ -38,7 +38,7 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PostPersist
-    void onPostPersist(INotifiableEntity entity) {
+    void onPostPersist(Notifiable entity) {
         if (notificationService != null) {
             notificationService.performPostPersistNotification(entity);
         }
@@ -50,7 +50,7 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PostRemove
-    void onPostRemove(INotifiableEntity entity) {
+    void onPostRemove(Notifiable entity) {
         if (notificationService != null) {
             notificationService.performPostRemoveNotification(entity);
         }
@@ -62,7 +62,7 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PostUpdate
-    void onPostUpdate(INotifiableEntity entity) {
+    void onPostUpdate(Notifiable entity) {
         if (notificationService != null) {
             notificationService.performPostUpdateNotification(entity);
         }
@@ -74,7 +74,7 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PrePersist
-    void onPrePersist(INotifiableEntity entity) {
+    void onPrePersist(Notifiable entity) {
     }
 
     /**
@@ -83,7 +83,7 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PreRemove
-    void onPreRemove(INotifiableEntity entity) {
+    void onPreRemove(Notifiable entity) {
     }
 
     /**
@@ -92,6 +92,6 @@ public class NotificationListener {
      * @param entity the entity
      */
     @PreUpdate
-    void onPreUpdate(INotifiableEntity entity) {
+    void onPreUpdate(Notifiable entity) {
     }
 }

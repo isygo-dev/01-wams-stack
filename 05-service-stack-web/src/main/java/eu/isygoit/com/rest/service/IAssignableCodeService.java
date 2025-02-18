@@ -2,51 +2,70 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableCode;
+import eu.isygoit.model.AssignableId;
 import eu.isygoit.model.extendable.NextCodeModel;
-import eu.isygoit.service.IRemoteNextCodeService;
-import eu.isygoit.service.nextCode.INextCodeService;
+import eu.isygoit.service.IKmsCodeService;
+import eu.isygoit.service.nextCode.ILocalCodeService;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * The interface Codifiable service.
+ * The interface Assignable code service.
  *
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IAssignableCodeService<I extends Serializable, E extends IIdEntity>
+public interface IAssignableCodeService<I extends Serializable, E extends AssignableId & AssignableCode>
         extends ICrudServiceMethod<I, E> {
 
     /**
-     * Init code generator next code model.
+     * Find by code optional.
      *
-     * @return the next code model
+     * @param code the code
+     * @return the optional
      */
-    NextCodeModel initCodeGenerator();
+    Optional<E> findByCode(String code);
+
+    /**
+     * Find by code list.
+     *
+     * @param codeList the code list
+     * @return the list
+     */
+    List<E> findByCode(List<String> codeList);
+
+    /**
+     * Create code generator optional.
+     *
+     * @return the optional
+     */
+    Optional<NextCodeModel> createCodeGenerator();
 
     /**
      * Gets next code.
      *
      * @return the next code
      */
-    String getNextCode();
+    Optional<String> getNextCode();
 
     /**
-     * Next code service next code service.
+     * Gets local code service.
      *
-     * @return the next code service
+     * @return the local code service
      * @throws NextCodeServiceNotDefinedException the next code service not defined exception
      */
-    INextCodeService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException;
+    ILocalCodeService<NextCodeModel> getLocalCodeService() throws NextCodeServiceNotDefinedException;
 
     /**
-     * Remote next code service remote next code service.
+     * Gets kms code service.
      *
-     * @return the remote next code service
+     * @return the kms code service
      * @throws RemoteNextCodeServiceNotDefinedException the remote next code service not defined exception
      */
-    IRemoteNextCodeService remoteNextCodeService() throws RemoteNextCodeServiceNotDefinedException;
+    IKmsCodeService getKmsCodeService() throws RemoteNextCodeServiceNotDefinedException;
 
     /**
      * Gets next code key.

@@ -1,7 +1,7 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.enums.IEnumBinaryStatus;
-import eu.isygoit.model.jakarta.AuditableCancelableEntity;
+import eu.isygoit.model.jakarta.AuditableCancelable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -27,7 +27,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class DomainModel<I extends Serializable> extends AuditableCancelableEntity<I> {
+public abstract class DomainModel<I extends Serializable> extends AuditableCancelable<I> {
 
     @Column(name = ComSchemaColumnConstantName.C_NAME, length = ComSchemaConstantSize.S_NAME, updatable = false)
     private String name;

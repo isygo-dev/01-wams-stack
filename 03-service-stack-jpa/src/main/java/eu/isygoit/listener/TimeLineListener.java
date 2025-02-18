@@ -1,6 +1,6 @@
 package eu.isygoit.listener;
 
-import eu.isygoit.model.ITLEntity;
+import eu.isygoit.model.Trackable;
 import eu.isygoit.service.ITimeLineListenerService;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
@@ -35,8 +35,8 @@ public class TimeLineListener {
      */
     @PostPersist
     void onPostPersist(Object entity) {
-        if (entity instanceof ITLEntity itlEntity) {
-            timeLineListenerService.performPostPersistTL(itlEntity);
+        if (entity instanceof Trackable trackableEntity) {
+            timeLineListenerService.performPostPersistTL(trackableEntity);
         }
     }
 
@@ -47,8 +47,8 @@ public class TimeLineListener {
      */
     @PostRemove
     void onPostRemove(Object entity) {
-        if (entity instanceof ITLEntity itlEntity) {
-            timeLineListenerService.performPostRemoveTL(itlEntity);
+        if (entity instanceof Trackable trackableEntity) {
+            timeLineListenerService.performPostRemoveTL(trackableEntity);
         }
     }
 
@@ -59,8 +59,8 @@ public class TimeLineListener {
      */
     @PostUpdate
     void onPostUpdate(Object entity) {
-        if (entity instanceof ITLEntity itlEntity) {
-            timeLineListenerService.performPostUpdateTL(itlEntity);
+        if (entity instanceof Trackable trackableEntity) {
+            timeLineListenerService.performPostUpdateTL(trackableEntity);
         }
     }
 }

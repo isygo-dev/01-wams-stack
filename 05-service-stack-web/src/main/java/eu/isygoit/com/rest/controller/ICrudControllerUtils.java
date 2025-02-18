@@ -6,7 +6,7 @@ import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.MapperNotDefinedException;
 import eu.isygoit.exception.ServiceNotDefinedException;
 import eu.isygoit.mapper.EntityMapper;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 
 import java.io.Serializable;
 
@@ -19,35 +19,35 @@ import java.io.Serializable;
  * @param <F> the type parameter
  * @param <S> the type parameter
  */
-public interface ICrudControllerUtils<I extends Serializable, E extends IIdEntity,
+public interface ICrudControllerUtils<I extends Serializable, E extends AssignableId,
         M extends IIdentifiableDto,
         F extends M,
         S extends ICrudServiceUtils<I, E>> {
 
     /**
-     * Mapper entity mapper.
+     * Gets mapper.
      *
-     * @return the entity mapper
+     * @return the mapper
      * @throws BeanNotFoundException     the bean not found exception
      * @throws MapperNotDefinedException the mapper not defined exception
      */
-    EntityMapper<E, F> mapper() throws BeanNotFoundException, MapperNotDefinedException;
+    EntityMapper<E, F> getMapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
-     * Min dto mapper entity mapper.
+     * Gets min dto mapper.
      *
-     * @return the entity mapper
+     * @return the min dto mapper
      * @throws BeanNotFoundException     the bean not found exception
      * @throws MapperNotDefinedException the mapper not defined exception
      */
-    EntityMapper<E, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
+    EntityMapper<E, M> getMinDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
-     * Crud service s.
+     * Gets crud service.
      *
-     * @return the s
+     * @return the crud service
      * @throws BeanNotFoundException      the bean not found exception
      * @throws ServiceNotDefinedException the service not defined exception
      */
-    S crudService() throws BeanNotFoundException, ServiceNotDefinedException;
+    S getCrudService() throws BeanNotFoundException, ServiceNotDefinedException;
 }

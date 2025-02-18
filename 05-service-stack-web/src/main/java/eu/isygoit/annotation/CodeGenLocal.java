@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.service.nextCode.INextCodeService;
+import eu.isygoit.service.nextCode.ILocalCodeService;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,5 +19,5 @@ public @interface CodeGenLocal {
      *
      * @return the class
      */
-    Class<? extends INextCodeService> value();
+    Class<? extends ILocalCodeService> value();
 }

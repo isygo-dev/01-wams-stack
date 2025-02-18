@@ -5,12 +5,13 @@ import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The type Criteria helper.
@@ -68,14 +69,12 @@ public class CriteriaHelper {
      * @return the criteria data
      */
     public static Map<String, String> getCriteriaData(Class<?> classType) {
-        Map<String, String> criteriaMap = new HashMap<>();
-        Arrays.stream(classType.getDeclaredFields()).forEach(field -> {
-            Criteria criteria = field.getAnnotation(Criteria.class);
-            if (criteria != null) {
-                criteriaMap.put(field.getName(), field.getType().getSimpleName());
-            }
-        });
-        return criteriaMap;
+        return Arrays.stream(classType.getDeclaredFields())
+                .map(field -> Optional.ofNullable(field.getAnnotation(Criteria.class))
+                        .map(criteria -> Map.entry(field.getName(), field.getType().getSimpleName()))
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
@@ -87,7 +86,7 @@ public class CriteriaHelper {
      * @param classType the class type
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
+    public static <E extends AssignableId> Specification<E> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
         Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(classType);
         Specification<E> specification = Specification.where(null);
         for (QueryCriteria cr : criteria) {
@@ -152,7 +151,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> like(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> like(String valueName, String value) {
         return (entity, cq, cb) -> cb.like(entity.get(valueName), "%" + value + "%");
     }
 
@@ -164,7 +163,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> notLike(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> notLike(String valueName, String value) {
         return (entity, cq, cb) -> cb.notLike(entity.get(valueName), "%" + value + "%");
     }
 
@@ -176,7 +175,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> equal(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> equal(String valueName, String value) {
         return (entity, cq, cb) -> cb.equal(entity.get(valueName), value);
     }
 
@@ -188,7 +187,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> notEqual(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> notEqual(String valueName, String value) {
         return (entity, cq, cb) -> cb.notEqual(entity.get(valueName), value);
     }
 
@@ -200,7 +199,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> lessThan(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> lessThan(String valueName, String value) {
         return (entity, cq, cb) -> cb.lessThan(entity.get(valueName), value);
     }
 
@@ -212,7 +211,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> lessThanOrEqualTo(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> lessThanOrEqualTo(String valueName, String value) {
         return (entity, cq, cb) -> cb.lessThanOrEqualTo(entity.get(valueName), value);
     }
 
@@ -224,7 +223,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> greaterThan(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> greaterThan(String valueName, String value) {
         return (entity, cq, cb) -> cb.greaterThan(entity.get(valueName), value);
     }
 
@@ -236,7 +235,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <E extends IIdEntity> Specification<E> greaterThanOrEqualTo(String valueName, String value) {
+    public static <E extends AssignableId> Specification<E> greaterThanOrEqualTo(String valueName, String value) {
         return (entity, cq, cb) -> cb.greaterThanOrEqualTo(entity.get(valueName), value);
     }
 }

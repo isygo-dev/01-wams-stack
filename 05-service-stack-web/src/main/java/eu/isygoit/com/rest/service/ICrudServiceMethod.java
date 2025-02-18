@@ -2,13 +2,14 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.filter.QueryCriteria;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.AssignableId;
 import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The interface Crud service method.
@@ -16,7 +17,7 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface ICrudServiceMethod<I extends Serializable, E extends IIdEntity>
+public interface ICrudServiceMethod<I extends Serializable, E extends AssignableId>
         extends ICrudServiceEvents<I, E>,
         ICrudServiceUtils<I, E> {
 
@@ -44,18 +45,18 @@ public interface ICrudServiceMethod<I extends Serializable, E extends IIdEntity>
     boolean existsById(I id);
 
     /**
-     * Create t.
+     * Create e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E create(E object);
 
     /**
-     * Create and flush t.
+     * Create and flush e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E createAndFlush(E object);
 
@@ -132,19 +133,19 @@ public interface ICrudServiceMethod<I extends Serializable, E extends IIdEntity>
     List<E> findAll(String domain, Pageable pageable) throws NotSupportedException;
 
     /**
-     * Find by id t.
+     * Find by id optional.
      *
      * @param id the id
-     * @return the t
+     * @return the optional
      * @throws ObjectNotFoundException the object not found exception
      */
-    E findById(I id) throws ObjectNotFoundException;
+    Optional<E> findById(I id) throws ObjectNotFoundException;
 
     /**
-     * Save or update t.
+     * Save or update e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E saveOrUpdate(E object);
 
@@ -157,18 +158,18 @@ public interface ICrudServiceMethod<I extends Serializable, E extends IIdEntity>
     List<E> saveOrUpdate(List<E> objects);
 
     /**
-     * Update t.
+     * Update e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E update(E object);
 
     /**
-     * Update and flush t.
+     * Update and flush e.
      *
      * @param object the object
-     * @return the t
+     * @return the e
      */
     E updateAndFlush(E object);
 
