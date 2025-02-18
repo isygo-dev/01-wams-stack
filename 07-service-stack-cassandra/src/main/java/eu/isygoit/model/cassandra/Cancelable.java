@@ -15,7 +15,7 @@ import java.util.Date;
 /**
  * The type Cancelable entity.
  *
- * @param <E> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @SuperBuilder
