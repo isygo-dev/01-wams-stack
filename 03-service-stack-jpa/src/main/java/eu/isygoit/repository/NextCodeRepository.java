@@ -15,12 +15,12 @@ import java.util.Optional;
  * The interface Next code repository.
  *
  * @param <I> the type parameter
- * @param <E> the type parameter
+ * @param <C> the type parameter
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface NextCodeRepository<I extends Serializable, E extends NextCodeModel & ISAASEntity>
-        extends JpaPagingAndSortingSAASRepository<I, E> {
+public interface NextCodeRepository<I extends Serializable, C extends NextCodeModel & ISAASEntity>
+        extends JpaPagingAndSortingSAASRepository<I, C> {
 
     /**
      * Find by entity optional.
@@ -28,7 +28,7 @@ public interface NextCodeRepository<I extends Serializable, E extends NextCodeMo
      * @param entity the entity
      * @return the optional
      */
-    Optional<E> findByEntity(String entity);
+    Optional<C> findByEntity(String entity);
 
     /**
      * Find by domain ignore case and entity and attribute optional.
@@ -38,7 +38,7 @@ public interface NextCodeRepository<I extends Serializable, E extends NextCodeMo
      * @param attribute the attribute
      * @return the optional
      */
-    Optional<E> findByDomainIgnoreCaseAndEntityAndAttribute(String domain, String entity, String attribute);
+    Optional<C> findByDomainIgnoreCaseAndEntityAndAttribute(String domain, String entity, String attribute);
 
     /**
      * Increment.

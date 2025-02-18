@@ -48,7 +48,7 @@ public class DatabaseHelper {
         }
     }
 
-    private static synchronized void processCommand(String databasePassword, List<String> commands) throws IOException, InterruptedException {
+    public static synchronized void processCommand(String databasePassword, List<String> commands) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(commands);
         pb.environment().put("PGPASSWORD", databasePassword);
 

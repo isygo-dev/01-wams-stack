@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TimeLineListener {
 
-    private static ITimeLineListenerService timeLineListenerService;
+    public static ITimeLineListenerService timeLineListenerService;
 
     /**
      * Init.

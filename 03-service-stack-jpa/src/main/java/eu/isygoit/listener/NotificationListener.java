@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationListener {
 
-    private static INotificationListenerService notificationService;
+    public static INotificationListenerService notificationService;
 
     /**
      * Init.

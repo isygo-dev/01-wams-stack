@@ -21,8 +21,8 @@ public class EncryptorConverter implements AttributeConverter<String, String> {
      Can be used on entity column :
      //@Convert(converter = EncryptorHelper.class)
      */
-    private static final String AES = "AES";
-    private static final String SECRET = "secret-key-12345";
+    public static final String AES = "AES";
+    public static final String SECRET = "secret-key-12345";
 
     private final Key key;
     private final Cipher cipher;
