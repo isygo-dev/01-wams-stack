@@ -36,7 +36,15 @@ public abstract class AbstractCamelProcessor<I extends Serializable, E extends I
 
     //Attention !!! should get the class type of th persist entity
     @Getter
-    private final Class<E> persistentClass = (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<E> persistentClass = Optional.ofNullable(getClass().getGenericSuperclass())
+            .filter(type -> type instanceof ParameterizedType)
+            .map(type -> (ParameterizedType) type)
+            .map(paramType -> paramType.getActualTypeArguments())
+            .filter(args -> args.length > 1)
+            .map(args -> args[1])
+            .filter(Class.class::isInstance)
+            .map(clazz -> (Class<E>) clazz)
+            .orElseThrow(() -> new IllegalStateException("Could not determine persistent class"));
 
     /**
      * Perform the actual processing of the object. Must be implemented by subclasses.

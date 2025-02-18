@@ -6,10 +6,10 @@ import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
 
 /**
- * The type RegExValidationHelper provides utility methods for validating strings
+ * The type RegExHelper provides utility methods for validating strings
  * against regular expressions and other common validation checks, including UUID, Credit Card, ISIN, Email, Phone Numbers, and more.
  */
-public interface RegExValidationHelper {
+public interface RegExHelper {
 
     Logger logger = LoggerFactory.getLogger(SecurityHelper.class);
 
@@ -112,13 +112,22 @@ public interface RegExValidationHelper {
      * @return {@code true} if the email format is valid, otherwise {@code false}
      */
     public static boolean validateEmail(String email) {
-        var emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$"; // Simple regex for email validation
-        boolean isValid = validateString(email, emailPattern);
+        if (email == null || email.isEmpty()) {
+            logger.error("<Error>: Email is null or empty.");
+            return false;
+        }
+
+        // Improved regex for email validation (more robust while remaining simple)
+        String emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+
+        boolean isValid = email.matches(emailPattern);
+
         if (isValid) {
             logger.info("Email is valid: '{}'", email);
         } else {
             logger.error("<Error>: Invalid email format: '{}'", email);
         }
+
         return isValid;
     }
 
@@ -170,8 +179,17 @@ public interface RegExValidationHelper {
      * @return {@code true} if the IPv4 address format is valid, otherwise {@code false}
      */
     public static boolean validateIPv4Address(String ipAddress) {
-        var ipv4Pattern = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
-        boolean isValid = validateString(ipAddress, ipv4Pattern);
+        // Check if there are leading zeros in any octet
+        if (ipAddress.matches(".*\\b0[0-9]+\\b.*")) {
+            logger.error("<Error>: Invalid IPv4 address format (leading zeros detected): '{}'", ipAddress);
+            return false;
+        }
+
+        // Regular expression to validate an IPv4 address
+        String ipv4Pattern = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+
+        boolean isValid = ipAddress != null && ipAddress.matches(ipv4Pattern);
+
         if (isValid) {
             logger.info("IPv4 address is valid: '{}'", ipAddress);
         } else {
@@ -190,8 +208,12 @@ public interface RegExValidationHelper {
      * @return {@code true} if the IPv6 address format is valid, otherwise {@code false}
      */
     public static boolean validateIPv6Address(String ipAddress) {
-        var ipv6Pattern = "([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4})";
-        boolean isValid = validateString(ipAddress, ipv6Pattern);
+        // Regular expression to validate an IPv6 address
+        String ipv6Pattern = "(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|([0-9a-fA-F]{1,4}:){1}(:[0-9a-fA-F]{1,4}){1,6}|::([0-9a-fA-F]{1,4}){0,7})";
+
+        // Check if the IP address matches the pattern
+        boolean isValid = ipAddress != null && ipAddress.matches(ipv6Pattern);
+
         if (isValid) {
             logger.info("IPv6 address is valid: '{}'", ipAddress);
         } else {
@@ -286,15 +308,25 @@ public interface RegExValidationHelper {
      * @return {@code true} if both the ISIN format and checksum are valid, otherwise {@code false}
      */
     public static boolean validateIsin(String isin) {
-        boolean isValidFormat = validateIsinFormat(isin);
-        boolean isValidChecksum = isValidFormat && validateIsinChecksum(isin);
-
-        if (isValidChecksum) {
-            logger.info("ISIN is valid: '{}'", isin);
-        } else {
-            logger.error("<Error>: ISIN is invalid: '{}'", isin);
+        // Check for null ISIN early
+        if (isin == null) {
+            logger.error("<Error>: ISIN is null.");
+            return false;
         }
 
-        return isValidChecksum;
+        // Validate ISIN format
+        if (!validateIsinFormat(isin)) {
+            logger.error("<Error>: Invalid ISIN format: '{}'", isin);
+            return false;
+        }
+
+        // Validate ISIN checksum
+        if (!validateIsinChecksum(isin)) {
+            logger.error("<Error>: ISIN checksum is invalid: '{}'", isin);
+            return false;
+        }
+
+        logger.info("ISIN is valid: '{}'", isin);
+        return true;
     }
 }

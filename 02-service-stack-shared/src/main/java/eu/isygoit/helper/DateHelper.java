@@ -4,10 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -64,7 +63,7 @@ public interface DateHelper {
      * @param defaultIfNull the default value to return if parsing fails
      * @return the parsed Date object or the default value if parsing fails
      */
-    static Date parseDateString(String dateString, Date defaultIfNull) {
+    public static Date parseDateString(String dateString, Date defaultIfNull) {
         logger.debug("Attempting to parse date string: {}", dateString);
 
         if (!StringUtils.hasText(dateString) || "null".equalsIgnoreCase(dateString)) {
@@ -77,8 +76,17 @@ public interface DateHelper {
                 .map(pattern -> {
                     try {
                         logger.debug("Trying to parse with pattern: {}", pattern);
-                        return new SimpleDateFormat(pattern).parse(dateString);
-                    } catch (ParseException e) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                        LocalDate localDate = LocalDate.parse(dateString, formatter);
+
+                        // Manually check if the parsed date matches the input date to prevent auto-correction
+                        if (!dateString.equals(formatter.format(localDate))) {
+                            throw new DateTimeParseException("Invalid date", dateString, 0);
+                        }
+
+                        // Convert LocalDate to java.util.Date
+                        return java.util.Date.from(localDate.atStartOfDay().atZone(java.time.ZoneId.systemDefault()).toInstant());
+                    } catch (DateTimeParseException e) {
                         logger.debug("Failed to parse date with pattern {}: {}", pattern, e.getMessage());
                         return null;
                     }
@@ -99,7 +107,7 @@ public interface DateHelper {
      * @param date the date to convert
      * @return the ISO 8601 formatted date string
      */
-    static String formatDateToIsoString(Date date) {
+    public static String formatDateToIsoString(Date date) {
         logger.debug("Attempting to format date: {}", date);
 
         return Optional.ofNullable(date)
@@ -122,7 +130,7 @@ public interface DateHelper {
      * @param hours the number of hours to check against
      * @return true if the date is within the last specified hours, false otherwise
      */
-    static boolean occurredInLastXHours(Date date, int hours) {
+    public static boolean occurredInLastXHours(Date date, int hours) {
         Objects.requireNonNull(date, "Date must not be null");
 
         Instant threshold = Instant.now().minus(hours, ChronoUnit.HOURS);
@@ -140,7 +148,7 @@ public interface DateHelper {
      * @param date2 the second date
      * @return true if both dates are on the same day, false otherwise
      */
-    static boolean areDatesOnSameDay(Date date1, Date date2) {
+    public static boolean areDatesOnSameDay(Date date1, Date date2) {
         Objects.requireNonNull(date1, "First date must not be null");
         Objects.requireNonNull(date2, "Second date must not be null");
 
@@ -158,7 +166,7 @@ public interface DateHelper {
      * @param date the date to check
      * @return true if the date is today, false otherwise
      */
-    static boolean isToday(Date date) {
+    public static boolean isToday(Date date) {
         boolean isToday = areDatesOnSameDay(date, new Date());
         logger.debug("Checking if date {} is today. Result: {}", date, isToday);
         return isToday;
@@ -172,7 +180,7 @@ public interface DateHelper {
      * @param days the number of days to add (can be negative to subtract)
      * @return the new date with days added/subtracted
      */
-    static Date addDaysToDate(Date date, int days) {
+    public static Date addDaysToDate(Date date, int days) {
         Objects.requireNonNull(date, "Date must not be null");
 
         LocalDate newDate = date.toInstant()
@@ -193,7 +201,7 @@ public interface DateHelper {
      * @param months the number of months to add (can be negative to subtract)
      * @return the new date with months added/subtracted
      */
-    static Date addMonthsToDate(Date date, int months) {
+    public static Date addMonthsToDate(Date date, int months) {
         Objects.requireNonNull(date, "Date must not be null");
 
         LocalDate newDate = date.toInstant()
@@ -213,7 +221,7 @@ public interface DateHelper {
      * @param year the year to check
      * @return true if it's a leap year, false otherwise
      */
-    static boolean isLeapYear(int year) {
+    public static boolean isLeapYear(int year) {
         boolean leapYear = Year.isLeap(year);
         logger.debug("Is the year {} a leap year? {}", year, leapYear);
         return leapYear;
@@ -226,7 +234,7 @@ public interface DateHelper {
      * @param date the date to find the start of the week
      * @return the start of the week (Monday at 00:00:00)
      */
-    static Date getStartOfWeek(Date date) {
+    public static Date getStartOfWeek(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
         LocalDate startOfWeek = date.toInstant()
@@ -246,14 +254,13 @@ public interface DateHelper {
      * @param date the date to find the end of the week
      * @return the end of the week (Sunday at 23:59:59)
      */
-    static Date getEndOfWeek(Date date) {
+    public static Date getEndOfWeek(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
         LocalDate endOfWeek = date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
-                .with(DayOfWeek.SUNDAY)
-                .plusDays(1); // Set to Sunday end of the day
+                .with(DayOfWeek.SUNDAY);
 
         Date result = Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
         logger.debug("End of the week for {} is: {}", date, result);
@@ -267,7 +274,7 @@ public interface DateHelper {
      * @param date the date to convert
      * @return the formatted string
      */
-    static String formatDateToHumanReadable(Date date) {
+    public static String formatDateToHumanReadable(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
         String formatted = DateTimeFormatter.ofPattern("MMMM dd, yyyy")

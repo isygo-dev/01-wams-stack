@@ -25,7 +25,7 @@ public interface MapHelper {
      * @param delim the delimiter to split the data (e.g., "," or ";")
      * @return a Map containing the parsed key-value pairs
      */
-    static Map<String, String> convertStringToMap(String data, String delim) {
+    public static Map<String, String> convertStringToMap(String data, String delim) {
         if (data == null || data.isEmpty()) {
             logger.warn("Input data is null or empty.");
             return new HashMap<>();
@@ -45,7 +45,7 @@ public interface MapHelper {
      * @param data the array containing key-value pairs as strings
      * @return a Map containing the parsed key-value pairs
      */
-    static Map<String, String> convertStringArrayToMap(String[] data) {
+    public static Map<String, String> convertStringArrayToMap(String[] data) {
         logger.info("Converting an array of size {} to a Map.", data.length);
 
         return Optional.ofNullable(data)
@@ -67,8 +67,8 @@ public interface MapHelper {
      * @param mergeFunction the function to merge conflicting values
      * @return a new map containing merged key-value pairs
      */
-    static Map<String, String> mergeMaps(Map<String, String> map1, Map<String, String> map2,
-                                         BiFunction<String, String, String> mergeFunction) {
+    public static Map<String, String> mergeMaps(Map<String, String> map1, Map<String, String> map2,
+                                                BiFunction<String, String, String> mergeFunction) {
         // Creating a new map to store the result
         Map<String, String> mergedMap = new HashMap<>(map1);
 
@@ -86,7 +86,7 @@ public interface MapHelper {
      * @param condition the condition to filter the values
      * @return a new map containing only the entries that satisfy the condition
      */
-    static Map<String, String> filterMapByValue(Map<String, String> map, Predicate<String> condition) {
+    public static Map<String, String> filterMapByValue(Map<String, String> map, Predicate<String> condition) {
         logger.info("Filtering map by value...");
 
         return map.entrySet().stream()
@@ -101,7 +101,7 @@ public interface MapHelper {
      * @param delim the delimiter to separate key-value pairs
      * @return a string representation of the map
      */
-    static String mapToString(Map<String, String> map, String delim) {
+    public static String mapToString(Map<String, String> map, String delim) {
         logger.info("Converting map to string with delimiter '{}'.", delim);
 
         return map.entrySet().stream()
@@ -115,7 +115,7 @@ public interface MapHelper {
      * @param map the map to invert
      * @return a new map with keys and values swapped
      */
-    static Map<String, String> invertMap(Map<String, String> map) {
+    public static Map<String, String> invertMap(Map<String, String> map) {
         logger.info("Inverting map...");
 
         return map.entrySet().stream()
@@ -128,7 +128,7 @@ public interface MapHelper {
      * @param map the map to convert
      * @return a string containing all key-value pairs in the map
      */
-    static String mapToKeyValueString(Map<String, String> map) {
+    public static String mapToKeyValueString(Map<String, String> map) {
         logger.info("Converting map entries to key-value string representation.");
 
         return map.entrySet().stream()
@@ -144,7 +144,7 @@ public interface MapHelper {
      * @param defaultValue the value to return if the key is not found
      * @return the value associated with the key or the default value
      */
-    static String safeGet(Map<String, String> map, String key, String defaultValue) {
+    public static String safeGet(Map<String, String> map, String key, String defaultValue) {
         logger.info("Retrieving value for key '{}' from map.", key);
 
         return Optional.ofNullable(map.get(key)).orElse(defaultValue);
@@ -157,7 +157,7 @@ public interface MapHelper {
      * @param map2 the second map
      * @return a new map containing entries that exist in map1 but not in map2
      */
-    static Map<String, String> getMapDifference(Map<String, String> map1, Map<String, String> map2) {
+    public static Map<String, String> getMapDifference(Map<String, String> map1, Map<String, String> map2) {
         logger.info("Calculating map difference...");
 
         return map1.entrySet().stream()
@@ -172,7 +172,7 @@ public interface MapHelper {
      * @param maps an array of maps to combine
      * @return a new combined map
      */
-    static Map<String, String> combineMaps(Map<String, String>... maps) {
+    public static Map<String, String> combineMaps(Map<String, String>... maps) {
         logger.info("Combining multiple maps...");
 
         return Arrays.stream(maps)
@@ -188,7 +188,7 @@ public interface MapHelper {
      * @param key the key to check for existence
      * @return true if the key exists, otherwise false
      */
-    static boolean keyExists(Map<String, String> map, String key) {
+    public static boolean keyExists(Map<String, String> map, String key) {
         return map.containsKey(key);
     }
 
@@ -199,7 +199,7 @@ public interface MapHelper {
      * @param value the value to check for existence
      * @return true if the value exists, otherwise false
      */
-    static boolean valueExists(Map<String, String> map, String value) {
+    public static boolean valueExists(Map<String, String> map, String value) {
         return map.containsValue(value);
     }
 
@@ -210,7 +210,7 @@ public interface MapHelper {
      * @param keys the list of keys whose entries should be removed
      * @return a new map with the specified entries removed
      */
-    static Map<String, String> removeEntriesByKey(Map<String, String> map, List<String> keys) {
+    public static Map<String, String> removeEntriesByKey(Map<String, String> map, List<String> keys) {
         logger.info("Removing entries by key...");
 
         return map.entrySet().stream()
@@ -225,7 +225,7 @@ public interface MapHelper {
      * @param map2 the second map
      * @return a new map containing only the entries present in both maps
      */
-    static Map<String, String> getMapIntersection(Map<String, String> map1, Map<String, String> map2) {
+    public static Map<String, String> getMapIntersection(Map<String, String> map1, Map<String, String> map2) {
         logger.info("Calculating map intersection...");
 
         return map1.entrySet().stream()
@@ -241,7 +241,7 @@ public interface MapHelper {
      * @param newValue the new value to assign to the key
      * @return the previous value associated with the key or null if the key did not exist
      */
-    static String replaceValue(Map<String, String> map, String key, String newValue) {
+    public static String replaceValue(Map<String, String> map, String key, String newValue) {
         logger.info("Replacing value for key: {}", key);
 
         return map.replace(key, newValue);
@@ -254,7 +254,7 @@ public interface MapHelper {
      * @param keys the list of keys to retrieve from the map
      * @return a new map containing only the specified entries
      */
-    static Map<String, String> getMapSubSet(Map<String, String> map, List<String> keys) {
+    public static Map<String, String> getMapSubSet(Map<String, String> map, List<String> keys) {
         logger.info("Retrieving map subset...");
 
         return map.entrySet().stream()
@@ -269,7 +269,7 @@ public interface MapHelper {
      * @param prefix the prefix to match for keys
      * @return a new map containing entries whose keys start with the prefix
      */
-    static Map<String, String> getKeysStartingWith(Map<String, String> map, String prefix) {
+    public static Map<String, String> getKeysStartingWith(Map<String, String> map, String prefix) {
         logger.info("Retrieving keys starting with prefix: {}", prefix);
 
         return map.entrySet().stream()
@@ -285,8 +285,8 @@ public interface MapHelper {
      * @param predicate the condition to include entries
      * @return a new map with merged entries satisfying the predicate
      */
-    static Map<String, String> mergeMapsWithPredicate(Map<String, String> map1, Map<String, String> map2,
-                                                      Predicate<Map.Entry<String, String>> predicate) {
+    public static Map<String, String> mergeMapsWithPredicate(Map<String, String> map1, Map<String, String> map2,
+                                                             Predicate<Map.Entry<String, String>> predicate) {
         logger.info("Merging maps with predicate...");
 
         return Stream.concat(map1.entrySet().stream(), map2.entrySet().stream())

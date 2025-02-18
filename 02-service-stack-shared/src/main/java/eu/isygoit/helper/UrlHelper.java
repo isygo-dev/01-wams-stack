@@ -25,7 +25,7 @@ public interface UrlHelper {
 
     Logger logger = LoggerFactory.getLogger(UrlHelper.class);
 
-    static final String[][] SPECIAL_CHARACTERS = {
+    public static final String[][] SPECIAL_CHARACTERS = {
             {" ", "#", "$", "%", "&", "@", "`", "/", ":", ";", "<", "=", ">", "?", "[", "\\", "]", "^", "{", "|", "}", "~", "“", "‘", "+", ","},
             {"20%", "24%", "26%", "60%", "%3A", "%3C", "%3E", "%5B", "%5D", "%7B", "%7D", "22%", "%2B", "23%", "25%", "40%", "%2F", "%3B", "%3D", "%3F", "%5C", "%5E", "%7C", "%7E", "27%", "%2C"}
     };
@@ -129,7 +129,7 @@ public interface UrlHelper {
      * @param paramValue  The value of the parameter.
      * @return The updated query string.
      */
-    private static String updateQueryString(String queryString, String paramName, String paramValue) {
+    public static String updateQueryString(String queryString, String paramName, String paramValue) {
         if (queryString.isEmpty()) {
             return paramName + "=" + paramValue;  // No existing parameters, just add the new one.
         }

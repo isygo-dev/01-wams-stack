@@ -22,9 +22,9 @@ public interface SecurityHelper {
 
     Logger logger = LoggerFactory.getLogger(SecurityHelper.class);
 
-    static final String AES_ALGORITHM = "AES";
-    static final String AES_WRAP_TRANSFORMATION = "AESWrap";
-    static final String AES_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
+    public static final String AES_ALGORITHM = "AES";
+    public static final String AES_WRAP_TRANSFORMATION = "AESWrap";
+    public static final String AES_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
 
     /**
      * Generates an ECPrivateKey from a hexadecimal string.

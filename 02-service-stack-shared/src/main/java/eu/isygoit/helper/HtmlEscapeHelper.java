@@ -102,7 +102,7 @@ public interface HtmlEscapeHelper {
      * @param encodingMap The map that associates characters with their HTML entities.
      * @return The encoded string with HTML entities.
      */
-    private static String escapeHtmlSpecialChars(String inputString, Map<Character, String> encodingMap) {
+    public static String escapeHtmlSpecialChars(String inputString, Map<Character, String> encodingMap) {
         if (inputString == null || encodingMap == null || encodingMap.isEmpty()) {
             logger.warn("The input string or encoding map is null or empty. Returning the original string.");
             return inputString; // Return original string if input is invalid.
@@ -137,7 +137,7 @@ public interface HtmlEscapeHelper {
      * @param inputString The input string to encode.
      * @return The HTML-encoded string or the original string if no encoding is necessary.
      */
-    static String encodeHtml(String inputString) {
+    public static String encodeHtml(String inputString) {
         logger.info("Encoding HTML for the input string.");
         return escapeHtmlSpecialChars(inputString, HTML_CHAR_TO_ENTITY_MAP);
     }

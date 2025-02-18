@@ -9,7 +9,7 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("expired.password.exception")
 public class ExpiredPasswordException extends ManagedException {
 
-    private static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 1L;
 
     /**
      * Instantiates a new Expired password exception.

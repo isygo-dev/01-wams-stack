@@ -20,7 +20,7 @@ public interface IEnumWSEndpoint {
      * @param destination the destination
      * @return the end point
      */
-    static IEnumWSEndpoint.Types getEndPoint(String destination) {
+    public static IEnumWSEndpoint.Types getEndPoint(String destination) {
         return Arrays.stream(Types.values())
                 .filter(type -> StringUtils.containsIgnoreCase(destination, "/" + type.name().toLowerCase()))
                 .findFirst()

@@ -24,10 +24,10 @@ public interface JsonHelper {
 
     Logger logger = LoggerFactory.getLogger(JsonHelper.class);
 
-    static final ObjectMapper mapper = new ObjectMapper();
-    static final XmlMapper xmlMapper = new XmlMapper();
-    static final YAMLMapper yamlMapper = new YAMLMapper();
-    static final CsvMapper csvMapper = new CsvMapper();
+    public static final ObjectMapper mapper = new ObjectMapper();
+    public static final XmlMapper xmlMapper = new XmlMapper();
+    public static final YAMLMapper yamlMapper = new YAMLMapper();
+    public static final CsvMapper csvMapper = new CsvMapper();
 
     // --- Methods for Converting JSON to Other Standard Formats ---
 
@@ -52,32 +52,29 @@ public interface JsonHelper {
      * @throws JsonProcessingException if an error occurs during the conversion
      */
     public static String jsonToCsv(JsonNode jsonNode) throws JsonProcessingException {
-        logger.debug("Converting JsonNode to CSV format");
-
         // Ensure the JSON is an array of objects (records)
         if (!jsonNode.isArray()) {
             throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {
             };
         }
 
-        List<String> headers = new ArrayList<>();
-        List<List<String>> rows = new ArrayList<>();
-
-        // Iterate through JSON nodes (records) to extract headers and rows
-        for (JsonNode node : jsonNode) {
-            List<String> row = new ArrayList<>();
-            node.fieldNames().forEachRemaining(fieldName -> {
-                if (headers.isEmpty()) headers.add(fieldName);
-                row.add(node.path(fieldName).asText());
-            });
-            rows.add(row);
-        }
-
-        // Construct the CSV string with headers and rows
+        // Use a StringBuilder to construct the CSV output
         StringBuilder csvBuilder = new StringBuilder();
+
+        // Extract headers from the first record (if available)
+        Iterator<String> fieldNames = jsonNode.elements().next().fieldNames();
+        List<String> headers = new ArrayList<>();
+        fieldNames.forEachRemaining(headers::add);
+
+        // Append headers to CSV
         csvBuilder.append(String.join(",", headers)).append("\n");
 
-        for (List<String> row : rows) {
+        // Append rows to CSV
+        for (JsonNode node : jsonNode) {
+            List<String> row = new ArrayList<>();
+            for (String field : headers) {
+                row.add(node.path(field).asText());
+            }
             csvBuilder.append(String.join(",", row)).append("\n");
         }
 
@@ -122,7 +119,7 @@ public interface JsonHelper {
      * @param properties the Properties object to populate
      * @param prefix     the key prefix to handle nested nodes
      */
-    private static void convertJsonNodeToProperties(JsonNode jsonNode, Properties properties, String prefix) {
+    public static void convertJsonNodeToProperties(JsonNode jsonNode, Properties properties, String prefix) {
         if (jsonNode.isObject()) {
             jsonNode.fields().forEachRemaining(entry -> {
                 String newPrefix = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();

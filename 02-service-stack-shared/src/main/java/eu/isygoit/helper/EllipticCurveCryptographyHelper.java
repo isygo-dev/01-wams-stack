@@ -18,9 +18,9 @@ public interface EllipticCurveCryptographyHelper {
 
     Logger logger = LoggerFactory.getLogger(EllipticCurveCryptographyHelper.class);
 
-    static final String EC_ALGORITHM = "EC";
-    static final String SIGNATURE_ALGORITHM = "SHA256withECDSA";
-    static final String EC_CURVE = "secp256r1"; // Commonly used ECC curve for security and performance
+    public static final String EC_ALGORITHM = "EC";
+    public static final String SIGNATURE_ALGORITHM = "SHA256withECDSA";
+    public static final String EC_CURVE = "secp256r1"; // Commonly used ECC curve for security and performance
 
     /**
      * Generates a new Elliptic Curve (EC) key pair using the secp256r1 curve.
@@ -32,7 +32,7 @@ public interface EllipticCurveCryptographyHelper {
         return Optional.ofNullable(createKeyPair());
     }
 
-    private static KeyPair createKeyPair() {
+    public static KeyPair createKeyPair() {
         try {
             var keyPairGenerator = KeyPairGenerator.getInstance(EC_ALGORITHM);
             keyPairGenerator.initialize(new ECGenParameterSpec(EC_CURVE), new SecureRandom());
@@ -57,7 +57,7 @@ public interface EllipticCurveCryptographyHelper {
         return Optional.ofNullable(generateSignature(data, privateKey));
     }
 
-    private static byte[] generateSignature(byte[] data, PrivateKey privateKey) {
+    public static byte[] generateSignature(byte[] data, PrivateKey privateKey) {
         try {
             var signature = Signature.getInstance(SIGNATURE_ALGORITHM);
             signature.initSign(privateKey);

@@ -41,7 +41,7 @@ public abstract class AbstractDto implements IDto {
     @Override
     public boolean isEmpty() {
         for (Field field : this.getClass().getDeclaredFields()) {
-            Object fieldValue = BeanHelper.callGetter(this, field.getName());
+            Object fieldValue = BeanHelper.callGetter(this, field.getName(), true);
             if (fieldValue != null) {
                 if (IIdentifiableDto.class.isAssignableFrom(field.getType())) {
                     if (!((IIdentifiableDto) fieldValue).isEmpty()) {

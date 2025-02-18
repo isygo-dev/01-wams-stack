@@ -18,7 +18,7 @@ import java.util.Optional;
 public class LocaleResolver extends AcceptHeaderLocaleResolver {
 
     // Optimized list creation using List.of(), which creates an immutable list
-    private static final List<Locale> SUPPORTED_LOCALES = List.of(
+    public static final List<Locale> SUPPORTED_LOCALES = List.of(
             new Locale("en"),
             new Locale("de"),
             new Locale("fr")

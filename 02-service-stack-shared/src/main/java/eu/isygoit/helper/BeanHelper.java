@@ -1,6 +1,7 @@
 package eu.isygoit.helper;
 
 import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.exception.BadFieldNameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +25,16 @@ public interface BeanHelper {
      * @param fieldName the field to set the value for.
      * @param value     the value to set.
      */
-    static void callSetter(Object obj, String fieldName, Object value) {
+    public static void callSetter(Object obj, String fieldName, Object value, boolean ignoreIfNotExists) {
         try {
             PropertyDescriptor pd = new PropertyDescriptor(fieldName, obj.getClass());
             pd.getWriteMethod().invoke(obj, value);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
             logger.error("Error calling setter for {}/{}", obj.getClass().getSimpleName(), fieldName, e);
+            if (!ignoreIfNotExists) {
+                throw new BadFieldNameException(e);
+            }
         }
     }
 
@@ -42,13 +46,16 @@ public interface BeanHelper {
      * @param fieldName the field to get the value for.
      * @return the field value.
      */
-    static <E> E callGetter(Object obj, String fieldName) {
+    public static <E> E callGetter(Object obj, String fieldName, boolean ignoreIfNotExists) {
         try {
             PropertyDescriptor pd = new PropertyDescriptor(fieldName, obj.getClass());
             return (E) pd.getReadMethod().invoke(obj);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
             logger.error("Error calling getter for {}/{}", obj.getClass().getSimpleName(), fieldName, e);
+            if (!ignoreIfNotExists) {
+                throw new BadFieldNameException(e);
+            }
         }
         return null;
     }
@@ -61,7 +68,7 @@ public interface BeanHelper {
      * @param destination the destination object.
      * @return the merged destination object.
      */
-    static IIdentifiableDto merge(IIdentifiableDto source, IIdentifiableDto destination) {
+    public static IIdentifiableDto merge(IIdentifiableDto source, IIdentifiableDto destination) {
         if (source == null || destination == null) {
             logger.error("Error: Cannot merge null objects.");
             return destination;
@@ -69,12 +76,12 @@ public interface BeanHelper {
 
         if (destination.getClass().isAssignableFrom(source.getClass()) || source.getClass().isAssignableFrom(destination.getClass())) {
             for (Field field : source.getClass().getDeclaredFields()) {
-                Object fieldValue = callGetter(source, field.getName());
+                Object fieldValue = callGetter(source, field.getName(), true);
                 if (fieldValue != null) {
                     if (Collection.class.isAssignableFrom(field.getType())) {
                         mergeCollectionField(field, fieldValue, destination);
                     } else {
-                        callSetter(destination, field.getName(), fieldValue);
+                        callSetter(destination, field.getName(), fieldValue, true);
                     }
                 }
             }
@@ -91,20 +98,43 @@ public interface BeanHelper {
      * @param fieldValue  the collection value from the source.
      * @param destination the destination object.
      */
-    private static void mergeCollectionField(Field field, Object fieldValue, Object destination) {
-        if (fieldValue instanceof Collection<?>) {
-            Collection<?> sourceCollection = (Collection<?>) fieldValue;
-            Collection<Object> destinationCollection = Optional.ofNullable(callGetter(destination, field.getName()))
-                    .filter(Collection.class::isInstance)
-                    .map(Collection.class::cast)
-                    .orElseGet(() -> instantiateCollection(field));
+    public static void mergeCollectionField(Field field, Object fieldValue, Object destination) {
+        if (!(fieldValue instanceof Collection<?> sourceCollection)) {
+            return;
+        }
 
-            sourceCollection.forEach(destinationCollection::add);
-            callSetter(destination, field.getName(), destinationCollection);
-        } else {
-            logger.warn("Field '{}' in source is not a Collection, skipping merge.", field.getName());
+        Collection<Object> destinationCollection = Optional.ofNullable(callGetter(destination, field.getName(), true))
+                .filter(Collection.class::isInstance)
+                .map(Collection.class::cast)
+                .map(existing -> {
+                    if (isImmutableCollection(existing)) {
+                        return new ArrayList<>(existing); // Create a modifiable copy
+                    }
+                    return existing;
+                })
+                .orElseGet(() -> instantiateCollection(field));
+
+        if (destinationCollection == null) {
+            throw new IllegalStateException("Could not instantiate collection for field: " + field.getName());
+        }
+
+        destinationCollection.addAll(sourceCollection); // Now safe to add elements
+        callSetter(destination, field.getName(), destinationCollection, true);
+    }
+
+    /**
+     * Checks if a collection is immutable.
+     */
+    public static boolean isImmutableCollection(Collection<?> collection) {
+        try {
+            collection.add(null);  // Try modifying it
+            collection.remove(null);
+            return false;
+        } catch (UnsupportedOperationException e) {
+            return true;
         }
     }
+
 
     /**
      * Instantiates a collection (List or Set) based on the field type.
@@ -112,7 +142,7 @@ public interface BeanHelper {
      * @param field the field to instantiate the collection for.
      * @return the instantiated collection.
      */
-    private static Collection<Object> instantiateCollection(Field field) {
+    public static Collection<Object> instantiateCollection(Field field) {
         if (List.class.isAssignableFrom(field.getType())) {
             return new ArrayList<>();
         } else if (Set.class.isAssignableFrom(field.getType())) {
@@ -128,16 +158,16 @@ public interface BeanHelper {
      * @param destination the destination object to copy to.
      * @return the copied destination object.
      */
-    static IIdentifiableDto copyFields(IIdentifiableDto source, IIdentifiableDto destination) {
+    public static IIdentifiableDto copyFields(IIdentifiableDto source, IIdentifiableDto destination) {
         if (source == null || destination == null) {
             logger.error("Error: Cannot copy fields for null objects.");
             return destination;
         }
 
         for (Field field : source.getClass().getDeclaredFields()) {
-            Object fieldValue = callGetter(source, field.getName());
+            Object fieldValue = callGetter(source, field.getName(), true);
             if (fieldValue != null) {
-                callSetter(destination, field.getName(), fieldValue);
+                callSetter(destination, field.getName(), fieldValue, true);
             }
         }
         return destination;
@@ -149,7 +179,7 @@ public interface BeanHelper {
      * @param clazz the class to instantiate.
      * @return the new object instance.
      */
-    static <T> T createInstance(Class<T> clazz) {
+    public static <T> T createInstance(Class<T> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
@@ -165,7 +195,7 @@ public interface BeanHelper {
      * @param <T>        the type of elements in the collection.
      * @return a new collection of the desired type.
      */
-    static <T> Collection<T> convertCollection(Collection<T> collection, Class<? extends Collection> targetType) {
+    public static <T> Collection<T> convertCollection(Collection<T> collection, Class<? extends Collection> targetType) {
         if (collection == null) return Collections.emptyList();
 
         if (targetType.isAssignableFrom(ArrayList.class)) {

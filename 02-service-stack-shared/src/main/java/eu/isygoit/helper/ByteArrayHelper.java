@@ -21,8 +21,8 @@ import java.util.zip.Checksum;
  */
 public interface ByteArrayHelper {
 
-    static final Logger logger = LoggerFactory.getLogger(ByteArrayHelper.class);
-    static final int HEX_MASK = 0xf;
+    public static final Logger logger = LoggerFactory.getLogger(ByteArrayHelper.class);
+    public static final int HEX_MASK = 0xf;
 
     /**
      * Converts a byte array to a hexadecimal string representation.

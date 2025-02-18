@@ -1,18 +1,24 @@
 package eu.isygoit.helper;
 
+import eu.isygoit.exception.EmptyPathException;
+import eu.isygoit.exception.ResourceNotFoundException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -35,13 +41,25 @@ public interface FileHelper {
      *
      * @param directoryPath the directory path
      */
-    public static void createDirectoryIfAbsent(String directoryPath) {
-        File directory = new File(directoryPath);
-        if (!directory.exists()) {
-            directory.mkdirs();
-            logger.info("Directory created: {}", directoryPath);
+    public static void createDirectoryIfAbsent(Path directoryPath) {
+        if (directoryPath == null) {
+            throw new IllegalArgumentException("Invalid directory path: " + directoryPath);
+        }
+
+        File directory = new File(directoryPath.toUri());
+
+        if (directory.exists()) {
+            if (directory.isFile()) {
+                throw new IllegalArgumentException("Cannot create directory, Path points to a file, not a directory: " + directoryPath);
+            } else {
+                logger.debug("Directory already exists: {}", directoryPath);
+            }
         } else {
-            logger.debug("Directory already exists: {}", directoryPath);
+            if (directory.mkdirs()) {
+                logger.info("Directory created: {}", directoryPath);
+            } else {
+                logger.error("Failed to create directory: {}", directoryPath);
+            }
         }
     }
 
@@ -57,7 +75,7 @@ public interface FileHelper {
      * @return the Path of the saved file
      * @throws IOException if an I/O error occurs
      */
-    public static Path saveMultipartFile(String targetDirectory, String fileName, MultipartFile multipartFile, String fileExtension) throws IOException {
+    public static Path saveMultipartFile(Path targetDirectory, String fileName, MultipartFile multipartFile, String fileExtension, OpenOption... options) throws IOException {
         if (multipartFile != null && !multipartFile.isEmpty()) {
             createDirectoryIfAbsent(targetDirectory);
 
@@ -65,8 +83,8 @@ public interface FileHelper {
                     ? fileName + "." + (StringUtils.hasText(fileExtension) ? fileExtension : FilenameUtils.getExtension(multipartFile.getOriginalFilename()))
                     : multipartFile.getOriginalFilename();
 
-            Path filePath = Paths.get(targetDirectory, finalFileName);
-            Files.write(filePath, multipartFile.getBytes());
+            Path filePath = targetDirectory.resolve(finalFileName);
+            Files.write(filePath, multipartFile.getBytes(), options);
 
             logger.info("File saved at: {}", filePath);
             return filePath;
@@ -74,6 +92,27 @@ public interface FileHelper {
             logger.warn("Attempted to save an empty MultipartFile.");
             throw new IllegalArgumentException("Provided file is empty.");
         }
+    }
+
+    static Resource downloadResource(Path filePath, Long version) throws MalformedURLException {
+        if (filePath == null) {
+            logger.error("Empty path");
+            throw new EmptyPathException("Empty path");
+        }
+
+        // Using URI instead of File.toUri for cleaner code
+        URI fileUri = filePath.toUri();
+        Resource fileResource = new UrlResource(fileUri);
+
+        // Use Files API to check for file existence and readability
+        if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
+            String errorMessage = String.format("No resource found for %s:version /%d", filePath, version);
+            logger.error("File resource not found: {}", errorMessage);
+            throw new ResourceNotFoundException(errorMessage);
+        }
+
+        logger.info("File '{}' successfully loaded", filePath);
+        return fileResource;
     }
 
     /**
