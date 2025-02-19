@@ -17,8 +17,8 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingAssignableCodeRepository<I extends Serializable, E extends AssignableCode & AssignableId>
-        extends JpaPagingAndSortingRepository<I, E> {
+public interface JpaPagingAndSortingAssignableCodeRepository<E extends AssignableCode & AssignableId, I extends Serializable>
+        extends JpaPagingAndSortingRepository<E, I> {
 
     /**
      * Exists by code ignore case boolean.

@@ -19,11 +19,12 @@ import java.io.Serializable;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedCrudPersistController<I extends Serializable, E extends AssignableId,
+public abstract class MappedCrudPersistController<E extends AssignableId,
+        I extends Serializable,
         M extends IIdentifiableDto,
         F extends M,
-        S extends ICrudServiceMethod<I, E>>
-        extends CrudControllerSubMethods<I, E, M, F, S>
+        S extends ICrudServiceMethod<E, I>>
+        extends CrudControllerSubMethods<E, I, M, F, S>
         implements IMappedCrudPersistApi<I, F> {
 
     public final ResponseEntity<F> create(F object) {

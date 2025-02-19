@@ -38,8 +38,8 @@ import java.util.*;
 public abstract class CassandraCrudService<I extends Serializable,
         E extends AssignableId,
         R extends CassandraRepository<E, I>>
-        extends CrudServiceUtils<I, E, R>
-        implements ICrudServiceMethod<I, E> {
+        extends CrudServiceUtils<E, I, R>
+        implements ICrudServiceMethod<E, I> {
 
     @Override
     @Transactional(readOnly = true)
@@ -88,8 +88,37 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
+    public E createAndFlush(E object) {
+        log.debug("Creating entity: {}", object);
+        validateObject(object, false);
+        return logAndExecute("Creating entity: {}", () -> afterCreate(getRepository().save(processObject(object))));
+    }
+
+    @Override
+    public List<E> createAndFlush(List<E> objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
+        }
+
+        List<E> createdObjects = new ArrayList<>();
+        for (E object : objects) {
+            log.debug("Creating entity: {}", object);
+            validateObject(object, false);
+            createdObjects.add(this.createAndFlush(object));
+        }
+        return createdObjects;
+    }
+
+    @Override
     @Transactional
     public E update(E object) {
+        log.debug("Updating entity: {}", object);
+        validateObject(object, true);
+        return logAndExecute("Updating entity: {}", () -> afterUpdate(getRepository().save(processObject(object))));
+    }
+
+    @Override
+    public E updateAndFlush(E object) {
         log.debug("Updating entity: {}", object);
         validateObject(object, true);
         return logAndExecute("Updating entity: {}", () -> afterUpdate(getRepository().save(processObject(object))));
@@ -107,6 +136,23 @@ public abstract class CassandraCrudService<I extends Serializable,
             log.debug("Updating entity: {}", object);
             validateObject(object, true);
             updatedObjects.add(this.update(object));
+        }
+
+        return updatedObjects;
+    }
+
+    @Override
+    @Transactional
+    public List<E> updateAndFlush(List<E> objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
+        }
+
+        List<E> updatedObjects = new ArrayList<>();
+        for (E object : objects) {
+            log.debug("Updating entity: {}", object);
+            validateObject(object, true);
+            updatedObjects.add(this.updateAndFlush(object));
         }
 
         return updatedObjects;
@@ -144,6 +190,34 @@ public abstract class CassandraCrudService<I extends Serializable,
                     throw new OperationNotAllowedException("Delete operation not allowed for entity with ID: " + object.getId());
                 }
             });
+        }
+
+        this.beforeDelete(objects);
+        getRepository().deleteAll(objects);
+        this.afterDelete(objects);
+    }
+
+    @Override
+    public void delete(I id) {
+        log.debug("Deleting entity with ID: {}", id);
+        validateObjectId(id);
+        var object = findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Entity not found for deletion: " + id));
+
+        beforeDelete(id);
+
+        if (Cancelable.class.isAssignableFrom(getPersistentClass())) {
+            cancelEntity(object);
+        } else {
+            getRepository().deleteById(id);
+        }
+        afterDelete(id);
+    }
+
+    @Override
+    public void delete(List<E> objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
         this.beforeDelete(objects);
@@ -291,6 +365,16 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     public void afterDelete(I id) {
+    }
+
+    @Override
+    public void afterDelete(List<E> objects) {
+
+    }
+
+    @Override
+    public void beforeDelete(List<E> objects) {
+
     }
 
     private E processObject(E object) {

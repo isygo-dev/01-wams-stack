@@ -20,12 +20,12 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileServiceUtils<I extends Serializable,
-        E extends AssignableMultiFile & AssignableId & AssignableCode,
+public abstract class MultiFileServiceUtils<E extends AssignableMultiFile & AssignableId & AssignableCode,
+        I extends Serializable,
         L extends LinkedFile & AssignableCode & AssignableId,
-        R extends JpaPagingAndSortingRepository<I, E>,
-        RL extends JpaPagingAndSortingRepository<I, L>>
-        extends FileServiceUtils<I, E, R> {
+        R extends JpaPagingAndSortingRepository<E, I>,
+        RL extends JpaPagingAndSortingRepository<L, I>>
+        extends FileServiceUtils<E, I, R> {
 
     private RL linkedFileRepository;
 

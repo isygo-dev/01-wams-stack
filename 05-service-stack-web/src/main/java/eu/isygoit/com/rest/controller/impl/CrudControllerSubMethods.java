@@ -30,9 +30,13 @@ import java.util.Map;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I extends Serializable, E extends AssignableId, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, E>>
-        extends CrudControllerUtils<I, E, M, F, S>
-        implements ICrudControllerSubMethods<I, E, M, F, S> {
+public abstract class CrudControllerSubMethods<E extends AssignableId,
+        I extends Serializable,
+        M extends IIdentifiableDto,
+        F extends M,
+        S extends ICrudServiceMethod<E, I>>
+        extends CrudControllerUtils<E, I, M, F, S>
+        implements ICrudControllerSubMethods<E, I, M, F, S> {
 
     @Override
     public ResponseEntity<F> subCreate(F object) {

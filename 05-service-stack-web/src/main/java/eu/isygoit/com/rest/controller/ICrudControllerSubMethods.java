@@ -19,8 +19,12 @@ import java.util.Map;
  * @param <F> the type parameter
  * @param <S> the type parameter
  */
-public interface ICrudControllerSubMethods<I extends Serializable, E extends AssignableId, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, E>>
-        extends ICrudControllerEvents<I, E, M, F> {
+public interface ICrudControllerSubMethods<E extends AssignableId,
+        I extends Serializable,
+        M extends IIdentifiableDto,
+        F extends M,
+        S extends ICrudServiceMethod<E, I>>
+        extends ICrudControllerEvents<E, I, M, F> {
 
     /**
      * Sub create response entity.

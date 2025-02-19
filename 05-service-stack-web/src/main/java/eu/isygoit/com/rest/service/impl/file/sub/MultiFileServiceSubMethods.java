@@ -25,12 +25,12 @@ import java.io.Serializable;
  * @param <RL> the type parameter
  */
 @Slf4j
-public abstract class MultiFileServiceSubMethods<I extends Serializable,
-        E extends AssignableMultiFile & AssignableId & AssignableCode,
+public abstract class MultiFileServiceSubMethods<E extends AssignableMultiFile & AssignableId & AssignableCode,
+        I extends Serializable,
         L extends LinkedFile & AssignableCode & AssignableId,
-        R extends JpaPagingAndSortingRepository<I, E>,
-        RL extends JpaPagingAndSortingRepository<I, L>>
-        extends MultiFileServiceUtils<I, E, L, R, RL> {
+        R extends JpaPagingAndSortingRepository<E, I>,
+        RL extends JpaPagingAndSortingRepository<L, I>>
+        extends MultiFileServiceUtils<E, I, L, R, RL> {
 
     /**
      * Sub upload file l.

@@ -17,9 +17,9 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface ICrudServiceMethod<I extends Serializable, E extends AssignableId>
-        extends ICrudServiceEvents<I, E>,
-        ICrudServiceUtils<I, E> {
+public interface ICrudServiceMethod<E extends AssignableId, I extends Serializable>
+        extends ICrudServiceEvents<E, I>,
+        ICrudServiceUtils<E, I> {
 
     /**
      * Count long.
@@ -59,6 +59,8 @@ public interface ICrudServiceMethod<I extends Serializable, E extends Assignable
      * @return the e
      */
     E createAndFlush(E object);
+
+    List<E> createAndFlush(List<E> object);
 
     /**
      * Create list.
@@ -180,6 +182,8 @@ public interface ICrudServiceMethod<I extends Serializable, E extends Assignable
      * @return the list
      */
     List<E> update(List<E> objects);
+
+    List<E> updateAndFlush(List<E> objects);
 
     /**
      * Find all by criteria filter list.

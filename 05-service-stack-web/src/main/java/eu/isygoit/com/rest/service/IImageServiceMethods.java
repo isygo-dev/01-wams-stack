@@ -14,7 +14,8 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IImageServiceMethods<I extends Serializable, E extends AssignableId & AssignableImage> {
+public interface IImageServiceMethods<E extends AssignableId & AssignableImage,
+        I extends Serializable> {
 
     /**
      * Upload image e.

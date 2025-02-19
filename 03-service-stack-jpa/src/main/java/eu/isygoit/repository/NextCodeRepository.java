@@ -19,8 +19,8 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface NextCodeRepository<I extends Serializable, C extends NextCodeModel & AssignableDomain>
-        extends JpaPagingAndSortingAssignableDomainRepository<I, C> {
+public interface NextCodeRepository<C extends NextCodeModel & AssignableDomain, I extends Serializable>
+        extends JpaPagingAndSortingAssignableDomainRepository<C, I> {
 
     /**
      * Find by entity optional.

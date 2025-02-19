@@ -32,12 +32,13 @@ import java.util.List;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedMultiFileController<I extends Serializable, E extends AssignableId & AssignableMultiFile,
+public abstract class MappedMultiFileController<E extends AssignableId & AssignableMultiFile,
+        I extends Serializable,
         L extends LinkedFileMinDto,
         M extends IIdentifiableDto,
         F extends M,
-        S extends IMultiFileServiceMethods<I, E> & ICrudServiceMethod<I, E>>
-        extends CrudControllerUtils<I, E, M, F, S>
+        S extends IMultiFileServiceMethods<E, I> & ICrudServiceMethod<E, I>>
+        extends CrudControllerUtils<E, I, M, F, S>
         implements IMappedMultiFileApi<L, I> {
 
     /**

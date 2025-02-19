@@ -15,7 +15,8 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IMultiFileServiceMethods<I extends Serializable, E extends AssignableId & AssignableMultiFile> {
+public interface IMultiFileServiceMethods<E extends AssignableId & AssignableMultiFile,
+        I extends Serializable> {
 
     /**
      * Upload file list.

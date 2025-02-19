@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface ICrudServiceUtils<I extends Serializable, E extends AssignableId> {
+public interface ICrudServiceUtils<E extends AssignableId, I extends Serializable> {
 
     /**
      * Gets repository.

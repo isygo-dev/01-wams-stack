@@ -28,9 +28,11 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileService<I extends Serializable, E extends AssignableFile & AssignableId & AssignableCode, R extends JpaPagingAndSortingRepository<I, E>>
-        extends FileServiceSubMethods<I, E, R>
-        implements IFileServiceMethods<I, E> {
+public abstract class FileService<E extends AssignableFile & AssignableId & AssignableCode,
+        I extends Serializable,
+        R extends JpaPagingAndSortingRepository<E, I>>
+        extends FileServiceSubMethods<E, I, R>
+        implements IFileServiceMethods<E, I> {
 
     /**
      * Before upload e.

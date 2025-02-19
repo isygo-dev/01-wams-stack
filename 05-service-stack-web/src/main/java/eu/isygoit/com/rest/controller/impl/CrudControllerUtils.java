@@ -28,12 +28,13 @@ import java.util.Optional;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerUtils<I extends Serializable, E extends AssignableId,
+public abstract class CrudControllerUtils<E extends AssignableId,
+        I extends Serializable,
         M extends IIdentifiableDto,
         F extends M,
-        S extends ICrudServiceUtils<I, E>>
+        S extends ICrudServiceUtils<E, I>>
         extends ControllerExceptionHandler
-        implements ICrudControllerUtils<I, E, M, F, S> {
+        implements ICrudControllerUtils<E, I, M, F, S> {
 
     /**
      * The constant ERROR_BEAN_NOT_FOUND.

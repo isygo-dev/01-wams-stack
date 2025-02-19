@@ -19,8 +19,8 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingAssignableDomainRepository<I extends Serializable, E extends AssignableDomain & AssignableId>
-        extends JpaPagingAndSortingRepository<I, E> {
+public interface JpaPagingAndSortingAssignableDomainRepository<E extends AssignableDomain & AssignableId, I extends Serializable>
+        extends JpaPagingAndSortingRepository<E, I> {
 
 
     /**

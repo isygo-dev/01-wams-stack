@@ -35,9 +35,11 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileImageService<I extends Serializable, E extends AssignableImage & AssignableFile & AssignableId & AssignableCode, R extends JpaPagingAndSortingRepository<I, E>>
-        extends FileService<I, E, R>
-        implements IFileServiceMethods<I, E>, IImageServiceMethods<I, E> {
+public abstract class FileImageService<E extends AssignableImage & AssignableFile & AssignableId & AssignableCode,
+        I extends Serializable,
+        R extends JpaPagingAndSortingRepository<E, I>>
+        extends FileService<E, I, R>
+        implements IFileServiceMethods<E, I>, IImageServiceMethods<E, I> {
 
     @Override
     @Transactional

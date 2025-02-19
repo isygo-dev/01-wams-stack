@@ -22,11 +22,12 @@ import java.util.Map;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedCrudController<I extends Serializable, E extends AssignableId,
+public abstract class MappedCrudController<E extends AssignableId,
+        I extends Serializable,
         M extends IIdentifiableDto,
         F extends M,
-        S extends ICrudServiceMethod<I, E>>
-        extends CrudControllerSubMethods<I, E, M, F, S>
+        S extends ICrudServiceMethod<E, I>>
+        extends CrudControllerSubMethods<E, I, M, F, S>
         implements IMappedCrudApi<I, M, F> {
 
     @Override

@@ -40,11 +40,11 @@ import java.util.concurrent.ConcurrentMap;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class AssignableCodeService<I extends Serializable,
-        E extends AssignableId & AssignableCode,
-        R extends JpaPagingAndSortingRepository<I, E>>
-        extends CrudService<I, E, R>
-        implements IAssignableCodeService<I, E> {
+public abstract class AssignableCodeService<E extends AssignableId & AssignableCode,
+        I extends Serializable,
+        R extends JpaPagingAndSortingRepository<E, I>>
+        extends CrudService<E, I, R>
+        implements IAssignableCodeService<E, I> {
 
     /**
      * The constant inMemoNextCode.

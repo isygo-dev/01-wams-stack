@@ -18,8 +18,8 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IAssignableCodeService<I extends Serializable, E extends AssignableId & AssignableCode>
-        extends ICrudServiceMethod<I, E> {
+public interface IAssignableCodeService<E extends AssignableId & AssignableCode, I extends Serializable>
+        extends ICrudServiceMethod<E, I> {
 
     /**
      * Find by code optional.

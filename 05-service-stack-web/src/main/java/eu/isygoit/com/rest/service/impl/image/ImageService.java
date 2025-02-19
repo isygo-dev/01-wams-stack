@@ -35,9 +35,9 @@ import java.nio.file.Path;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class ImageService<I extends Serializable, E extends AssignableImage & AssignableId & AssignableCode, R extends JpaPagingAndSortingRepository<I, E>>
-        extends AssignableCodeService<I, E, R>
-        implements IImageServiceMethods<I, E> {
+public abstract class ImageService<I extends Serializable, E extends AssignableImage & AssignableId & AssignableCode, R extends JpaPagingAndSortingRepository<E, I>>
+        extends AssignableCodeService<E, I, R>
+        implements IImageServiceMethods<E, I> {
 
     @Override
     @Transactional

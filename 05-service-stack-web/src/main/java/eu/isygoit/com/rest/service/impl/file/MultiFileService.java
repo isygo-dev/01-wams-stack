@@ -34,13 +34,13 @@ import java.util.Optional;
  * @param <RL> the type parameter
  */
 @Slf4j
-public abstract class MultiFileService<I extends Serializable,
-        E extends AssignableMultiFile & AssignableId & AssignableCode,
+public abstract class MultiFileService<E extends AssignableMultiFile & AssignableId & AssignableCode,
+        I extends Serializable,
         L extends LinkedFile & AssignableCode & AssignableId,
-        R extends JpaPagingAndSortingRepository<I, E>,
-        RL extends JpaPagingAndSortingRepository<I, L>>
-        extends MultiFileServiceSubMethods<I, E, L, R, RL>
-        implements IMultiFileServiceMethods<I, E> {
+        R extends JpaPagingAndSortingRepository<E, I>,
+        RL extends JpaPagingAndSortingRepository<L, I>>
+        extends MultiFileServiceSubMethods<E, I, L, R, RL>
+        implements IMultiFileServiceMethods<E, I> {
 
     @Getter
     private final Class<L> linkedFileClass = Optional.ofNullable(getClass().getGenericSuperclass())

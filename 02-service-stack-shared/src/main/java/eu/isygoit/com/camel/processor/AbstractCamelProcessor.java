@@ -17,7 +17,7 @@ import java.util.Optional;
  * @param <E> the type of the identifiable DTO
  */
 @Slf4j
-public abstract class AbstractCamelProcessor<I extends Serializable, E extends IIdentifiableDto> implements Processor {
+public abstract class AbstractCamelProcessor<E extends IIdentifiableDto, I extends Serializable> implements Processor {
 
     /**
      * The constant ERROR_HEADER is used to store error messages in the Camel exchange headers.

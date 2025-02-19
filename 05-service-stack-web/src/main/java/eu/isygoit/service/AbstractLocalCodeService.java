@@ -16,14 +16,16 @@ import java.util.Optional;
  * @param <C> the type parameter
  */
 @Slf4j
-public abstract class AbstractLocalCodeService<I extends Serializable, C extends NextCodeModel> implements ILocalCodeService<C> {
+public abstract class AbstractLocalCodeService<C extends NextCodeModel,
+        I extends Serializable>
+        implements ILocalCodeService<C> {
 
     /**
      * Next code repository next code repository.
      *
      * @return the next code repository
      */
-    public abstract NextCodeRepository<I, C> nextCodeRepository();
+    public abstract NextCodeRepository<C, I> nextCodeRepository();
 
     @Override
     public Optional<C> findByEntity(String entity) {

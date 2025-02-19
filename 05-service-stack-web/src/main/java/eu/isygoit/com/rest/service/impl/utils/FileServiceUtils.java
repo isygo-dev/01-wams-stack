@@ -23,10 +23,10 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileServiceUtils<I extends Serializable,
-        E extends AssignableId & AssignableCode,
-        R extends JpaPagingAndSortingRepository<I, E>>
-        extends AssignableCodeService<I, E, R> {
+public abstract class FileServiceUtils<E extends AssignableId & AssignableCode,
+        I extends Serializable,
+        R extends JpaPagingAndSortingRepository<E, I>>
+        extends AssignableCodeService<E, I, R> {
 
     @Getter
     @Autowired

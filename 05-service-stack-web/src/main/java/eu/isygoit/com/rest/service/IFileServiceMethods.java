@@ -15,7 +15,8 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <E> the type parameter
  */
-public interface IFileServiceMethods<I extends Serializable, E extends AssignableId & AssignableFile> {
+public interface IFileServiceMethods<E extends AssignableId & AssignableFile,
+        I extends Serializable> {
 
     /**
      * Create with file e.

@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface MessageModelRepository<I extends Serializable, E extends AssignableId>
+public interface MessageModelRepository<E extends AssignableId, I extends Serializable>
         extends JpaRepository<E, I> {
 
     /**

@@ -32,8 +32,10 @@ import java.util.function.Supplier;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudServiceUtils<I extends Serializable, E extends AssignableId, R extends Repository<E, I>>
-        implements ICrudServiceUtils<I, E> {
+public abstract class CrudServiceUtils<E extends AssignableId,
+        I extends Serializable,
+        R extends Repository<E, I>>
+        implements ICrudServiceUtils<E, I> {
 
     @Getter
     private final Class<E> persistentClass = Optional.ofNullable(getClass().getGenericSuperclass())

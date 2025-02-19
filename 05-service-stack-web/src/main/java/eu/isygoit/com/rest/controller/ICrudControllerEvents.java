@@ -15,7 +15,9 @@ import java.util.List;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-interface ICrudControllerEvents<I extends Serializable, E extends AssignableId, M extends IIdentifiableDto, F extends M> {
+interface ICrudControllerEvents<E extends AssignableId,
+        I extends Serializable,
+        M extends IIdentifiableDto, F extends M> {
 
     /**
      * Before create f.

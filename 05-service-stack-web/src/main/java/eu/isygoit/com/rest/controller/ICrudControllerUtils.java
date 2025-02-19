@@ -19,10 +19,11 @@ import java.io.Serializable;
  * @param <F> the type parameter
  * @param <S> the type parameter
  */
-public interface ICrudControllerUtils<I extends Serializable, E extends AssignableId,
+public interface ICrudControllerUtils<E extends AssignableId,
+        I extends Serializable,
         M extends IIdentifiableDto,
         F extends M,
-        S extends ICrudServiceUtils<I, E>> {
+        S extends ICrudServiceUtils<E, I>> {
 
     /**
      * Gets mapper.
