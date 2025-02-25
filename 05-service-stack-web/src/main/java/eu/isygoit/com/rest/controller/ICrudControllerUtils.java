@@ -12,13 +12,13 @@ import eu.isygoit.model.IIdEntity;
  * The interface Crud controller utils.
  *
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
 public interface ICrudControllerUtils<T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
+        M extends IIdentifiableDto,
+        F extends M,
         S extends ICrudServiceUtils<T>> {
 
     /**
@@ -28,7 +28,7 @@ public interface ICrudControllerUtils<T extends IIdEntity,
      * @throws BeanNotFoundException     the bean not found exception
      * @throws MapperNotDefinedException the mapper not defined exception
      */
-    EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException;
+    EntityMapper<T, F> mapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
      * Min dto mapper entity mapper.
@@ -37,7 +37,7 @@ public interface ICrudControllerUtils<T extends IIdEntity,
      * @throws BeanNotFoundException     the bean not found exception
      * @throws MapperNotDefinedException the mapper not defined exception
      */
-    EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
+    EntityMapper<T, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
      * Crud service s.

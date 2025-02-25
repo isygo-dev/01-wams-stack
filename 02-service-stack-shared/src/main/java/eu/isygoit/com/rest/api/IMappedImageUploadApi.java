@@ -18,13 +18,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 /**
  * The interface Mapped image upload api.
  *
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedImageUploadApi<I, D extends IIdentifiableDto & IImageUploadDto> {
+public interface IMappedImageUploadApi<I extends Serializable, D extends IIdentifiableDto & IImageUploadDto> {
 
     /**
      * Create with image response entity.

@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
+
 /**
  * The type File service sub methods.
  *
@@ -21,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileServiceSubMethods<I, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
+public abstract class FileServiceSubMethods<I extends Serializable, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
         extends CodifiableService<I, T, R> {
 
     @Autowired

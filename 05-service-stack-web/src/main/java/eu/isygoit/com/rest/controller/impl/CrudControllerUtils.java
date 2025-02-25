@@ -20,17 +20,17 @@ import java.lang.reflect.ParameterizedType;
  * The type Crud controller utils.
  *
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
 @Slf4j
 public abstract class CrudControllerUtils<T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
+        M extends IIdentifiableDto,
+        F extends M,
         S extends ICrudServiceUtils<T>>
         extends ControllerExceptionHandler
-        implements ICrudControllerUtils<T, MIND, FULLD, S> {
+        implements ICrudControllerUtils<T, M, F, S> {
 
     /**
      * The constant ERROR_BEAN_NOT_FOUND.
@@ -44,8 +44,8 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
     @Getter
     private final Class<T> minDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-    private EntityMapper<T, FULLD> fullEntityMapper;
-    private EntityMapper<T, MIND> minEntityMapper;
+    private EntityMapper<T, F> fullEntityMapper;
+    private EntityMapper<T, M> minEntityMapper;
     private S crudService;
 
     @Override
@@ -76,7 +76,7 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     }
 
     @Override
-    public final EntityMapper<T, FULLD> mapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<T, F> mapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.fullEntityMapper == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {
@@ -102,7 +102,7 @@ public abstract class CrudControllerUtils<T extends IIdEntity,
     }
 
     @Override
-    public final EntityMapper<T, MIND> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<T, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.minEntityMapper == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {

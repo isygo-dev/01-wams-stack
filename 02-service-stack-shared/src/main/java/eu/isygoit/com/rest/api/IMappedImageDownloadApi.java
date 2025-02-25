@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * The interface Mapped image download api.
@@ -25,7 +26,7 @@ import java.io.IOException;
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedImageDownloadApi<I, D extends IIdentifiableDto & IImageUploadDto> {
+public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdentifiableDto & IImageUploadDto> {
 
     /**
      * Download image response entity.

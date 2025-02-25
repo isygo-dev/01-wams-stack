@@ -16,119 +16,168 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The type Crud controller sub methods.
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND, S
+public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M, S
         extends ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements ICrudControllerSubMethods<I, T, MIND, FULLD, S> {
+        extends CrudControllerUtils<T, M, F, S>
+        implements ICrudControllerSubMethods<I, T, M, F, S> {
 
     //Attention !!! should get the class type of th persist entity
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
-    public ResponseEntity<FULLD> subCreate(FULLD object) {
+    public ResponseEntity<F> subCreate(F object) {
         log.info("Create {} request received", persistentClass.getSimpleName());
-        if (object == null) {
-            return ResponseFactory.ResponseBadRequest();
-        }
 
-        try {
-            object = this.beforeCreate(object);
-            return ResponseFactory.ResponseOk(mapper().entityToDto(this.afterCreate(this.crudService().create(mapper().dtoToEntity(object)))));
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-            return getBackExceptionResponse(e);
-        }
+        return Optional.ofNullable(object)
+                .map(obj -> {
+                    try {
+                        var dto = beforeCreate(obj);
+                        var entity = mapper().dtoToEntity(dto);
+                        var createdEntity = crudService().create(entity);
+                        var resultDto = afterCreate(createdEntity);
+                        return ResponseFactory.ResponseOk(mapper().entityToDto(resultDto));
+                    } catch (Throwable e) {
+                        log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+                        return getBackExceptionResponse(e);
+                    }
+                })
+                .orElseGet(ResponseFactory::ResponseBadRequest);
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subCreate(List<FULLD> objects) {
-        log.info("Create {} request received", persistentClass.getSimpleName());
-        if (CollectionUtils.isEmpty(objects)) {
-            return ResponseFactory.ResponseBadRequest();
-        }
+    public ResponseEntity<List<F>> subUpdate(List<F> objects) {
+        log.info("Update {} request received", persistentClass.getSimpleName());
 
-        try {
-            objects.forEach(FULLD -> this.beforeCreate(FULLD));
-            List<T> entities = this.crudService().create(mapper().listDtoToEntity(objects));
-            entities.forEach(t -> this.afterCreate(t));
-            return ResponseFactory.ResponseOk(mapper().listEntityToDto(entities));
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-            return getBackExceptionResponse(e);
-        }
+        return Optional.ofNullable(objects)
+                .filter(list -> !list.isEmpty())
+                .map(list -> {
+                    try {
+                        var processedDtos = list.stream()
+                                .map(f -> beforeUpdate((I) f.getId(), f))
+                                .toList();
+
+                        var updatedEntities = crudService().update(mapper().listDtoToEntity(processedDtos));
+
+                        var processedEntities = updatedEntities.stream()
+                                .map(this::afterUpdate)
+                                .toList();
+
+                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedEntities));
+                    } catch (Throwable e) {
+                        log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+                        return getBackExceptionResponse(e);
+                    }
+                })
+                .orElseGet(ResponseFactory::ResponseBadRequest);
     }
+    
+    @Override
+    public ResponseEntity<List<F>> subCreate(List<F> objects) {
+        log.info("Create {} request received", persistentClass.getSimpleName());
+
+        return Optional.ofNullable(objects)
+                .filter(list -> !list.isEmpty())
+                .map(list -> {
+                    try {
+                        var processedDtos = list.stream()
+                                .map(this::beforeCreate)
+                                .toList();
+
+                        var createdEntities = crudService().create(mapper().listDtoToEntity(processedDtos));
+
+                        var processedEntities = createdEntities.stream()
+                                .map(this::afterCreate)
+                                .toList();
+
+                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedEntities));
+                    } catch (Throwable e) {
+                        log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+                        return getBackExceptionResponse(e);
+                    }
+                })
+                .orElseGet(ResponseFactory::ResponseBadRequest);
+    }
+
 
     @Override
     public ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
         log.info("Delete {} request received", persistentClass.getSimpleName());
-        if (id == null) {
-            return ResponseFactory.ResponseBadRequest();
-        }
 
-        try {
-            if (this.beforeDelete(id)) {
-                this.crudService().delete(requestContext.getSenderDomain(), id);
-                this.afterDelete(id);
-            }
-            return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-            return getBackExceptionResponse(e);
-        }
+        return Optional.ofNullable(id)
+                .map(validId -> {
+                    try {
+                        if (beforeDelete(validId)) {
+                            crudService().delete(requestContext.getSenderDomain(), validId);
+                            afterDelete(validId);
+                        }
+                        return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+                    } catch (Throwable e) {
+                        log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+                        return getBackExceptionResponse(e);
+                    }
+                })
+                .orElseGet(ResponseFactory::ResponseBadRequest);
     }
 
+
     @Override
-    public ResponseEntity<?> subDelete(RequestContextDto requestContext, List<FULLD> objects) {
+    public ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
         log.info("Delete {} request received", persistentClass.getSimpleName());
-        if (CollectionUtils.isEmpty(objects)) {
-            return ResponseFactory.ResponseBadRequest();
-        }
 
-        try {
-            if (this.beforeDelete(objects)) {
-                this.crudService().delete(requestContext.getSenderDomain(), mapper().listDtoToEntity(objects));
-                this.afterDelete(objects);
-            }
-            return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-            return getBackExceptionResponse(e);
-        }
+        return Optional.ofNullable(objects)
+                .filter(list -> !list.isEmpty())
+                .map(validObjects -> {
+                    try {
+                        if (beforeDelete(validObjects)) {
+                            crudService().delete(requestContext.getSenderDomain(), mapper().listDtoToEntity(validObjects));
+                            afterDelete(validObjects);
+                        }
+                        return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+                    } catch (Throwable e) {
+                        log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+                        return getBackExceptionResponse(e);
+                    }
+                })
+                .orElseGet(ResponseFactory::ResponseBadRequest);
     }
 
-    @Override
-    public ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext) {
-        log.info("Find all {}s request received", persistentClass.getSimpleName());
-        try {
-            List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
-            } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
-            }
 
-            if (CollectionUtils.isEmpty(list)) {
+    @Override
+    public ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
+        log.info("Find all {}s request received", persistentClass.getSimpleName());
+
+        try {
+            var list = Optional.ofNullable(
+                            ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                                    ? crudService().findAll(requestContext.getSenderDomain())
+                                    : crudService().findAll()
+                    ).map(minDtoMapper()::listEntityToDto)
+                    .orElseGet(List::of);
+
+            if (list.isEmpty()) {
                 return ResponseFactory.ResponseNoContent();
             }
 
-            this.afterFindAll(requestContext, list);
+            afterFindAll(requestContext, list);
             return ResponseFactory.ResponseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -136,23 +185,26 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         }
     }
 
-    @Override
-    public ResponseEntity<List<MIND>> subFindAllDefault(RequestContextDto requestContext) {
-        log.info("Find all {}s request received", persistentClass.getSimpleName());
-        try {
-            List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME));
-            } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll());
-            }
 
-            if (CollectionUtils.isEmpty(list)) {
+    @Override
+    public ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
+        log.info("Find all {}s request received", persistentClass.getSimpleName());
+
+        try {
+            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME)
+                    : crudService().findAll();
+
+            var list = Optional.ofNullable(entities)
+                    .map(minDtoMapper()::listEntityToDto)
+                    .orElseGet(List::of);
+
+            if (list.isEmpty()) {
                 return ResponseFactory.ResponseNoContent();
             }
 
-            this.afterFindAll(requestContext, list);
+            afterFindAll(requestContext, list);
             return ResponseFactory.ResponseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -160,23 +212,28 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         }
     }
 
+
     @Override
-    public ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
-        try {
-            List<MIND> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
-            } else {
-                list = (List<MIND>) this.minDtoMapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
-            }
 
-            if (CollectionUtils.isEmpty(list)) {
+        try {
+            var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
+
+            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? crudService().findAll(requestContext.getSenderDomain(), pageRequest)
+                    : crudService().findAll(pageRequest);
+
+            var list = Optional.ofNullable(entities)
+                    .map(minDtoMapper()::listEntityToDto)
+                    .orElseGet(List::of);
+
+            if (list.isEmpty()) {
                 return ResponseFactory.ResponseNoContent();
             }
 
-            this.afterFindAll(requestContext, list);
+            afterFindAll(requestContext, list);
             return ResponseFactory.ResponseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -184,23 +241,26 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
         }
     }
 
+
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext) {
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
         log.info("Find all {}s request received", persistentClass.getSimpleName());
-        try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain()));
-            } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAll());
-            }
 
-            if (CollectionUtils.isEmpty(list)) {
+        try {
+            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? crudService().findAll(requestContext.getSenderDomain())
+                    : crudService().findAll();
+
+            var list = Optional.ofNullable(entities)
+                    .map(mapper()::listEntityToDto)
+                    .orElseGet(List::of);
+
+            if (list.isEmpty()) {
                 return ResponseFactory.ResponseNoContent();
             }
 
-            this.afterFindAllFull(requestContext, list);
+            afterFindAllFull(requestContext, list);
             return ResponseFactory.ResponseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -209,26 +269,30 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
+
         if (page == null || size == null) {
             return ResponseFactory.ResponseBadRequest();
         }
 
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAll(requestContext.getSenderDomain(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
-            } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
-            }
+            var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
-            if (CollectionUtils.isEmpty(list)) {
+            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? crudService().findAll(requestContext.getSenderDomain(), pageRequest)
+                    : crudService().findAll(pageRequest);
+
+            var list = Optional.ofNullable(entities)
+                    .map(mapper()::listEntityToDto)
+                    .orElseGet(List::of);
+
+            if (list.isEmpty()) {
                 return ResponseFactory.ResponseNoContent();
             }
 
-            this.afterFindAllFull(requestContext, list);
+            afterFindAllFull(requestContext, list);
             return ResponseFactory.ResponseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
@@ -238,131 +302,149 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
 
 
     @Override
-    public ResponseEntity<FULLD> subFindById(RequestContextDto requestContext, I id) {
+    public ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
         log.info("Find {} by id request received", persistentClass.getSimpleName());
+
         try {
-            final FULLD object = this.mapper().entityToDto(this.crudService().findById(id).get());
+            var optionalObject = crudService().findById(id);
+
+            // Utilisation de Optional pour éviter les appels potentiellement risqués à .get()
+            var object = optionalObject.map(mapper()::entityToDto).orElse(null);
+
             if (object == null) {
                 return ResponseFactory.ResponseNoContent();
             }
 
-            return ResponseFactory.ResponseOk(this.afterFindById(object));
+            return ResponseFactory.ResponseOk(afterFindById(object));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
         }
     }
+
 
     @Override
     public ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
         log.info("Get count {} request received", persistentClass.getSimpleName());
+
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                return ResponseFactory.ResponseOk(this.crudService().count(requestContext.getSenderDomain()));
-            } else {
-                return ResponseFactory.ResponseOk(this.crudService().count());
-            }
+            var count = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? crudService().count(requestContext.getSenderDomain())
+                    : crudService().count();
+
+            return ResponseFactory.ResponseOk(count);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
         }
     }
 
+
     @Override
-    public ResponseEntity<FULLD> subUpdate(I id, FULLD object) {
+    public ResponseEntity<F> subUpdate(I id, F object) {
         log.info("Update {} request received", persistentClass.getSimpleName());
+
         if (object == null || id == null) {
             return ResponseFactory.ResponseBadRequest();
         }
 
         try {
             object.setId(id);
-            object = this.beforeUpdate(id, object);
-            return ResponseFactory.ResponseOk(this.mapper().entityToDto(this.afterUpdate(this.crudService().update(mapper().dtoToEntity(object)))));
+
+            // Utilisation de Optional pour améliorer la sécurité et la lisibilité
+            var updatedObject = Optional.of(object)
+                    .map(o -> beforeUpdate(id, o))
+                    .map(o -> mapper().dtoToEntity(o))
+                    .map(crudService()::update)
+                    .map(mapper()::entityToDto)
+                    .map(o -> afterUpdate((T) o))
+                    .orElseThrow(() -> new IllegalArgumentException("Object update failed"));
+
+            return ResponseFactory.ResponseOk((F) updatedObject);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
         }
     }
 
-    @Override
-    public ResponseEntity<List<FULLD>> subUpdate(List<FULLD> objects) {
-        log.info("Update {} request received", persistentClass.getSimpleName());
-        if (CollectionUtils.isEmpty(objects)) {
-            return ResponseFactory.ResponseBadRequest();
-        }
-
-        try {
-            return ResponseFactory.ResponseOk(mapper().listEntityToDto(this.crudService().update(mapper().listDtoToEntity(objects))));
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-            return getBackExceptionResponse(e);
-        }
-    }
 
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")));
-            } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")));
-            }
+            // Utilisation de var pour simplifier les déclarations
+            var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
 
-            if (CollectionUtils.isEmpty(list)) {
-                return ResponseFactory.ResponseNoContent();
-            }
-            if (CollectionUtils.isEmpty(list)) {
-                return ResponseFactory.ResponseNoContent();
-            }
-            return ResponseFactory.ResponseOk(list);
+            // Sélection du domaine de recherche
+            var senderDomain = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? requestContext.getSenderDomain()
+                    : null;
+
+            // Récupération des objets filtrés par critères
+            var list = this.mapper().listEntityToDto(
+                    this.crudService().findAllByCriteriaFilter(senderDomain, criteriaList)
+            );
+
+            // Vérification de la liste et réponse appropriée
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.ResponseNoContent()
+                    : ResponseFactory.ResponseOk(list);
+
         } catch (Exception ex) {
-            return getBackExceptionResponse(ex);
+            log.error(CtrlConstants.ERROR_API_EXCEPTION, ex); // Ajout de log pour faciliter le debugging
+            return getBackExceptionResponse(ex);  // Réponse d'erreur spécifique
         }
     }
 
+
     @Override
-    public ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
-                                                                    Integer page, Integer size) {
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
+                                                                Integer page, Integer size) {
         try {
-            List<FULLD> list = null;
-            if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())) {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(requestContext.getSenderDomain(), CriteriaHelper.convertStringToCriteria(criteria, ",")
-                        , PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
-            } else {
-                list = this.mapper().listEntityToDto(this.crudService().findAllByCriteriaFilter(null, CriteriaHelper.convertStringToCriteria(criteria, ",")
-                        , PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"))));
-            }
-            if (CollectionUtils.isEmpty(list)) {
-                return ResponseFactory.ResponseNoContent();
-            }
-            return ResponseFactory.ResponseOk(list);
+            // Conversion des critères en liste et préparation de la page
+            var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
+            var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
+
+            // Détermination conditionnelle du domaine de recherche
+            var senderDomain = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
+                    ? requestContext.getSenderDomain()
+                    : null;
+
+            // Récupération des entités filtrées avec les critères et pagination
+            var list = this.mapper().listEntityToDto(
+                    this.crudService().findAllByCriteriaFilter(senderDomain, criteriaList, pageRequest)
+            );
+
+            // Vérification de la liste et retour approprié
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.ResponseNoContent()
+                    : ResponseFactory.ResponseOk(list);
+
         } catch (Exception ex) {
-            return getBackExceptionResponse(ex);
+            log.error(CtrlConstants.ERROR_API_EXCEPTION, ex); // Ajout d'un log d'erreur pour faciliter le debugging
+            return getBackExceptionResponse(ex);  // Retour de la réponse d'erreur spécifique
         }
     }
+
 
     @Override
     public ResponseEntity<Map<String, String>> subFindAllFilterCriteria() {
         try {
-            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
-            if (CollectionUtils.isEmpty(criteriaMap)) {
-                return ResponseFactory.ResponseNoContent();
-            }
-            return ResponseFactory.ResponseOk(criteriaMap);
+            // Récupération des critères à partir de CriteriaHelper
+            var criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
+
+            // Vérification si la map est vide et renvoi de la réponse appropriée
+            return CollectionUtils.isEmpty(criteriaMap)
+                    ? ResponseFactory.ResponseNoContent()
+                    : ResponseFactory.ResponseOk(criteriaMap);
+
         } catch (Exception ex) {
+            // Log de l'erreur pour faciliter le débogage
+            log.error(CtrlConstants.ERROR_API_EXCEPTION, ex);
             return getBackExceptionResponse(ex);
         }
-    }
-
-    @Override
-    public FULLD beforeCreate(FULLD object) {
-        return object;
     }
 
     @Override
@@ -371,10 +453,15 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public FULLD beforeUpdate(I id, FULLD object) {
+    public F beforeUpdate(I id, F object) {
         return object;
     }
 
+    @Override
+    public F beforeCreate(F object) {
+        return object;
+    }
+    
     @Override
     public T afterUpdate(T object) {
         return object;
@@ -391,27 +478,27 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     }
 
     @Override
-    public boolean beforeDelete(List<FULLD> objects) {
+    public boolean beforeDelete(List<F> objects) {
         return true;
     }
 
     @Override
-    public boolean afterDelete(List<FULLD> objects) {
+    public boolean afterDelete(List<F> objects) {
         return true;
     }
 
     @Override
-    public FULLD afterFindById(FULLD object) {
+    public F afterFindById(F object) {
         return object;
     }
 
     @Override
-    public List<FULLD> afterFindAllFull(RequestContextDto requestContext, List<FULLD> list) {
+    public List<F> afterFindAllFull(RequestContextDto requestContext, List<F> list) {
         return list;
     }
 
     @Override
-    public List<MIND> afterFindAll(RequestContextDto requestContext, List<MIND> list) {
+    public List<M> afterFindAll(RequestContextDto requestContext, List<M> list) {
         return list;
     }
 }

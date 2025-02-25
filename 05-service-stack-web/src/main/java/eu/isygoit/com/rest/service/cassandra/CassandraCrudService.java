@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
@@ -39,7 +40,7 @@ import java.util.*;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CassandraCrudService<I, T extends IIdEntity, R extends CassandraRepository> extends CrudServiceUtils<T, R>
+public abstract class CassandraCrudService<I extends Serializable, T extends IIdEntity, R extends CassandraRepository> extends CrudServiceUtils<T, R>
         implements ICrudServiceMethod<I, T> {
 
     //Attention !!! should get the class type of th persist entity

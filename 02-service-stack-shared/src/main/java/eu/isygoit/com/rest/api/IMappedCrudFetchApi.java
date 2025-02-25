@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -23,10 +24,10 @@ import java.util.Map;
  * The interface Mapped crud fetch api.
  *
  * @param <I>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  */
-public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD extends MIND> {
+public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifiableDto, F extends M> {
 
     /**
      * Find all response entity.
@@ -43,7 +44,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "")
-    ResponseEntity<List<MIND>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
+    ResponseEntity<List<M>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
     /**
      * Find all default response entity.
@@ -60,7 +61,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/default")
-    ResponseEntity<List<MIND>> findAllDefault(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
+    ResponseEntity<List<M>> findAllDefault(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
 
     /**
@@ -80,7 +81,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/{page}/{size}")
-    ResponseEntity<List<MIND>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<List<M>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                        @PathVariable(name = RestApiConstants.PAGE) Integer page,
                                        @PathVariable(name = RestApiConstants.SIZE) Integer size);
 
@@ -99,7 +100,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/full")
-    ResponseEntity<List<FULLD>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
+    ResponseEntity<List<F>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
 
     /**
      * Find all full response entity.
@@ -118,7 +119,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/full/{page}/{size}")
-    ResponseEntity<List<FULLD>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<List<F>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                             @PathVariable(name = RestApiConstants.PAGE) Integer page,
                                             @PathVariable(name = RestApiConstants.SIZE) Integer size);
 
@@ -138,7 +139,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/{id}")
-    ResponseEntity<FULLD> findById(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<F> findById(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                    @PathVariable(name = RestApiConstants.ID) I id);
 
     /**
@@ -174,7 +175,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/filter")
-    ResponseEntity<List<FULLD>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<List<F>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                                           @RequestParam(name = RestApiConstants.CRITERIA) String criteria);
 
     /**
@@ -195,7 +196,7 @@ public interface IMappedCrudFetchApi<I, MIND extends IIdentifiableDto, FULLD ext
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
     @GetMapping(path = "/filter/{page}/{size}")
-    ResponseEntity<List<FULLD>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<List<F>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                                           @RequestParam(name = RestApiConstants.CRITERIA) String criteria,
                                                           @PathVariable(name = RestApiConstants.PAGE) Integer page,
                                                           @PathVariable(name = RestApiConstants.SIZE) Integer size);

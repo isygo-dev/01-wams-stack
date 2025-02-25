@@ -2,6 +2,7 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.model.IIdEntity;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceEvents<I, T extends IIdEntity> {
+public interface ICrudServiceEvents<I extends Serializable, T extends IIdEntity> {
 
     /**
      * Before update t.

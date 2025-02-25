@@ -7,28 +7,30 @@ import eu.isygoit.model.IIdEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
+import java.io.Serializable;
+
 /**
  * The type Mapped crud persist controller.
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedCrudPersistController<I, T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
+public abstract class MappedCrudPersistController<I extends Serializable, T extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M,
         S extends ICrudServiceMethod<I, T>>
-        extends CrudControllerSubMethods<I, T, MIND, FULLD, S>
-        implements IMappedCrudPersistApi<I, FULLD> {
+        extends CrudControllerSubMethods<I, T, M, F, S>
+        implements IMappedCrudPersistApi<I, F> {
 
-    public final ResponseEntity<FULLD> create(FULLD object) {
+    public final ResponseEntity<F> create(F object) {
         return subCreate(object);
     }
 
-    public final ResponseEntity<FULLD> update(I id, FULLD object) {
+    public final ResponseEntity<F> update(I id, F object) {
         return subUpdate(id, object);
     }
 }

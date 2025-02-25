@@ -6,6 +6,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * The interface Image service methods.
@@ -13,7 +14,7 @@ import java.io.IOException;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IImageServiceMethods<I, T extends IIdEntity & IImageEntity> {
+public interface IImageServiceMethods<I extends Serializable, T extends IIdEntity & IImageEntity> {
 
     /**
      * Upload image t.

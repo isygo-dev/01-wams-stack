@@ -6,6 +6,7 @@ import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdEntity;
 import org.springframework.http.ResponseEntity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -14,12 +15,12 @@ import java.util.Map;
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
-public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends IIdentifiableDto, FULLD extends MIND, S extends ICrudServiceMethod<I, T>>
-        extends ICrudControllerEvents<I, T, MIND, FULLD> {
+public interface ICrudControllerSubMethods<I extends Serializable, T extends IIdEntity, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, T>>
+        extends ICrudControllerEvents<I, T, M, F> {
 
     /**
      * Sub create response entity.
@@ -27,7 +28,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param object the object
      * @return the response entity
      */
-    ResponseEntity<FULLD> subCreate(FULLD object);
+    ResponseEntity<F> subCreate(F object);
 
     /**
      * Sub create response entity.
@@ -35,7 +36,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param objects the objects
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subCreate(List<FULLD> objects);
+    ResponseEntity<List<F>> subCreate(List<F> objects);
 
     /**
      * Sub update response entity.
@@ -44,7 +45,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param object the object
      * @return the response entity
      */
-    ResponseEntity<FULLD> subUpdate(I id, FULLD object);
+    ResponseEntity<F> subUpdate(I id, F object);
 
     /**
      * Sub update response entity.
@@ -52,7 +53,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param objects the objects
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subUpdate(List<FULLD> objects);
+    ResponseEntity<List<F>> subUpdate(List<F> objects);
 
     /**
      * Sub delete response entity.
@@ -70,7 +71,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<?> subDelete(RequestContextDto requestContext, List<FULLD> objects);
+    ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects);
 
     /**
      * Sub find all full response entity.
@@ -78,7 +79,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext);
+    ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext);
 
     /**
      * Sub find all full response entity.
@@ -88,7 +89,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size);
+    ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find all response entity.
@@ -96,7 +97,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext);
+    ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext);
 
     /**
      * Sub find all default response entity.
@@ -104,7 +105,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subFindAllDefault(RequestContextDto requestContext);
+    ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext);
 
     /**
      * Sub find all response entity.
@@ -114,7 +115,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<MIND>> subFindAll(RequestContextDto requestContext, Integer page, Integer size);
+    ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find by id response entity.
@@ -123,7 +124,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param id             the id
      * @return the response entity
      */
-    ResponseEntity<FULLD> subFindById(RequestContextDto requestContext, I id);
+    ResponseEntity<F> subFindById(RequestContextDto requestContext, I id);
 
 
     /**
@@ -148,7 +149,7 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param criteria       the criteria
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria);
+    ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria);
 
     /**
      * Sub find all filtered by criteria response entity.
@@ -159,5 +160,5 @@ public interface ICrudControllerSubMethods<I, T extends IIdEntity, MIND extends 
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<FULLD>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size);
+    ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size);
 }

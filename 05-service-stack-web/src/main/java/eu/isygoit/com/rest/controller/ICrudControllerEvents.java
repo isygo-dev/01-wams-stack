@@ -4,6 +4,7 @@ import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdEntity;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,10 +12,10 @@ import java.util.List;
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  */
-interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiableDto, FULLD extends MIND> {
+interface ICrudControllerEvents<I extends Serializable, T extends IIdEntity, M extends IIdentifiableDto, F extends M> {
 
     /**
      * Before create fulld.
@@ -22,7 +23,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param object the object
      * @return the fulld
      */
-    FULLD beforeCreate(FULLD object);
+    F beforeCreate(F object);
 
     /**
      * After create t.
@@ -39,7 +40,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param object the object
      * @return the fulld
      */
-    FULLD beforeUpdate(I id, FULLD object);
+    F beforeUpdate(I id, F object);
 
     /**
      * After update t.
@@ -71,7 +72,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param objects the objects
      * @return the boolean
      */
-    boolean beforeDelete(List<FULLD> objects);
+    boolean beforeDelete(List<F> objects);
 
     /**
      * After delete boolean.
@@ -79,7 +80,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param objects the objects
      * @return the boolean
      */
-    boolean afterDelete(List<FULLD> objects);
+    boolean afterDelete(List<F> objects);
 
     /**
      * After find by id fulld.
@@ -87,7 +88,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param object the object
      * @return the fulld
      */
-    FULLD afterFindById(FULLD object);
+    F afterFindById(F object);
 
     /**
      * After find all full list.
@@ -96,7 +97,7 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param list           the list
      * @return the list
      */
-    List<FULLD> afterFindAllFull(RequestContextDto requestContext, List<FULLD> list);
+    List<F> afterFindAllFull(RequestContextDto requestContext, List<F> list);
 
     /**
      * After find all list.
@@ -105,5 +106,5 @@ interface ICrudControllerEvents<I, T extends IIdEntity, MIND extends IIdentifiab
      * @param list           the list
      * @return the list
      */
-    List<MIND> afterFindAll(RequestContextDto requestContext, List<MIND> list);
+    List<M> afterFindAll(RequestContextDto requestContext, List<M> list);
 }

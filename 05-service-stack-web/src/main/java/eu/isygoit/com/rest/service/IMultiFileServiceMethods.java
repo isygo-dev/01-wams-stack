@@ -6,6 +6,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IMultiFileServiceMethods<I, T extends IIdEntity & IMultiFileEntity> {
+public interface IMultiFileServiceMethods<I extends Serializable, T extends IIdEntity & IMultiFileEntity> {
 
     /**
      * Upload additional files list.

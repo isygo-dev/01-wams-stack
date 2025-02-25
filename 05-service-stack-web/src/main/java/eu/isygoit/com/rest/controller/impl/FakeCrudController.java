@@ -7,6 +7,7 @@ import eu.isygoit.model.IIdEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -15,14 +16,14 @@ import java.util.Map;
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  */
 @Slf4j
-public abstract class FakeCrudController<I, T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND>
-        implements IMappedCrudApi<I, MIND, FULLD> {
+public abstract class FakeCrudController<I extends Serializable, T extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M>
+        implements IMappedCrudApi<I, M, F> {
 
 
     @Override
@@ -32,31 +33,31 @@ public abstract class FakeCrudController<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<List<MIND>> findAll(RequestContextDto requestContext) {
+    public ResponseEntity<List<M>> findAll(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<MIND>> findAll(RequestContextDto requestContext,
+    public ResponseEntity<List<M>> findAll(RequestContextDto requestContext,
                                               Integer page,
                                               Integer size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> findAllFull(RequestContextDto requestContext) {
+    public ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> findAllFull(RequestContextDto requestContext,
+    public ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext,
                                                    Integer page,
                                                    Integer size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<FULLD> findById(RequestContextDto requestContext,
+    public ResponseEntity<F> findById(RequestContextDto requestContext,
                                           I id) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
@@ -67,30 +68,30 @@ public abstract class FakeCrudController<I, T extends IIdEntity,
     }
 
     @Override
-    public ResponseEntity<FULLD> create(//RequestContextDto requestContext,
-                                        FULLD object) {
+    public ResponseEntity<F> create(//RequestContextDto requestContext,
+                                        F object) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<FULLD> update(//RequestContextDto requestContext,
+    public ResponseEntity<F> update(//RequestContextDto requestContext,
                                         I id,
-                                        FULLD object) {
+                                        F object) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<MIND>> findAllDefault(RequestContextDto requestContext) {
+    public ResponseEntity<List<M>> findAllDefault(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<FULLD>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 

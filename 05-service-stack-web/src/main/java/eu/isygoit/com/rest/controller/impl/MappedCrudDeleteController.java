@@ -8,21 +8,23 @@ import eu.isygoit.model.IIdEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
+import java.io.Serializable;
+
 /**
  * The type Mapped crud delete controller.
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedCrudDeleteController<I, T extends IIdEntity,
-        MIND extends IIdentifiableDto,
-        FULLD extends MIND,
+public abstract class MappedCrudDeleteController<I extends Serializable, T extends IIdEntity,
+        M extends IIdentifiableDto,
+        F extends M,
         S extends ICrudServiceMethod<I, T>>
-        extends CrudControllerSubMethods<I, T, MIND, FULLD, S>
+        extends CrudControllerSubMethods<I, T, M, F, S>
         implements IMappedCrudDeleteApi<I> {
 
     @Override

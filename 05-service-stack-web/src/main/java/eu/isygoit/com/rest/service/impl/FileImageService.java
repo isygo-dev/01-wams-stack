@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -31,7 +32,7 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileImageService<I, T extends IImageEntity & IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
+public abstract class FileImageService<I extends Serializable, T extends IImageEntity & IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
         extends FileService<I, T, R>
         implements IFileServiceMethods<I, T>, IImageServiceMethods<I, T> {
 

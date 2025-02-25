@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 
 
@@ -27,20 +28,20 @@ import java.nio.file.Files;
  *
  * @param <I>     the type parameter
  * @param <T>     the type parameter
- * @param <MIND>  the type parameter
- * @param <FULLD> the type parameter
+ * @param <M>  the type parameter
+ * @param <F> the type parameter
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedImageController<I, T extends IIdEntity & IImageEntity,
-        MIND extends IIdentifiableDto & IImageUploadDto,
-        FULLD extends MIND,
+public abstract class MappedImageController<I extends Serializable, T extends IIdEntity & IImageEntity,
+        M extends IIdentifiableDto & IImageUploadDto,
+        F extends M,
         S extends IImageServiceMethods<I, T> & ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, MIND, FULLD, S>
-        implements IMappedImageApi<I, FULLD> {
+        extends CrudControllerUtils<T, M, F, S>
+        implements IMappedImageApi<I, F> {
 
     @Override
-    public ResponseEntity<FULLD> uploadImage(RequestContextDto requestContext,
+    public ResponseEntity<F> uploadImage(RequestContextDto requestContext,
                                              I id,
                                              MultipartFile file) {
         log.info("Upload image request received");
@@ -69,9 +70,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
     }
 
     @Override
-    public ResponseEntity<FULLD> createWithImage(RequestContextDto requestContext,
+    public ResponseEntity<F> createWithImage(RequestContextDto requestContext,
                                                  MultipartFile file,
-                                                 FULLD dto) {
+                                                 F dto) {
         log.info("Create with image request received");
         try {
             if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getDomain())) {
@@ -88,9 +89,9 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
 
 
     @Override
-    public ResponseEntity<FULLD> updateWithImage(RequestContextDto requestContext,
+    public ResponseEntity<F> updateWithImage(RequestContextDto requestContext,
                                                  MultipartFile file,
-                                                 FULLD dto) {
+                                                 F dto) {
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);
@@ -109,7 +110,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
      * @return the fulld
      * @throws Exception the exception
      */
-    public FULLD beforeCreate(FULLD object) throws Exception {
+    public F beforeCreate(F object) throws Exception {
         return object;
     }
 
@@ -131,7 +132,7 @@ public abstract class MappedImageController<I, T extends IIdEntity & IImageEntit
      * @return the fulld
      * @throws Exception the exception
      */
-    public FULLD beforeUpdate(FULLD object) throws Exception {
+    public F beforeUpdate(F object) throws Exception {
         return object;
     }
 

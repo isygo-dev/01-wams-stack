@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,8 @@ import java.util.Map;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPagingAndSortingRepository> extends CrudService<I, T, R>
+public abstract class CodifiableService<I extends Serializable, T extends IIdEntity, R extends JpaPagingAndSortingRepository>
+        extends CrudService<I, T, R>
         implements ICodifiableService<I, T> {
 
     /**

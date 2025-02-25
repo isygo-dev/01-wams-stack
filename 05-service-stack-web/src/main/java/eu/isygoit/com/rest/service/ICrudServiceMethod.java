@@ -7,6 +7,7 @@ import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceMethod<I, T extends IIdEntity>
+public interface ICrudServiceMethod<I extends Serializable, T extends IIdEntity>
         extends ICrudServiceEvents<I, T>,
         ICrudServiceUtils<T> {
 

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * The interface File service methods.
@@ -14,7 +15,7 @@ import java.io.IOException;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IFileServiceMethods<I, T extends IIdEntity & IFileEntity> {
+public interface IFileServiceMethods<I extends Serializable, T extends IIdEntity & IFileEntity> {
 
     /**
      * Create with file t.

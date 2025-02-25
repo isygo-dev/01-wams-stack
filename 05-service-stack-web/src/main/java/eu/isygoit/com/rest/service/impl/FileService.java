@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
 
@@ -29,7 +30,7 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
+public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
         extends FileServiceSubMethods<I, T, R>
         implements IFileServiceMethods<I, T> {
 

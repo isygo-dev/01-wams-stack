@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * The type Controller exception handler.
  */
@@ -27,37 +30,28 @@ public abstract class ControllerExceptionHandler implements IControllerException
 
     public final IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
         if (this.exceptionHandler == null) {
-            CtrlHandler ctrlHandler = this.getClass().getAnnotation(CtrlHandler.class);
-            if (ctrlHandler != null) {
-                this.exceptionHandler = applicationContextService.getBean(ctrlHandler.value());
-                if (this.exceptionHandler == null) {
-                    log.error("<Error>: Exception Handler bean not found");
-                    throw new BeanNotFoundException(this.getClass().getSimpleName());
-                }
-            } else {
-                CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-                if (ctrlDef != null) {
-                    this.exceptionHandler = applicationContextService.getBean(ctrlDef.handler());
-                    if (this.exceptionHandler == null) {
-                        log.error("<Error>: Exception Handler bean not found");
-                        throw new BeanNotFoundException(this.getClass().getSimpleName());
-                    }
-                } else {
-                    log.error("<Error>: Exception Handler bean not defined, please use CtrlExHandler or CtrlDef annotations");
-                    throw new ExceptionHandlerNotDefinedException(this.getClass().getSimpleName());
-                }
-            }
+            // Récupération de la classe du handler via les annotations
+            var handlerClass = Stream.of(
+                            Optional.ofNullable(this.getClass().getAnnotation(CtrlHandler.class)).map(CtrlHandler::value),
+                            Optional.ofNullable(this.getClass().getAnnotation(CtrlDef.class)).map(CtrlDef::handler)
+                    ).flatMap(Optional::stream)
+                    .findFirst()
+                    .orElseThrow(() -> new ExceptionHandlerNotDefinedException(this.getClass().getSimpleName()));
+
+            // Récupération du bean correspondant
+            this.exceptionHandler = Optional.ofNullable(applicationContextService.getBean(handlerClass))
+                    .orElseThrow(() -> new BeanNotFoundException(this.getClass().getSimpleName()));
         }
 
         return this.exceptionHandler;
     }
 
+
     @Override
     public String handleExceptionMessage(Throwable throwable) {
-        if (exceptionHandler() != null) {
-            return exceptionHandler().handleError(throwable);
-        }
-        return throwable.toString();
+        return Optional.ofNullable(exceptionHandler())
+                .map(handler -> handler.handleError(throwable))
+                .orElseGet(throwable::toString);
     }
 
     @Override
