@@ -22,19 +22,19 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel> implement
     public abstract NextCodeRepository nextCodeRepository();
 
     @Override
-    public T findByEntity(String entity) {
+    public Optional<T> findByEntity(String entity) {
         Optional<T> nextCode = nextCodeRepository().findByEntity(entity);
         if (nextCode.isPresent()) {
-            return nextCode.get();
+            return nextCode;
         }
         return null;
     }
 
     @Override
-    public T findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
+    public Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
         Optional<T> nextCode = nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
         if (nextCode.isPresent()) {
-            return nextCode.get();
+            return nextCode;
         }
         return null;
     }

@@ -205,29 +205,43 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
     @Override
     @Transactional
     public void delete(String senderDomain, I id) {
+        // Validate the input id argument using Objects.requireNonNull
         if (Objects.isNull(id)) {
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
+            throw new BadArgumentException(LogConstants.NULL_ID_PROVIDED);
         }
 
-        T object = this.findById(id);
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            if (!senderDomain.equals(((ISAASEntity) object).getDomain())) {
-                throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
+        // Use Optional to handle the absence of the entity more concisely
+        var optional = this.findById(id);
+
+        optional.ifPresentOrElse(object -> {
+            // Check for ISAASEntity-specific domain validation
+            if (object instanceof ISAASEntity entity && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+                if (!senderDomain.equals(entity.getDomain())) {
+                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
+                }
             }
-        }
 
-        this.beforeDelete(id);
-        if (CancelableEntity.class.isAssignableFrom(persistentClass)
-                || CancelableEntity.class.isAssignableFrom(persistentClass)) {
-            ((CancelableEntity) object).setCheckCancel(true);
-            ((CancelableEntity) object).setCancelDate(new Date());
-            this.update(object);
-        } else {
-            repository().deleteById(id);
-        }
-        this.afterDelete(id);
+            // Perform beforeDelete operations
+            this.beforeDelete(id);
+
+            // Check for CancelableEntity and perform necessary updates
+            if (object instanceof CancelableEntity cancelable) {
+                cancelable.setCheckCancel(true);
+                cancelable.setCancelDate(new Date());
+                this.update(object);
+            } else {
+                // If not CancelableEntity, proceed with deletion
+                repository().deleteById(id);
+            }
+
+            // Perform afterDelete operations
+            this.afterDelete(id);
+        }, () -> {
+            // Handle the case where the entity is not found
+            throw new ObjectNotFoundException(" with id: " + id);
+        });
     }
+
 
     @Override
     @Transactional
@@ -255,17 +269,21 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        T object = this.findById(id);
-        this.beforeDelete(id);
-        if (CancelableEntity.class.isAssignableFrom(persistentClass)
-                || CancelableEntity.class.isAssignableFrom(persistentClass)) {
-            ((CancelableEntity) object).setCheckCancel(true);
-            ((CancelableEntity) object).setCancelDate(new Date());
-            this.update(object);
+        Optional<T> optional = this.findById(id);
+        if (optional.isPresent()) {
+            T object = optional.get();
+            this.beforeDelete(id);
+            if (object instanceof CancelableEntity cancelable) {
+                cancelable.setCheckCancel(true);
+                cancelable.setCancelDate(new Date());
+                this.update(object);
+            } else {
+                repository().deleteById(id);
+            }
+            this.afterDelete(id);
         } else {
-            repository().deleteById(id);
+            throw new ObjectNotFoundException(" with id: " + id);
         }
-        this.afterDelete(id);
     }
 
     @Override
@@ -346,15 +364,14 @@ public abstract class CrudService<I, T extends IIdEntity, R extends JpaPagingAnd
 
     @Override
     @Transactional(readOnly = true)
-    public T findById(I id) throws ObjectNotFoundException {
+    public Optional<T> findById(I id) throws ObjectNotFoundException {
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
-        Optional<T> optional = repository().findById(id);
-        if (optional.isPresent()) {
-            return this.afterFindById(optional.get());
-        }
-        return null;
+
+        // Retrieve the entity and apply afterFindById if present
+        return repository().findById(id)
+                .map(entity -> afterFindById((T) entity));  // Using lambda instead of method reference
     }
 
     @Override

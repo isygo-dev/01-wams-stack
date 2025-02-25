@@ -44,7 +44,7 @@ public abstract class AbstractService<T extends NextCodeModel> implements IServi
         T defaultNextCode = this.initCodeGenerator();
         if (defaultNextCode != null && StringUtils.hasText(defaultNextCode.getEntity())) {
             T nextCodeModel = nextCodeService.findByDomainAndEntityAndAttribute(defaultNextCode.getDomain()
-                    , defaultNextCode.getEntity(), defaultNextCode.getAttribute());
+                    , defaultNextCode.getEntity(), defaultNextCode.getAttribute()).get();
             if (nextCodeModel == null) {
                 return nextCodeService.save(initCodeGenerator());
             } else {

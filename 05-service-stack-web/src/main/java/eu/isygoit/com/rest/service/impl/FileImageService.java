@@ -18,10 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * The type File image service.
@@ -41,8 +41,9 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
     @Transactional
     public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
-            T entity = this.findById(id);
-            if (entity != null) {
+            Optional<T> optional = this.findById(id);
+            if (optional.isPresent()) {
+                T entity = optional.get();
                 Path target = Path.of(this.getUploadDirectory())
                         .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
                         .resolve(entity.getClass().getSimpleName().toLowerCase())
@@ -62,8 +63,9 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        T entity = this.findById(id);
-        if (entity != null) {
+        Optional<T> optional = this.findById(id);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             if (StringUtils.hasText(entity.getImagePath())) {
                 Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
                 if (!resource.exists()) {
@@ -120,7 +122,7 @@ public abstract class FileImageService<I, T extends IImageEntity & IFileEntity &
             entity.setImagePath(FileHelper.saveMultipartFile(target,
                     file.getOriginalFilename() + "_" + entity.getCode(), file, "png").toString());
         } else {
-            entity.setImagePath(this.findById((I) entity.getId()).getImagePath());
+            entity.setImagePath(this.findById((I) entity.getId()).get().getImagePath());
             log.warn("File is null or empty");
         }
         return this.update(entity);

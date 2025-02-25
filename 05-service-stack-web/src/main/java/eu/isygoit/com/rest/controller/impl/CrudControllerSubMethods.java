@@ -241,7 +241,7 @@ public abstract class CrudControllerSubMethods<I, T extends IIdEntity,
     public ResponseEntity<FULLD> subFindById(RequestContextDto requestContext, I id) {
         log.info("Find {} by id request received", persistentClass.getSimpleName());
         try {
-            final FULLD object = this.mapper().entityToDto(this.crudService().findById(id));
+            final FULLD object = this.mapper().entityToDto(this.crudService().findById(id).get());
             if (object == null) {
                 return ResponseFactory.ResponseNoContent();
             }

@@ -102,7 +102,11 @@ public abstract class CodifiableService<I, T extends IIdEntity, R extends JpaPag
 
         //get from database and update in memory map
         if (nextCode == null && nextCodeService() != null) {
-            nextCode = nextCodeService().findByDomainAndEntityAndAttribute(initNextCode.getDomain(), initNextCode.getEntity(), initNextCode.getAttribute());
+            nextCode = nextCodeService()
+                    .findByDomainAndEntityAndAttribute(initNextCode.getDomain(),
+                            initNextCode.getEntity(),
+                            initNextCode.getAttribute())
+                    .get();
             inMemoNextCode.put(getNextCodeKey(initNextCode), nextCode);
         }
 

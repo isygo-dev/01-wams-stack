@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The type Multi file service.
@@ -38,8 +39,9 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
 
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException {
-        T entity = findById(parentId);
-        if (entity != null) {
+        Optional<T> optional = findById(parentId);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             for (MultipartFile file : files) {
                 this.uploadAdditionalFile(parentId, file);
             }
@@ -51,15 +53,15 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
 
     @Override
     public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
-        T entity = findById(parentId);
-        if (entity != null) {
+        Optional<T> optional = findById(parentId);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             if (file != null && !file.isEmpty()) {
                 try {
                     if (file != null && !file.isEmpty()) {
                         L linkedFile = linkedFileClass.newInstance();
                         linkedFile.setCode(this.getNextCode());
-                        if (entity instanceof ISAASEntity isaasEntity
-                                && linkedFile instanceof ISAASEntity isaasLinkedFile) {
+                        if (entity instanceof ISAASEntity isaasEntity && linkedFile instanceof ISAASEntity isaasLinkedFile) {
                             isaasLinkedFile.setDomain(isaasEntity.getDomain());
                         }
                         linkedFile.setOriginalFileName(file.getOriginalFilename());
@@ -108,8 +110,9 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
 
     @Override
     public Resource downloadFile(I parentId, I fileId, Long version) throws IOException {
-        T entity = findById(parentId);
-        if (entity != null) {
+        Optional<T> optional = findById(parentId);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             L linkedFile = (L) entity.getAdditionalFiles().stream()
                     .filter(item -> ((L) item).getId().equals(fileId)).findAny()
                     .orElse(null);
@@ -126,8 +129,9 @@ public abstract class MultiFileService<I, T extends IMultiFileEntity & IIdEntity
 
     @Override
     public boolean deleteAdditionalFile(I parentId, I fileId) throws IOException {
-        T entity = findById(parentId);
-        if (entity != null) {
+        Optional<T> optional = findById(parentId);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             L linkedFile = (L) entity.getAdditionalFiles().stream()
                     .filter(item -> ((L) item).getId().equals(fileId)).findAny()
                     .orElse(null);

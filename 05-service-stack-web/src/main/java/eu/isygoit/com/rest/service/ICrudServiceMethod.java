@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The interface Crud service method.
@@ -137,7 +138,7 @@ public interface ICrudServiceMethod<I, T extends IIdEntity>
      * @return the t
      * @throws ObjectNotFoundException the object not found exception
      */
-    T findById(I id) throws ObjectNotFoundException;
+    Optional<T> findById(I id) throws ObjectNotFoundException;
 
     /**
      * Save or update t.

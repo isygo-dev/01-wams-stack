@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.util.Optional;
 
 /**
  * The type File service.
@@ -154,8 +155,9 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
     @Transactional
     @Override
     public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
-        T entity = findById(id);
-        if (entity != null) {
+        Optional<T> optional = this.findById(id);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             if (file != null && !file.isEmpty()) {
                 if (!StringUtils.hasText(entity.getCode())) {
                     entity.setCode(((ICodifiableService) this).getNextCode());
@@ -193,8 +195,9 @@ public abstract class FileService<I, T extends IFileEntity & IIdEntity & ICodifi
 
     @Override
     public Resource downloadFile(I id, Long version) throws IOException {
-        T entity = findById(id);
-        if (entity != null) {
+        Optional<T> optional = this.findById(id);
+        if (optional.isPresent()) {
+            T entity = optional.get();
             return subDownloadFile(entity, version);
         } else {
             throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
