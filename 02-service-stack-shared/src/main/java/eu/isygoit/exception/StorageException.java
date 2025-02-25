@@ -9,7 +9,7 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("storage.exception")
 public class StorageException extends ManagedException {
 
-    private static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 1L;
 
     /**
      * Instantiates a new Storage exception.

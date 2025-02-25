@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <!-- Complex Types -->
+    <xs:complexType name="authorType">
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:string"/>
+            <xs:element name="lastName" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="reviewType">
+        <xs:sequence>
+            <xs:element name="reviewer" type="xs:string"/>
+            <xs:element name="comment" type="xs:string"/>
+            <xs:element name="date" type="xs:date"/>
+        </xs:sequence>
+        <xs:attribute name="rating" type="ratingType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="reviewsType">
+        <xs:sequence>
+            <xs:element name="review" type="reviewType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="priceType">
+        <xs:simpleContent>
+            <xs:extension base="xs:decimal">
+                <xs:attribute name="currency" type="currencyType" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="stockType">
+        <xs:sequence>
+            <xs:element name="bookId" type="xs:string"/>
+            <xs:element name="quantity" type="xs:positiveInteger"/>
+            <xs:element name="location" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="inventoryType">
+        <xs:sequence>
+            <xs:element name="stock" type="stockType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="bookType">
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="author" type="authorType"/>
+            <xs:element name="publicationYear" type="yearType"/>
+            <xs:element name="price" type="priceType"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="reviews" type="reviewsType"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="category" type="categoryType" use="required"/>
+    </xs:complexType>
+
+    <!-- Simple Types -->
+    <xs:simpleType name="yearType">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1000"/>
+            <xs:maxInclusive value="2099"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="categoryType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="fiction"/>
+            <xs:enumeration value="non-fiction"/>
+            <xs:enumeration value="reference"/>
+            <xs:enumeration value="children"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="currencyType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="USD"/>
+            <xs:enumeration value="EUR"/>
+            <xs:enumeration value="GBP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ratingType">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Root Element -->
+    <xs:element name="bookstore">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="book" type="bookType" maxOccurs="unbounded"/>
+                <xs:element name="inventory" type="inventoryType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

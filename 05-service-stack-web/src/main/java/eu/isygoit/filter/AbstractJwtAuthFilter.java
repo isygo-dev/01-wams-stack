@@ -72,7 +72,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String jwt = UrlHelper.getJwtFromRequest(request);
+        String jwt = UrlHelper.getJwtTokenFromRequest(request);
         if (StringUtils.hasText(jwt)) {
             log.info("Request received:  {} - {} - {} ", request.getMethod(), request.getAuthType(), request.getRequestURI());
             try {

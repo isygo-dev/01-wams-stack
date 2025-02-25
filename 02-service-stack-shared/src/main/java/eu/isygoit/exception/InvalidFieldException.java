@@ -11,7 +11,7 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("invalid.field.exception")
 public class InvalidFieldException extends ManagedException {
 
-    private static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 1L;
 
     /**
      * Instantiates a new Invalid field exception.

@@ -1,7 +1,9 @@
 package eu.isygoit.helper;
 
 import eu.isygoit.dto.IIdentifiableDto;
-import lombok.extern.slf4j.Slf4j;
+import eu.isygoit.exception.BadFieldNameException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -10,89 +12,197 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
- * The type Bean helper.
+ * A utility class to handle bean manipulation, including merging and reflection-based field access.
  */
-@Slf4j
-public final class BeanHelper {
+public interface BeanHelper {
+
+    Logger logger = LoggerFactory.getLogger(BeanHelper.class);
 
     /**
-     * Call setter.
+     * Calls the setter method for the given field and value on the specified object.
      *
-     * @param obj       the obj
-     * @param fieldName the field name
-     * @param value     the value
+     * @param obj       the object to set the value on.
+     * @param fieldName the field to set the value for.
+     * @param value     the value to set.
      */
-    public static void callSetter(Object obj, String fieldName, Object value) {
-        PropertyDescriptor pd;
+    public static void callSetter(Object obj, String fieldName, Object value, boolean ignoreIfNotExists) {
         try {
-            pd = new PropertyDescriptor(fieldName, obj.getClass());
+            PropertyDescriptor pd = new PropertyDescriptor(fieldName, obj.getClass());
             pd.getWriteMethod().invoke(obj, value);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
-            log.error("<Error>: calling setter for {}/{}", obj.getClass().getSimpleName(), fieldName);
+            logger.error("Error calling setter for {}/{}", obj.getClass().getSimpleName(), fieldName, e);
+            if (!ignoreIfNotExists) {
+                throw new BadFieldNameException(e);
+            }
         }
     }
 
     /**
-     * Call getter t.
+     * Calls the getter method for the given field on the specified object.
      *
-     * @param <T>       the type parameter
-     * @param obj       the obj
-     * @param fieldName the field name
-     * @return the t
+     * @param <E>       the type of the field.
+     * @param obj       the object to get the value from.
+     * @param fieldName the field to get the value for.
+     * @return the field value.
      */
-    public static <T> T callGetter(Object obj, String fieldName) {
-        PropertyDescriptor pd;
+    public static <E> E callGetter(Object obj, String fieldName, boolean ignoreIfNotExists) {
         try {
-            pd = new PropertyDescriptor(fieldName, obj.getClass());
-            return (T) pd.getReadMethod().invoke(obj);
+            PropertyDescriptor pd = new PropertyDescriptor(fieldName, obj.getClass());
+            return (E) pd.getReadMethod().invoke(obj);
         } catch (IntrospectionException | IllegalAccessException | IllegalArgumentException |
                  InvocationTargetException e) {
-            log.error("<Error>: calling getter/is for {}/{}", obj.getClass().getSimpleName(), fieldName);
+            logger.error("Error calling getter for {}/{}", obj.getClass().getSimpleName(), fieldName, e);
+            if (!ignoreIfNotExists) {
+                throw new BadFieldNameException(e);
+            }
         }
-
         return null;
     }
 
     /**
-     * Merge identifiable dto.
+     * Merges the fields of the source object into the destination object. Non-null values are copied over,
+     * and collections are merged (with duplicates added).
      *
-     * @param source      the source
-     * @param destination the destination
-     * @return the identifiable dto
+     * @param source      the source object to merge.
+     * @param destination the destination object.
+     * @return the merged destination object.
      */
     public static IIdentifiableDto merge(IIdentifiableDto source, IIdentifiableDto destination) {
         if (source == null || destination == null) {
-            log.error("<Error>: merging null objects");
+            logger.error("Error: Cannot merge null objects.");
             return destination;
         }
-        if (destination.getClass().isAssignableFrom(source.getClass())
-                || source.getClass().isAssignableFrom(destination.getClass())) {
+
+        if (destination.getClass().isAssignableFrom(source.getClass()) || source.getClass().isAssignableFrom(destination.getClass())) {
             for (Field field : source.getClass().getDeclaredFields()) {
-                Object fieldValue = callGetter(source, field.getName());
+                Object fieldValue = callGetter(source, field.getName(), true);
                 if (fieldValue != null) {
                     if (Collection.class.isAssignableFrom(field.getType())) {
-                        Collection collection = callGetter(destination, field.getName());
-                        if (collection == null) {
-                            if (List.class.isAssignableFrom(field.getType())) {
-                                collection = new ArrayList();
-                            } else if (Set.class.isAssignableFrom(field.getType())) {
-                                collection = new HashSet<>();
-                            }
-                        }
-
-                        if (collection != null) {
-                            collection.addAll((Collection) fieldValue);
-                            callSetter(destination, field.getName(), collection);
-                        }
+                        mergeCollectionField(field, fieldValue, destination);
                     } else {
-                        callSetter(destination, field.getName(), fieldValue);
+                        callSetter(destination, field.getName(), fieldValue, true);
                     }
                 }
             }
         } else {
-            log.error("<Error>: Error merging object icompatible {}/{}", source.getClass().getSimpleName(), destination.getClass().getSimpleName());
+            logger.error("Error: Incompatible objects for merging {} and {}", source.getClass().getSimpleName(), destination.getClass().getSimpleName());
         }
         return destination;
+    }
+
+    /**
+     * Merges a collection field from source to destination by adding elements safely.
+     *
+     * @param field       the field to merge.
+     * @param fieldValue  the collection value from the source.
+     * @param destination the destination object.
+     */
+    public static void mergeCollectionField(Field field, Object fieldValue, Object destination) {
+        if (!(fieldValue instanceof Collection<?> sourceCollection)) {
+            return;
+        }
+
+        Collection<Object> destinationCollection = Optional.ofNullable(callGetter(destination, field.getName(), true))
+                .filter(Collection.class::isInstance)
+                .map(Collection.class::cast)
+                .map(existing -> {
+                    if (isImmutableCollection(existing)) {
+                        return new ArrayList<>(existing); // Create a modifiable copy
+                    }
+                    return existing;
+                })
+                .orElseGet(() -> instantiateCollection(field));
+
+        if (destinationCollection == null) {
+            throw new IllegalStateException("Could not instantiate collection for field: " + field.getName());
+        }
+
+        destinationCollection.addAll(sourceCollection); // Now safe to add elements
+        callSetter(destination, field.getName(), destinationCollection, true);
+    }
+
+    /**
+     * Checks if a collection is immutable.
+     */
+    public static boolean isImmutableCollection(Collection<?> collection) {
+        try {
+            collection.add(null);  // Try modifying it
+            collection.remove(null);
+            return false;
+        } catch (UnsupportedOperationException e) {
+            return true;
+        }
+    }
+
+
+    /**
+     * Instantiates a collection (List or Set) based on the field type.
+     *
+     * @param field the field to instantiate the collection for.
+     * @return the instantiated collection.
+     */
+    public static Collection<Object> instantiateCollection(Field field) {
+        if (List.class.isAssignableFrom(field.getType())) {
+            return new ArrayList<>();
+        } else if (Set.class.isAssignableFrom(field.getType())) {
+            return new HashSet<>();
+        }
+        return Collections.emptyList(); // Default to an empty List if unknown type
+    }
+
+    /**
+     * Copies all fields from the source object to the destination object.
+     *
+     * @param source      the source object to copy from.
+     * @param destination the destination object to copy to.
+     * @return the copied destination object.
+     */
+    public static IIdentifiableDto copyFields(IIdentifiableDto source, IIdentifiableDto destination) {
+        if (source == null || destination == null) {
+            logger.error("Error: Cannot copy fields for null objects.");
+            return destination;
+        }
+
+        for (Field field : source.getClass().getDeclaredFields()) {
+            Object fieldValue = callGetter(source, field.getName(), true);
+            if (fieldValue != null) {
+                callSetter(destination, field.getName(), fieldValue, true);
+            }
+        }
+        return destination;
+    }
+
+    /**
+     * Creates a new instance of a given class using reflection.
+     *
+     * @param clazz the class to instantiate.
+     * @return the new object instance.
+     */
+    public static <T> T createInstance(Class<T> clazz) {
+        try {
+            return clazz.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            logger.error("Error creating instance of {}", clazz.getSimpleName(), e);
+        }
+        return null;
+    }
+
+    /**
+     * Converts a collection to a different type (List to Set or vice versa).
+     *
+     * @param collection the collection to convert.
+     * @param <T>        the type of elements in the collection.
+     * @return a new collection of the desired type.
+     */
+    public static <T> Collection<T> convertCollection(Collection<T> collection, Class<? extends Collection> targetType) {
+        if (collection == null) return Collections.emptyList();
+
+        if (targetType.isAssignableFrom(ArrayList.class)) {
+            return new ArrayList<>(collection);
+        } else if (targetType.isAssignableFrom(HashSet.class)) {
+            return new HashSet<>(collection);
+        }
+        return collection; // Default to the same type if the target type is unknown
     }
 }

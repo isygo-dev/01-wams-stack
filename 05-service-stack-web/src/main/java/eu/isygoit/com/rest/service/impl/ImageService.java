@@ -45,10 +45,11 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
         if (file != null && !file.isEmpty()) {
             T entity = this.findById(id);
             if (entity != null) {
-                entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                                File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                                File.separator + entity.getClass().getSimpleName().toLowerCase() +
-                                File.separator + "image",
+                Path target = Path.of(this.getUploadDirectory())
+                        .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                        .resolve(entity.getClass().getSimpleName().toLowerCase())
+                        .resolve("image");
+                entity.setImagePath(FileHelper.saveMultipartFile(target,
                         file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
                 return this.update(entity);
             } else {
@@ -92,10 +93,11 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
             ((ICodifiable) entity).setCode(this.getNextCode());
         }
         if (file != null && !file.isEmpty()) {
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                            File.separator + entity.getClass().getSimpleName().toLowerCase() +
-                            File.separator + "image",
+            Path target = Path.of(this.getUploadDirectory())
+                    .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                    .resolve(entity.getClass().getSimpleName().toLowerCase())
+                    .resolve("image");
+            entity.setImagePath(FileHelper.saveMultipartFile(target,
                     file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
         } else {
             log.warn("File is null or empty");
@@ -113,10 +115,11 @@ public abstract class ImageService<I, T extends IImageEntity & IIdEntity, R exte
         }
 
         if (file != null && !file.isEmpty()) {
-            entity.setImagePath(FileHelper.storeMultipartFile(this.getUploadDirectory() +
-                            File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                            File.separator + entity.getClass().getSimpleName().toLowerCase() +
-                            File.separator + "image",
+            Path target = Path.of(this.getUploadDirectory())
+                    .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                    .resolve(entity.getClass().getSimpleName().toLowerCase())
+                    .resolve("image");
+            entity.setImagePath(FileHelper.saveMultipartFile(target,
                     file.getOriginalFilename() + "_" + (entity instanceof ICodifiable codifiable ? codifiable.getCode() : entity.getId()), file, "png").toString());
         } else {
             entity.setImagePath(this.findById((I) entity.getId()).getImagePath());

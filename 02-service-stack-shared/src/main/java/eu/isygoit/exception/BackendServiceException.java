@@ -12,7 +12,7 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("backend.service.exception")
 public class BackendServiceException extends ManagedException {
 
-    private static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 1L;
 
     /**
      * Instantiates a new Backend service exception.

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bookstore xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="bookstore.xsd">
+    <book id="B001" category="fiction">
+        <title>The Great Gatsby</title>
+        <author>
+            <firstName>F. Scott</firstName>
+            <lastName>Fitzgerald</lastName>
+        </author>
+        <publicationYear>1925</publicationYear>
+        <price currency="USD">19.99</price>
+        <description>A story of decadence and excess.</description>
+        <reviews>
+            <review rating="5">
+                <reviewer>John Doe</reviewer>
+                <comment>A masterpiece of American literature.</comment>
+                <date>2024-01-15</date>
+            </review>
+            <review rating="5">
+                <reviewer>John Doe</reviewer>
+                <comment>A masterpiece of American literature.</comment>
+                <date>2024-01-15</date>
+            </review>
+            <review rating="4">
+                <reviewer>Jane Smith</reviewer>
+                <comment>Compelling story of the Jazz Age.</comment>
+                <date>2024-02-01</date>
+            </review>
+        </reviews>
+    </book>
+    <book id="B002" category="non-fiction">
+        <title>A Brief History of Time</title>
+        <author>
+            <firstName>Stephen</firstName>
+            <lastName>Hawking</lastName>
+        </author>
+        <publicationYear>1988</publicationYear>
+        <price currency="EUR">25.50</price>
+        <description>Explaining complex theories of the universe.</description>
+        <reviews>
+            <review rating="5">
+                <reviewer>Alice Johnson</reviewer>
+                <comment>Makes complex physics accessible.</comment>
+                <date>2024-01-20</date>
+            </review>
+        </reviews>
+    </book>
+    <inventory>
+        <stock>
+            <bookId>B001</bookId>
+            <quantity>150</quantity>
+            <location>Warehouse A</location>
+        </stock>
+        <stock>
+            <bookId>B002</bookId>
+            <quantity>75</quantity>
+            <location>Warehouse B</location>
+        </stock>
+    </inventory>
+</bookstore>

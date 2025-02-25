@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @MsgLocale("user.missing.email.exception")
 public class UserMissingEmailException extends ManagedException {
 
-    private static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 1L;
 
     /**
      * Instantiates a new User missing email exception.
