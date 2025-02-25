@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JsonHelperTest {
+class JsonHelperTestPart1 {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final XmlMapper xmlMapper = new XmlMapper();
@@ -136,4 +136,6 @@ class JsonHelperTest {
             assertEquals("The provided JSON must be an array of objects to convert to CSV.", exception.getMessage());
         }
     }
+
+
 }

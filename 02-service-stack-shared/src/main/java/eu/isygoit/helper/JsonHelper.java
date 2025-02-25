@@ -1,39 +1,43 @@
 package eu.isygoit.helper;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.*;
 
 /**
- * The JsonHelper class provides utility methods for handling JSON data,
- * including parsing JSON from/to strings/files, validating against schemas,
- * and converting JSON to/from various other formats such as XML, CSV, YAML, and properties.
+ * The JsonHelper interface provides utility methods for handling JSON data,
+ * including parsing, converting between formats (XML, CSV, YAML, Properties),
+ * and validating against schemas.
  */
 public interface JsonHelper {
 
     Logger logger = LoggerFactory.getLogger(JsonHelper.class);
 
-    public static final ObjectMapper mapper = new ObjectMapper();
-    public static final XmlMapper xmlMapper = new XmlMapper();
-    public static final YAMLMapper yamlMapper = new YAMLMapper();
-    public static final CsvMapper csvMapper = new CsvMapper();
+    ObjectMapper mapper = new ObjectMapper();
+    XmlMapper xmlMapper = new XmlMapper();
+    YAMLMapper yamlMapper = new YAMLMapper();
+    CsvMapper csvMapper = new CsvMapper();
 
     // --- Methods for Converting JSON to Other Standard Formats ---
 
     /**
      * Converts a JsonNode to an XML string.
-     *
      * @param jsonNode the JsonNode to convert
      * @return the XML string representation of the JsonNode
      * @throws JsonProcessingException if an error occurs during the conversion
@@ -45,20 +49,18 @@ public interface JsonHelper {
 
     /**
      * Converts a JsonNode to a CSV string.
-     * Assumes the JsonNode is an array of objects (e.g., a list of records).
-     *
+     * Assumes the JsonNode is an array of objects (e.g., list of records).
      * @param jsonNode the JsonNode to convert
      * @return the CSV string representation of the JsonNode
      * @throws JsonProcessingException if an error occurs during the conversion
      */
     public static String jsonToCsv(JsonNode jsonNode) throws JsonProcessingException {
-        // Ensure the JSON is an array of objects (records)
         if (!jsonNode.isArray()) {
-            throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {
-            };
+            logger.error("Provided JSON is not an array of objects for CSV conversion");
+            throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {};
         }
 
-        // Use a StringBuilder to construct the CSV output
+        logger.debug("Converting JsonNode to CSV format");
         StringBuilder csvBuilder = new StringBuilder();
 
         // Extract headers from the first record (if available)
@@ -83,7 +85,6 @@ public interface JsonHelper {
 
     /**
      * Converts a JsonNode to a YAML string.
-     *
      * @param jsonNode the JsonNode to convert
      * @return the YAML string representation of the JsonNode
      * @throws JsonProcessingException if an error occurs during the conversion
@@ -94,15 +95,13 @@ public interface JsonHelper {
     }
 
     /**
-     * Converts a JsonNode to a Properties file format (key=value pairs).
-     *
+     * Converts a JsonNode to Properties format (key=value pairs).
      * @param jsonNode the JsonNode to convert
-     * @return the Properties file format string
+     * @return the Properties format string
      * @throws JsonProcessingException if an error occurs during the conversion
      */
     public static String jsonToProperties(JsonNode jsonNode) throws IOException {
-        logger.debug("Converting JsonNode to Properties file format");
-
+        logger.debug("Converting JsonNode to Properties format");
         Properties properties = new Properties();
         convertJsonNodeToProperties(jsonNode, properties, "");
 
@@ -114,12 +113,11 @@ public interface JsonHelper {
     /**
      * Recursively converts a JsonNode to Properties.
      * Used internally for deep conversion of nested structures.
-     *
-     * @param jsonNode   the JsonNode to convert
+     * @param jsonNode the JsonNode to convert
      * @param properties the Properties object to populate
-     * @param prefix     the key prefix to handle nested nodes
+     * @param prefix the key prefix to handle nested nodes
      */
-    public static void convertJsonNodeToProperties(JsonNode jsonNode, Properties properties, String prefix) {
+    private static void convertJsonNodeToProperties(JsonNode jsonNode, Properties properties, String prefix) {
         if (jsonNode.isObject()) {
             jsonNode.fields().forEachRemaining(entry -> {
                 String newPrefix = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
@@ -132,13 +130,12 @@ public interface JsonHelper {
 
     /**
      * Pretty prints a JsonNode with indentation.
-     *
      * @param jsonNode the JsonNode to pretty print
      * @return the pretty-printed JSON string
      * @throws JsonProcessingException if an error occurs during the conversion
      */
     public static String prettyPrintJson(JsonNode jsonNode) throws JsonProcessingException {
-        logger.debug("Pretty printing JsonNode for better readability");
+        logger.debug("Pretty printing JsonNode");
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
     }
 
@@ -146,7 +143,6 @@ public interface JsonHelper {
 
     /**
      * Converts an XML string to a JsonNode.
-     *
      * @param xml the XML string to convert
      * @return the JsonNode representation of the XML
      * @throws JsonProcessingException if an error occurs during the conversion
@@ -159,25 +155,20 @@ public interface JsonHelper {
     /**
      * Converts a CSV string to a JsonNode.
      * Assumes the first line is a header row.
-     *
      * @param csv the CSV string to convert
      * @return the JsonNode representation of the CSV
      * @throws JsonProcessingException if an error occurs during the conversion
      */
     public static JsonNode csvToJson(String csv) throws IOException {
         logger.debug("Converting CSV string to JsonNode");
-
-        // Define CSV schema assuming the first row is the header
         CsvSchema schema = csvMapper.schemaFor(Map.class).withHeader().withColumnSeparator(',');
         List<Object> records = csvMapper.readerFor(Map.class).with(schema).readValues(csv).readAll();
 
-        // Return the records as a JsonNode
         return mapper.valueToTree(records);
     }
 
     /**
      * Converts a YAML string to a JsonNode.
-     *
      * @param yaml the YAML string to convert
      * @return the JsonNode representation of the YAML
      * @throws JsonProcessingException if an error occurs during the conversion
@@ -189,20 +180,15 @@ public interface JsonHelper {
 
     /**
      * Converts a Properties file string to a JsonNode.
-     * The properties are assumed to be in key=value format, where nested properties are represented by dot notation.
-     *
      * @param properties the Properties file string to convert
      * @return the JsonNode representation of the properties
      * @throws IOException if an error occurs during reading or conversion
      */
     public static JsonNode propertiesToJson(String properties) throws IOException {
         logger.debug("Converting Properties string to JsonNode");
-
-        // Load the properties from the provided string
         Properties props = new Properties();
         props.load(new StringReader(properties));
 
-        // Convert properties into a nested map structure
         Map<String, Object> map = new HashMap<>();
         for (String key : props.stringPropertyNames()) {
             String[] keys = key.split("\\.");
@@ -213,13 +199,11 @@ public interface JsonHelper {
             currentMap.put(keys[keys.length - 1], props.getProperty(key));
         }
 
-        // Return the map as a JsonNode
         return mapper.valueToTree(map);
     }
 
     /**
      * Converts a pretty-printed JSON string back to a JsonNode.
-     *
      * @param json the pretty-printed JSON string
      * @return the JsonNode representation of the JSON string
      * @throws JsonProcessingException if an error occurs during the conversion
@@ -227,5 +211,96 @@ public interface JsonHelper {
     public static JsonNode prettyPrintJsonToJsonNode(String json) throws JsonProcessingException {
         logger.debug("Converting Pretty Printed JSON string back to JsonNode");
         return mapper.readTree(json);
+    }
+
+    // --- JSON (De)Serialization Methods ---
+
+    /**
+     * Converts a JSON string to an object of type T.
+     * @param <T> the target type
+     * @param json the JSON string
+     * @param valueType the target type class
+     * @return the object representation of the JSON
+     * @throws JsonParseException if an error occurs during parsing
+     * @throws JsonMappingException if an error occurs during mapping
+     * @throws IOException if an IO error occurs
+     */
+    public static <T> T fromJson(String json, Class<T> valueType) throws JsonParseException, JsonMappingException, IOException {
+        logger.debug("Converting JSON string to object of type {}", valueType.getName());
+        return mapper.readValue(json, valueType);
+    }
+
+    /**
+     * Converts an object to a JSON string.
+     * @param obj the object to convert
+     * @return the JSON string representation of the object
+     * @throws JsonGenerationException if an error occurs during generation
+     * @throws JsonMappingException if an error occurs during mapping
+     * @throws IOException if an IO error occurs
+     */
+    public static String toJson(Object obj) throws JsonGenerationException, JsonMappingException, IOException {
+        logger.debug("Converting object to JSON string");
+        return mapper.writeValueAsString(obj);
+    }
+
+    // --- JSON File Methods ---
+
+    /**
+     * Converts a JSON file to an object of type T.
+     * @param <T> the target type
+     * @param jsonReader the file reader for the JSON file
+     * @param valueType the target type class
+     * @return the object representation of the JSON file
+     * @throws JsonParseException if an error occurs during parsing
+     * @throws JsonMappingException if an error occurs during mapping
+     * @throws IOException if an IO error occurs
+     */
+    public static <T> T fromJsonFile(FileReader jsonReader, Class<T> valueType) throws JsonParseException, JsonMappingException, IOException {
+        logger.debug("Converting JSON file to object of type {}", valueType.getName());
+        return mapper.readValue(jsonReader, valueType);
+    }
+
+    /**
+     * Converts an object to a JSON file.
+     * @param jsonWriter the file writer for the JSON file
+     * @param obj the object to convert
+     * @throws JsonParseException if an error occurs during parsing
+     * @throws JsonMappingException if an error occurs during mapping
+     * @throws IOException if an IO error occurs
+     */
+    public static void toJsonFile(FileWriter jsonWriter, Object obj) throws JsonParseException, JsonMappingException, IOException {
+        logger.debug("Writing object to JSON file");
+        mapper.writeValue(jsonWriter, obj);
+    }
+
+    // --- JSON Schema Validation Methods ---
+
+    /**
+     * Validates a JSON file against a JSON schema.
+     * @param jsonFilePath the path to the JSON file
+     * @param schemaFilePath the path to the schema file
+     * @param schemaLanguage the schema language version
+     * @return a set of validation messages
+     * @throws IOException if an error occurs during the validation process
+     */
+    static Set<ValidationMessage> validateJson(String jsonFilePath, String schemaFilePath, String schemaLanguage) throws IOException {
+        File schemaFile = new File(schemaFilePath);
+        File jsonFile = new File(jsonFilePath);
+
+        if (!schemaFile.exists() || !schemaFile.isFile()) {
+            logger.error("Schema file not found: {}", schemaFilePath);
+            throw new FileNotFoundException("Schema file not found: " + schemaFilePath);
+        }
+
+        if (!jsonFile.exists() || !jsonFile.isFile()) {
+            logger.error("JSON file not found: {}", jsonFilePath);
+            throw new FileNotFoundException("JSON file not found: " + jsonFilePath);
+        }
+
+        JsonSchema jsonSchema = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(new FileInputStream(schemaFile));
+        JsonNode jsonNode = mapper.readTree(new FileInputStream(jsonFile));
+
+        logger.debug("Validating JSON against schema: {}", schemaFilePath);
+        return jsonSchema.validate(jsonNode);
     }
 }
