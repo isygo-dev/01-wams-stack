@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
-import eu.isygoit.com.rest.service.impl.CrudServiceUtils;
+import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.BadArgumentException;

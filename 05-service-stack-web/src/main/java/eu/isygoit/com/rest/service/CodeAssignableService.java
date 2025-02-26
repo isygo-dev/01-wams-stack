@@ -1,9 +1,8 @@
-package eu.isygoit.com.rest.service.impl;
+package eu.isygoit.com.rest.service;
 
 import eu.isygoit.annotation.CodeGenKms;
 import eu.isygoit.annotation.CodeGenLocal;
 import eu.isygoit.app.ApplicationContextService;
-import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;

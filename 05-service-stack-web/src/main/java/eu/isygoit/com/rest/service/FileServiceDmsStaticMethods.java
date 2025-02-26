@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service.impl;
+package eu.isygoit.com.rest.service;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.constants.DomainConstants;

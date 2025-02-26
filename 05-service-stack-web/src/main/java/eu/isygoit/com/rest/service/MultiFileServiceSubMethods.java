@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service.impl;
+package eu.isygoit.com.rest.service;
 
 import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;

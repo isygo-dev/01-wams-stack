@@ -1,6 +1,5 @@
-package eu.isygoit.com.rest.service.impl;
+package eu.isygoit.com.rest.service;
 
-import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;

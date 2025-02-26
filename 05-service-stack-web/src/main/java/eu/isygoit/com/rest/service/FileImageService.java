@@ -1,6 +1,5 @@
-package eu.isygoit.com.rest.service.impl;
+package eu.isygoit.com.rest.service;
 
-import eu.isygoit.com.rest.service.IImageServiceMethods;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.BadArgumentException;
@@ -8,10 +7,7 @@ import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.helper.FileHelper;
-import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.IImageEntity;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -27,16 +23,16 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * The type Image service.
+ * The type File image service.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable, R extends JpaPagingAndSortingRepository>
-        extends CodeAssignableService<I, T, R>
-        implements IImageServiceMethods<I, T> {
+public abstract class FileImageService<I extends Serializable, T extends IImageEntity & IFileEntity & IIdAssignable & ICodeAssignable, R extends JpaPagingAndSortingRepository>
+        extends FileService<I, T, R>
+        implements IFileServiceMethods<I, T>, IImageServiceMethods<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
@@ -44,7 +40,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
     @Transactional
     public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
-            Optional<T> optional = findById(id);
+            Optional<T> optional = this.findById(id);
             if (optional.isPresent()) {
                 T entity = optional.get();
                 Path target = Path.of(this.getUploadDirectory())
@@ -52,10 +48,10 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
                         .resolve(entity.getClass().getSimpleName().toLowerCase())
                         .resolve("image");
                 entity.setImagePath(FileHelper.saveMultipartFile(target,
-                        file.getOriginalFilename() + "_" + (entity instanceof ICodeAssignable codeAssignable ? codeAssignable.getCode() : entity.getId()), file, "png").toString());
+                        (entity).getCode() + "_" + file.getOriginalFilename(), file, "png").toString());
                 return this.update(entity);
             } else {
-                throw new ObjectNotFoundException(persistentClass.getSimpleName() + "with id " + id);
+                throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
             }
         } else {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
@@ -66,7 +62,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        Optional<T> optional = findById(id);
+        Optional<T> optional = this.findById(id);
         if (optional.isPresent()) {
             T entity = optional.get();
             if (StringUtils.hasText(entity.getImagePath())) {
@@ -76,10 +72,10 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
                 }
                 return resource;
             } else {
-                throw new EmptyPathException(persistentClass.getSimpleName() + "for id " + id);
+                throw new EmptyPathException("for id " + id);
             }
         } else {
-            throw new ResourceNotFoundException(persistentClass.getSimpleName() + "with id " + id);
+            throw new ResourceNotFoundException("with id " + id);
         }
     }
 
@@ -92,8 +88,8 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
             ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
-        if (entity instanceof ICodeAssignable codeAssignable && !StringUtils.hasText(codeAssignable.getCode())) {
-            ((ICodeAssignable) entity).setCode(this.getNextCode());
+        if (!StringUtils.hasText((entity).getCode())) {
+            entity.setCode(this.getNextCode());
         }
         if (file != null && !file.isEmpty()) {
             Path target = Path.of(this.getUploadDirectory())
@@ -101,7 +97,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
                     .resolve(entity.getClass().getSimpleName().toLowerCase())
                     .resolve("image");
             entity.setImagePath(FileHelper.saveMultipartFile(target,
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodeAssignable codeAssignable ? codeAssignable.getCode() : entity.getId()), file, "png").toString());
+                    file.getOriginalFilename() + "_" + entity.getCode(), file, "png").toString());
         } else {
             log.warn("File is null or empty");
         }
@@ -123,7 +119,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
                     .resolve(entity.getClass().getSimpleName().toLowerCase())
                     .resolve("image");
             entity.setImagePath(FileHelper.saveMultipartFile(target,
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodeAssignable codeAssignable ? codeAssignable.getCode() : entity.getId()), file, "png").toString());
+                    file.getOriginalFilename() + "_" + entity.getCode(), file, "png").toString());
         } else {
             entity.setImagePath(this.findById((I) entity.getId()).get().getImagePath());
             log.warn("File is null or empty");
@@ -131,26 +127,5 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
         return this.update(entity);
     }
 
-    /**
-     * Gets upload directory.
-     *
-     * @return the upload directory
-     */
     protected abstract String getUploadDirectory();
-
-    public T beforeUpdate(T object) {
-        return object;
-    }
-
-    public T afterUpdate(T object) {
-        return object;
-    }
-
-    public T beforeCreate(T object) {
-        return object;
-    }
-
-    public T afterCreate(T object) {
-        return object;
-    }
 }
