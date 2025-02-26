@@ -48,8 +48,8 @@ public abstract class LicenceModel<T extends Serializable> extends AuditableEnti
     private Date expiryDate;
 
     @Column(name = ComSchemaColumnConstantName.C_CRC16, updatable = false)
-    private Integer crc16;
+    private Long crc16;
 
     @Column(name = ComSchemaColumnConstantName.C_CRC32, updatable = false)
-    private Integer crc32;
+    private Long crc32;
 }

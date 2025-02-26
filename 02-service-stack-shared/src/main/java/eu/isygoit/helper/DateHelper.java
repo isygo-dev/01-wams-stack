@@ -8,62 +8,74 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
- * Utility class for performing common date-related operations.
- * Provides methods to manipulate, compare, and format dates efficiently.
+ * The interface Date helper.
  */
 public interface DateHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(DateHelper.class);
 
-    // Constants for defining the valid calendar range
+    /**
+     * The constant CALENDAR_START.
+     */
     LocalDateTime CALENDAR_START = LocalDateTime.of(1900, 1, 1, 0, 0);
+    /**
+     * The constant CALENDAR_END.
+     */
     LocalDateTime CALENDAR_END = LocalDateTime.of(2999, 12, 31, 23, 59);
 
-    // List of date formats to attempt when parsing date strings
-    List<String> DATE_PATTERNS = List.of(
-            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", // ISO 8601 with millisecond precision
-            "yyyy-MM-dd'T'HH:mm:ssXXX",     // ISO 8601 with time zone offset
-            "yyyy-MM-dd'T'HH:mm",           // ISO 8601 without time zone
-            "yyyy-MM-dd",                   // ISO 8601 date format
-            "yyyy/MM/dd",                   // Date with slashes as separators
-            "dd-MM-yyyy'T'HH:mm:ss.SSSXXX", // Custom format with day first
-            "dd-MM-yyyy'T'HH:mm:ssXXX",     // Custom format with day first
-            "dd-MM-yyyy'T'HH:mm",           // Custom format with day first
-            "dd-MM-yyyy",                   // Day first with hyphen separator
-            "dd/MM/yyyy",                   // Day first with slashes separator
-            "dd/MM/yyyy HH:mm",             // Day first with time (24-hour format)
-            "yyyyMMdd",                     // Compact date format with no delimiters
-            "ddMMyyyy",                     // Compact day-first format with no delimiters
-            "yyyyMMddHHmm",                 // Compact date-time format
-            "yyyyMMddHHmmss",               // Full date-time format
-            "MM-dd-yyyy",                   // US format with month first
-            "MM/dd/yyyy",                   // US format with slashes
-            "MM/dd/yyyy HH:mm",             // US format with time
-            "EEEE, dd MMM yyyy HH:mm:ss z", // RFC 1123 date format (e.g., Wed, 02 Feb 2025 15:00:00 GMT)
-            "MMMM dd, yyyy",                // Full month name (e.g. February 12, 2025)
-            "yyyy/MM/dd HH:mm:ss",          // Date-time with slashes
-            "epoch",                         // Unix epoch timestamp
-            "epoch_second"                   // Unix epoch timestamp in seconds
-    );
-
-    // --- Date Transformation Methods ---
+    /**
+     * The constant CALENDAR_START.
+     */
+    LocalTime TIME_START = LocalTime.of(0,0, 0, 0);
+    /**
+     * The constant CALENDAR_END.
+     */
+    LocalTime TIME_END = LocalTime.of(23, 59,59,999999999);
 
     /**
-     * Converts an absolute date string to a Date object using known patterns.
-     * If parsing fails, the method returns a default date or throws an exception.
-     * Logs each parsing attempt and provides useful debugging information.
-     *
-     * @param dateString    the date string to parse
-     * @param defaultIfNull the default value to return if parsing fails
-     * @return the parsed Date object or the default value if parsing fails
+     * The constant DATE_PATTERNS.
      */
-    public static Date parseDateString(String dateString, Date defaultIfNull) {
+    List<String> DATE_PATTERNS = List.of(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+            "yyyy-MM-dd'T'HH:mm:ssXXX",
+            "yyyy-MM-dd'T'HH:mm",
+            "yyyy-MM-dd",
+            "yyyy/MM/dd",
+            "dd-MM-yyyy'T'HH:mm:ss.SSSXXX",
+            "dd-MM-yyyy'T'HH:mm:ssXXX",
+            "dd-MM-yyyy'T'HH:mm",
+            "dd-MM-yyyy",
+            "dd/MM/yyyy",
+            "dd/MM/yyyy HH:mm",
+            "yyyyMMdd",
+            "ddMMyyyy",
+            "yyyyMMddHHmm",
+            "yyyyMMddHHmmss",
+            "MM-dd-yyyy",
+            "MM/dd/yyyy",
+            "MM/dd/yyyy HH:mm",
+            "EEEE, dd MMM yyyy HH:mm:ss z",
+            "MMMM dd, yyyy",
+            "yyyy/MM/dd HH:mm:ss",
+            "epoch",
+            "epoch_second"
+    );
+
+    /**
+     * Parse date string date.
+     *
+     * @param dateString    the date string
+     * @param defaultIfNull the default if null
+     * @return the date
+     */
+    static Date parseDateString(String dateString, Date defaultIfNull) {
         logger.debug("Attempting to parse date string: {}", dateString);
 
         if (!StringUtils.hasText(dateString) || "null".equalsIgnoreCase(dateString)) {
@@ -71,26 +83,8 @@ public interface DateHelper {
             return defaultIfNull;
         }
 
-        // Try each pattern and log the process
         return DATE_PATTERNS.stream()
-                .map(pattern -> {
-                    try {
-                        logger.debug("Trying to parse with pattern: {}", pattern);
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-                        LocalDate localDate = LocalDate.parse(dateString, formatter);
-
-                        // Manually check if the parsed date matches the input date to prevent auto-correction
-                        if (!dateString.equals(formatter.format(localDate))) {
-                            throw new DateTimeParseException("Invalid date", dateString, 0);
-                        }
-
-                        // Convert LocalDate to java.util.Date
-                        return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-                    } catch (DateTimeParseException e) {
-                        logger.debug("Failed to parse date with pattern {}: {}", pattern, e.getMessage());
-                        return null;
-                    }
-                })
+                .map(pattern -> tryParseDate(dateString, pattern))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> {
@@ -100,22 +94,31 @@ public interface DateHelper {
                 });
     }
 
+    private static Date tryParseDate(String dateString, String pattern) {
+        try {
+            var formatter = DateTimeFormatter.ofPattern(pattern);
+            var localDate = LocalDate.parse(dateString, formatter);
+            if (!dateString.equals(formatter.format(localDate))) {
+                throw new DateTimeParseException("Invalid date", dateString, 0);
+            }
+            return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        } catch (DateTimeParseException e) {
+            logger.debug("Failed to parse date with pattern {}: {}", pattern, e.getMessage());
+            return null;
+        }
+    }
+
     /**
-     * Converts a Date to an ISO 8601 formatted date string.
-     * Logs the conversion process and the formatted result.
+     * Format date to iso string string.
      *
-     * @param date the date to convert
-     * @return the ISO 8601 formatted date string
+     * @param date the date
+     * @return the string
      */
-    public static String formatDateToIsoString(Date date) {
+    static String formatDateToIsoString(Date date) {
         logger.debug("Attempting to format date: {}", date);
 
         return Optional.ofNullable(date)
-                .map(d -> {
-                    String formattedDate = d.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                    logger.debug("Successfully formatted date {} to ISO string: {}", date, formattedDate);
-                    return formattedDate;
-                })
+                .map(d -> d.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                 .orElseGet(() -> {
                     logger.warn("Provided date is null, returning null.");
                     return null;
@@ -123,14 +126,13 @@ public interface DateHelper {
     }
 
     /**
-     * Determines if the given date occurred within the last specified number of hours.
-     * Logs the check, including the calculated threshold and the result.
+     * Occurred in last x hours boolean.
      *
-     * @param date  the date to check
-     * @param hours the number of hours to check against
-     * @return true if the date is within the last specified hours, false otherwise
+     * @param date  the date
+     * @param hours the hours
+     * @return the boolean
      */
-    public static boolean occurredInLastXHours(Date date, int hours) {
+    static boolean occurredInLastXHours(Date date, int hours) {
         Objects.requireNonNull(date, "Date must not be null");
 
         Instant threshold = Instant.now().minus(hours, ChronoUnit.HOURS);
@@ -141,145 +143,220 @@ public interface DateHelper {
     }
 
     /**
-     * Checks if two dates fall on the same calendar day.
-     * Logs the comparison result.
+     * Are dates on same day boolean.
      *
-     * @param date1 the first date
-     * @param date2 the second date
-     * @return true if both dates are on the same day, false otherwise
+     * @param date1 the date 1
+     * @param date2 the date 2
+     * @return the boolean
      */
-    public static boolean areDatesOnSameDay(Date date1, Date date2) {
+    static boolean areDatesOnSameDay(Date date1, Date date2) {
         Objects.requireNonNull(date1, "First date must not be null");
         Objects.requireNonNull(date2, "Second date must not be null");
 
-        boolean isSameDay = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+        return date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 .isEqual(date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-
-        logger.debug("Comparing dates {} and {}: Are they on the same day? {}", date1, date2, isSameDay);
-        return isSameDay;
     }
 
     /**
-     * Checks if the given date is today's date.
-     * Logs the comparison and result.
+     * Add days to date date.
      *
-     * @param date the date to check
-     * @return true if the date is today, false otherwise
+     * @param date the date
+     * @param days the days
+     * @return the date
      */
-    public static boolean isToday(Date date) {
-        boolean isToday = areDatesOnSameDay(date, new Date());
-        logger.debug("Checking if date {} is today. Result: {}", date, isToday);
-        return isToday;
-    }
-
-    /**
-     * Adds or subtracts a specific number of days to/from a given date.
-     * Logs the calculation process.
-     *
-     * @param date the original date
-     * @param days the number of days to add (can be negative to subtract)
-     * @return the new date with days added/subtracted
-     */
-    public static Date addDaysToDate(Date date, int days) {
+    static Date addDaysToDate(Date date, int days) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        LocalDate newDate = date.toInstant()
+        var newDate = date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
                 .plusDays(days);
 
-        Date result = Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        logger.debug("Adding {} days to {} results in new date: {}", days, date, result);
-        return result;
+        return Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     /**
-     * Adds or subtracts a specific number of months to/from a given date.
-     * Logs the calculation process.
+     * Add months to date date.
      *
-     * @param date   the original date
-     * @param months the number of months to add (can be negative to subtract)
-     * @return the new date with months added/subtracted
+     * @param date   the date
+     * @param months the months
+     * @return the date
      */
-    public static Date addMonthsToDate(Date date, int months) {
+    static Date addMonthsToDate(Date date, int months) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        LocalDate newDate = date.toInstant()
+        var newDate = date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
                 .plusMonths(months);
 
-        Date result = Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        logger.debug("Adding {} months to {} results in new date: {}", months, date, result);
-        return result;
+        return Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     /**
-     * Checks if a given year is a leap year.
-     * Logs the check and result.
+     * Is leap year boolean.
      *
-     * @param year the year to check
-     * @return true if it's a leap year, false otherwise
+     * @param year the year
+     * @return the boolean
      */
-    public static boolean isLeapYear(int year) {
-        boolean leapYear = Year.isLeap(year);
-        logger.debug("Is the year {} a leap year? {}", year, leapYear);
-        return leapYear;
+    static boolean isLeapYear(int year) {
+        return Year.isLeap(year);
     }
 
     /**
-     * Returns the start of the week for a given date (00:00:00 on Monday).
-     * Logs the transformation and result.
+     * Gets start of week.
      *
-     * @param date the date to find the start of the week
-     * @return the start of the week (Monday at 00:00:00)
+     * @param date the date
+     * @return the start of week
      */
-    public static Date getStartOfWeek(Date date) {
+    static Date getStartOfWeek(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        LocalDate startOfWeek = date.toInstant()
+        var startOfWeek = date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
                 .with(DayOfWeek.MONDAY);
 
-        Date result = Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        logger.debug("Start of the week for {} is: {}", date, result);
-        return result;
+        return Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     /**
-     * Returns the end of the week for a given date (23:59:59 on Sunday).
-     * Logs the transformation and result.
+     * Gets end of week.
      *
-     * @param date the date to find the end of the week
-     * @return the end of the week (Sunday at 23:59:59)
+     * @param date the date
+     * @return the end of week
      */
-    public static Date getEndOfWeek(Date date) {
+    static Date getEndOfWeek(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        LocalDate endOfWeek = date.toInstant()
+        var endOfWeek = date.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
                 .with(DayOfWeek.SUNDAY);
 
-        Date result = Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        logger.debug("End of the week for {} is: {}", date, result);
-        return result;
+        return Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     /**
-     * Converts a Date to a human-readable format (e.g., "February 12, 2025").
-     * Logs the conversion process.
+     * Format date to human readable string.
      *
-     * @param date the date to convert
-     * @return the formatted string
+     * @param date the date
+     * @return the string
      */
-    public static String formatDateToHumanReadable(Date date) {
+    static String formatDateToHumanReadable(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        String formatted = DateTimeFormatter.ofPattern("MMMM dd, yyyy")
+        return DateTimeFormatter.ofPattern("MMMM dd, yyyy")
                 .format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        logger.debug("Formatted date {} to human-readable format: {}", date, formatted);
-        return formatted;
+    }
+
+    /**
+     * Is today boolean.
+     *
+     * @param date the date
+     * @return the boolean
+     */
+    static boolean isToday(Date date) {
+        return areDatesOnSameDay(date, new Date());
+    }
+
+    /**
+     * Clear time date.
+     *
+     * @param date the date
+     * @return the date
+     */
+    static Date clearTime(Date date) {
+        if (date == null) return null;
+
+        var calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
+    }
+
+    /**
+     * Has time boolean.
+     *
+     * @param date the date
+     * @return the boolean
+     */
+    static boolean hasTime(Date date) {
+        if (date == null) return false;
+
+        var calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        return calendar.get(Calendar.HOUR_OF_DAY) > 0 || calendar.get(Calendar.MINUTE) > 0 ||
+                calendar.get(Calendar.SECOND) > 0 || calendar.get(Calendar.MILLISECOND) > 0;
+    }
+
+    /**
+     * Max date.
+     *
+     * @param d1 the d 1
+     * @param d2 the d 2
+     * @return the date
+     */
+    static Date max(Date d1, Date d2) {
+        if (d1 == null) return d2;
+        if (d2 == null) return d1;
+        return d1.after(d2) ? d1 : d2;
+    }
+
+    /**
+     * Min date.
+     *
+     * @param d1 the d 1
+     * @param d2 the d 2
+     * @return the date
+     */
+    static Date min(Date d1, Date d2) {
+        if (d1 == null) return d2;
+        if (d2 == null) return d1;
+        return d1.before(d2) ? d1 : d2;
+    }
+
+    /**
+     * Between long.
+     *
+     * @param lowDate  the low date
+     * @param highDate the high date
+     * @return the long
+     */
+    static long between(Date lowDate, Date highDate) {
+        return ChronoUnit.SECONDS.between(lowDate.toInstant(), highDate.toInstant());
+    }
+
+    /**
+     * To date date.
+     *
+     * @param localDateTime the local date time
+     * @return the date
+     */
+    public static Date toDate(LocalDateTime localDateTime) {
+        if (localDateTime != null) {
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        }
+        return null;
+    }
+
+    /**
+     * Convert to local date time java . time . local date time.
+     *
+     * @param date the date to convert
+     * @return the java . time . local date time
+     */
+    public static java.time.LocalDateTime toLocalDateTime(Date date) {
+        if (date != null) {
+            return Instant.ofEpochMilli(date.getTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+        }
+        return null;
     }
 }

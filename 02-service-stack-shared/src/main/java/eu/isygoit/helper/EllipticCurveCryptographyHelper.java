@@ -16,10 +16,22 @@ import java.util.Optional;
  */
 public interface EllipticCurveCryptographyHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(EllipticCurveCryptographyHelper.class);
 
+    /**
+     * The constant EC_ALGORITHM.
+     */
     public static final String EC_ALGORITHM = "EC";
+    /**
+     * The constant SIGNATURE_ALGORITHM.
+     */
     public static final String SIGNATURE_ALGORITHM = "SHA256withECDSA";
+    /**
+     * The constant EC_CURVE.
+     */
     public static final String EC_CURVE = "secp256r1"; // Commonly used ECC curve for security and performance
 
     /**
@@ -32,6 +44,11 @@ public interface EllipticCurveCryptographyHelper {
         return Optional.ofNullable(createKeyPair());
     }
 
+    /**
+     * Create key pair key pair.
+     *
+     * @return the key pair
+     */
     public static KeyPair createKeyPair() {
         try {
             var keyPairGenerator = KeyPairGenerator.getInstance(EC_ALGORITHM);
@@ -57,6 +74,13 @@ public interface EllipticCurveCryptographyHelper {
         return Optional.ofNullable(generateSignature(data, privateKey));
     }
 
+    /**
+     * Generate signature byte [ ].
+     *
+     * @param data       the data
+     * @param privateKey the private key
+     * @return the byte [ ]
+     */
     public static byte[] generateSignature(byte[] data, PrivateKey privateKey) {
         try {
             var signature = Signature.getInstance(SIGNATURE_ALGORITHM);

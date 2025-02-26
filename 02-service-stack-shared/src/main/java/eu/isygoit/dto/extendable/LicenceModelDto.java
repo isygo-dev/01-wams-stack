@@ -24,6 +24,6 @@ public abstract class LicenceModelDto<T extends Serializable> extends AbstractAu
     private String type;
     private String user;
     private Date expiryDate;
-    private Integer crc16;
-    private Integer crc32;
+    private Long crc16;
+    private Long crc32;
 }

@@ -26,14 +26,17 @@ import java.util.Optional;
  */
 public interface XmlHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(XmlHelper.class);
 
     /**
      * Converts an XML string to an object of type E.
      *
+     * @param <E>         the type of object to return.
      * @param xmlContent  the XML string to convert.
      * @param targetClass the class of the object to convert to.
-     * @param <E>         the type of object to return.
      * @return the object represented by the XML string.
      * @throws JAXBException if the conversion fails.
      */
@@ -47,9 +50,9 @@ public interface XmlHelper {
     /**
      * Converts an XML file to an object of type E.
      *
+     * @param <E>         the type of object to return.
      * @param xmlFile     the XML file to convert.
      * @param targetClass the class of the object to convert to.
-     * @param <E>         the type of object to return.
      * @return the object represented by the XML file.
      * @throws JAXBException if the conversion fails.
      */
@@ -63,9 +66,9 @@ public interface XmlHelper {
     /**
      * Converts an object to its corresponding XML string representation.
      *
+     * @param <E>         the type of object.
      * @param object      the object to convert to XML.
      * @param targetClass the class of the object.
-     * @param <E>         the type of object.
      * @return the XML string representation of the object.
      * @throws JAXBException if the conversion fails.
      * @throws IOException   if writing to the string fails.
@@ -84,9 +87,10 @@ public interface XmlHelper {
     /**
      * Converts an object to an XML file.
      *
+     * @param <E>         the type of object.
+     * @param file        the file
      * @param object      the object to convert to XML.
      * @param targetClass the class of the object.
-     * @param <E>         the type of object.
      * @return the generated XML file.
      * @throws JAXBException if the conversion fails.
      */
@@ -289,7 +293,8 @@ public interface XmlHelper {
      * @param xmlFile       the XML file.
      * @param tagName       the name of the tag to move.
      * @param targetTagName the target element where the tag will be moved.
-     * @throws Exception if the operation fails.
+     * @throws Exception            if the operation fails.
+     * @throws TransformerException the transformer exception
      */
     public static void moveElementWithinXml(File xmlFile, String tagName, String targetTagName) throws Exception, TransformerException {
         var document = getDocumentFromFile(xmlFile);
@@ -304,6 +309,13 @@ public interface XmlHelper {
         writeDocumentToXmlFile(document, xmlFile);
     }
 
+    /**
+     * Gets element by tag name.
+     *
+     * @param document the document
+     * @param tagName  the tag name
+     * @return the element by tag name
+     */
     public static Element getElementByTagName(Document document, String tagName) {
         var nodeList = document.getElementsByTagName(tagName);
         return (nodeList.getLength() > 0) ? (Element) nodeList.item(0) : null;

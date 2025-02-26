@@ -1,6 +1,7 @@
-package eu.isygoit.encrypt.helper;
+package eu.isygoit.helper;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,15 +15,9 @@ import java.util.zip.CheckedInputStream;
  * Utility class for calculating CRC-32 checksums.
  * Uses Java's built-in CRC32 implementation.
  */
-@Slf4j
-public final class CRC32Helper {
+public interface CRC32Helper {
 
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private CRC32Helper() {
-        throw new UnsupportedOperationException("Utility class should not be instantiated.");
-    }
+    Logger logger = LoggerFactory.getLogger(CRC32Helper.class);
 
     /**
      * Computes the CRC-32 checksum of a byte array.
@@ -31,13 +26,13 @@ public final class CRC32Helper {
      * @return The computed CRC-32 checksum.
      */
     public static long calculate(byte[] bytes) {
-        log.info("Calculating CRC-32 for {} bytes", bytes.length);
+        logger.info("Calculating CRC-32 for {} bytes", bytes.length);
 
         var crc32 = new CRC32();
         crc32.update(bytes);
 
         var crc = crc32.getValue();
-        log.info("CRC-32 calculation complete: {}", toHex(crc));
+        logger.info("CRC-32 calculation complete: {}", toHex(crc));
 
         return crc;
     }
@@ -51,11 +46,11 @@ public final class CRC32Helper {
      */
     public static Optional<Long> calculate(File inputFile) {
         if (inputFile == null || !inputFile.exists()) {
-            log.error("File not found: {}", inputFile);
+            logger.error("File not found: {}", inputFile);
             return Optional.empty();
         }
 
-        log.info("Reading file: {}", inputFile.getAbsolutePath());
+        logger.info("Reading file: {}", inputFile.getAbsolutePath());
 
         try (var fis = new FileInputStream(inputFile);
              var cis = new CheckedInputStream(fis, new CRC32())) {
@@ -66,11 +61,11 @@ public final class CRC32Helper {
             }
 
             var crc = cis.getChecksum().getValue();
-            log.info("File CRC-32 calculation complete: {}", toHex(crc));
+            logger.info("File CRC-32 calculation complete: {}", toHex(crc));
             return Optional.of(crc);
 
         } catch (IOException e) {
-            log.error("Failed to read file: {}", inputFile.getAbsolutePath(), e);
+            logger.error("Failed to read file: {}", inputFile.getAbsolutePath(), e);
             return Optional.empty();
         }
     }

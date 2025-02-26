@@ -11,6 +11,9 @@ import java.util.regex.Pattern;
  */
 public interface RegExHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(SecurityHelper.class);
 
     /**

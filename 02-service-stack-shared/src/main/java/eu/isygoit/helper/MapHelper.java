@@ -15,6 +15,9 @@ import java.util.stream.Stream;
  */
 public interface MapHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(MapHelper.class);
 
     /**

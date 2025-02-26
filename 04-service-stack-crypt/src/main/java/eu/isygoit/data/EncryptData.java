@@ -1,4 +1,4 @@
-package eu.isygoit.encrypt.data;
+package eu.isygoit.data;
 
 /**
  * The type Encrypt data.

@@ -33,6 +33,9 @@ import java.util.zip.ZipOutputStream;
  */
 public interface FileHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(FileHelper.class);
     //------------------- Directory Management -------------------
 
@@ -72,6 +75,7 @@ public interface FileHelper {
      * @param fileName        the desired filename
      * @param multipartFile   the file to save
      * @param fileExtension   the file extension (optional)
+     * @param options         the options
      * @return the Path of the saved file
      * @throws IOException if an I/O error occurs
      */
@@ -94,6 +98,14 @@ public interface FileHelper {
         }
     }
 
+    /**
+     * Download resource resource.
+     *
+     * @param filePath the file path
+     * @param version  the version
+     * @return the resource
+     * @throws MalformedURLException the malformed url exception
+     */
     static Resource downloadResource(Path filePath, Long version) throws MalformedURLException {
         if (filePath == null) {
             logger.error("Empty path");

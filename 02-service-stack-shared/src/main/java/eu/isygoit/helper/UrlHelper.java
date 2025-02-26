@@ -23,8 +23,14 @@ import java.util.stream.Collectors;
  */
 public interface UrlHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(UrlHelper.class);
 
+    /**
+     * The constant SPECIAL_CHARACTERS.
+     */
     public static final String[][] SPECIAL_CHARACTERS = {
             {" ", "#", "$", "%", "&", "@", "`", "/", ":", ";", "<", "=", ">", "?", "[", "\\", "]", "^", "{", "|", "}", "~", "“", "‘", "+", ","},
             {"20%", "24%", "26%", "60%", "%3A", "%3C", "%3E", "%5B", "%5D", "%7B", "%7D", "22%", "%2B", "23%", "25%", "40%", "%2F", "%3B", "%3D", "%3F", "%5C", "%5E", "%7C", "%7E", "27%", "%2C"}

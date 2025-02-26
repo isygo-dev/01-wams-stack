@@ -20,10 +20,22 @@ import java.security.spec.X509EncodedKeySpec;
  */
 public interface SecurityHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(SecurityHelper.class);
 
+    /**
+     * The constant AES_ALGORITHM.
+     */
     public static final String AES_ALGORITHM = "AES";
+    /**
+     * The constant AES_WRAP_TRANSFORMATION.
+     */
     public static final String AES_WRAP_TRANSFORMATION = "AESWrap";
+    /**
+     * The constant AES_CIPHER_TRANSFORMATION.
+     */
     public static final String AES_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
 
     /**
@@ -118,7 +130,7 @@ public interface SecurityHelper {
      * Encrypts the given plaintext using AES encryption.
      *
      * @param hexSecretKey the AES key in hexadecimal format
-     * @param plaintext    the plaintext to encrypt
+     * @param plaintext    the plaintext to helper
      * @return the encrypted ciphertext as a hexadecimal string
      */
     public static String encryptWithAES(String hexSecretKey, String plaintext) {

@@ -1,4 +1,4 @@
-package eu.isygoit.encrypt.config;
+package eu.isygoit.config;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

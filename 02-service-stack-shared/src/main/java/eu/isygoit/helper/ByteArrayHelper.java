@@ -21,7 +21,13 @@ import java.util.zip.Checksum;
  */
 public interface ByteArrayHelper {
 
+    /**
+     * The constant logger.
+     */
     public static final Logger logger = LoggerFactory.getLogger(ByteArrayHelper.class);
+    /**
+     * The constant HEX_MASK.
+     */
     public static final int HEX_MASK = 0xf;
 
     /**

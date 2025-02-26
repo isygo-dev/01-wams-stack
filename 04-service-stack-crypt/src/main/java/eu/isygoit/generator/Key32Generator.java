@@ -1,4 +1,4 @@
-package eu.isygoit.encrypt.generator;
+package eu.isygoit.generator;
 
 /**
  * The type Key 32 generator.

@@ -1,6 +1,7 @@
-package eu.isygoit.encrypt.helper;
+package eu.isygoit.helper;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,21 +14,15 @@ import java.util.stream.IntStream;
  * Utility class for calculating CRC-16 checksums.
  * Uses the standard CRC-16-CCITT algorithm (polynomial: 0x1021).
  */
-@Slf4j
-public final class CRC16Helper {
+public interface CRC16Helper {
+
+    Logger logger = LoggerFactory.getLogger(CRC16Helper.class);
 
     // CRC-16 standard polynomial (CCITT)
-    private static final int POLYNOMIAL = 0x1021;
+    public static final int POLYNOMIAL = 0x1021;
 
     // Initial CRC value (commonly set to 0x0000)
-    private static final int INITIAL_VALUE = 0x0000;
-
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private CRC16Helper() {
-        throw new UnsupportedOperationException("Utility class should not be instantiated.");
-    }
+    public static final int INITIAL_VALUE = 0x0000;
 
     /**
      * Computes the CRC-16 checksum of a byte array.
@@ -36,7 +31,7 @@ public final class CRC16Helper {
      * @return The computed CRC-16 checksum.
      */
     public static long calculate(byte[] bytes) {
-        log.info("Calculating CRC-16 for {} bytes", bytes.length);
+        logger.info("Calculating CRC-16 for {} bytes", bytes.length);
 
         // Initialize CRC value
         var crc = INITIAL_VALUE;
@@ -51,7 +46,7 @@ public final class CRC16Helper {
             });
         }
 
-        log.info("CRC-16 calculation complete: {}", toHex(crc));
+        logger.info("CRC-16 calculation complete: {}", toHex(crc));
         return crc;
     }
 
@@ -64,20 +59,20 @@ public final class CRC16Helper {
      */
     public static Optional<Long> calculate(File inputFile) {
         if (inputFile == null || !inputFile.exists()) {
-            log.error("File not found: {}", inputFile);
+            logger.error("File not found: {}", inputFile);
             return Optional.empty();
         }
 
-        log.info("Reading file: {}", inputFile.getAbsolutePath());
+        logger.info("Reading file: {}", inputFile.getAbsolutePath());
 
         return Optional.ofNullable(inputFile)
                 .map(file -> {
                     try {
                         var bytes = Files.readAllBytes(file.toPath());
-                        log.info("File read successfully ({} bytes)", bytes.length);
+                        logger.info("File read successfully ({} bytes)", bytes.length);
                         return calculate(bytes);
                     } catch (IOException e) {
-                        log.error("Failed to read file: {}", file.getAbsolutePath(), e);
+                        logger.error("Failed to read file: {}", file.getAbsolutePath(), e);
                         return null;
                     }
                 });

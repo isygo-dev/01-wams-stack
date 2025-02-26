@@ -16,14 +16,18 @@ import java.util.*;
  */
 public interface BeanHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(BeanHelper.class);
 
     /**
      * Calls the setter method for the given field and value on the specified object.
      *
-     * @param obj       the object to set the value on.
-     * @param fieldName the field to set the value for.
-     * @param value     the value to set.
+     * @param obj               the object to set the value on.
+     * @param fieldName         the field to set the value for.
+     * @param value             the value to set.
+     * @param ignoreIfNotExists the ignore if not exists
      */
     public static void callSetter(Object obj, String fieldName, Object value, boolean ignoreIfNotExists) {
         try {
@@ -41,9 +45,10 @@ public interface BeanHelper {
     /**
      * Calls the getter method for the given field on the specified object.
      *
-     * @param <E>       the type of the field.
-     * @param obj       the object to get the value from.
-     * @param fieldName the field to get the value for.
+     * @param <E>               the type of the field.
+     * @param obj               the object to get the value from.
+     * @param fieldName         the field to get the value for.
+     * @param ignoreIfNotExists the ignore if not exists
      * @return the field value.
      */
     public static <E> E callGetter(Object obj, String fieldName, boolean ignoreIfNotExists) {
@@ -124,6 +129,9 @@ public interface BeanHelper {
 
     /**
      * Checks if a collection is immutable.
+     *
+     * @param collection the collection
+     * @return the boolean
      */
     public static boolean isImmutableCollection(Collection<?> collection) {
         try {
@@ -176,6 +184,7 @@ public interface BeanHelper {
     /**
      * Creates a new instance of a given class using reflection.
      *
+     * @param <T>   the type parameter
      * @param clazz the class to instantiate.
      * @return the new object instance.
      */
@@ -191,8 +200,9 @@ public interface BeanHelper {
     /**
      * Converts a collection to a different type (List to Set or vice versa).
      *
-     * @param collection the collection to convert.
      * @param <T>        the type of elements in the collection.
+     * @param collection the collection to convert.
+     * @param targetType the target type
      * @return a new collection of the desired type.
      */
     public static <T> Collection<T> convertCollection(Collection<T> collection, Class<? extends Collection> targetType) {

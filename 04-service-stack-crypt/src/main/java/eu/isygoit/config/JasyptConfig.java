@@ -1,7 +1,7 @@
-package eu.isygoit.encrypt.config;
+package eu.isygoit.config;
 
-import eu.isygoit.encrypt.generator.IKeyGenerator;
-import eu.isygoit.encrypt.generator.KeyGenerator;
+import eu.isygoit.generator.IKeyGenerator;
+import eu.isygoit.generator.KeyGenerator;
 import org.jasypt.digest.config.SimpleDigesterConfig;
 import org.jasypt.encryption.pbe.*;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;

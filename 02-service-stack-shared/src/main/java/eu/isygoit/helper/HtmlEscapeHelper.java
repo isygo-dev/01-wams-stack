@@ -13,9 +13,15 @@ import java.util.Optional;
  */
 public interface HtmlEscapeHelper {
 
+    /**
+     * The constant logger.
+     */
     Logger logger = LoggerFactory.getLogger(HtmlEscapeHelper.class);
 
-    // Predefined HTML character encoding table mapping characters to their HTML entities
+    /**
+     * The constant HTML_CHAR_TO_ENTITY_MAP.
+     */
+// Predefined HTML character encoding table mapping characters to their HTML entities
     Map<Character, String> HTML_CHAR_TO_ENTITY_MAP = new HashMap<>() {{
         // Basic HTML escape codes
         put('<', "&lt;");  // Less-than sign

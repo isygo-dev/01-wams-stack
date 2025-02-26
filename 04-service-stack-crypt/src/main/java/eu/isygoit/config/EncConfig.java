@@ -1,4 +1,4 @@
-package eu.isygoit.encrypt.config;
+package eu.isygoit.config;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

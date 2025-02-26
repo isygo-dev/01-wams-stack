@@ -21,8 +21,8 @@ public class LinkedFileDto<T extends Serializable> extends FileEntityDto<T> {
 
     private String code;
     private String originalFileName;
-    private Integer crc16;
-    private Integer crc32;
+    private Long crc16;
+    private Long crc32;
     private Long size;
     private Long version;
     private String mimetype;

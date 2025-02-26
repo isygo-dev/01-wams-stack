@@ -1,8 +1,8 @@
-package eu.isygoit.encrypt.helper;
+package eu.isygoit.helper;
 
-import eu.isygoit.encrypt.data.DecryptData;
-import eu.isygoit.encrypt.data.EncryptData;
-import eu.isygoit.encrypt.data.KeyData;
+import eu.isygoit.data.DecryptData;
+import eu.isygoit.data.EncryptData;
+import eu.isygoit.data.KeyData;
 
 import java.util.Date;
 
@@ -26,11 +26,11 @@ public class EncryptHelper {
     }
 
     /**
-     * Create encrypt data encrypt data.
+     * Create helper data helper data.
      *
      * @param <V>   the type parameter
      * @param value the value
-     * @return the encrypt data
+     * @return the helper data
      */
     public static <V> EncryptData<V> createEncryptData(V value) {
         EncryptData<V> encryptData = new EncryptData<>();
