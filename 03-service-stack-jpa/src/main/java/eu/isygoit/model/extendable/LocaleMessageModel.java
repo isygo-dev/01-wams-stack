@@ -1,6 +1,6 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.*;
@@ -21,7 +21,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public class LocaleMessageModel<T extends Serializable> implements IIdEntity<T> {
+public class LocaleMessageModel<T extends Serializable> implements IIdAssignable<T> {
 
     @Id
     @SequenceGenerator(name = "message_sequence_generator", sequenceName = "message_sequence", allocationSize = 1)

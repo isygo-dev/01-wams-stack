@@ -1,6 +1,6 @@
 package eu.isygoit.model.cassandra;
 
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,6 +15,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AbstractEntity<T> implements IIdEntity<T> {
+public abstract class AbstractEntity<T> implements IIdAssignable<T> {
 
 }

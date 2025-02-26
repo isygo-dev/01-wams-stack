@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.INextCodeService;
@@ -15,7 +15,7 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICodifiableService<I extends Serializable, T extends IIdEntity>
+public interface ICodifiableService<I extends Serializable, T extends IIdAssignable>
         extends ICrudServiceMethod<I, T> {
 
     /**

@@ -4,7 +4,7 @@ import eu.isygoit.annotation.SrvRepo;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
@@ -16,7 +16,7 @@ import org.springframework.data.repository.Repository;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudServiceUtils<T extends IIdEntity, R extends Repository>
+public abstract class CrudServiceUtils<T extends IIdAssignable, R extends Repository>
         implements ICrudServiceUtils<T> {
 
     @Autowired

@@ -1,7 +1,7 @@
 package eu.isygoit.service;
 
-import eu.isygoit.model.ICodifiable;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.ICodeAssignable;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.service.nextCode.INextCodeService;
 import lombok.extern.slf4j.Slf4j;
@@ -55,9 +55,9 @@ public abstract class AbstractService<T extends NextCodeModel> implements IServi
     }
 
     @Override
-    public <E extends IIdEntity> E beforePersist(E entity) {
-        if (entity instanceof ICodifiable codifiable && !StringUtils.hasText(((ICodifiable) entity).getCode())) {
-            codifiable.setCode(this.getNextCode());
+    public <E extends IIdAssignable> E beforePersist(E entity) {
+        if (entity instanceof ICodeAssignable codeAssignable && !StringUtils.hasText(((ICodeAssignable) entity).getCode())) {
+            codeAssignable.setCode(this.getNextCode());
         }
         return entity;
     }

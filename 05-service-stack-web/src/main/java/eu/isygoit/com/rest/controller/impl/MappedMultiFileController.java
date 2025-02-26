@@ -9,7 +9,7 @@ import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.mapper.EntityMapper;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -32,7 +32,7 @@ import java.util.List;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedMultiFileController<I extends Serializable, T extends IIdEntity & IMultiFileEntity,
+public abstract class MappedMultiFileController<I extends Serializable, T extends IIdAssignable & IMultiFileEntity,
         L extends LinkedFileMinDto,
         M extends IIdentifiableDto,
         F extends M,

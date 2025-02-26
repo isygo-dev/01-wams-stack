@@ -5,7 +5,7 @@ import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -87,7 +87,7 @@ public class CriteriaHelper {
      * @param classType the class type
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
+    public static <T extends IIdAssignable> Specification<T> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
         Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(classType);
         Specification<T> specification = Specification.where(null);
         for (QueryCriteria cr : criteria) {
@@ -152,7 +152,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> like(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> like(String valueName, String value) {
         return (entity, cq, cb) -> cb.like(entity.get(valueName), "%" + value + "%");
     }
 
@@ -164,7 +164,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> notLike(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> notLike(String valueName, String value) {
         return (entity, cq, cb) -> cb.notLike(entity.get(valueName), "%" + value + "%");
     }
 
@@ -176,7 +176,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> equal(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> equal(String valueName, String value) {
         return (entity, cq, cb) -> cb.equal(entity.get(valueName), value);
     }
 
@@ -188,7 +188,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> notEqual(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> notEqual(String valueName, String value) {
         return (entity, cq, cb) -> cb.notEqual(entity.get(valueName), value);
     }
 
@@ -200,7 +200,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> lessThan(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> lessThan(String valueName, String value) {
         return (entity, cq, cb) -> cb.lessThan(entity.get(valueName), value);
     }
 
@@ -212,7 +212,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> lessThanOrEqualTo(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> lessThanOrEqualTo(String valueName, String value) {
         return (entity, cq, cb) -> cb.lessThanOrEqualTo(entity.get(valueName), value);
     }
 
@@ -224,7 +224,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> greaterThan(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> greaterThan(String valueName, String value) {
         return (entity, cq, cb) -> cb.greaterThan(entity.get(valueName), value);
     }
 
@@ -236,7 +236,7 @@ public class CriteriaHelper {
      * @param value     the value
      * @return the specification
      */
-    public static <T extends IIdEntity> Specification<T> greaterThanOrEqualTo(String valueName, String value) {
+    public static <T extends IIdAssignable> Specification<T> greaterThanOrEqualTo(String valueName, String value) {
         return (entity, cq, cb) -> cb.greaterThanOrEqualTo(entity.get(valueName), value);
     }
 }

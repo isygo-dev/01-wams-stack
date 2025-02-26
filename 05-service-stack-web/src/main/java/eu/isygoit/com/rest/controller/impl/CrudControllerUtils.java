@@ -10,7 +10,7 @@ import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.MapperNotDefinedException;
 import eu.isygoit.exception.ServiceNotDefinedException;
 import eu.isygoit.mapper.EntityMapper;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +25,7 @@ import java.lang.reflect.ParameterizedType;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class CrudControllerUtils<T extends IIdEntity,
+public abstract class CrudControllerUtils<T extends IIdAssignable,
         M extends IIdentifiableDto,
         F extends M,
         S extends ICrudServiceUtils<T>>

@@ -6,7 +6,7 @@ import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.MapperNotDefinedException;
 import eu.isygoit.exception.ServiceNotDefinedException;
 import eu.isygoit.mapper.EntityMapper;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 
 /**
  * The interface Crud controller utils.
@@ -16,7 +16,7 @@ import eu.isygoit.model.IIdEntity;
  * @param <F> the type parameter
  * @param <S>     the type parameter
  */
-public interface ICrudControllerUtils<T extends IIdEntity,
+public interface ICrudControllerUtils<T extends IIdAssignable,
         M extends IIdentifiableDto,
         F extends M,
         S extends ICrudServiceUtils<T>> {

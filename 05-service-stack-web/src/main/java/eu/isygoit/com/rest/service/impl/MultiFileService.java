@@ -31,7 +31,7 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileService<I extends Serializable, T extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & ICodifiable & IIdEntity, R extends JpaPagingAndSortingRepository>
+public abstract class MultiFileService<I extends Serializable, T extends IMultiFileEntity & IIdAssignable, L extends ILinkedFile & ICodeAssignable & IIdAssignable, R extends JpaPagingAndSortingRepository>
         extends MultiFileServiceSubMethods<I, T, L, R>
         implements IMultiFileServiceMethods<I, T> {
 
@@ -62,13 +62,13 @@ public abstract class MultiFileService<I extends Serializable, T extends IMultiF
                     if (file != null && !file.isEmpty()) {
                         L linkedFile = linkedFileClass.newInstance();
                         linkedFile.setCode(this.getNextCode());
-                        if (entity instanceof ISAASEntity isaasEntity && linkedFile instanceof ISAASEntity isaasLinkedFile) {
-                            isaasLinkedFile.setDomain(isaasEntity.getDomain());
+                        if (entity instanceof IDomainAssignable IDomainAssignable && linkedFile instanceof IDomainAssignable isaasLinkedFile) {
+                            isaasLinkedFile.setDomain(IDomainAssignable.getDomain());
                         }
                         linkedFile.setOriginalFileName(file.getOriginalFilename());
                         linkedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
                         linkedFile.setPath(this.getUploadDirectory() +
-                                File.separator + (entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
+                                File.separator + (entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
                                 File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional");
                         linkedFile.setMimetype(file.getContentType());
                         linkedFile.setCrc16(CRC16Helper.calculate(file.getBytes()));
@@ -77,14 +77,14 @@ public abstract class MultiFileService<I extends Serializable, T extends IMultiF
                         linkedFile.setVersion(1L);
 
                         //Uploading file
-                        linkedFile = this.beforeUpload((entity instanceof ISAASEntity isaasEntity
-                                        ? isaasEntity.getDomain()
+                        linkedFile = this.beforeUpload((entity instanceof IDomainAssignable IDomainAssignable
+                                        ? IDomainAssignable.getDomain()
                                         : DomainConstants.DEFAULT_DOMAIN_NAME),
                                 linkedFile,
                                 file);
                         linkedFile = subUploadFile(file, linkedFile);
-                        this.afterUpload((entity instanceof ISAASEntity isaasEntity
-                                        ? isaasEntity.getDomain()
+                        this.afterUpload((entity instanceof IDomainAssignable IDomainAssignable
+                                        ? IDomainAssignable.getDomain()
                                         : DomainConstants.DEFAULT_DOMAIN_NAME),
                                 linkedFile,
                                 file);

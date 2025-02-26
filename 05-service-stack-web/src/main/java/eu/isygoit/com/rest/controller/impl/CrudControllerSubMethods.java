@@ -8,8 +8,8 @@ import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.ISAASEntity;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.IDomainAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -32,7 +32,7 @@ import java.util.Optional;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdEntity,
+public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable,
         M extends IIdentifiableDto,
         F extends M, S
         extends ICrudServiceMethod<I, T>>
@@ -166,7 +166,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
         try {
             var list = Optional.ofNullable(
-                            ISAASEntity.class.isAssignableFrom(persistentClass) &&
+                            IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                                     ? crudService().findAll(requestContext.getSenderDomain())
                                     : crudService().findAll()
@@ -191,7 +191,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
-            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME)
                     : crudService().findAll();
@@ -220,7 +220,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         try {
             var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
-            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? crudService().findAll(requestContext.getSenderDomain(), pageRequest)
                     : crudService().findAll(pageRequest);
@@ -247,7 +247,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
-            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? crudService().findAll(requestContext.getSenderDomain())
                     : crudService().findAll();
@@ -279,7 +279,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         try {
             var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
-            var entities = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? crudService().findAll(requestContext.getSenderDomain(), pageRequest)
                     : crudService().findAll(pageRequest);
@@ -328,7 +328,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Get count {} request received", persistentClass.getSimpleName());
 
         try {
-            var count = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var count = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? crudService().count(requestContext.getSenderDomain())
                     : crudService().count();
@@ -376,7 +376,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
 
             // Sélection du domaine de recherche
-            var senderDomain = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var senderDomain = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? requestContext.getSenderDomain()
                     : null;
@@ -407,7 +407,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
             var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
             // Détermination conditionnelle du domaine de recherche
-            var senderDomain = ISAASEntity.class.isAssignableFrom(persistentClass) &&
+            var senderDomain = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
                     !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
                     ? requestContext.getSenderDomain()
                     : null;

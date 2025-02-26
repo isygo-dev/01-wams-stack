@@ -5,7 +5,7 @@ package eu.isygoit.model;
  *
  * @param <S> the type parameter
  */
-public interface IStatable<S> {
+public interface IStatusAssignable<S> {
 
     /**
      * Gets state.

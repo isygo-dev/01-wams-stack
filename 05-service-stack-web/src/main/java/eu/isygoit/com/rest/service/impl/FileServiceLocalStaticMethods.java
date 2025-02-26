@@ -34,7 +34,7 @@ public final class FileServiceLocalStaticMethods {
      * @return the string
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> String upload(MultipartFile file, T entity) throws IOException {
+    static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity) throws IOException {
         Path filePath = Path.of(entity.getPath());
         if (!Files.exists(filePath)) {
             Files.createDirectories(filePath);
@@ -53,14 +53,14 @@ public final class FileServiceLocalStaticMethods {
      * @return the resource
      * @throws MalformedURLException the malformed url exception
      */
-    static <T extends IFileEntity & IIdEntity & ICodifiable> Resource download(T entity, Long version) throws MalformedURLException {
+    static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
         if (StringUtils.hasText(entity.getPath())) {
             Resource resource = new UrlResource(Path.of(entity.getPath() +
                     File.separator + entity.getFileName()).toUri());
             if (!resource.exists()) {
                 throw new ResourceNotFoundException("No resource found for "
-                        + (entity instanceof ISAASEntity isaasEntity
-                        ? isaasEntity.getDomain()
+                        + (entity instanceof IDomainAssignable IDomainAssignable
+                        ? IDomainAssignable.getDomain()
                         : DomainConstants.DEFAULT_DOMAIN_NAME
                         + '/' + entity.getFileName()
                         + "/" + version));
@@ -68,8 +68,8 @@ public final class FileServiceLocalStaticMethods {
             return resource;
         } else {
             throw new EmptyPathException("For entity "
-                    + (entity instanceof ISAASEntity isaasEntity
-                    ? isaasEntity.getDomain()
+                    + (entity instanceof IDomainAssignable IDomainAssignable
+                    ? IDomainAssignable.getDomain()
                     : DomainConstants.DEFAULT_DOMAIN_NAME
                     + '/' + entity.getFileName()
                     + "/" + version));
@@ -84,7 +84,7 @@ public final class FileServiceLocalStaticMethods {
      * @return the boolean
      * @throws IOException the io exception
      */
-    public static <L extends ILinkedFile & ICodifiable & IIdEntity> boolean delete(L entity) throws IOException {
+    public static <L extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(L entity) throws IOException {
         File file = new File(entity.getPath()
                 + File.separator + entity.getFileName());
         if (file.exists()) {

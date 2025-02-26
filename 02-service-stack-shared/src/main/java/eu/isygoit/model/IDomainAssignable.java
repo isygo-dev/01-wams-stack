@@ -3,7 +3,7 @@ package eu.isygoit.model;
 /**
  * The interface Isaas entity.
  */
-public interface ISAASEntity {
+public interface IDomainAssignable {
 
     /**
      * Gets domain.

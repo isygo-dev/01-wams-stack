@@ -4,7 +4,7 @@ import eu.isygoit.com.rest.api.IMappedCrudDeleteApi;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
@@ -20,7 +20,7 @@ import java.io.Serializable;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedCrudDeleteController<I extends Serializable, T extends IIdEntity,
+public abstract class MappedCrudDeleteController<I extends Serializable, T extends IIdAssignable,
         M extends IIdentifiableDto,
         F extends M,
         S extends ICrudServiceMethod<I, T>>

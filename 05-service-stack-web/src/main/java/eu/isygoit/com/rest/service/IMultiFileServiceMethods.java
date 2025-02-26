@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +15,7 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IMultiFileServiceMethods<I extends Serializable, T extends IIdEntity & IMultiFileEntity> {
+public interface IMultiFileServiceMethods<I extends Serializable, T extends IIdAssignable & IMultiFileEntity> {
 
     /**
      * Upload additional files list.

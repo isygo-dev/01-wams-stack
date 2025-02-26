@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +15,7 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IFileServiceMethods<I extends Serializable, T extends IIdEntity & IFileEntity> {
+public interface IFileServiceMethods<I extends Serializable, T extends IIdAssignable & IFileEntity> {
 
     /**
      * Create with file t.

@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-public interface IIdEntity<T> extends Serializable {
+public interface IIdAssignable<T> extends Serializable {
     /**
      * Gets id.
      *

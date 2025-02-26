@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +14,7 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IImageServiceMethods<I extends Serializable, T extends IIdEntity & IImageEntity> {
+public interface IImageServiceMethods<I extends Serializable, T extends IIdAssignable & IImageEntity> {
 
     /**
      * Upload image t.

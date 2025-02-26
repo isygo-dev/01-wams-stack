@@ -4,8 +4,8 @@ import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
-import eu.isygoit.model.ICodifiable;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.ICodeAssignable;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
@@ -25,7 +25,7 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileServiceSubMethods<I extends Serializable, T extends IMultiFileEntity & IIdEntity, L extends ILinkedFile & ICodifiable & IIdEntity, R extends JpaPagingAndSortingRepository>
+public abstract class MultiFileServiceSubMethods<I extends Serializable, T extends IMultiFileEntity & IIdAssignable, L extends ILinkedFile & ICodeAssignable & IIdAssignable, R extends JpaPagingAndSortingRepository>
         extends CodifiableService<I, T, R> {
 
     @Autowired

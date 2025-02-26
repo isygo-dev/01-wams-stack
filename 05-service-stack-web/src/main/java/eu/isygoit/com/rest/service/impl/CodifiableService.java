@@ -9,7 +9,7 @@ import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.service.IRemoteNextCodeService;
@@ -34,7 +34,7 @@ import java.util.Map;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodifiableService<I extends Serializable, T extends IIdEntity, R extends JpaPagingAndSortingRepository>
+public abstract class CodifiableService<I extends Serializable, T extends IIdAssignable, R extends JpaPagingAndSortingRepository>
         extends CrudService<I, T, R>
         implements ICodifiableService<I, T> {
 

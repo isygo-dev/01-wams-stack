@@ -2,7 +2,7 @@ package eu.isygoit.mapper;
 
 
 import eu.isygoit.dto.IIdentifiableDto;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 
 import java.util.List;
 import java.util.Set;
@@ -13,7 +13,7 @@ import java.util.Set;
  * @param <T> the type parameter
  * @param <D> the type parameter
  */
-public interface EntityMapper<T extends IIdEntity, D extends IIdentifiableDto> {
+public interface EntityMapper<T extends IIdAssignable, D extends IIdentifiableDto> {
 
     /**
      * Dto to entity t.

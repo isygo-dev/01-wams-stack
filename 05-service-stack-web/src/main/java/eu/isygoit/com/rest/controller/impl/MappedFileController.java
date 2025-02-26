@@ -10,7 +10,7 @@ import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.ISAASDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -31,7 +31,7 @@ import java.io.Serializable;
  * @param <S>     the type parameter
  */
 @Slf4j
-public abstract class MappedFileController<I extends Serializable, T extends IIdEntity & IFileEntity,
+public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable & IFileEntity,
         M extends IIdentifiableDto & IFileUploadDto,
         F extends M,
         S extends IFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>

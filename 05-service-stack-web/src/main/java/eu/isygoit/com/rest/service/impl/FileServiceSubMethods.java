@@ -4,9 +4,9 @@ import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileServiceSubMethods<I extends Serializable, T extends IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
+public abstract class FileServiceSubMethods<I extends Serializable, T extends IFileEntity & IIdAssignable & ICodeAssignable, R extends JpaPagingAndSortingRepository>
         extends CodifiableService<I, T, R> {
 
     @Autowired

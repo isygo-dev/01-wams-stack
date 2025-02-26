@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import org.springframework.data.repository.Repository;
 
 /**
@@ -9,7 +9,7 @@ import org.springframework.data.repository.Repository;
  *
  * @param <T> the type parameter
  */
-public interface ICrudServiceUtils<T extends IIdEntity> {
+public interface ICrudServiceUtils<T extends IIdAssignable> {
 
     /**
      * Repository repository.

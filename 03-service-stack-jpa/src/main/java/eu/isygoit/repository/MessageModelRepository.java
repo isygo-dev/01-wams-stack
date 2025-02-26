@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.LocaleMessageModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface MessageModelRepository<T extends IIdEntity, I extends Serializable>
+public interface MessageModelRepository<T extends IIdAssignable, I extends Serializable>
         extends JpaRepository<T, I> {
 
     /**

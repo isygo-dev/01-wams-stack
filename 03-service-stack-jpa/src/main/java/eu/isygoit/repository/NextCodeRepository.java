@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.ISAASEntity;
+import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +19,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface NextCodeRepository<T extends NextCodeModel & ISAASEntity, I extends Serializable>
+public interface NextCodeRepository<T extends NextCodeModel & IDomainAssignable, I extends Serializable>
         extends JpaPagingAndSortingSAASRepository<T, I> {
 
     /**

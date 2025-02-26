@@ -32,7 +32,7 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileImageService<I extends Serializable, T extends IImageEntity & IFileEntity & IIdEntity & ICodifiable, R extends JpaPagingAndSortingRepository>
+public abstract class FileImageService<I extends Serializable, T extends IImageEntity & IFileEntity & IIdAssignable & ICodeAssignable, R extends JpaPagingAndSortingRepository>
         extends FileService<I, T, R>
         implements IFileServiceMethods<I, T>, IImageServiceMethods<I, T> {
 
@@ -46,7 +46,7 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
             if (optional.isPresent()) {
                 T entity = optional.get();
                 Path target = Path.of(this.getUploadDirectory())
-                        .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                        .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
                         .resolve(entity.getClass().getSimpleName().toLowerCase())
                         .resolve("image");
                 entity.setImagePath(FileHelper.saveMultipartFile(target,
@@ -85,9 +85,9 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
     @Transactional
     public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((ISAASEntity) entity).setDomain(senderDomain);
+            ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
         if (!StringUtils.hasText((entity).getCode())) {
@@ -95,7 +95,7 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
         }
         if (file != null && !file.isEmpty()) {
             Path target = Path.of(this.getUploadDirectory())
-                    .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                    .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
                     .resolve(entity.getClass().getSimpleName().toLowerCase())
                     .resolve("image");
             entity.setImagePath(FileHelper.saveMultipartFile(target,
@@ -110,14 +110,14 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
     @Transactional
     public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
         //Check SAAS entity modification
-        if (ISAASEntity.class.isAssignableFrom(persistentClass)
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((ISAASEntity) entity).setDomain(senderDomain);
+            ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
         if (file != null && !file.isEmpty()) {
             Path target = Path.of(this.getUploadDirectory())
-                    .resolve(entity instanceof ISAASEntity isaasEntity ? isaasEntity.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                    .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
                     .resolve(entity.getClass().getSimpleName().toLowerCase())
                     .resolve("image");
             entity.setImagePath(FileHelper.saveMultipartFile(target,

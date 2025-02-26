@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.controller;
 
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  * @param <M>  the type parameter
  * @param <F> the type parameter
  */
-interface ICrudControllerEvents<I extends Serializable, T extends IIdEntity, M extends IIdentifiableDto, F extends M> {
+interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable, M extends IIdentifiableDto, F extends M> {
 
     /**
      * Before create fulld.

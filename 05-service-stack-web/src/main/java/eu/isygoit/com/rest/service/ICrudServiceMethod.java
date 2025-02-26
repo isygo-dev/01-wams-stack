@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.filter.QueryCriteria;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +17,7 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceMethod<I extends Serializable, T extends IIdEntity>
+public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssignable>
         extends ICrudServiceEvents<I, T>,
         ICrudServiceUtils<T> {
 

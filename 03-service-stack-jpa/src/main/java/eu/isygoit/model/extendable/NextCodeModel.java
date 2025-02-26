@@ -1,8 +1,8 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.ISAASEntity;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
@@ -24,7 +24,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @SuperBuilder
 @MappedSuperclass
-public abstract class NextCodeModel<T extends Serializable> implements IIdEntity<T>, ISAASEntity {
+public abstract class NextCodeModel<T extends Serializable> implements IIdAssignable<T>, IDomainAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")

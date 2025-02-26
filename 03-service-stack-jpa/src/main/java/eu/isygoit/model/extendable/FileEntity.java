@@ -1,6 +1,6 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.model.ICodifiable;
+import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -27,7 +27,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity, ICodifiable {
+public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity, ICodeAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false)

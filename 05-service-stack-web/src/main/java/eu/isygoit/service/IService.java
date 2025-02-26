@@ -1,6 +1,6 @@
 package eu.isygoit.service;
 
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 
 /**
@@ -30,5 +30,5 @@ public interface IService {
      * @param entity the entity
      * @return the e
      */
-    <E extends IIdEntity> E beforePersist(E entity);
+    <E extends IIdAssignable> E beforePersist(E entity);
 }

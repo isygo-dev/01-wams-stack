@@ -1,8 +1,8 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.IIdEntity;
-import eu.isygoit.model.ISAASEntity;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.IDomainAssignable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -19,7 +19,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingSAASRepository<T extends ISAASEntity & IIdEntity, I extends Serializable>
+public interface JpaPagingAndSortingSAASRepository<T extends IDomainAssignable & IIdAssignable, I extends Serializable>
         extends JpaPagingAndSortingRepository<T, I> {
 
 

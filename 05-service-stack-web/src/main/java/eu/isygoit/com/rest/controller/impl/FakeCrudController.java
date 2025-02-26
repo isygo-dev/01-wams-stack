@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
@@ -20,7 +20,7 @@ import java.util.Map;
  * @param <F> the type parameter
  */
 @Slf4j
-public abstract class FakeCrudController<I extends Serializable, T extends IIdEntity,
+public abstract class FakeCrudController<I extends Serializable, T extends IIdAssignable,
         M extends IIdentifiableDto,
         F extends M>
         implements IMappedCrudApi<I, M, F> {

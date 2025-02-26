@@ -1,8 +1,8 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.ICodifiable;
-import eu.isygoit.model.IIdEntity;
+import eu.isygoit.model.ICodeAssignable;
+import eu.isygoit.model.IIdAssignable;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The interface Jpa paging and sorting codifiable repository.
+ * The interface Jpa paging and sorting codeAssignable repository.
  *
  * @param <T> the type parameter
  * @param <I> the type parameter
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingCodifiableRepository<T extends ICodifiable & IIdEntity, I extends Serializable>
+public interface JpaPagingAndSortingCodifiableRepository<T extends ICodeAssignable & IIdAssignable, I extends Serializable>
         extends JpaPagingAndSortingRepository<T, I> {
 
     /**
