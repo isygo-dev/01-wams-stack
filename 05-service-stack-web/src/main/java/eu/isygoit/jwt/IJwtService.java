@@ -81,7 +81,7 @@ public interface IJwtService {
      * @param key            the key
      * @return the t
      */
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver, String key);
+    <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key);
 
     /**
      * Extract claim t.
@@ -91,7 +91,7 @@ public interface IJwtService {
      * @param claimsResolver the claims resolver
      * @return the t
      */
-    <T> T extractClaim(String token, Function<Claims, T> claimsResolver);
+    <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver);
 
     /**
      * Extract all claims claims.

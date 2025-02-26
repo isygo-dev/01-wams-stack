@@ -11,127 +11,126 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * The type Jwt service.
+ * Service de gestion des JWT.
  */
 @Slf4j
 @Service
 @Transactional
 public class JwtService implements IJwtService {
 
-    /**
-     * The constant AUTHORIZATION.
-     */
     public static final String AUTHORIZATION = "Authorization";
-
-    /* Not Signed */
 
     @Override
     public Optional<String> extractSubject(String token) {
-        return Optional.ofNullable(extractClaim(token, Claims::getSubject));
+        log.debug("Extracting subject from token");
+        return extractClaim(token, Claims::getSubject);
     }
 
     @Override
     public Optional<String> extractDomain(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_SENDER_DOMAIN)) {
-            return Optional.ofNullable(claims.get(JwtConstants.JWT_SENDER_DOMAIN, String.class));
-        }
-        return Optional.empty();
+        log.debug("Extracting domain from token");
+        return extractClaim(token, JwtConstants.JWT_SENDER_DOMAIN);
     }
 
     @Override
     public Boolean extractIsAdmin(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_IS_ADMIN)) {
-            return claims.get(JwtConstants.JWT_IS_ADMIN, Boolean.class);
-        }
-        return Boolean.FALSE;
+        log.debug("Extracting isAdmin flag from token");
+        return extractClaim(token, JwtConstants.JWT_IS_ADMIN)
+                .map(Boolean.class::cast)
+                .orElse(Boolean.FALSE);
     }
 
     @Override
     public Optional<String> extractApplication(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_LOG_APP)) {
-            return Optional.ofNullable(claims.get(JwtConstants.JWT_LOG_APP, String.class));
-        }
-        return Optional.empty();
+        log.debug("Extracting application from token");
+        return extractClaim(token, JwtConstants.JWT_LOG_APP);
     }
 
     @Override
     public Optional<String> extractAccountType(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_SENDER_ACCOUNT_TYPE)) {
-            return Optional.ofNullable(claims.get(JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class));
-        }
-        return Optional.empty();
+        log.debug("Extracting account type from token");
+        return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE);
     }
 
     @Override
     public Optional<String> extractUserName(String token) {
-        Claims claims = this.extractAllClaims(token);
-        if (!CollectionUtils.isEmpty(claims) && claims.containsKey(JwtConstants.JWT_SENDER_USER)) {
-            return Optional.ofNullable(claims.get(JwtConstants.JWT_SENDER_USER, String.class));
-        }
-        return Optional.empty();
+        log.debug("Extracting username from token");
+        return extractClaim(token, JwtConstants.JWT_SENDER_USER);
     }
 
     @Override
     public Optional<String> extractSubject(String token, String key) {
-        return Optional.ofNullable(extractClaim(token, Claims::getSubject, key));
+        log.debug("Extracting subject from signed token");
+        return extractClaim(token, Claims::getSubject, key);
+    }
+
+    private Optional<String> extractClaim(String token, String claimKey) {
+        log.debug("Extracting claim: {}", claimKey);
+        return Optional.ofNullable(extractAllClaims(token).get(claimKey, String.class));
     }
 
     @Override
     public Claims extractAllClaims(String token) {
+        log.debug("Extracting all claims (unsigned) from token");
         //This is To avoid signing check !!!!!!!
-        int i = token.lastIndexOf('.');
-        token = token.substring(0, i + 1);
-        return Jwts.parser().parseClaimsJwt(token).getBody();
+        return Jwts.parser()
+                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                .getBody();
     }
 
     @Override
     public Claims extractAllClaims(String token, String key) {
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+        log.debug("Extracting all claims from signed token");
+        return Jwts.parser()
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
     }
-
-    /* Signed */
 
     @Override
     public Optional<Date> extractExpiration(String token, String key) {
-        return Optional.ofNullable(extractClaim(token, Claims::getExpiration, key));
+        log.debug("Extracting expiration date from signed token");
+        return extractClaim(token, Claims::getExpiration, key);
     }
 
     @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
-        final Claims claims = extractAllClaims(token, key);
-        return claimsResolver.apply(claims);
+    public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
+        log.debug("Extracting claim with key");
+        return Optional.ofNullable(claimsResolver.apply(extractAllClaims(token, key)));
     }
 
     @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver) {
+        log.debug("Extracting claim");
+        return Optional.ofNullable(claimsResolver.apply(extractAllClaims(token)));
     }
 
     @Override
     public Boolean isTokenExpired(String token, String key) {
-        return extractExpiration(token, key).get().before(new Date());
+        log.debug("Checking if token is expired");
+        return extractExpiration(token, key)
+                .map(exp -> exp.before(Date.from(Instant.now())))
+                .orElse(true);
     }
 
     @Override
-    public TokenDto createToken(String subject, Map<String, Object> claims, String issuer, String audience
-            , SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs) {
+    public TokenDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
+                                SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs) {
 
+        log.info("Creating new JWT token for subject: {}", subject);
         Date expiryDate = calcExpiryDate(lifeTimeInMs);
+
         JwtBuilder jwtBuilder = Jwts.builder()
                 .setSubject(subject)
                 .setIssuer(issuer)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setIssuedAt(Date.from(Instant.now()))
                 .setExpiration(expiryDate)
                 .setAudience(audience)
                 .signWith(algorithm, key);
@@ -140,47 +139,49 @@ public class JwtService implements IJwtService {
             claims.forEach(jwtBuilder::claim);
         }
 
-        return TokenDto.builder()
-                .type(IEnumWebToken.Types.Bearer)
-                .token(jwtBuilder.compact())
-                .expiryDate(expiryDate)
-                .build();
+        String token = jwtBuilder.compact();
+        log.info("JWT token created successfully");
+
+        return new TokenDto(IEnumWebToken.Types.Bearer, token, expiryDate);
     }
 
     @Override
     public void validateToken(String token, String subject, String key) {
+        log.info("Validating JWT token for subject: {}", subject);
+
         if (!StringUtils.hasText(token)) {
-            log.error("<Error>: Invalid JWT: null or empty");
+            log.error("Invalid JWT: token is null or empty");
             throw new TokenInvalidException("Invalid JWT token: null or empty");
         }
         try {
             Jwts.parser().setSigningKey(key).parseClaimsJws(token);
-            final Optional<String> optional = extractSubject(token, key);
-            if(optional.isPresent()) {
-                if (StringUtils.hasText(optional.get()) && !optional.get().equalsIgnoreCase(subject)) {
-                    throw new TokenInvalidException("Invalid JWT:subject not matching");
-                }
-            }
+            extractSubject(token, key)
+                    .filter(sub -> StringUtils.hasText(sub) && sub.equalsIgnoreCase(subject))
+                    .orElseThrow(() -> new TokenInvalidException("Invalid JWT: subject does not match"));
+
+            log.info("JWT token is valid");
+
         } catch (SignatureException ex) {
-            log.error("<Error>: Invalid JWT signature");
-            throw new TokenInvalidException("Invalid JWT:signature", ex);
+            log.error("Invalid JWT signature");
+            throw new TokenInvalidException("Invalid JWT: signature", ex);
         } catch (MalformedJwtException ex) {
-            log.error("<Error>: Invalid JWT token");
-            throw new TokenInvalidException("Invalid JWT:malformed", ex);
+            log.error("Invalid JWT format");
+            throw new TokenInvalidException("Invalid JWT: malformed", ex);
         } catch (ExpiredJwtException ex) {
-            log.error("<Error>: Expired JWT token");
-            throw new TokenInvalidException("Invalid JWT:Expired", ex);
+            log.error("JWT token has expired");
+            throw new TokenInvalidException("Invalid JWT: expired", ex);
         } catch (UnsupportedJwtException ex) {
-            log.error("<Error>: Unsupported JWT token");
-            throw new TokenInvalidException("Invalid JWT:unsupported", ex);
+            log.error("Unsupported JWT token");
+            throw new TokenInvalidException("Invalid JWT: unsupported", ex);
         } catch (IllegalArgumentException ex) {
-            log.error("<Error>: JWT claims string is empty");
-            throw new TokenInvalidException("Invalid JWT:illegal", ex);
+            log.error("JWT claims string is empty");
+            throw new TokenInvalidException("Invalid JWT: illegal argument", ex);
         }
     }
 
     @Override
     public Date calcExpiryDate(Integer lifeTimeInMs) {
-        return new Date(new Date().getTime() + lifeTimeInMs);
+        log.debug("Calculating expiration date for lifetime: {}ms", lifeTimeInMs);
+        return Date.from(Instant.now().plusMillis(lifeTimeInMs));
     }
 }
