@@ -2,7 +2,6 @@ package eu.isygoit.i18n.service;
 
 import eu.isygoit.model.extendable.LocaleMessageModel;
 import eu.isygoit.repository.MessageModelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
@@ -10,25 +9,34 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The type Abstract extended locale service.
+ * Service abstrait pour la gestion des messages étendus.
  */
 public abstract class AbstractExtendedLocaleService implements ExtendedLocaleService {
 
+    private final Map<String, String> extendedMessageMap;
 
-    @Qualifier("extendedMessageMap")
-    @Autowired
-    private Map<String, String> extendedMessageMap;
+    /**
+     * Constructeur avec injection explicite du cache.
+     *
+     * @param extendedMessageMap the extended message map
+     */
+    protected AbstractExtendedLocaleService(@Qualifier("extendedMessageMap") Map<String, String> extendedMessageMap) {
+        this.extendedMessageMap = extendedMessageMap;
+    }
 
     @Override
     public final String getMessage(String code, String locale) {
-        String message = extendedMessageMap.get(code + "|" + locale);
-        if (!StringUtils.hasText(message)) {
-            message = loadMessage(code, locale);
-            if (StringUtils.hasText(message)) {
-                extendedMessageMap.put(code + "|" + locale, message);
-            }
-        }
-        return message;
+        String cacheKey = code + "|" + locale;
+
+        return Optional.ofNullable(extendedMessageMap.get(cacheKey))
+                .filter(StringUtils::hasText)
+                .orElseGet(() -> {
+                    String message = loadMessage(code, locale);
+                    if (StringUtils.hasText(message)) {
+                        extendedMessageMap.put(cacheKey, message);
+                    }
+                    return message;
+                });
     }
 
     @Override
@@ -38,9 +46,12 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
 
     @Override
     public final void refresh() {
-        extendedMessageMap.forEach((code, message) -> {
-            String[] codePlisLocal = code.split("|");
-            message = loadMessage(codePlisLocal[0], codePlisLocal[1]);
+        extendedMessageMap.replaceAll((code, oldMessage) -> {
+            String[] parts = code.split("\\|");
+            if (parts.length == 2) {
+                return loadMessage(parts[0], parts[1]);
+            }
+            return oldMessage; // Conserve l'ancienne valeur en cas d'erreur
         });
     }
 
@@ -55,24 +66,33 @@ public abstract class AbstractExtendedLocaleService implements ExtendedLocaleSer
 
     @Override
     public void setMessage(String code, String locale, String message) {
-        extendedMessageMap.put(code + "|" + locale, message);
-        Optional<LocaleMessageModel> optionalMessage = getMessageRepository().findByCodeIgnoreCaseAndLocale(code, locale);
-        if (optionalMessage.isPresent()) {
-            optionalMessage.get().setText(message);
-            getMessageRepository().save(optionalMessage.get());
-        } else {
-            getMessageRepository().save(LocaleMessageModel.builder()
-                    .code(code)
-                    .locale(locale)
-                    .text(message)
-                    .build());
-        }
+        String cacheKey = code + "|" + locale;
+
+        // Mettez à jour le cache
+        extendedMessageMap.put(cacheKey, message);
+
+        // Chercher le message dans la base de données
+        Optional<LocaleMessageModel> optionalMessage = getMessageRepository()
+                .findByCodeIgnoreCaseAndLocale(code, locale);
+
+        // Si le message existe, mettez à jour, sinon créez un nouveau message
+        optionalMessage.ifPresentOrElse(
+                existingMessage -> {
+                    existingMessage.setText(message);
+                    getMessageRepository().save(existingMessage);
+                },
+                () -> getMessageRepository().save(LocaleMessageModel.builder()
+                        .code(code)
+                        .locale(locale)
+                        .text(message)
+                        .build())
+        );
     }
 
     /**
-     * Gets message repository.
+     * Obtient le référentiel des messages.
      *
-     * @return the message repository
+     * @return le repository utilisé pour récupérer et stocker les messages.
      */
     public abstract MessageModelRepository getMessageRepository();
 

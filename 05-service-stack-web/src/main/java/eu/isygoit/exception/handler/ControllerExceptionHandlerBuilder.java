@@ -4,6 +4,7 @@ import eu.isygoit.annotation.MsgLocale;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.helper.SpringClassScanner;
 import jakarta.persistence.*;
+import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -19,38 +20,18 @@ import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.*;
 
-/**
- * The type Controller exception handler builder.
- */
 @Slf4j
 @Data
 @Component
 public abstract class ControllerExceptionHandlerBuilder {
 
-    /**
-     * The constant TRANSLATED_MESSAGES.
-     */
-    public static final String TRANSLATED_MESSAGES = "translatedMessages";
-    /**
-     * The constant NON_TRANSLATED_MESSAGES.
-     */
-    public static final String NON_TRANSLATED_MESSAGES = "nonTranslatedMessages";
-    /**
-     * The constant CONSTRAINT_VIOLATED.
-     */
-    public static final String CONSTRAINT_VIOLATED = ".constraint.violated";
-    /**
-     * The constant A_LINK_BETWEEN.
-     */
-    public static final String A_LINK_BETWEEN = "A link between ";
-    /**
-     * The constant CAN_T_BE_VIOLATED.
-     */
-    public static final String CAN_T_BE_VIOLATED = " can't be violated";
-    /**
-     * The constant FK.
-     */
-    public static final String FK = "FK:{}";
+    // Constants for message formatting
+    private static final String TRANSLATED_MESSAGES = "translatedMessages";
+    private static final String NON_TRANSLATED_MESSAGES = "nonTranslatedMessages";
+    private static final String CONSTRAINT_VIOLATED = ".constraint.violated";
+    private static final String A_LINK_BETWEEN = "A link between ";
+    private static final String CAN_T_BE_VIOLATED = " can't be violated";
+    private static final String FK = "FK:{}";
 
     private final Map<String, Class<?>> entityMap = new HashMap<>();
 
@@ -64,192 +45,155 @@ public abstract class ControllerExceptionHandlerBuilder {
     @Autowired
     private SpringClassScanner springClassScanner;
 
-    private Map<String, String> excepMessage = new HashMap<>();
+    private final Map<String, String> excepMessage = new HashMap<>();
 
-    private Map<String, List<String>> messages = new HashMap<String, List<String>>() {
+    private final Map<String, List<String>> messages = new HashMap<>() {
         @Override
         public List<String> get(Object key) {
-            if (!this.containsKey(key)) {
-                this.put((String) key, new ArrayList<>());
-            }
-            return super.get(key);
+            return super.computeIfAbsent((String) key, k -> new ArrayList<>());
         }
     };
 
     @PostConstruct
     private void generateConstraintMap() {
         processManagedException();
-        if (this.entityManager != null) {
+
+        if (entityManager != null) {
             log.info("BEGIN PROCESSING FULL ENTITY CONSTRAINTS");
+
             Set<EntityType<?>> entities = entityManager.getMetamodel().getEntities();
-            Iterator<EntityType<?>> entityTypeIterator = entities.iterator();
-            while (entityTypeIterator.hasNext()) {
-                EntityType entity = entityTypeIterator.next();
-
-                //collect entity map
-                entityMap.put(entity.getJavaType().getName(), entity.getJavaType());
-                // process entity name
-                processEntityName(entity);
-
-                /*Set<Attribute> attributes = entity.getAttributes();
-                Iterator<Attribute> attributeIterator = attributes.iterator();
-                while (attributeIterator.hasNext()) {
-                    String attributeName = attributeIterator.next().getName();
-                    Field field = (Field) entity.getAttribute(attributeName).getJavaMember();
-                    // process field name
-                    processFieldName(field);
-
-                    // process not null constraints
-                    processNotNullConstraint(entity, attributeName, field);
-
-                    // process fk constraints
-                    processFkConstraints(field);
-                }*/
-
-                // process uc constraints
-                processUcConstraints(entity);
+            for (EntityType<?> entity : entities) {
+                processEntity(entity);
             }
+
             log.info("END PROCESSING FULL ENTITY CONSTRAINTS");
 
             log.error("<Error>: BEGIN PROCESSING ERROR ENTITY CONSTRAINTS");
-            for (String message : messages.get(NON_TRANSLATED_MESSAGES)) {
-                log.error("<Error>: {}", message);
-            }
+            messages.get(NON_TRANSLATED_MESSAGES).forEach(msg -> log.error("<Error>: {}", msg));
             log.error("<Error>: END PROCESSING ERROR ENTITY CONSTRAINTS");
         }
     }
 
-    private void processEntityName(EntityType entity) {
+    private void processEntity(EntityType<?> entity) {
+        entityMap.put(entity.getJavaType().getName(), entity.getJavaType());
+        processEntityName(entity);
+
+        Set<Attribute<?, ?>> attributes = (Set<Attribute<?, ?>>) entity.getAttributes();
+        for (Attribute<?, ?> attribute : attributes) {
+            Field field = (Field) entity.getAttribute(attribute.getName()).getJavaMember();
+            processFieldName(field);
+            processNotNullConstraint(entity, attribute.getName(), field);
+            processFkConstraints(field);
+        }
+
+        processUcConstraints(entity);
+    }
+
+    private void processEntityName(EntityType<?> entity) {
         String stringMsg = entity.getName();
         String translation = getTranslationMessage(stringMsg, stringMsg);
         excepMessage.put(stringMsg, stringMsg);
         log.info("###:########################################################################################################");
-        log.info("ENT:{}", translation);
+        log.info("ENT: {}", translation);
     }
 
-    private void processUcConstraints(EntityType entity) {
-        String stringMsg;
-        String translation;
-        Table table = (Table) entity.getJavaType().getAnnotation(Table.class);
+    private void processUcConstraints(EntityType<?> entity) {
+        Table table = entity.getJavaType().getAnnotation(Table.class);
         if (table != null) {
-            for (int i = 0; i < table.uniqueConstraints().length; i++) {
-                UniqueConstraint uniqueConstraint = table.uniqueConstraints()[i];
-                if (StringUtils.hasText(uniqueConstraint.name())) {
-                    stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                    translation = getTranslationMessage(stringMsg, "The value "
-                            + Arrays.toString(uniqueConstraint.columnNames())
-                            + " of "
-                            + table.name()
-                            + " is already used");
-                    excepMessage.put(uniqueConstraint.name().toLowerCase(), stringMsg);
-                    log.info("UC:{}", translation);
-                }
-            }
+            processUniqueConstraints(table.uniqueConstraints(), table.name());
+            processSecondaryTables(entity, table.name());
+        }
+    }
 
-            SecondaryTables secondaryTables = (SecondaryTables) entity.getJavaType().getAnnotation(SecondaryTables.class);
-            if (secondaryTables != null) {
-                for (int i = 0; i < secondaryTables.value().length; i++) {
-                    SecondaryTable secondaryTable = secondaryTables.value()[i];
-                    for (int j = 0; j < secondaryTable.uniqueConstraints().length; j++) {
-                        UniqueConstraint uniqueConstraint = secondaryTable.uniqueConstraints()[j];
-                        if (StringUtils.hasText(uniqueConstraint.name())) {
-                            stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                            translation = getTranslationMessage(stringMsg, "The value "
-                                    + Arrays.toString(uniqueConstraint.columnNames())
-                                    + " of "
-                                    + table.name()
-                                    + " is already used ");
-                            excepMessage.put(uniqueConstraint.name().toLowerCase(), stringMsg);
-                            log.info("UC:{}", translation);
-                        }
-                    }
-                }
+    private void processSecondaryTables(EntityType<?> entity, String tableName) {
+        SecondaryTables secondaryTables = entity.getJavaType().getAnnotation(SecondaryTables.class);
+        if (secondaryTables != null) {
+            for (SecondaryTable secondaryTable : secondaryTables.value()) {
+                processUniqueConstraints(secondaryTable.uniqueConstraints(), tableName);
+            }
+        }
+    }
+
+    private void processUniqueConstraints(UniqueConstraint[] uniqueConstraints, String tableName) {
+        for (UniqueConstraint uniqueConstraint : uniqueConstraints) {
+            if (StringUtils.hasText(uniqueConstraint.name())) {
+                String stringMsg = uniqueConstraint.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                String translation = getTranslationMessage(stringMsg, "The value "
+                        + Arrays.toString(uniqueConstraint.columnNames())
+                        + " of "
+                        + tableName
+                        + " is already used");
+                excepMessage.put(uniqueConstraint.name().toLowerCase(), stringMsg);
+                log.info("UC: {}", translation);
             }
         }
     }
 
     private void processFkConstraints(Field field) {
-        String stringMsg;
-        String translation;
-        JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+        processJoinColumn(field.getAnnotation(JoinColumn.class));
+        processJoinTable(field.getAnnotation(JoinTable.class));
+    }
+
+    private void processJoinColumn(JoinColumn joinColumn) {
         if (joinColumn != null) {
             ForeignKey foreignKey = joinColumn.foreignKey();
             if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
-                stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
+                String stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                String translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
                         + foreignKey.name()
                         + CAN_T_BE_VIOLATED);
                 excepMessage.put(foreignKey.name().toLowerCase(), stringMsg);
                 log.info(FK, translation);
             }
         }
+    }
 
-        JoinTable joinTable = field.getAnnotation(JoinTable.class);
+    private void processJoinTable(JoinTable joinTable) {
         if (joinTable != null) {
-            List<JoinColumn> joinColumnArray = Arrays.asList(joinTable.joinColumns());
-            if (!CollectionUtils.isEmpty(joinColumnArray)) {
-                for (JoinColumn jc : joinColumnArray) {
-                    ForeignKey foreignKey = jc.foreignKey();
-                    if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
-                        stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                        translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
-                                + foreignKey.name()
-                                + CAN_T_BE_VIOLATED);
-                        excepMessage.put(foreignKey.name().toLowerCase(), stringMsg);
-                        log.info(FK, translation);
-                    }
-                }
-            }
-
-            joinColumnArray = Arrays.asList(joinTable.inverseJoinColumns());
-            if (!CollectionUtils.isEmpty(joinColumnArray)) {
-                for (JoinColumn jc : joinColumnArray) {
-                    ForeignKey foreignKey = jc.foreignKey();
-                    if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
-                        stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
-                        translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
-                                + foreignKey.name()
-                                + CAN_T_BE_VIOLATED);
-                        excepMessage.put(foreignKey.name().toLowerCase(), stringMsg);
-                        log.info(FK, translation);
-                    }
+            for (JoinColumn jc : joinTable.joinColumns()) {
+                ForeignKey foreignKey = jc.foreignKey();
+                if (foreignKey != null && StringUtils.hasText(foreignKey.name())) {
+                    String stringMsg = foreignKey.name().toLowerCase().replace("_", ".") + CONSTRAINT_VIOLATED;
+                    String translation = getTranslationMessage(stringMsg, A_LINK_BETWEEN
+                            + foreignKey.name()
+                            + CAN_T_BE_VIOLATED);
+                    excepMessage.put(foreignKey.name().toLowerCase(), stringMsg);
+                    log.info(FK, translation);
                 }
             }
         }
     }
 
-    private void processNotNullConstraint(EntityType entity, String attributeName, Field field) {
-        String stringMsg;
-        String translation;
-        Table table = (Table) entity.getJavaType().getAnnotation(Table.class);
+    private void processNotNullConstraint(EntityType<?> entity, String attributeName, Field field) {
         Column column = field.getAnnotation(Column.class);
         if (column != null && !column.nullable()) {
-            stringMsg = "not.null." + entity.getName().toLowerCase() + "." + attributeName.toLowerCase() + CONSTRAINT_VIOLATED;
-            translation = getTranslationMessage(stringMsg, "The value "
+            String stringMsg = "not.null." + entity.getName().toLowerCase() + "." + attributeName.toLowerCase() + CONSTRAINT_VIOLATED;
+            Table table = entity.getJavaType().getAnnotation(Table.class);
+            String translation = getTranslationMessage(stringMsg, "The value "
                     + column.name()
                     + " of "
                     + table.name()
                     + " is required");
             excepMessage.put(column.name().toLowerCase(), stringMsg);
-            log.info("NNU:{}", translation);
+            log.info("NNU: {}", translation);
         }
     }
 
     private void processFieldName(Field field) {
         String translation = getTranslationMessage(field.getName(), field.getName());
-        log.info("FLD:{}", translation);
+        log.info("FLD: {}", translation);
     }
 
     private void processManagedException() {
         Set<BeanDefinition> managedExceptionBeans = springClassScanner.findAnnotatedClasses(MsgLocale.class, "eu.isygoit.exception");
+
         for (BeanDefinition exceptionBean : managedExceptionBeans) {
-            Class<?> cl = null;
             try {
-                cl = Class.forName(exceptionBean.getBeanClassName());
+                Class<?> cl = Class.forName(exceptionBean.getBeanClassName());
                 MsgLocale msgLocale = cl.getAnnotation(MsgLocale.class);
                 if (msgLocale != null && StringUtils.hasText(msgLocale.value())) {
                     String translation = getTranslationMessage(msgLocale.value(), msgLocale.value());
-                    log.info("EXCPT:{}", translation);
+                    log.info("EXCPT: {}", translation);
                 } else {
                     log.error("<Error>: msgLocale annotation not defined for class type {}", exceptionBean.getBeanClassName());
                 }
@@ -260,13 +204,20 @@ public abstract class ControllerExceptionHandlerBuilder {
     }
 
     private String getTranslationMessage(String stringMsg, String defaultTranslation) {
-        String translation = this.environment.getProperty(stringMsg);
-        StringBuilder translatedMessage = (new StringBuilder()).append(stringMsg).append("=").append(translation != null ? translation : defaultTranslation);
+        // Fetch translation from environment or use default
+        String translation = environment.getProperty(stringMsg);
+        StringBuilder translatedMessage = new StringBuilder()
+                .append(stringMsg)
+                .append("=")
+                .append(translation != null ? translation : defaultTranslation);
+
+        // Categorize messages as translated or not
         if (translation != null) {
             messages.get(TRANSLATED_MESSAGES).add(translatedMessage.toString());
         } else {
             messages.get(NON_TRANSLATED_MESSAGES).add(translatedMessage.toString());
         }
+
         return translatedMessage.toString();
     }
 }

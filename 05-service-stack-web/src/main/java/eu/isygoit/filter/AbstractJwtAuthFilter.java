@@ -21,111 +21,205 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 /**
- * The type Abstract jwt auth filter.
+ * Base JWT authentication filter that validates tokens and establishes security context.
+ * This abstract class provides core JWT processing functionality while allowing
+ * specific token validation logic to be implemented by subclasses.
  */
 @Slf4j
 public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
-    /**
-     * The constant should_not_filter.
-     */
+    // Constants for frequently checked URI prefixes/patterns to avoid string allocations
+    private static final String PUBLIC_API_PREFIX = "/api/v1/public";
+    private static final String IMAGE_DOWNLOAD_PATTERN = "/image/download";
+    private static final String FILE_DOWNLOAD_PATTERN = "/file/download";
+
+    // Cache for request URIs that should not be filtered (thread-safe)
+    private static final Map<String, Boolean> URI_FILTER_CACHE = new ConcurrentHashMap<>();
+
+    // Default RequestContextDto for unauthenticated requests (immutable singleton)
+    private static final RequestContextDto DEFAULT_CONTEXT = RequestContextDto.builder()
+            .senderDomain(DomainConstants.SUPER_DOMAIN_NAME)
+            .senderUser("root")
+            .isAdmin(true)
+            .logApp("application")
+            .build();
+
+    // Predefined attribute map to avoid allocation in the error path
+    private static final Map<String, Object> DEFAULT_ATTRIBUTES =
+            Map.of(JwtConstants.JWT_USER_CONTEXT, DEFAULT_CONTEXT);
+
     @Value("${app.feign.shouldNotFilterKey}")
-    public static String should_not_filter = "$SHOULD_NOT_FILTER";
+    private String shouldNotFilterKey;
 
     @Autowired
     private IJwtService jwtService;
 
     /**
-     * Is token valid boolean.
+     * Validates if the JWT token is valid for the given context.
      *
-     * @param jwt         the jwt
-     * @param domain      the domain
-     * @param application the application
-     * @param userName    the user name
-     * @return the boolean
+     * @param jwt         the JWT token string
+     * @param domain      the domain extracted from token
+     * @param application the application identifier from token
+     * @param userName    the username from token
+     * @return true if token is valid, false otherwise
      */
     public abstract boolean isTokenValid(String jwt, String domain, String application, String userName);
 
     /**
-     * Add attributes.
+     * Adds custom attributes to the request.
+     * Implementations should use this to add context-specific attributes.
      *
-     * @param request    the request
-     * @param attributes the attributes
+     * @param request    the HTTP request
+     * @param attributes map of attributes to add to the request
      */
     public abstract void addAttributes(HttpServletRequest request, Map<String, Object> attributes);
 
     @Override
-    public boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        log.info("Jwt auth filter: attribute SHOULD_NOT_FILTER_KEY: {}", request.getHeader("SHOULD_NOT_FILTER_KEY"));
-        //extract to list to be customisable
-        return request.getRequestURI().startsWith("/api/v1/public")
-                //|| request.getRequestURI().startsWith("/socket")
-                || request.getRequestURI().contains("/image/download")
-                || request.getRequestURI().contains("/file/download")
-                || should_not_filter.equals(request.getHeader("SHOULD_NOT_FILTER_KEY"));
+    public boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        // Check cache first to avoid string operations for frequent requests
+        return URI_FILTER_CACHE.computeIfAbsent(uri, this::shouldSkipUri) ||
+                shouldNotFilterKey.equals(request.getHeader("SHOULD_NOT_FILTER_KEY"));
+    }
+
+    /**
+     * Determines if a URI should be skipped for filtering.
+     * Extracted for better performance via caching.
+     *
+     * @param uri the request URI to check
+     * @return true if the URI should be skipped
+     */
+    private boolean shouldSkipUri(String uri) {
+        return uri.startsWith(PUBLIC_API_PREFIX) ||
+                uri.contains(IMAGE_DOWNLOAD_PATTERN) ||
+                uri.contains(FILE_DOWNLOAD_PATTERN);
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        // Get JWT token from request
         String jwt = UrlHelper.getJwtTokenFromRequest(request);
+
         if (StringUtils.hasText(jwt)) {
-            log.info("Request received:  {} - {} - {} ", request.getMethod(), request.getAuthType(), request.getRequestURI());
+            log.debug("Processing request: {} - URI: {}", request.getMethod(), request.getRequestURI());
+
             try {
-                String subject = jwtService.extractSubject(jwt).get();
-                String userName = jwtService.extractUserName(jwt).get();
-                String application = jwtService.extractApplication(jwt).get();
-                String domain = jwtService.extractDomain(jwt).get();
-                Boolean isAdmin = jwtService.extractIsAdmin(jwt);
-                isTokenValid(jwt, domain, application, userName);
-
-                SecurityContextHolder.getContext()
-                        .setAuthentication(new CustomAuthentification(CustomUserDetails.builder()
-                                .username(subject)
-                                .isAdmin(isAdmin)
-                                .password("password")
-                                .passwordExpired(false)
-                                //.authorities(Account.getAuthorities(account))
-                                .domainEnabled(true)
-                                .accountEnabled(true)
-                                .accountExpired(true)
-                                .accountLocked(true)
-                                .build(),
-                                "password",
-                                new ArrayList<>()));
-
-                addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
-                        .senderDomain(domain)
-                        .senderUser(userName)
-                        .isAdmin(isAdmin)
-                        .logApp(application)
-                        .build()));
-
-                filterChain.doFilter(request, response);
+                // Extract all needed claims at once to minimize JWT parsing overhead
+                processAuthenticatedRequest(request, response, filterChain, jwt);
             } catch (JwtException | IllegalArgumentException | TokenInvalidException e) {
-                log.error("<Error>: Invalid token: {}> {} / {}", request.getMethod(), request.getRequestURI(), e);
-                response.setContentType("application/json");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                // Log error and set unauthorized response
+                log.error("Invalid token for request: {} {}, Error: {}",
+                        request.getMethod(), request.getRequestURI(), e.getMessage());
+
+                handleInvalidToken(response);
             }
         } else {
-            log.error("<Error>: Missed token for request {}> {}", request.getMethod(), request.getRequestURI());
-            addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, RequestContextDto.builder()
-                    .senderDomain(DomainConstants.SUPER_DOMAIN_NAME)
-                    .senderUser("root")
-                    .isAdmin(true)
-                    .logApp("application")
-                    .build()));
-            /*
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
-            response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Missing token");
-             */
-            filterChain.doFilter(request, response);
+            // Process request without authentication
+            handleMissingToken(request, response, filterChain);
         }
+    }
+
+    /**
+     * Processes a request with a valid JWT token.
+     * Extracted to separate method to improve readability.
+     */
+    private void processAuthenticatedRequest(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain,
+            String jwt) throws ServletException, IOException {
+
+        // Extract all needed claims at once
+        String subject = jwtService.extractSubject(jwt).orElseThrow();
+        String userName = jwtService.extractUserName(jwt).orElseThrow();
+        String application = jwtService.extractApplication(jwt).orElseThrow();
+        String domain = jwtService.extractDomain(jwt).orElseThrow();
+        Boolean isAdmin = jwtService.extractIsAdmin(jwt);
+
+        // Validate token
+        isTokenValid(jwt, domain, application, userName);
+
+        // Set security context
+        setSecurityContext(subject, isAdmin);
+
+        // Add context attributes to request
+        RequestContextDto contextDto = buildRequestContext(domain, userName, isAdmin, application);
+        addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, contextDto));
+
+        // Continue filter chain
+        filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Sets the security context with authentication details.
+     */
+    private void setSecurityContext(String subject, Boolean isAdmin) {
+        CustomUserDetails userDetails = CustomUserDetails.builder()
+                .username(subject)
+                .isAdmin(isAdmin)
+                .password("password") // Consider using a more secure approach
+                .passwordExpired(false)
+                .domainEnabled(true)
+                .accountEnabled(true)
+                .accountExpired(true)
+                .accountLocked(true)
+                .build();
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(new CustomAuthentification(
+                        userDetails,
+                        "password",
+                        Collections.emptyList())); // Use empty immutable list for better performance
+    }
+
+    /**
+     * Builds a RequestContextDto from token claims.
+     */
+    private RequestContextDto buildRequestContext(String domain, String userName, Boolean isAdmin, String application) {
+        return RequestContextDto.builder()
+                .senderDomain(domain)
+                .senderUser(userName)
+                .isAdmin(isAdmin)
+                .logApp(application)
+                .build();
+    }
+
+    /**
+     * Handles case where token is invalid.
+     */
+    private void handleInvalidToken(HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+    }
+
+    /**
+     * Handles case where token is missing.
+     * Uses default attributes for unauthenticated requests.
+     */
+    private void handleMissingToken(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Missing token for request: {} {}", request.getMethod(), request.getRequestURI());
+        }
+
+        // Add default context attributes
+        addAttributes(request, DEFAULT_ATTRIBUTES);
+
+        // Continue filter chain
+        filterChain.doFilter(request, response);
     }
 }
