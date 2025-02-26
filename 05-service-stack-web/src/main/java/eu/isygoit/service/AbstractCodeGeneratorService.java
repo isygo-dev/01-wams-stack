@@ -2,7 +2,7 @@ package eu.isygoit.service;
 
 import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.repository.NextCodeRepository;
-import eu.isygoit.service.nextCode.INextCodeService;
+import eu.isygoit.service.nextCode.ICodeGeneratorService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -12,7 +12,8 @@ import java.util.Optional;
  *
  * @param <T> the type parameter
  */
-public abstract class AbstractNextCodeService<T extends NextCodeModel> implements INextCodeService<T> {
+public abstract class AbstractCodeGeneratorService<T extends NextCodeModel>
+        implements ICodeGeneratorService<T> {
 
     /**
      * Next code repository next code repository.
@@ -23,20 +24,12 @@ public abstract class AbstractNextCodeService<T extends NextCodeModel> implement
 
     @Override
     public Optional<T> findByEntity(String entity) {
-        Optional<T> nextCode = nextCodeRepository().findByEntity(entity);
-        if (nextCode.isPresent()) {
-            return nextCode;
-        }
-        return null;
+        return nextCodeRepository().findByEntity(entity);
     }
 
     @Override
     public Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
-        Optional<T> nextCode = nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
-        if (nextCode.isPresent()) {
-            return nextCode;
-        }
-        return null;
+        return nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
     }
 
     @Override

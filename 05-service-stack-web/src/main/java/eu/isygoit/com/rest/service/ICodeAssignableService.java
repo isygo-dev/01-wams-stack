@@ -5,7 +5,7 @@ import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.service.IRemoteNextCodeService;
-import eu.isygoit.service.nextCode.INextCodeService;
+import eu.isygoit.service.nextCode.ICodeGeneratorService;
 
 import java.io.Serializable;
 
@@ -38,7 +38,7 @@ public interface ICodeAssignableService<I extends Serializable, T extends IIdAss
      * @return the next code service
      * @throws NextCodeServiceNotDefinedException the next code service not defined exception
      */
-    INextCodeService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException;
+    ICodeGeneratorService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException;
 
     /**
      * Remote next code service remote next code service.

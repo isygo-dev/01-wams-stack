@@ -13,7 +13,7 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.service.IRemoteNextCodeService;
-import eu.isygoit.service.nextCode.INextCodeService;
+import eu.isygoit.service.nextCode.ICodeGeneratorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -46,7 +46,7 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
     @Autowired
     private ApplicationContextService applicationContextServie;
 
-    private INextCodeService nextCodeService;
+    private ICodeGeneratorService nextCodeService;
 
     private IRemoteNextCodeService remoteNextCodeService;
 
@@ -181,7 +181,7 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
     }
 
     @Override
-    public final INextCodeService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException {
+    public final ICodeGeneratorService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException {
         if (this.nextCodeService == null) {
             CodeGenLocal annotation = this.getClass().getAnnotation(CodeGenLocal.class);
             if (annotation != null) {

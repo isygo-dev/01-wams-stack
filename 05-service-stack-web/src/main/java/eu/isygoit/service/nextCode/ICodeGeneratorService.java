@@ -9,7 +9,7 @@ import java.util.Optional;
  *
  * @param <T> the type parameter
  */
-public interface INextCodeService<T extends NextCodeModel> {
+public interface ICodeGeneratorService<T extends NextCodeModel> {
 
     /**
      * Find by entity t.

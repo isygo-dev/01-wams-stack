@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -19,7 +20,7 @@ public interface IJwtService {
      * @param token the token
      * @return the string
      */
-    String extractDomain(String token);
+    Optional<String> extractDomain(String token);
 
     /**
      * Extract application string.
@@ -27,7 +28,7 @@ public interface IJwtService {
      * @param token the token
      * @return the string
      */
-    String extractApplication(String token);
+    Optional<String> extractApplication(String token);
 
     /**
      * Extract account type string.
@@ -35,7 +36,7 @@ public interface IJwtService {
      * @param token the token
      * @return the string
      */
-    String extractAccountType(String token);
+    Optional<String> extractAccountType(String token);
 
     /**
      * Extract user name string.
@@ -43,7 +44,7 @@ public interface IJwtService {
      * @param token the token
      * @return the string
      */
-    String extractUserName(String token);
+    Optional<String> extractUserName(String token);
 
     /**
      * Extract subject string.
@@ -52,7 +53,7 @@ public interface IJwtService {
      * @param key   the key
      * @return the string
      */
-    String extractSubject(String token, String key);
+    Optional<String> extractSubject(String token, String key);
 
     /**
      * Extract subject string.
@@ -60,7 +61,7 @@ public interface IJwtService {
      * @param token the token
      * @return the string
      */
-    String extractSubject(String token);
+    Optional<String> extractSubject(String token);
 
     /**
      * Extract expiration date.
@@ -69,7 +70,7 @@ public interface IJwtService {
      * @param key   the key
      * @return the date
      */
-    Date extractExpiration(String token, String key);
+    Optional<Date> extractExpiration(String token, String key);
 
     /**
      * Extract claim t.

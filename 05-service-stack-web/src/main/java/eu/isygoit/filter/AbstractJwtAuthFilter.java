@@ -76,10 +76,10 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwt)) {
             log.info("Request received:  {} - {} - {} ", request.getMethod(), request.getAuthType(), request.getRequestURI());
             try {
-                String subject = jwtService.extractSubject(jwt);
-                String userName = jwtService.extractUserName(jwt);
-                String application = jwtService.extractApplication(jwt);
-                String domain = jwtService.extractDomain(jwt);
+                String subject = jwtService.extractSubject(jwt).get();
+                String userName = jwtService.extractUserName(jwt).get();
+                String application = jwtService.extractApplication(jwt).get();
+                String domain = jwtService.extractDomain(jwt).get();
                 Boolean isAdmin = jwtService.extractIsAdmin(jwt);
                 isTokenValid(jwt, domain, application, userName);
 
