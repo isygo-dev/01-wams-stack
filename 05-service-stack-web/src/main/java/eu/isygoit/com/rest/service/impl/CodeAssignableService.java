@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.service.impl;
 import eu.isygoit.annotation.CodeGenKms;
 import eu.isygoit.annotation.CodeGenLocal;
 import eu.isygoit.app.ApplicationContextService;
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
@@ -34,9 +34,9 @@ import java.util.Map;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodifiableService<I extends Serializable, T extends IIdAssignable, R extends JpaPagingAndSortingRepository>
+public abstract class CodeAssignableService<I extends Serializable, T extends IIdAssignable, R extends JpaPagingAndSortingRepository>
         extends CrudService<I, T, R>
-        implements ICodifiableService<I, T> {
+        implements ICodeAssignableService<I, T> {
 
     /**
      * The In memo next code.

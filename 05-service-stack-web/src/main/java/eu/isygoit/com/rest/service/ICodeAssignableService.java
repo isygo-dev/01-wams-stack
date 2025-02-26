@@ -15,7 +15,7 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICodifiableService<I extends Serializable, T extends IIdAssignable>
+public interface ICodeAssignableService<I extends Serializable, T extends IIdAssignable>
         extends ICrudServiceMethod<I, T> {
 
     /**

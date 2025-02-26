@@ -24,7 +24,7 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class FileServiceSubMethods<I extends Serializable, T extends IFileEntity & IIdAssignable & ICodeAssignable, R extends JpaPagingAndSortingRepository>
-        extends CodifiableService<I, T, R> {
+        extends CodeAssignableService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;

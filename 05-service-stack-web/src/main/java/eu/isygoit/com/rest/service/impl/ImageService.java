@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 @Slf4j
 public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable, R extends JpaPagingAndSortingRepository>
-        extends CodifiableService<I, T, R>
+        extends CodeAssignableService<I, T, R>
         implements IImageServiceMethods<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];

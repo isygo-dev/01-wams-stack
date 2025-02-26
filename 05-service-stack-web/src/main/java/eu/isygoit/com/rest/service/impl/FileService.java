@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service.impl;
 
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.exception.ObjectNotFoundException;
@@ -119,7 +119,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
             entity.setId(id);
             if (file != null && !file.isEmpty()) {
                 if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodifiableService) this).getNextCode());
+                    entity.setCode(((ICodeAssignableService) this).getNextCode());
                 }
 
                 entity.setPath(this.getUploadDirectory() +
@@ -161,7 +161,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
             T entity = optional.get();
             if (file != null && !file.isEmpty()) {
                 if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodifiableService) this).getNextCode());
+                    entity.setCode(((ICodeAssignableService) this).getNextCode());
                 }
 
                 entity.setPath(this.getUploadDirectory() +

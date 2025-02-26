@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service.impl;
 
-import eu.isygoit.com.rest.service.ICodifiableService;
+import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
@@ -83,10 +83,10 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
 
         if (object.getId() == null) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
+            if (this instanceof ICodeAssignableService codeAssignableService &&
                     object instanceof ICodeAssignable codeAssignable &&
                     !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(iCodifiableService.getNextCode());
+                codeAssignable.setCode(codeAssignableService.getNextCode());
             }
             return this.afterCreate((T) repository().save(object));
         } else {
@@ -103,10 +103,10 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
 
         if (object.getId() == null) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
+            if (this instanceof ICodeAssignableService codeAssignableService &&
                     object instanceof ICodeAssignable codeAssignable &&
                     !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(iCodifiableService.getNextCode());
+                codeAssignable.setCode(codeAssignableService.getNextCode());
             }
             return this.afterCreate((T) repository().saveAndFlush(object));
         } else {
@@ -137,10 +137,10 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
 
         if (object.getId() != null) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
+            if (this instanceof ICodeAssignableService codeAssignableService &&
                     object instanceof ICodeAssignable codeAssignable &&
                     !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(iCodifiableService.getNextCode());
+                codeAssignable.setCode(codeAssignableService.getNextCode());
             }
             return this.afterUpdate((T) repository().save(object));
         } else {
@@ -157,10 +157,10 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
 
         if (object.getId() != null) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodifiableService iCodifiableService &&
+            if (this instanceof ICodeAssignableService codeAssignableService &&
                     object instanceof ICodeAssignable codeAssignable &&
                     !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(iCodifiableService.getNextCode());
+                codeAssignable.setCode(codeAssignableService.getNextCode());
             }
             return this.afterUpdate((T) repository().saveAndFlush(object));
         } else {
