@@ -137,9 +137,7 @@ public class JwtService implements IJwtService {
                 .signWith(algorithm, key);
 
         if (!CollectionUtils.isEmpty(claims)) {
-            claims.forEach((k, v) -> {
-                jwtBuilder.claim(k, v);
-            });
+            claims.forEach(jwtBuilder::claim);
         }
 
         return TokenDto.builder()
