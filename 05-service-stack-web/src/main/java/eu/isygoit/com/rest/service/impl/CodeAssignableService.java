@@ -38,16 +38,13 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
         extends CrudService<I, T, R>
         implements ICodeAssignableService<I, T> {
 
-    /**
-     * The In memo next code.
-     */
-    static final Map<String, NextCodeModel> inMemoNextCode = new HashMap<>();
+    // In-memory store for next codes
+    private static final Map<String, NextCodeModel> inMemoNextCode = new HashMap<>();
 
     @Autowired
-    private ApplicationContextService applicationContextServie;
+    private ApplicationContextService applicationContextService;
 
     private ICodeGeneratorService nextCodeService;
-
     private IRemoteNextCodeService remoteNextCodeService;
 
     /**
@@ -60,26 +57,22 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
             if (remoteNextCodeService() != null) {
                 try {
                     ResponseEntity<String> result = remoteNextCodeService()
-                            .subscribeNextCode(//RequestContextDto.builder().build(),
-                                    initNextCode.getDomain(), NextCodeDto.builder()
-                                            .domain(initNextCode.getDomain())
-                                            .entity(initNextCode.getEntity())
-                                            .attribute(initNextCode.getAttribute())
-                                            .prefix(initNextCode.getPrefix())
-                                            .suffix(initNextCode.getSuffix())
-                                            .increment(initNextCode.getIncrement())
-                                            .valueLength(initNextCode.getValueLength())
-                                            .value(initNextCode.getValue())
-                                            .build());
+                            .subscribeNextCode(initNextCode.getDomain(), NextCodeDto.builder()
+                                    .domain(initNextCode.getDomain())
+                                    .entity(initNextCode.getEntity())
+                                    .attribute(initNextCode.getAttribute())
+                                    .prefix(initNextCode.getPrefix())
+                                    .suffix(initNextCode.getSuffix())
+                                    .increment(initNextCode.getIncrement())
+                                    .valueLength(initNextCode.getValueLength())
+                                    .value(initNextCode.getValue())
+                                    .build());
                     if (result.getStatusCode().is2xxSuccessful()) {
                         log.info("Subscribe NextCode executed successfully {}", initNextCode);
                     }
                 } catch (Exception e) {
-                    log.error("Remote feign call failed : ", e);
-                    //throw new RemoteCallFailedException(e);
+                    log.error("Remote feign call failed: ", e);
                 }
-            } else {
-
             }
         }
     }
@@ -92,7 +85,6 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
             if (remoteNextCodeService() != null) {
                 return getRemoteNextCode(initNextCode);
             } else {
-                //get from in memory map
                 return getLocalNextCode(initNextCode);
             }
         }
@@ -100,49 +92,45 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
     }
 
     private String getLocalNextCode(NextCodeModel initNextCode) {
-        NextCodeModel nextCode = inMemoNextCode.get(getNextCodeKey(initNextCode));
+        var nextCode = inMemoNextCode.get(getNextCodeKey(initNextCode));
 
-        //get from database and update in memory map
         if (nextCode == null && nextCodeService() != null) {
             nextCode = nextCodeService()
                     .findByDomainAndEntityAndAttribute(initNextCode.getDomain(),
                             initNextCode.getEntity(),
                             initNextCode.getAttribute())
-                    .get();
-            inMemoNextCode.put(getNextCodeKey(initNextCode), nextCode);
+                    .orElse(null);
+            if (nextCode != null) {
+                inMemoNextCode.put(getNextCodeKey(initNextCode), nextCode);
+            }
         }
 
-        //save a fist use and update in memory map
         if (nextCode == null && nextCodeService() != null) {
             nextCode = nextCodeService().saveAndFlush(initNextCode);
             inMemoNextCode.put(getNextCodeKey(initNextCode), nextCode);
         }
 
-        //increment and update database
         if (nextCodeService() != null) {
             nextCodeService().increment(nextCode.getDomain(), nextCode.getEntity(), nextCode.getIncrement());
         }
-        return nextCode.nextCode().getCode();
+
+        return nextCode != null ? nextCode.nextCode().getCode() : null;
     }
 
     private String getRemoteNextCode(NextCodeModel initNextCode) {
-        if (remoteNextCodeService() != null) {
-            try {
-                ResponseEntity<String> result = remoteNextCodeService()
-                        .generateNextCode(RequestContextDto.builder().build(),
-                                initNextCode.getDomain(),
-                                initNextCode.getEntity(),
-                                initNextCode.getAttribute()
-                        );
-                if (result.getStatusCode().is2xxSuccessful() && result.hasBody()) {
-                    return result.getBody();
-                } else {
-                    throw new BadResponseException("remote next code");
-                }
-            } catch (Exception e) {
-                log.error("Remote feign call failed : ", e);
-                //throw new RemoteCallFailedException(e);
+        try {
+            ResponseEntity<String> result = remoteNextCodeService()
+                    .generateNextCode(RequestContextDto.builder().build(),
+                            initNextCode.getDomain(),
+                            initNextCode.getEntity(),
+                            initNextCode.getAttribute());
+            if (result.getStatusCode().is2xxSuccessful() && result.hasBody()) {
+                return result.getBody();
+            } else {
+                throw new BadResponseException("remote next code");
             }
+        } catch (Exception e) {
+            log.error("Remote feign call failed: ", e);
         }
 
         throw new NextCodeServiceNotDefinedException(initNextCode.toString());
@@ -150,9 +138,7 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
 
     @Override
     public String getNextCodeKey(NextCodeModel initNextCode) {
-        return initNextCode.getEntity() +
-                "@" +
-                initNextCode.getDomain();
+        return initNextCode.getEntity() + "@" + initNextCode.getDomain();
     }
 
     @Override
@@ -166,14 +152,13 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
         if (this.remoteNextCodeService == null) {
             CodeGenKms annotation = this.getClass().getAnnotation(CodeGenKms.class);
             if (annotation != null) {
-                this.remoteNextCodeService = applicationContextServie.getBean(annotation.value());
+                this.remoteNextCodeService = applicationContextService.getBean(annotation.value());
                 if (this.remoteNextCodeService == null) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
                     throw new RemoteNextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
                 }
             } else {
                 log.error("<Error>: KMS code generator not defined for {}", this.getClass().getSimpleName());
-                //throw new RemoteNextCodeServiceNotDefinedException("RemoteNextCodeService");
             }
         }
 
@@ -185,18 +170,16 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
         if (this.nextCodeService == null) {
             CodeGenLocal annotation = this.getClass().getAnnotation(CodeGenLocal.class);
             if (annotation != null) {
-                this.nextCodeService = applicationContextServie.getBean(annotation.value());
+                this.nextCodeService = applicationContextService.getBean(annotation.value());
                 if (this.nextCodeService == null) {
                     log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
                     throw new NextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
                 }
             } else {
                 log.error("<Error>: Local code generator not defined for {}", this.getClass().getSimpleName());
-                //throw new NextCodeServiceNotDefinedException("NextCodeService");
             }
         }
 
         return this.nextCodeService;
     }
 }
-
