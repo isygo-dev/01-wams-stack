@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -37,10 +34,10 @@ public interface KeyServiceApi {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))})
     })
-    @GetMapping(path = "/random/{length}/{charSetType}")
-    ResponseEntity<String> generateRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                             @PathVariable(name = RestApiConstants.LENGTH) Integer length,
-                                             @PathVariable(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
+    @PostMapping(path = "/random/new")
+    ResponseEntity<String> newRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+                                             @RequestParam(name = RestApiConstants.LENGTH) Integer length,
+                                             @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
     /**
      * Renew key by name response entity.
@@ -60,12 +57,12 @@ public interface KeyServiceApi {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))})
     })
-    @PostMapping(path = "/random/renew/{domain}/{keyName}/{length}/{charSetType}")
-    ResponseEntity<String> renewKeyByName(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                          @PathVariable(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                          @PathVariable(name = RestApiConstants.KEY_NAME) String keyName,
-                                          @PathVariable(name = RestApiConstants.LENGTH) Integer length,
-                                          @PathVariable(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
+    @PostMapping(path = "/random/renew")
+    ResponseEntity<String> renewRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+                                          @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                          @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
+                                          @RequestParam(name = RestApiConstants.LENGTH) Integer length,
+                                          @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
     /**
      * Gets key by name.
@@ -83,8 +80,8 @@ public interface KeyServiceApi {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class))})
     })
-    @GetMapping(path = "/random/get/{domain}/{keyName}")
-    ResponseEntity<String> getKeyByName(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                        @PathVariable(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                        @PathVariable(name = RestApiConstants.KEY_NAME) String keyName);
+    @GetMapping(path = "/random")
+    ResponseEntity<String> getRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+                                        @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                        @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
 }

@@ -29,19 +29,19 @@ public interface TokenServiceApi {
      * @param tokenRequestDto the token request dto
      * @return the response entity
      */
-    @Operation(summary = "createTokenByDomain Api",
-            description = "createTokenByDomain")
+    @Operation(summary = "buildTokenByDomain Api",
+            description = "buildTokenByDomain")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = TokenDto.class))})
     })
-    @PostMapping(path = "/{domain}/{application}/{tokenType}")
-    ResponseEntity<TokenDto> createTokenByDomain(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                 @PathVariable(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                                 @PathVariable(name = RestApiConstants.APPLICATION) String application,
-                                                 @PathVariable(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
+    @PostMapping(path = "/builder")
+    ResponseEntity<TokenDto> buildTokenByDomain(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+                                                 @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                                 @RequestParam(name = RestApiConstants.APPLICATION) String application,
+                                                 @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
                                                  @Valid @RequestBody TokenRequestDto tokenRequestDto);
 
     /**
@@ -63,11 +63,11 @@ public interface TokenServiceApi {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Boolean.class))})
     })
-    @GetMapping(path = "/valid/{domain}/{application}/{tokenType}/{token}/{subject}")
+    @GetMapping(path = "/validation")
     ResponseEntity<Boolean> isTokenValid(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                         @PathVariable(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                         @PathVariable(name = RestApiConstants.APPLICATION) String application,
-                                         @PathVariable(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
-                                         @PathVariable(name = RestApiConstants.TOKEN) String token,
-                                         @PathVariable(name = RestApiConstants.SUBJECT) String subject);
+                                         @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                         @RequestParam(name = RestApiConstants.APPLICATION) String application,
+                                         @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
+                                         @RequestParam(name = RestApiConstants.TOKEN) String token,
+                                         @RequestParam(name = RestApiConstants.SUBJECT) String subject);
 }
