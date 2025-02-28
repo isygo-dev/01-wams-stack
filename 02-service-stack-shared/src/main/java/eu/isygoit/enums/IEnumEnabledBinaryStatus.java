@@ -4,7 +4,7 @@ package eu.isygoit.enums;
 /**
  * The interface Enum binary status.
  */
-public interface IEnumBinaryStatus {
+public interface IEnumEnabledBinaryStatus {
 
     /**
      * The constant STR_ENUM_SIZE.

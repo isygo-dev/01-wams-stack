@@ -1,7 +1,7 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.enums.IEnumBinaryStatus;
+import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.IDomainAssignable;
@@ -63,6 +63,6 @@ public abstract class CustomerModel<T extends Serializable> extends AuditableEnt
     @Builder.Default
     @ColumnDefault("'ENABLED'")
     @Enumerated(EnumType.STRING)
-    @Column(name = ComSchemaColumnConstantName.C_ADMIN_STATUS, length = IEnumBinaryStatus.STR_ENUM_SIZE, nullable = false)
-    private IEnumBinaryStatus.Types adminStatus = IEnumBinaryStatus.Types.ENABLED;
+    @Column(name = ComSchemaColumnConstantName.C_ADMIN_STATUS, length = IEnumEnabledBinaryStatus.STR_ENUM_SIZE, nullable = false)
+    private IEnumEnabledBinaryStatus.Types adminStatus = IEnumEnabledBinaryStatus.Types.ENABLED;
 }

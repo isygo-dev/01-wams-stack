@@ -1,6 +1,6 @@
 package eu.isygoit.dto.extendable;
 
-import eu.isygoit.enums.IEnumBinaryStatus;
+import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +32,5 @@ public abstract class DomainModelDto<T extends Serializable> extends AbstractAud
     @NotEmpty
     private String industry;
     @Builder.Default
-    private IEnumBinaryStatus.Types adminStatus = IEnumBinaryStatus.Types.ENABLED;
+    private IEnumEnabledBinaryStatus.Types adminStatus = IEnumEnabledBinaryStatus.Types.ENABLED;
 }

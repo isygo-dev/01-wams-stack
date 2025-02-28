@@ -1,6 +1,6 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.enums.IEnumBinaryStatus;
+import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.enums.IEnumRequest;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -52,8 +52,8 @@ public abstract class ApiPermissionModel<T extends Serializable> extends Auditab
     @Builder.Default
     @ColumnDefault("'ENABLED'")
     @Enumerated(EnumType.STRING)
-    @Column(name = ComSchemaColumnConstantName.C_STATUS, length = IEnumBinaryStatus.STR_ENUM_SIZE, nullable = false)
-    private IEnumBinaryStatus.Types status = IEnumBinaryStatus.Types.ENABLED;
+    @Column(name = ComSchemaColumnConstantName.C_STATUS, length = IEnumEnabledBinaryStatus.STR_ENUM_SIZE, nullable = false)
+    private IEnumEnabledBinaryStatus.Types status = IEnumEnabledBinaryStatus.Types.ENABLED;
 
     /**
      * Gets role.

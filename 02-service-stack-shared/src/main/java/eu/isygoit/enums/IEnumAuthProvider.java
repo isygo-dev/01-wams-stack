@@ -3,7 +3,7 @@ package eu.isygoit.enums;
 /**
  * The interface Enum authentication.
  */
-public interface IEnumAuthentication {
+public interface IEnumAuthProvider {
 
     /**
      * The enum Types.

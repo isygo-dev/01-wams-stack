@@ -2,7 +2,7 @@ package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.enums.IEnumAccountSystemStatus;
-import eu.isygoit.enums.IEnumBinaryStatus;
+import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
@@ -47,8 +47,8 @@ public abstract class AccountModel<T extends Serializable> extends AuditableCanc
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'ENABLED'")
-    @Column(name = ComSchemaColumnConstantName.C_ADMIN_STATUS, length = IEnumBinaryStatus.STR_ENUM_SIZE, nullable = false)
-    private IEnumBinaryStatus.Types adminStatus = IEnumBinaryStatus.Types.ENABLED;
+    @Column(name = ComSchemaColumnConstantName.C_ADMIN_STATUS, length = IEnumEnabledBinaryStatus.STR_ENUM_SIZE, nullable = false)
+    private IEnumEnabledBinaryStatus.Types adminStatus = IEnumEnabledBinaryStatus.Types.ENABLED;
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'IDLE'")

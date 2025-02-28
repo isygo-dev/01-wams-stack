@@ -5,7 +5,7 @@ import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.dto.common.TokenDto;
 import eu.isygoit.dto.data.TokenRequestDto;
-import eu.isygoit.enums.IEnumAppToken;
+import eu.isygoit.enums.IEnumToken;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,7 +41,7 @@ public interface TokenServiceApi {
     ResponseEntity<TokenDto> createTokenByDomain(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                                  @PathVariable(name = RestApiConstants.DOMAIN_NAME) String domain,
                                                  @PathVariable(name = RestApiConstants.APPLICATION) String application,
-                                                 @PathVariable(name = RestApiConstants.TOKEN_TYPE) IEnumAppToken.Types tokenType,
+                                                 @PathVariable(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
                                                  @Valid @RequestBody TokenRequestDto tokenRequestDto);
 
     /**
@@ -67,7 +67,7 @@ public interface TokenServiceApi {
     ResponseEntity<Boolean> isTokenValid(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                          @PathVariable(name = RestApiConstants.DOMAIN_NAME) String domain,
                                          @PathVariable(name = RestApiConstants.APPLICATION) String application,
-                                         @PathVariable(name = RestApiConstants.TOKEN_TYPE) IEnumAppToken.Types tokenType,
+                                         @PathVariable(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
                                          @PathVariable(name = RestApiConstants.TOKEN) String token,
                                          @PathVariable(name = RestApiConstants.SUBJECT) String subject);
 }

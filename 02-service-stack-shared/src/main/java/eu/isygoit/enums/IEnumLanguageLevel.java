@@ -1,45 +1,40 @@
 package eu.isygoit.enums;
 
-import java.io.Serializable;
-
 /**
- * The interface Enum file type.
- *
- * @param <T> the type parameter
+ * The interface Enum language level type.
  */
-public interface IEnumFileType<T> extends Serializable {
+public interface IEnumLanguageLevel {
 
     /**
      * The constant STR_ENUM_SIZE.
      */
-    int STR_ENUM_SIZE = 16;
+    int STR_ENUM_SIZE = 12;
 
     /**
      * The enum Types.
      */
     enum Types implements IEnum {
-
         /**
-         * Text types.
+         * Fluent types.
          */
-        TEXT("TEXT"),
+        FLUENT("Fluent"),
         /**
-         * Html types.
+         * Alright types.
          */
-        HTML("HTML"),
+        ALRIGHT("Alright"),
         /**
-         * Doc types.
+         * Good types.
          */
-        DOC("DOC"),
+        GOOD("Good"),
         /**
-         * Docx types.
+         * Intermediate types.
          */
-        DOCX("DOCX"),
+        INTERMEDIATE("Intermediate"),
         /**
-         * Pdf types.
+         * Beginner types.
          */
-        PDF("PDF");
-
+        BEGINNER("Beginner"),
+        ;
         private final String meaning;
 
         Types(String meaning) {
@@ -51,3 +46,5 @@ public interface IEnumFileType<T> extends Serializable {
         }
     }
 }
+
+

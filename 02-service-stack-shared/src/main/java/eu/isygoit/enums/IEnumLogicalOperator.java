@@ -3,7 +3,7 @@ package eu.isygoit.enums;
 /**
  * The interface Enum logical ope.
  */
-public interface IEnumLogicalOpe {
+public interface IEnumLogicalOperator {
 
     /**
      * The constant STR_ENUM_SIZE.

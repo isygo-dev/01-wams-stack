@@ -3,7 +3,7 @@ package eu.isygoit.enums;
 /**
  * The interface Enum app token.
  */
-public interface IEnumAppToken {
+public interface IEnumToken {
 
     /**
      * The constant STR_ENUM_SIZE.

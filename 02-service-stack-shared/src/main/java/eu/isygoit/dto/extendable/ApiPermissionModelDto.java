@@ -1,6 +1,6 @@
 package eu.isygoit.dto.extendable;
 
-import eu.isygoit.enums.IEnumBinaryStatus;
+import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.enums.IEnumRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,5 +28,5 @@ public abstract class ApiPermissionModelDto<T extends Serializable> extends Abst
     private String path;
     private String description;
     @Builder.Default
-    private IEnumBinaryStatus.Types status = IEnumBinaryStatus.Types.ENABLED;
+    private IEnumEnabledBinaryStatus.Types status = IEnumEnabledBinaryStatus.Types.ENABLED;
 }

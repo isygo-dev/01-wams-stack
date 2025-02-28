@@ -2,7 +2,7 @@ package eu.isygoit.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.isygoit.dto.common.TokenDto;
-import eu.isygoit.enums.IEnumAppToken;
+import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.jwt.IJwtService;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public interface ITokenService extends IJwtService {
      * @param claims      the claims
      * @return the token dto
      */
-    TokenDto buildTokenAndSave(String domain, String application, IEnumAppToken.Types tokenType, String subject, Map<String, Object> claims);
+    TokenDto buildTokenAndSave(String domain, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
 
     /**
      * Build token token dto.
@@ -35,7 +35,7 @@ public interface ITokenService extends IJwtService {
      * @param claims      the claims
      * @return the token dto
      */
-    TokenDto buildToken(String domain, String application, IEnumAppToken.Types tokenType, String subject, Map<String, Object> claims);
+    TokenDto buildToken(String domain, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
 
     /**
      * Is token valid boolean.
@@ -47,7 +47,7 @@ public interface ITokenService extends IJwtService {
      * @param subject     the subject
      * @return the boolean
      */
-    boolean isTokenValid(String domain, String application, IEnumAppToken.Types tokenType, String token, String subject);
+    boolean isTokenValid(String domain, String application, IEnumToken.Types tokenType, String token, String subject);
 
 
     /**

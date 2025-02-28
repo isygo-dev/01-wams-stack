@@ -3,7 +3,7 @@ package eu.isygoit.enums;
 /**
  * The interface Enum msg template name.
  */
-public interface IEnumMsgTemplateName {
+public interface IEnumEmailTemplate {
 
     /**
      * The constant STR_ENUM_SIZE.

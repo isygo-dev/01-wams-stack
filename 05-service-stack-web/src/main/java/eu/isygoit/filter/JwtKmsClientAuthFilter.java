@@ -1,7 +1,7 @@
 package eu.isygoit.filter;
 
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.enums.IEnumAppToken;
+import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,7 +60,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
                     EMPTY_CONTEXT,
                     domain,
                     application,
-                    IEnumAppToken.Types.ACCESS,
+                    IEnumToken.Types.ACCESS,
                     jwt,
                     userIdentifier
             );

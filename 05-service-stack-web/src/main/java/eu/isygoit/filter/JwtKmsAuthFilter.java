@@ -1,6 +1,6 @@
 package eu.isygoit.filter;
 
-import eu.isygoit.enums.IEnumAppToken;
+import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.service.ITokenService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +51,7 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
         String userIdentifier = userName.toLowerCase() + "@" + domain;
 
         // Validate token using token service
-        if (!tokenService.isTokenValid(domain, application, IEnumAppToken.Types.ACCESS, jwt, userIdentifier)) {
+        if (!tokenService.isTokenValid(domain, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)) {
             log.warn("Invalid token for user: {}, application: {}, domain: {}",
                     userName, application, domain);
             throw new TokenInvalidException("KMS::isTokenValid");

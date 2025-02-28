@@ -1,9 +1,9 @@
-package eu.isygoit.enums;
+package eu.isygoit.constants;
 
 /**
  * The interface Error codes.
  */
-public interface ERROR_CODES {
+public interface ErrorCodeConstants {
 
     /**
      * The constant FILE_ALREADY_EXISTS.

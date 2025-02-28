@@ -21,11 +21,7 @@ public interface IEnumGender {
         /**
          * Female types.
          */
-        FEMALE("Female"),
-        /**
-         * Other types.
-         */
-        OTHER("Other");
+        FEMALE("Female");
 
         private final String meaning;
 

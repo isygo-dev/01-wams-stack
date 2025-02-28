@@ -3,7 +3,7 @@ package eu.isygoit.enums;
 /**
  * The interface Enum jwt auth result.
  */
-public interface IEnumJwtAuthResult {
+public interface IEnumJwtValidation {
 
     /**
      * The constant STR_ENUM_SIZE.

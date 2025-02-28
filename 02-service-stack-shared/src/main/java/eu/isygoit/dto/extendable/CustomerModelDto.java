@@ -1,7 +1,7 @@
 package eu.isygoit.dto.extendable;
 
 import eu.isygoit.dto.IImageUploadDto;
-import eu.isygoit.enums.IEnumBinaryStatus;
+import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,5 +29,5 @@ public abstract class CustomerModelDto<T extends Serializable> extends AbstractA
     private String imagePath;
     private String domain;
     @Builder.Default
-    private IEnumBinaryStatus.Types adminStatus = IEnumBinaryStatus.Types.ENABLED;
+    private IEnumEnabledBinaryStatus.Types adminStatus = IEnumEnabledBinaryStatus.Types.ENABLED;
 }
