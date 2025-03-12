@@ -18,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class DateHelperTestPart2 {
 
+    /**
+     * The constant SDF.
+     */
     public static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**

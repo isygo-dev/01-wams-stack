@@ -12,6 +12,9 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("to.json.conversion.exception")
 public class ToJsonConversionException extends ManagedException {
 
+    /**
+     * The constant serialVersionUID.
+     */
     public static final long serialVersionUID = 1L;
 
     /**

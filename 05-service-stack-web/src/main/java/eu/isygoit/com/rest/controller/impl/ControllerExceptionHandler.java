@@ -39,7 +39,7 @@ public abstract class ControllerExceptionHandler implements IControllerException
                     .orElseThrow(() -> new ExceptionHandlerNotDefinedException(this.getClass().getSimpleName()));
 
             // Récupération du bean correspondant
-            this.exceptionHandler = Optional.ofNullable(applicationContextService.getBean(handlerClass))
+            this.exceptionHandler = applicationContextService.getBean(handlerClass)
                     .orElseThrow(() -> new BeanNotFoundException(this.getClass().getSimpleName()));
         }
 

@@ -9,6 +9,6 @@ public class Key8Generator extends AbstractKeyGenerator {
      * Instantiates a new Key 8 generator.
      */
     public Key8Generator() {
-        this.setBufferlength(8);
+        this.setBufferLength(8);
     }
 }

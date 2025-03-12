@@ -5,6 +5,7 @@ import org.springframework.beans.BeansException;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The interface Application context service.
@@ -19,7 +20,7 @@ public interface ApplicationContextService {
      * @return the bean
      * @throws BeanNotFoundException the bean not found exception
      */
-    <T> T getBean(Class<T> beanClass) throws BeanNotFoundException;
+    <T> Optional<T> getBean(Class<T> beanClass) throws BeanNotFoundException;
 
     /**
      * Gets beans with annotation.

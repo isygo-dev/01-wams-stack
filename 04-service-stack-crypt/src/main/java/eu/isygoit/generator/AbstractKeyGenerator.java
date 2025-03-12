@@ -2,77 +2,42 @@ package eu.isygoit.generator;
 
 import eu.isygoit.enums.IEnumCharSet;
 
-import java.util.Arrays;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * The type Abstract key generator.
  */
 public abstract class AbstractKeyGenerator implements IKeyGenerator {
 
-    private static final char[] allsymbols;
-    private static final char[] alphanumsymbols;
-    private static final char[] alphasymbols;
-    private static final char[] numsymbols;
+    private static final char[] NUM_SYMBOLS = "0123456789".toCharArray();
+    private static final char[] ALPHA_SYMBOLS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final char[] specialSymbols = "$#&@/-+={}[]()".toCharArray();
+
+    private static final char[] ALPHANUM_SYMBOLS;
+    private static final char[] ALL_SYMBOLS;
 
     static {
-        //numeric symbols
-        StringBuilder numsymbolsSB = new StringBuilder();
-        for (char ch = '0'; ch <= '9'; ++ch) {
-            numsymbolsSB.append(ch);
-        }
-        numsymbols = numsymbolsSB.toString().toCharArray();
+        // Merge NUMERIC + ALPHA symbols
+        ALPHANUM_SYMBOLS = new char[NUM_SYMBOLS.length + ALPHA_SYMBOLS.length];
+        System.arraycopy(NUM_SYMBOLS, 0, ALPHANUM_SYMBOLS, 0, NUM_SYMBOLS.length);
+        System.arraycopy(ALPHA_SYMBOLS, 0, ALPHANUM_SYMBOLS, NUM_SYMBOLS.length, ALPHA_SYMBOLS.length);
 
-        //alphabet symbols
-        StringBuilder alphasymbolsSB = new StringBuilder();
-        for (char ch = 'A'; ch <= 'Z'; ++ch) {
-            alphasymbolsSB.append(ch);
-        }
-        for (char ch = 'a'; ch <= 'z'; ++ch) {
-            alphasymbolsSB.append(ch);
-        }
-        alphasymbols = alphasymbolsSB.toString().toCharArray();
-
-        //alphanumeric symbols
-        StringBuilder alphanumsymbolsSB = new StringBuilder();
-        alphanumsymbolsSB.append(Arrays.toString(numsymbols))
-                .append(alphasymbols);
-        alphanumsymbols = alphanumsymbolsSB.toString().toCharArray();
-
-        //all symbols
-        StringBuilder allsymbolsSB = new StringBuilder();
-        allsymbolsSB.append(Arrays.toString(alphanumsymbols));
-        allsymbolsSB.append('$');
-        allsymbolsSB.append('#');
-        allsymbolsSB.append('&');
-        allsymbolsSB.append('@');
-        allsymbolsSB.append('/');
-        allsymbolsSB.append('-');
-        allsymbolsSB.append('+');
-        allsymbolsSB.append('=');
-        allsymbolsSB.append('{');
-        allsymbolsSB.append('}');
-        allsymbolsSB.append(']');
-        allsymbolsSB.append('[');
-        allsymbolsSB.append('(');
-        allsymbolsSB.append(')');
-        allsymbols = allsymbolsSB.toString().toCharArray();
+        // Merge ALPHANUM + SPECIAL symbols
+        ALL_SYMBOLS = new char[ALPHANUM_SYMBOLS.length + specialSymbols.length];
+        System.arraycopy(ALPHANUM_SYMBOLS, 0, ALL_SYMBOLS, 0, ALPHANUM_SYMBOLS.length);
+        System.arraycopy(specialSymbols, 0, ALL_SYMBOLS, ALPHANUM_SYMBOLS.length, specialSymbols.length);
     }
 
-    private final Random random = new Random();
     private char[] buf;
 
     /**
-     * Sets bufferlength.
+     * Sets buffer length.
      *
      * @param length the length
      */
-    public void setBufferlength(int length) {
-        if (length < 1)
-            throw new IllegalArgumentException("textLength < 1: " + length);
-        if (buf == null || buf.length != length) {
-            buf = new char[length];
-        }
+    public void setBufferLength(int length) {
+        if (length < 1) throw new IllegalArgumentException("Buffer length must be >= 1: " + length);
+        buf = new char[length];
     }
 
     @Override
@@ -82,31 +47,24 @@ public abstract class AbstractKeyGenerator implements IKeyGenerator {
 
     @Override
     public String nextGuid() {
-        for (int idx = 0; idx < buf.length; ++idx) {
-            buf[idx] = allsymbols[random.nextInt(allsymbols.length)];
-        }
-        return new String(buf);
+        return generateRandomString(ALL_SYMBOLS);
     }
 
     @Override
     public String nextGuid(IEnumCharSet.Types charSetType) {
-        for (int idx = 0; idx < buf.length; ++idx) {
-            switch (charSetType) {
-                case NUMERIC:
-                    buf[idx] = numsymbols[random.nextInt(numsymbols.length)];
-                    break;
-                case ALPHA:
-                    buf[idx] = alphasymbols[random.nextInt(alphasymbols.length)];
-                    break;
-                case ALPHANUM:
-                    buf[idx] = alphanumsymbols[random.nextInt(alphanumsymbols.length)];
-                    break;
-                case ALL:
-                    buf[idx] = allsymbols[random.nextInt(allsymbols.length)];
-                    break;
-                default:
-                    buf[idx] = allsymbols[random.nextInt(allsymbols.length)];
-            }
+        char[] charPool = switch (charSetType) {
+            case NUMERIC -> NUM_SYMBOLS;
+            case ALPHA -> ALPHA_SYMBOLS;
+            case ALPHANUM -> ALPHANUM_SYMBOLS;
+            case ALL -> ALL_SYMBOLS;
+        };
+        return generateRandomString(charPool);
+    }
+
+    private String generateRandomString(char[] charPool) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        for (int i = 0; i < buf.length; i++) {
+            buf[i] = charPool[random.nextInt(charPool.length)];
         }
         return new String(buf);
     }

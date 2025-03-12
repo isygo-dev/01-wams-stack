@@ -18,14 +18,31 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * The type File storage test part 2.
+ */
 class FileStorageTestPart2 {
 
+    /**
+     * The Temp dir.
+     */
     @TempDir
     Path tempDir;
+    /**
+     * The Temp target dir.
+     */
     @TempDir
     Path tempTargetDir;
+    /**
+     * The Temp file.
+     */
     Path tempFile;
 
+    /**
+     * Sets .
+     *
+     * @throws IOException the io exception
+     */
     @BeforeEach
     void setup() throws IOException {
         // Create and populate a temp file with some content
@@ -33,10 +50,18 @@ class FileStorageTestPart2 {
         Files.write(tempFile, "Sample content".getBytes());
     }
 
+    /**
+     * The type Save multipart file tests.
+     */
     @Nested
     @DisplayName("saveMultipartFile() Tests")
     class SaveMultipartFileTests {
 
+        /**
+         * Test save multipart file valid file.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("should save a valid file")
         void testSaveMultipartFile_validFile() throws IOException {
@@ -61,6 +86,11 @@ class FileStorageTestPart2 {
             Files.delete(result);
         }
 
+        /**
+         * Test save multipart file empty file.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("should throw exception when file is empty")
         void testSaveMultipartFile_emptyFile() throws IOException {
@@ -79,10 +109,18 @@ class FileStorageTestPart2 {
         }
     }
 
+    /**
+     * The type Download resource tests.
+     */
     @Nested
     @DisplayName("downloadResource() Tests")
     class DownloadResourceTests {
 
+        /**
+         * Test download resource valid file.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("should return valid resource for an existing file")
         void testDownloadResource_validFile() throws IOException {
@@ -100,6 +138,9 @@ class FileStorageTestPart2 {
             );
         }
 
+        /**
+         * Test download resource file does not exist.
+         */
         @Test
         @DisplayName("should throw exception when file does not exist")
         void testDownloadResource_fileDoesNotExist() {
@@ -113,6 +154,9 @@ class FileStorageTestPart2 {
             assertEquals("No resource found for " + nonExistentFile + ":version /1", thrown.getMessage());
         }
 
+        /**
+         * Test download resource empty path.
+         */
         @Test
         @DisplayName("should throw exception when path is empty")
         void testDownloadResource_emptyPath() {

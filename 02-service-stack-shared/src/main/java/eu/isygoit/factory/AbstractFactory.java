@@ -9,14 +9,12 @@ import java.lang.reflect.ParameterizedType;
  */
 public abstract class AbstractFactory<T> implements Factory<T> {
     private T instance;
-    protected final Class<T> type;
-
-    @SuppressWarnings("unchecked")
-    public AbstractFactory() {
-        // Extract generic type parameter once during construction
-        type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
-                .getActualTypeArguments()[0];
-    }
+    /**
+     * The Type.
+     */
+    protected final Class<T> type = (Class<T>) ((ParameterizedType) getClass()
+            .getGenericSuperclass())
+            .getActualTypeArguments()[0];
 
     @Override
     public T instance() {

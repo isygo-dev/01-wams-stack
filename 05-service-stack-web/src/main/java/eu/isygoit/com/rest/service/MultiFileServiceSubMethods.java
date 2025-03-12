@@ -15,6 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * The type Multi file service sub methods.
@@ -37,11 +38,8 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable, T exten
         if (this.linkedFileApi == null) {
             DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
             if (annotation != null) {
-                this.linkedFileApi = applicationContextService.getBean(annotation.value());
-                if (this.linkedFileApi == null) {
-                    log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
-                    throw new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
-                }
+                this.linkedFileApi = applicationContextService.getBean((Class<ILinkedFileApi>) annotation.value())
+                        .orElseThrow(() -> new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found"));
             } else {
                 log.error("<Error>: Linked file service not defined for {}, local storage will be used!", this.getClass().getSimpleName());
             }

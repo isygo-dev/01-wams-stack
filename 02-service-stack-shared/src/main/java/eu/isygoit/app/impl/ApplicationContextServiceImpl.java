@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The type Application context service.
@@ -20,18 +21,21 @@ import java.util.Map;
 @Transactional
 public class ApplicationContextServiceImpl implements ApplicationContextService {
 
-    @Autowired
-    private ApplicationContext applicationContext;
+
+    private final ApplicationContext applicationContext;
+
+    public ApplicationContextServiceImpl(@Autowired ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
-    public <T> T getBean(Class<T> beanClass) throws BeanNotFoundException {
-        T bean = this.applicationContext.getBean(beanClass);
-        if (bean == null) {
-            log.error("<Error>: bean {} not found", beanClass.getSimpleName());
-            throw new BeanNotFoundException(beanClass.getSimpleName());
+    public <T> Optional<T> getBean(Class<T> beanClass) throws BeanNotFoundException {
+        try {
+            return Optional.ofNullable(this.applicationContext.getBean(beanClass));
+        } catch (BeansException e) {
+            log.error("<Error>: bean {} not found", beanClass.getSimpleName(), e);
+            return Optional.empty();
         }
-
-        return bean;
     }
 
     @Override

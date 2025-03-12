@@ -53,19 +53,13 @@ public abstract class CrudControllerUtils<T extends IIdAssignable,
         if (this.crudService == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {
-                this.crudService = (S) getApplicationContextService().getBean(ctrlDef.service());
-                if (this.crudService == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.service().getSimpleName());
-                    throw new BeanNotFoundException(CONTROLLER_SERVICE);
-                }
+                this.crudService = getApplicationContextService().getBean((Class<S>) ctrlDef.service())
+                        .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
             } else {
                 CtrlService ctrlService = this.getClass().getAnnotation(CtrlService.class);
                 if (ctrlService != null) {
-                    this.crudService = (S) getApplicationContextService().getBean(ctrlService.value());
-                    if (this.crudService == null) {
-                        log.error(ERROR_BEAN_NOT_FOUND, ctrlService.value().getSimpleName());
-                        throw new BeanNotFoundException(CONTROLLER_SERVICE);
-                    }
+                    this.crudService = getApplicationContextService().getBean((Class<S>) ctrlService.value())
+                            .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
                 }
                 log.error("<Error>: Service bean not defined");
                 throw new ServiceNotDefinedException(CONTROLLER_SERVICE);
@@ -80,21 +74,12 @@ public abstract class CrudControllerUtils<T extends IIdAssignable,
         if (this.fullEntityMapper == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlDef.mapper());
-                if (this.fullEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.mapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlDef.mapper().getSimpleName());
-                }
+                this.fullEntityMapper = getApplicationContextService().getBean(ctrlDef.mapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
             } else {
                 CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlMapper.mapper());
-                if (this.fullEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.mapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlMapper.mapper().getSimpleName());
-                } else {
-                    log.error("<Error>: FullDto Mapper bean not defined");
-                    throw new MapperNotDefinedException("Mapper");
-                }
+                this.fullEntityMapper = getApplicationContextService().getBean(ctrlMapper.mapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
             }
         }
 
@@ -106,21 +91,12 @@ public abstract class CrudControllerUtils<T extends IIdAssignable,
         if (this.minEntityMapper == null) {
             CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
             if (ctrlDef != null) {
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlDef.minMapper());
-                if (this.minEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlDef.minMapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlDef.minMapper().getSimpleName());
-                }
+                this.minEntityMapper = getApplicationContextService().getBean(ctrlDef.minMapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
             } else {
                 CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlMapper.minMapper());
-                if (this.minEntityMapper == null) {
-                    log.error(ERROR_BEAN_NOT_FOUND, ctrlMapper.minMapper().getSimpleName());
-                    throw new BeanNotFoundException(ctrlMapper.minMapper().getSimpleName());
-                } else {
-                    log.error("<Error>: MinDto Mapper bean not defined");
-                    throw new MapperNotDefinedException("MinDto Mapper");
-                }
+                this.minEntityMapper = getApplicationContextService().getBean(ctrlMapper.minMapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
             }
         }
 

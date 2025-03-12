@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
@@ -35,11 +36,8 @@ public abstract class FileServiceSubMethods<I extends Serializable, T extends IF
         if (this.linkedFileApi == null) {
             DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
             if (annotation != null) {
-                this.linkedFileApi = applicationContextService.getBean(annotation.value());
-                if (this.linkedFileApi == null) {
-                    log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
-                    throw new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
-                }
+                this.linkedFileApi = applicationContextService.getBean(annotation.value())
+                        .orElseThrow(() -> new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found"));
             } else {
                 log.error("<Error>: Linked file service not defined for {}, local storage will be used!", this.getClass().getSimpleName());
             }

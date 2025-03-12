@@ -12,16 +12,28 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * The type Directory management test.
+ */
 @DisplayName("Directory Management Tests")
 class DirectoryManagementTest {
 
+    /**
+     * The Temporary directory.
+     */
     @TempDir
     Path temporaryDirectory;
 
+    /**
+     * The type Create directory if absent tests.
+     */
     @Nested
     @DisplayName("createDirectoryIfAbsent Method")
     class CreateDirectoryIfAbsentTests {
 
+        /**
+         * Should create new directory when absent.
+         */
         @Test
         @DisplayName("Should create a new directory when it does not exist")
         void shouldCreateNewDirectoryWhenAbsent() {
@@ -37,6 +49,9 @@ class DirectoryManagementTest {
             assertTrue(directory.isDirectory(), "The created path should be a directory.");
         }
 
+        /**
+         * Should not alter existing directory.
+         */
         @Test
         @DisplayName("Should not change an already existing directory")
         void shouldNotAlterExistingDirectory() {
@@ -53,6 +68,11 @@ class DirectoryManagementTest {
             assertTrue(directory.isDirectory(), "The existing path should still be a directory.");
         }
 
+        /**
+         * Should throw exception when path is a file.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("Should throw an exception if the path points to a file")
         void shouldThrowExceptionWhenPathIsAFile() throws IOException {

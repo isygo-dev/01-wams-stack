@@ -6,6 +6,7 @@ import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
+import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
 import eu.isygoit.model.IIdAssignable;
@@ -151,11 +152,8 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
         if (this.remoteNextCodeService == null) {
             CodeGenKms annotation = this.getClass().getAnnotation(CodeGenKms.class);
             if (annotation != null) {
-                this.remoteNextCodeService = applicationContextService.getBean(annotation.value());
-                if (this.remoteNextCodeService == null) {
-                    log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
-                    throw new RemoteNextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
-                }
+                this.remoteNextCodeService = applicationContextService.getBean(annotation.value())
+                        .orElseThrow(() -> new RemoteNextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found"));
             } else {
                 log.error("<Error>: KMS code generator not defined for {}", this.getClass().getSimpleName());
             }
@@ -169,11 +167,8 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
         if (this.nextCodeService == null) {
             CodeGenLocal annotation = this.getClass().getAnnotation(CodeGenLocal.class);
             if (annotation != null) {
-                this.nextCodeService = applicationContextService.getBean(annotation.value());
-                if (this.nextCodeService == null) {
-                    log.error("<Error>: bean {} not found", annotation.value().getSimpleName());
-                    throw new NextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found");
-                }
+                this.nextCodeService = applicationContextService.getBean(annotation.value())
+                        .orElseThrow(() -> new NextCodeServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found"));
             } else {
                 log.error("<Error>: Local code generator not defined for {}", this.getClass().getSimpleName());
             }

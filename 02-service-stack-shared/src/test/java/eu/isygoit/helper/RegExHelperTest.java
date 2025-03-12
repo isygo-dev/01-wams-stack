@@ -7,19 +7,31 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * The type Reg ex helper test.
+ */
 @DisplayName("RegExHelper Tests")
 class RegExHelperTest {
 
+    /**
+     * The type String validation tests.
+     */
     @Nested
     @DisplayName("String Validation Tests")
     class StringValidationTests {
 
+        /**
+         * Validate string.
+         */
         @Test
         @DisplayName("Should validate string against regex pattern")
         void validateString() {
             assertTrue(RegExHelper.validateString("test123", "\\w+"));
         }
 
+        /**
+         * Validate string fail.
+         */
         @Test
         @DisplayName("Should fail validation for invalid string")
         void validateStringFail() {
@@ -27,10 +39,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Uuid validation tests.
+     */
     @Nested
     @DisplayName("UUID Validation Tests")
     class UUIDValidationTests {
 
+        /**
+         * Validate valid uuid.
+         */
         @Test
         @DisplayName("Should validate correct UUID format")
         void validateValidUUID() {
@@ -38,6 +56,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateUUID(validUUID));
         }
 
+        /**
+         * Validate invalid uuid.
+         */
         @Test
         @DisplayName("Should reject invalid UUID format")
         void validateInvalidUUID() {
@@ -46,10 +67,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Credit card validation tests.
+     */
     @Nested
     @DisplayName("Credit Card Validation Tests")
     class CreditCardValidationTests {
 
+        /**
+         * Validate valid credit card.
+         */
         @Test
         @DisplayName("Should validate valid credit card number")
         void validateValidCreditCard() {
@@ -57,24 +84,36 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateCreditCard("4532015112830366"));
         }
 
+        /**
+         * Validate credit card with spaces.
+         */
         @Test
         @DisplayName("Should validate credit card with spaces and dashes")
         void validateCreditCardWithSpaces() {
             assertTrue(RegExHelper.validateCreditCard("4532-0151-1283-0366"));
         }
 
+        /**
+         * Validate invalid credit card.
+         */
         @Test
         @DisplayName("Should reject invalid credit card number")
         void validateInvalidCreditCard() {
             assertFalse(RegExHelper.validateCreditCard("1234567890"));
         }
 
+        /**
+         * Validate null credit card.
+         */
         @Test
         @DisplayName("Should reject null credit card number")
         void validateNullCreditCard() {
             assertFalse(RegExHelper.validateCreditCard(null));
         }
 
+        /**
+         * Validate empty credit card.
+         */
         @Test
         @DisplayName("Should reject empty credit card number")
         void validateEmptyCreditCard() {
@@ -82,10 +121,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Email validation tests.
+     */
     @Nested
     @DisplayName("Email Validation Tests")
     class EmailValidationTests {
 
+        /**
+         * Validate valid email.
+         */
         @Test
         @DisplayName("Should validate correct email format")
         void validateValidEmail() {
@@ -94,6 +139,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateEmail("user_name@domain.com"));
         }
 
+        /**
+         * Validate invalid email.
+         */
         @Test
         @DisplayName("Should reject invalid email format")
         void validateInvalidEmail() {
@@ -103,10 +151,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Phone number validation tests.
+     */
     @Nested
     @DisplayName("Phone Number Validation Tests")
     class PhoneNumberValidationTests {
 
+        /**
+         * Validate valid phone numbers.
+         */
         @Test
         @DisplayName("Should validate various phone number formats")
         void validateValidPhoneNumbers() {
@@ -116,6 +170,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validatePhoneNumber("+44 20 7123 4567"));
         }
 
+        /**
+         * Validate invalid phone number.
+         */
         @Test
         @DisplayName("Should reject invalid phone number format")
         void validateInvalidPhoneNumber() {
@@ -125,10 +182,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Isin validation tests.
+     */
     @Nested
     @DisplayName("ISIN Validation Tests")
     class IsinValidationTests {
 
+        /**
+         * Validate valid isin.
+         */
         @Test
         @DisplayName("Should validate correct ISIN format and checksum")
         void validateValidIsin() {
@@ -138,6 +201,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateIsin("GB0002374006")); // Diageo
         }
 
+        /**
+         * Validate isin format.
+         */
         @Test
         @DisplayName("Should validate ISIN format separately")
         void validateIsinFormat() {
@@ -148,6 +214,9 @@ class RegExHelperTest {
             assertFalse(RegExHelper.validateIsinFormat("123456789012")); // No country code
         }
 
+        /**
+         * Validate isin checksum.
+         */
         @Test
         @DisplayName("Should validate ISIN checksum separately")
         void validateIsinChecksum() {
@@ -156,6 +225,9 @@ class RegExHelperTest {
             assertFalse(RegExHelper.validateIsinChecksum("DE0007164601")); // Invalid checksum
         }
 
+        /**
+         * Validate invalid isin.
+         */
         @Test
         @DisplayName("Should handle null and invalid length ISIN")
         void validateInvalidIsin() {
@@ -165,10 +237,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Ip address validation tests.
+     */
     @Nested
     @DisplayName("IP Address Validation Tests")
     class IpAddressValidationTests {
 
+        /**
+         * Validate valid i pv 4.
+         */
         @Test
         @DisplayName("Should validate correct IPv4 addresses")
         void validateValidIPv4() {
@@ -178,6 +256,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateIPv4Address("255.255.255.255"));
         }
 
+        /**
+         * Validate invalid i pv 4.
+         */
         @Test
         @DisplayName("Should reject invalid IPv4 addresses")
         void validateInvalidIPv4() {
@@ -186,6 +267,9 @@ class RegExHelperTest {
             assertFalse(RegExHelper.validateIPv4Address("192.168.001.1"));
         }
 
+        /**
+         * Validate valid i pv 6.
+         */
         @Test
         @DisplayName("Should validate correct IPv6 addresses")
         void validateValidIPv6() {
@@ -193,6 +277,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateIPv6Address("2001:0db8:85a3:0000:0000:8a2e:0370:7334"));
         }
 
+        /**
+         * Validate invalid i pv 6.
+         */
         @Test
         @DisplayName("Should reject invalid IPv6 addresses")
         void validateInvalidIPv6() {
@@ -201,10 +288,16 @@ class RegExHelperTest {
         }
     }
 
+    /**
+     * The type Date validation tests.
+     */
     @Nested
     @DisplayName("Date Validation Tests")
     class DateValidationTests {
 
+        /**
+         * Validate valid date.
+         */
         @Test
         @DisplayName("Should validate correct date format")
         void validateValidDate() {
@@ -213,6 +306,9 @@ class RegExHelperTest {
             assertTrue(RegExHelper.validateDate("2024-01-01"));
         }
 
+        /**
+         * Validate invalid date.
+         */
         @Test
         @DisplayName("Should reject invalid date formats")
         void validateInvalidDate() {

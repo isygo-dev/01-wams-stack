@@ -2,23 +2,21 @@ package eu.isygoit.helper;
 
 import eu.isygoit.exception.BackupCommandException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.*;
 import java.util.List;
 
 /**
- * The type Database helper.
+ * The type Database helper with additional features.
  */
 @Slf4j
 public class DatabaseHelper {
 
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_DELAY_MS = 2000;  // 2 seconds retry delay
+
     /**
-     * Execute command.
+     * Execute command with retry logic.
      *
      * @param datasourceUrl    the datasource url
      * @param databaseName     the database name
@@ -26,124 +24,154 @@ public class DatabaseHelper {
      * @param databasePassword the database password
      * @param dumpDir          the dump dir
      * @param backupFileName   the backup file name
-     * @param bcpType          the bcp type
+     * @param bcpType          the backup operation type
      */
-    public static synchronized void executeCommand(String datasourceUrl, String databaseName, String databaseUser, String databasePassword, String dumpDir, String backupFileName, BackupOperation bcpType) {
-        List<String> command = buildPgComands(datasourceUrl, databaseName, databaseUser, dumpDir, backupFileName, bcpType);
-        if (!CollectionUtils.isEmpty(command)) {
+    public static void executeCommandWithRetry(String datasourceUrl, String databaseName, String databaseUser, String databasePassword, String dumpDir, String backupFileName, BackupOperation bcpType) {
+        int attempts = 0;
+        boolean success = false;
+
+        while (attempts < MAX_RETRIES && !success) {
             try {
-                processCommand(databasePassword, command);
-                log.info("Successful command {}/{}", bcpType, String.join(" ", command));
-            } catch (IOException e) {
-                log.info("Faild command {}/{} with exception", bcpType, String.join(" ", command), e);
-                throw new BackupCommandException(e);
-            } catch (InterruptedException e) {
-                log.info("Faild command {}/{} with exception", bcpType, String.join(" ", command), e);
-                // Restore interrupted state...
-                Thread.currentThread().interrupt();
+                executeCommand(datasourceUrl, databaseName, databaseUser, databasePassword, dumpDir, backupFileName, bcpType);
+                success = true;  // If successful, exit the loop
+            } catch (BackupCommandException e) {
+                attempts++;
+                log.error("Attempt {} failed. Retrying in {}ms", attempts, RETRY_DELAY_MS);
+                if (attempts < MAX_RETRIES) {
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                } else {
+                    log.error("All attempts failed. Aborting operation.");
+                }
             }
-        } else {
-            log.warn("Error: build Pg Comands failed, Invalid params.");
-            throw new BackupCommandException("Error: build Pg Comands failed, Invalid params");
         }
     }
 
-    private static synchronized void processCommand(String databasePassword, List<String> commands) throws IOException, InterruptedException {
+    /**
+     * Execute the command.
+     *
+     * @param datasourceUrl    the datasource url
+     * @param databaseName     the database name
+     * @param databaseUser     the database user
+     * @param databasePassword the database password
+     * @param dumpDir          the dump dir
+     * @param backupFileName   the backup file name
+     * @param bcpType          the backup operation type
+     */
+    public static void executeCommand(String datasourceUrl, String databaseName, String databaseUser, String databasePassword, String dumpDir, String backupFileName, BackupOperation bcpType) {
+        List<String> command = buildPgCommands(datasourceUrl, databaseName, databaseUser, dumpDir, backupFileName, bcpType);
+        if (!command.isEmpty()) {
+            try {
+                processCommand(databasePassword, command);
+                log.info("Successfully executed command {}/{}", bcpType, String.join(" ", command));
+            } catch (IOException e) {
+                log.error("Failed to execute command {}/{} with exception", bcpType, String.join(" ", command), e);
+                throw new BackupCommandException(e);
+            } catch (InterruptedException e) {
+                log.error("Command interrupted {}/{} with exception", bcpType, String.join(" ", command), e);
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            log.warn("Error: Failed to build PgCommands. Invalid parameters.");
+            throw new BackupCommandException("Error: Failed to build PgCommands. Invalid parameters.");
+        }
+    }
+
+    private static void processCommand(String databasePassword, List<String> commands) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(commands);
         pb.environment().put("PGPASSWORD", databasePassword);
 
         Process process = pb.start();
 
-        try (BufferedReader buf = new BufferedReader(
-                new InputStreamReader(process.getErrorStream()))) {
-            String line = buf.readLine();
-            while (line != null) {
-                line = buf.readLine();
-            }
+        // Capture standard output for logging
+        try (BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            buf.lines().forEach(log::info);  // Log process output for visibility
         }
-        process.waitFor();
+
+        // Capture standard error stream for logging
+        try (BufferedReader buf = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            buf.lines().forEach(log::warn);  // Log error stream lines
+        }
+
+        int exitCode = process.waitFor();
         process.destroy();
+        if (exitCode != 0) {
+            throw new IOException("Process terminated with non-zero exit code: " + exitCode);
+        }
     }
 
     /**
-     * Build pg comands list.
+     * Build pg commands list.
      *
      * @param datasourceUrl  the datasource url
      * @param databaseName   the database name
      * @param databaseUser   the database user
      * @param dumpDir        the dump dir
      * @param backupFileName the backup file name
-     * @param bcpType        the bcp type
+     * @param bcpType        the backup operation type
      * @return the list
      */
-    public static List<String> buildPgComands(String datasourceUrl, String databaseName, String databaseUser, String dumpDir, String backupFileName, BackupOperation bcpType) {
+    public static List<String> buildPgCommands(String datasourceUrl, String databaseName, String databaseUser, String dumpDir, String backupFileName, BackupOperation bcpType) {
         File backupFilePath = new File(dumpDir);
-        ArrayList<String> command = null;
+        List<String> command = null;
         switch (bcpType) {
             case DUMP:
                 if (!backupFilePath.exists()) {
-                    File dir = backupFilePath;
-                    dir.mkdirs();
+                    backupFilePath.mkdirs();
                 }
-                command = new ArrayList<>();
-                command.add("pg_dump");
-                command.add("-h"); //database server host
-                command.add(datasourceUrl.split(":")[0]);
-                command.add("-p"); //database server port number
-                command.add(datasourceUrl.split(":")[1]);
-                command.add("-U"); //connect as specified database user
-                command.add(databaseUser);
-                command.add("-F"); //output file format (custom, directory, tar, plain text (default))
-                command.add("t"); // t = .tra
-                command.add("-b"); //include large objects in dump
-                command.add("-v"); //verbose mode
-                command.add("-f"); //output file or directory name
-                command.add(backupFilePath.getAbsolutePath()
-                        + File.separator + backupFileName);
-                command.add("-d"); //database name
-                command.add(databaseName);
-                command.add("--column-inserts");
-                command.add("--attribute-inserts");
+                command = List.of(
+                        "pg_dump",
+                        "-h", datasourceUrl.split(":")[0],
+                        "-p", datasourceUrl.split(":")[1],
+                        "-U", databaseUser,
+                        "-F", "t",  // t = .tra
+                        "-b", "-v", "-f", backupFilePath.getAbsolutePath() + File.separator + backupFileName,
+                        "-d", databaseName,
+                        "--column-inserts", "--attribute-inserts"
+                );
                 break;
             case LOAD:
                 if (!backupFilePath.exists()) {
-                    return command;
+                    return List.of();  // Return empty list if no file exists
                 }
-                command = new ArrayList<>();
-                command.add("pg_restore");
-                command.add("-h");
-                command.add(datasourceUrl.split(":")[0]);
-                command.add("-p");
-                command.add(datasourceUrl.split(":")[1]);
-                command.add("--clean");
-                command.add("-F");
-                command.add("t");
-                command.add("-U");
-                command.add(databaseUser);
-                command.add("-d");
-                command.add(databaseName);
-                command.add("-v");
-                command.add(backupFilePath.getAbsolutePath()
-                        + File.separator + backupFileName);
+                command = List.of(
+                        "pg_restore",
+                        "-h", datasourceUrl.split(":")[0],
+                        "-p", datasourceUrl.split(":")[1],
+                        "--clean",
+                        "-F", "t",
+                        "-U", databaseUser,
+                        "-d", databaseName,
+                        "-v", backupFilePath.getAbsolutePath() + File.separator + backupFileName
+                );
                 break;
             default:
-                log.error("<Error>: Buckup type [{}] not supported", bcpType.name());
+                log.error("Unsupported backup type: [{}]", bcpType);
                 break;
         }
-        return command;
+        return command != null ? command : List.of();
+    }
+
+    /**
+     * Verify if a backup file exists before restoring.
+     *
+     * @param dumpDir        the dump dir
+     * @param backupFileName the backup file name
+     * @return true if file exists, false otherwise
+     */
+    public static boolean verifyBackupFileExistence(String dumpDir, String backupFileName) {
+        File file = new File(dumpDir + File.separator + backupFileName);
+        return file.exists();
     }
 
     /**
      * The enum Backup operation.
      */
     public enum BackupOperation {
-        /**
-         * Load backup operation.
-         */
-        LOAD,
-        /**
-         * Dump backup operation.
-         */
-        DUMP
+        LOAD,  // Load backup operation
+        DUMP   // Dump backup operation
     }
 }

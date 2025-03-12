@@ -10,7 +10,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * The type Daily file paths test.
+ */
 class DailyFilePathsTest {
+    /**
+     * Generate daily file paths should generate correct paths.
+     */
     @Test
     void generateDailyFilePaths_ShouldGenerateCorrectPaths() {
         // Setup

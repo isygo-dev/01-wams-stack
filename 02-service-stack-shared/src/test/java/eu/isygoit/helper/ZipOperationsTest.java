@@ -13,10 +13,21 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * The type Zip operations test.
+ */
 class ZipOperationsTest {
+    /**
+     * The Temp dir.
+     */
     @TempDir
     Path tempDir;
 
+    /**
+     * Zip single file should create valid zip file.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void zipSingleFile_ShouldCreateValidZipFile() throws IOException {
         // Setup
@@ -32,6 +43,11 @@ class ZipOperationsTest {
         assertTrue(new File(zipPath).length() > 0);
     }
 
+    /**
+     * Zip multiple files should create valid zip with multiple files.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void zipMultipleFiles_ShouldCreateValidZipWithMultipleFiles() throws IOException {
         // Setup
@@ -51,6 +67,11 @@ class ZipOperationsTest {
         assertTrue(new File(zipPath).length() > 0);
     }
 
+    /**
+     * Unzip file should extract files correctly.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void unzipFile_ShouldExtractFilesCorrectly() throws IOException {
         // Setup

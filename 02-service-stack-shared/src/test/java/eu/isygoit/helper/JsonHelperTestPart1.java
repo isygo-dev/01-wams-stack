@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The type Json helper test part 1.
+ */
 class JsonHelperTestPart1 {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -19,10 +22,18 @@ class JsonHelperTestPart1 {
     private final YAMLMapper yamlMapper = new YAMLMapper();
     private final CsvMapper csvMapper = new CsvMapper();
 
+    /**
+     * The type Json to format tests.
+     */
     @Nested
     @DisplayName("JSON to Other Format Conversion Tests")
     class JsonToFormatTests {
 
+        /**
+         * Json to xml should convert json node to xml.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert JSON to XML")
         void jsonToXml_shouldConvertJsonNodeToXml() throws Exception {
@@ -34,6 +45,11 @@ class JsonHelperTestPart1 {
             assertEquals(expectedXml, result, "The XML conversion should return the expected XML string");
         }
 
+        /**
+         * Json to csv should convert json node to csv.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert JSON to CSV")
         void jsonToCsv_shouldConvertJsonNodeToCsv() throws Exception {
@@ -45,6 +61,11 @@ class JsonHelperTestPart1 {
             assertEquals(expectedCsv, result, "The CSV conversion should return the expected CSV string");
         }
 
+        /**
+         * Json to yaml should convert json node to yaml.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert JSON to YAML")
         void jsonToYaml_shouldConvertJsonNodeToYaml() throws Exception {
@@ -58,6 +79,11 @@ class JsonHelperTestPart1 {
             assertEquals(expectedYaml, result, "The YAML conversion should return the expected YAML string");
         }
 
+        /**
+         * Json to properties should convert json node to properties.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert JSON to Properties")
         void jsonToProperties_shouldConvertJsonNodeToProperties() throws Exception {
@@ -71,10 +97,18 @@ class JsonHelperTestPart1 {
         }
     }
 
+    /**
+     * The type Format to json tests.
+     */
     @Nested
     @DisplayName("Other Format to JSON Conversion Tests")
     class FormatToJsonTests {
 
+        /**
+         * Xml to json should convert xml to json.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert XML to JSON")
         void xmlToJson_shouldConvertXmlToJson() throws Exception {
@@ -86,6 +120,11 @@ class JsonHelperTestPart1 {
             assertEquals(expectedJsonNode, result, "The XML to JSON conversion should return the correct JsonNode");
         }
 
+        /**
+         * Csv to json should convert csv to json.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert CSV to JSON")
         void csvToJson_shouldConvertCsvToJson() throws Exception {
@@ -97,6 +136,11 @@ class JsonHelperTestPart1 {
             assertEquals(expectedJsonNode, result, "The CSV to JSON conversion should return the correct JsonNode");
         }
 
+        /**
+         * Yaml to json should convert yaml to json.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert YAML to JSON")
         void yamlToJson_shouldConvertYamlToJson() throws Exception {
@@ -108,6 +152,11 @@ class JsonHelperTestPart1 {
             assertEquals(expectedJsonNode, result, "The YAML to JSON conversion should return the correct JsonNode");
         }
 
+        /**
+         * Properties to json should convert properties to json.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Convert Properties to JSON")
         void propertiesToJson_shouldConvertPropertiesToJson() throws Exception {
@@ -120,10 +169,18 @@ class JsonHelperTestPart1 {
         }
     }
 
+    /**
+     * The type Error handling tests.
+     */
     @Nested
     @DisplayName("Error Handling Tests")
     class ErrorHandlingTests {
 
+        /**
+         * Json to csv should throw exception if json is not array.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Handle Invalid JSON to CSV Conversion")
         void jsonToCsv_shouldThrowExceptionIfJsonIsNotArray() throws Exception {

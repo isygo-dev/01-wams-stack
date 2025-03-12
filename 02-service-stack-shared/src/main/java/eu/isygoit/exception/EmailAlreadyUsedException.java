@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @MsgLocale("email.already.used.exception")
 public class EmailAlreadyUsedException extends ManagedException {
 
+    /**
+     * The constant serialVersionUID.
+     */
     public static final long serialVersionUID = 1L;
 
     /**

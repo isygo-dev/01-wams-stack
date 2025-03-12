@@ -9,6 +9,9 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("unauthorized.exception")
 public class UnauthorizedException extends ManagedException {
 
+    /**
+     * The constant serialVersionUID.
+     */
     public static final long serialVersionUID = 1L;
 
     /**

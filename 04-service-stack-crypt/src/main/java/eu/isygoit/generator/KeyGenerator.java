@@ -10,6 +10,6 @@ public class KeyGenerator extends AbstractKeyGenerator {
      * @param size the size
      */
     public KeyGenerator(int size) {
-        this.setBufferlength(size);
+        this.setBufferLength(size);
     }
 }

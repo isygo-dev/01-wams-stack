@@ -9,6 +9,9 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("locked.password.exception")
 public class LockedPasswordException extends ManagedException {
 
+    /**
+     * The constant serialVersionUID.
+     */
     public static final long serialVersionUID = 1L;
 
     /**

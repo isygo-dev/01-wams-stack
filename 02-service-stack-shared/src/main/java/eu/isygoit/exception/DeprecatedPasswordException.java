@@ -9,6 +9,9 @@ import eu.isygoit.annotation.MsgLocale;
 @MsgLocale("deprecated.password.exception")
 public class DeprecatedPasswordException extends ManagedException {
 
+    /**
+     * The constant serialVersionUID.
+     */
     public static final long serialVersionUID = 1L;
 
     /**

@@ -25,7 +25,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class XmlHelperTest {
 
+    /**
+     * The constant BOOKSTORE_XML.
+     */
     public static final String BOOKSTORE_XML = "Bookstore.xml";
+    /**
+     * The constant BOOKSTORE_XSD.
+     */
     public static final String BOOKSTORE_XSD = "Bookstore.xsd";
     /**
      * The Temp dir.

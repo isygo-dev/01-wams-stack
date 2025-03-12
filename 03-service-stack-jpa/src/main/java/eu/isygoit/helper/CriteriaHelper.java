@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -31,31 +32,32 @@ public class CriteriaHelper {
         StringTokenizer tokenizer = new StringTokenizer(criteria, delim);
 
         while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
+            String token = tokenizer.nextToken().trim();
 
-            //get combiner if exists
-            String[] combinerKeyValue = token.split("->");
+            // Get combiner if exists
+            String[] combinerKeyValue = token.split("->", 2); // Limit split to avoid unnecessary split on the value side
             IEnumCriteriaCombiner.Types combiner = IEnumCriteriaCombiner.Types.OR;
+
             if (combinerKeyValue.length == 2) {
                 combiner = IEnumCriteriaCombiner.Types.valueOf(combinerKeyValue[0].trim());
-                token = combinerKeyValue[1];
+                token = combinerKeyValue[1].trim();
             }
 
-
-            String finalToken = token;
-            IEnumCriteriaCombiner.Types finalCombiner = combiner;
-            Arrays.stream(IEnumOperator.Types.values()).forEach(operator -> {
-                if (finalToken.contains(operator.symbol())) {
-                    String[] keyValue = finalToken.split(operator.symbol());
-                    list.add(QueryCriteria.builder()
-                            .combiner(finalCombiner)
-                            .name(keyValue[0])
-                            .operator(operator)
-                            .value(keyValue[1])
-                            .build());
-                    return;
+            // Loop through operators and process the token
+            for (IEnumOperator.Types operator : IEnumOperator.Types.values()) {
+                if (token.contains(operator.symbol())) {
+                    String[] keyValue = token.split(operator.symbol(), 2); // Split only once
+                    if (keyValue.length == 2) {
+                        list.add(QueryCriteria.builder()
+                                .combiner(combiner)
+                                .name(keyValue[0].trim())
+                                .operator(operator)
+                                .value(keyValue[1].trim())
+                                .build());
+                    }
+                    break; // No need to continue once a valid operator is found
                 }
-            });
+            }
         }
 
         return list;
@@ -69,12 +71,12 @@ public class CriteriaHelper {
      */
     public static Map<String, String> getCriteriaData(Class<?> classType) {
         Map<String, String> criteriaMap = new HashMap<>();
-        Arrays.stream(classType.getDeclaredFields()).forEach(field -> {
+        for (Field field : classType.getDeclaredFields()) {
             Criteria criteria = field.getAnnotation(Criteria.class);
             if (criteria != null) {
                 criteriaMap.put(field.getName(), field.getType().getSimpleName());
             }
-        });
+        }
         return criteriaMap;
     }
 

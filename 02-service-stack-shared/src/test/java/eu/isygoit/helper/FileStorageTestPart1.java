@@ -13,15 +13,29 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+/**
+ * The type File storage test.
+ */
 class FileStorageTest {
 
+    /**
+     * The Temp dir.
+     */
     @TempDir
     Path tempDir;
 
+    /**
+     * The type Save multipart file tests.
+     */
     @Nested
     @DisplayName("saveMultipartFile() Tests")
     class SaveMultipartFileTests {
 
+        /**
+         * Save multipart file should save valid file.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("should save a valid file")
         void saveMultipartFile_ShouldSaveValidFile() throws IOException {
@@ -45,6 +59,9 @@ class FileStorageTest {
             assertEquals("testFile.txt", savedPath.getFileName().toString());
         }
 
+        /**
+         * Save multipart file should throw exception when file is empty.
+         */
         @Test
         @DisplayName("should throw exception when file is empty")
         void saveMultipartFile_ShouldThrowException_WhenFileIsEmpty() {
@@ -62,10 +79,18 @@ class FileStorageTest {
         }
     }
 
+    /**
+     * The type Read properties file tests.
+     */
     @Nested
     @DisplayName("readPropertiesFile() Tests")
     class ReadPropertiesFileTests {
 
+        /**
+         * Read properties file should read file contents.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("should read file contents")
         void readPropertiesFile_ShouldReadFileContents() throws IOException {

@@ -35,6 +35,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * The type Json helper test part 2.
+ */
 @DisplayName("JsonHelper Methods Tests with Real Files")
 public class JsonHelperTestPart2 {
 
@@ -43,6 +46,11 @@ public class JsonHelperTestPart2 {
     private File tempJsonFile;
     private File tempSchemaFile;
 
+    /**
+     * Sets up.
+     *
+     * @throws IOException the io exception
+     */
     @BeforeEach
     void setUp() throws IOException {
         // Create temporary files for the tests
@@ -63,6 +71,11 @@ public class JsonHelperTestPart2 {
         tempSchemaFile = Files.createTempFile("tempSchema", ".json").toFile();
     }
 
+    /**
+     * Tear down.
+     *
+     * @throws IOException the io exception
+     */
     @AfterEach
     void tearDown() throws IOException {
         // Clean up temporary files after each test
@@ -72,10 +85,18 @@ public class JsonHelperTestPart2 {
         if (tempSchemaFile.exists()) tempSchemaFile.delete();
     }
 
+    /**
+     * The type Validate json tests.
+     */
     @Nested
     @DisplayName("Tests for validateJson method")
     class ValidateJsonTests {
 
+        /**
+         * Validate json success.
+         *
+         * @throws Exception the exception
+         */
         @Test
         @DisplayName("Should validate JSON against schema successfully")
         void validateJson_Success() throws Exception {
@@ -86,6 +107,9 @@ public class JsonHelperTestPart2 {
             assertTrue(validationMessages.isEmpty(), "Validation should pass with no messages");
         }
 
+        /**
+         * Validate json file not found exception.
+         */
         @Test
         @DisplayName("Should throw exception if schema file is missing")
         void validateJson_FileNotFoundException() {
@@ -95,10 +119,18 @@ public class JsonHelperTestPart2 {
         }
     }
 
+    /**
+     * The type Json file conversion tests.
+     */
     @Nested
     @DisplayName("Tests for toJsonFile and fromJsonFile methods")
     class JsonFileConversionTests {
 
+        /**
+         * To json file success.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("Should write object to JSON file")
         void toJsonFile_Success() throws IOException {
@@ -118,6 +150,11 @@ public class JsonHelperTestPart2 {
             assertTrue(tempJsonFile.length() > 0, "JSON file should not be empty");
         }
 
+        /**
+         * From json file success.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("Should read object from JSON file")
         void fromJsonFile_Success() throws IOException {
@@ -137,10 +174,18 @@ public class JsonHelperTestPart2 {
         }
     }
 
+    /**
+     * The type Json serialization tests.
+     */
     @Nested
     @DisplayName("Tests for toJson and fromJson methods")
     class JsonSerializationTests {
 
+        /**
+         * To json success.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("Should convert object to JSON string")
         void toJson_Success() throws IOException {
@@ -154,6 +199,11 @@ public class JsonHelperTestPart2 {
             assertFalse(json.isEmpty(), "JSON string should not be empty");
         }
 
+        /**
+         * From json success.
+         *
+         * @throws IOException the io exception
+         */
         @Test
         @DisplayName("Should convert JSON string to object")
         void fromJson_Success() throws IOException {
