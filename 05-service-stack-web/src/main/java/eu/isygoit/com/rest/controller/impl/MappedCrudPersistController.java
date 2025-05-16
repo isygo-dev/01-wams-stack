@@ -12,11 +12,11 @@ import java.io.Serializable;
 /**
  * The type Mapped crud persist controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class MappedCrudPersistController<I extends Serializable, T extends IIdAssignable,

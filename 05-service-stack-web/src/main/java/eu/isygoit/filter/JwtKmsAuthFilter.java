@@ -30,6 +30,26 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
     private ITokenService tokenService;
 
     /**
+     * Adds a host to the list of hosts that should not be filtered.
+     *
+     * @param host  the host name or pattern
+     * @param value the associated value
+     */
+    public static void addNotFilterHost(String host, String value) {
+        shouldNotFilterHosts.put(host, value);
+    }
+
+    /**
+     * Checks if a host should not be filtered.
+     *
+     * @param host the host to check
+     * @return true if the host should not be filtered
+     */
+    public static boolean shouldNotFilterHost(String host) {
+        return shouldNotFilterHosts.containsKey(host);
+    }
+
+    /**
      * Validates a JWT token using the token service.
      * Creates a user identifier by combining username and domain.
      *
@@ -78,25 +98,5 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
             // Use direct forEach for better performance instead of lambda
             attributes.forEach(request::setAttribute);
         }
-    }
-
-    /**
-     * Adds a host to the list of hosts that should not be filtered.
-     *
-     * @param host     the host name or pattern
-     * @param value    the associated value
-     */
-    public static void addNotFilterHost(String host, String value) {
-        shouldNotFilterHosts.put(host, value);
-    }
-
-    /**
-     * Checks if a host should not be filtered.
-     *
-     * @param host     the host to check
-     * @return true if the host should not be filtered
-     */
-    public static boolean shouldNotFilterHost(String host) {
-        return shouldNotFilterHosts.containsKey(host);
     }
 }

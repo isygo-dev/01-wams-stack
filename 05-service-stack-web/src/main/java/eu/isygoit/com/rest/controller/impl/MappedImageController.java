@@ -26,11 +26,11 @@ import java.nio.file.Files;
 /**
  * The type Mapped image controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class MappedImageController<I extends Serializable, T extends IIdAssignable & IImageEntity,
@@ -42,8 +42,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
 
     @Override
     public ResponseEntity<F> uploadImage(RequestContextDto requestContext,
-                                             I id,
-                                             MultipartFile file) {
+                                         I id,
+                                         MultipartFile file) {
         log.info("Upload image request received");
         try {
             return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderDomain(), id, file)));
@@ -71,8 +71,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
 
     @Override
     public ResponseEntity<F> createWithImage(RequestContextDto requestContext,
-                                                 MultipartFile file,
-                                                 F dto) {
+                                             MultipartFile file,
+                                             F dto) {
         log.info("Create with image request received");
         try {
             if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getDomain())) {
@@ -90,8 +90,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
 
     @Override
     public ResponseEntity<F> updateWithImage(RequestContextDto requestContext,
-                                                 MultipartFile file,
-                                                 F dto) {
+                                             MultipartFile file,
+                                             F dto) {
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);

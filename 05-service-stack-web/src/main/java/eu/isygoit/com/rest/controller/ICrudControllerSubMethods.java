@@ -13,11 +13,11 @@ import java.util.Map;
 /**
  * The interface Crud controller sub methods.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 public interface ICrudControllerSubMethods<I extends Serializable, T extends IIdAssignable, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, T>>
         extends ICrudControllerEvents<I, T, M, F> {

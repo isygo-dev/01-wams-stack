@@ -10,9 +10,9 @@ import java.util.List;
 /**
  * The interface Crud controller events.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
  */
 interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable, M extends IIdentifiableDto, F extends M> {

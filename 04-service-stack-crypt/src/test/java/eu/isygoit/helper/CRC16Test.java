@@ -3,7 +3,6 @@ package eu.isygoit.helper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;

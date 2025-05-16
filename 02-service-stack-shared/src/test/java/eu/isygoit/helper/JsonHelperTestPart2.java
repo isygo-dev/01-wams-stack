@@ -1,39 +1,15 @@
 package eu.isygoit.helper;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.networknt.schema.ValidationMessage;
 import eu.isygoit.helper.bo.Author;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.*;
-import org.mockito.*;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * The type Json helper test part 2.
@@ -85,6 +61,12 @@ public class JsonHelperTestPart2 {
         if (tempSchemaFile.exists()) tempSchemaFile.delete();
     }
 
+    private File createTempFile(String prefix, String suffix) throws IOException {
+        File tempFile = Files.createTempFile(prefix, suffix).toFile();
+        tempFile.deleteOnExit();
+        return tempFile;
+    }
+
     /**
      * The type Validate json tests.
      */
@@ -114,7 +96,7 @@ public class JsonHelperTestPart2 {
         @DisplayName("Should throw exception if schema file is missing")
         void validateJson_FileNotFoundException() {
             assertThrows(FileNotFoundException.class, () -> {
-                JsonHelper.validateJson(tempJsonFile.getPath()+"not", tempSchemaFile.getPath()+"not", "V4");
+                JsonHelper.validateJson(tempJsonFile.getPath() + "not", tempSchemaFile.getPath() + "not", "V4");
             });
         }
     }
@@ -212,11 +194,5 @@ public class JsonHelperTestPart2 {
 
             assertNotNull(obj, "Object should be deserialized from JSON string");
         }
-    }
-
-    private File createTempFile(String prefix, String suffix) throws IOException {
-        File tempFile = Files.createTempFile(prefix, suffix).toFile();
-        tempFile.deleteOnExit();
-        return tempFile;
     }
 }

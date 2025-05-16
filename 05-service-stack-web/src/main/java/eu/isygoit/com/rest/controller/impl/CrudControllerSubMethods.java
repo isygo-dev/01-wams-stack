@@ -8,8 +8,8 @@ import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,11 +25,11 @@ import java.util.Optional;
 /**
  * The type Crud controller sub methods.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable,
@@ -88,7 +88,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                 })
                 .orElseGet(ResponseFactory::ResponseBadRequest);
     }
-    
+
     @Override
     public ResponseEntity<List<F>> subCreate(List<F> objects) {
         log.info("Create {} request received", persistentClass.getSimpleName());
@@ -461,7 +461,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     public F beforeCreate(F object) {
         return object;
     }
-    
+
     @Override
     public T afterUpdate(T object) {
         return object;

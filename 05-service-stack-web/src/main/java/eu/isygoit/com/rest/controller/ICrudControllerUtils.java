@@ -11,10 +11,10 @@ import eu.isygoit.model.IIdAssignable;
 /**
  * The interface Crud controller utils.
  *
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 public interface ICrudControllerUtils<T extends IIdAssignable,
         M extends IIdentifiableDto,

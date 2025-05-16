@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * The interface Date helper.
@@ -33,11 +32,11 @@ public interface DateHelper {
     /**
      * The constant CALENDAR_START.
      */
-    LocalTime TIME_START = LocalTime.of(0,0, 0, 0);
+    LocalTime TIME_START = LocalTime.of(0, 0, 0, 0);
     /**
      * The constant CALENDAR_END.
      */
-    LocalTime TIME_END = LocalTime.of(23, 59,59,999999999);
+    LocalTime TIME_END = LocalTime.of(23, 59, 59, 999999999);
 
     /**
      * The constant DATE_PATTERNS.

@@ -19,10 +19,10 @@ import java.lang.reflect.ParameterizedType;
 /**
  * The type Crud controller utils.
  *
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class CrudControllerUtils<T extends IIdAssignable,

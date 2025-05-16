@@ -8,13 +8,13 @@ import java.lang.reflect.ParameterizedType;
  * @param <T> the type parameter
  */
 public abstract class AbstractFactory<T> implements Factory<T> {
-    private T instance;
     /**
      * The Type.
      */
     protected final Class<T> type = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass())
             .getActualTypeArguments()[0];
+    private T instance;
 
     @Override
     public T instance() {

@@ -29,7 +29,6 @@ import javax.validation.ConstraintViolation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -222,9 +221,9 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
      */
     private void handlePersistenceException(Throwable throwable, StringBuilder message, Locale locale) {
         if (throwable.getCause() instanceof ConstraintViolationException) {
-            handleConstraintViolationException((ConstraintViolationException)throwable.getCause(), message, locale);
+            handleConstraintViolationException((ConstraintViolationException) throwable.getCause(), message, locale);
         } else if (throwable.getCause() instanceof DataException) {
-            handleDataException((DataException)throwable.getCause(), message, locale);
+            handleDataException((DataException) throwable.getCause(), message, locale);
         } else {
             message.append(localeService.getMessage(UNKNOWN_REASON, locale))
                     .append(' ')

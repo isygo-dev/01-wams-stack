@@ -15,11 +15,11 @@ import java.util.Map;
 /**
  * The type Mapped crud fetch controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class MappedCrudFetchController<I extends Serializable, T extends IIdAssignable,

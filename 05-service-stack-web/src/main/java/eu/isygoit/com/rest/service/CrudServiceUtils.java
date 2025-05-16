@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.SrvRepo;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
-import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

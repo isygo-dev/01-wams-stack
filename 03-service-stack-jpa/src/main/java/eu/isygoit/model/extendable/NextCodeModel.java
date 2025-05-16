@@ -1,8 +1,8 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;

@@ -24,11 +24,11 @@ import java.io.Serializable;
 /**
  * The type Mapped file controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable & IFileEntity,
@@ -40,7 +40,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<F> uploadFile(RequestContextDto requestContext,
-                                            I id, MultipartFile file) {
+                                        I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
             return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderDomain(), id, file)));
@@ -69,7 +69,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<F> createWithFile(RequestContextDto requestContext,
-                                                F dto) {
+                                            F dto) {
         log.info("Create with file request received");
         try {
             if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getDomain())) {
@@ -86,8 +86,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<F> updateWithFile(RequestContextDto requestContext,
-                                                I id,
-                                                F dto) {
+                                            I id,
+                                            F dto) {
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);

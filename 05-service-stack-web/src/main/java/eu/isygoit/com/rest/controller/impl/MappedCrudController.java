@@ -15,11 +15,11 @@ import java.util.Map;
 /**
  * The type Mapped crud controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class MappedCrudController<I extends Serializable, T extends IIdAssignable,
@@ -31,7 +31,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
 
     @Override
     public final ResponseEntity<F> create(//RequestContextDto requestContext,
-                                              F object) {
+                                          F object) {
         return subCreate(object);
     }
 
@@ -57,28 +57,28 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
 
     @Override
     public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext,
-                                                    Integer page,
-                                                    Integer size) {
+                                                 Integer page,
+                                                 Integer size) {
         return subFindAll(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext,
-                                                         Integer page,
-                                                         Integer size) {
+                                                     Integer page,
+                                                     Integer size) {
         return subFindAllFull(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<F> findById(RequestContextDto requestContext,
-                                                I id) {
+                                            I id) {
         return subFindById(requestContext, id);
     }
 
     @Override
     public final ResponseEntity<F> update(//RequestContextDto requestContext,
-                                              I id,
-                                              F object) {
+                                          I id,
+                                          F object) {
         return subUpdate(id, object);
     }
 

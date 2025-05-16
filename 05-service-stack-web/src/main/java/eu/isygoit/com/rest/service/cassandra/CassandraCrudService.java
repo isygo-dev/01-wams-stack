@@ -1,8 +1,8 @@
 package eu.isygoit.com.rest.service.cassandra;
 
+import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
-import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.BadArgumentException;
@@ -11,8 +11,8 @@ import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingSAASRepository;
 import jakarta.persistence.EntityExistsException;

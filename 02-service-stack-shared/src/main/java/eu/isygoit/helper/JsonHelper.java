@@ -74,7 +74,8 @@ public interface JsonHelper {
     public static String jsonToCsv(JsonNode jsonNode) throws JsonProcessingException {
         if (!jsonNode.isArray()) {
             logger.error("Provided JSON is not an array of objects for CSV conversion");
-            throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {};
+            throw new JsonProcessingException("The provided JSON must be an array of objects to convert to CSV.") {
+            };
         }
 
         logger.debug("Converting JsonNode to CSV format");
@@ -132,9 +133,10 @@ public interface JsonHelper {
     /**
      * Recursively converts a JsonNode to Properties.
      * Used internally for deep conversion of nested structures.
-     * @param jsonNode the JsonNode to convert
+     *
+     * @param jsonNode   the JsonNode to convert
      * @param properties the Properties object to populate
-     * @param prefix the key prefix to handle nested nodes
+     * @param prefix     the key prefix to handle nested nodes
      */
     private static void convertJsonNodeToProperties(JsonNode jsonNode, Properties properties, String prefix) {
         if (jsonNode.isObject()) {

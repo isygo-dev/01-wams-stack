@@ -13,7 +13,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
@@ -34,25 +33,20 @@ public abstract class ControllerExceptionHandlerBuilder {
     private static final String FK = "FK:{}";
 
     private final Map<String, Class<?>> entityMap = new HashMap<>();
-
-    @Nullable
-    @Autowired(required = false)
-    private EntityManager entityManager;
-
-    @Autowired
-    private Environment environment;
-
-    @Autowired
-    private SpringClassScanner springClassScanner;
-
     private final Map<String, String> excepMessage = new HashMap<>();
-
     private final Map<String, List<String>> messages = new HashMap<>() {
         @Override
         public List<String> get(Object key) {
             return super.computeIfAbsent((String) key, k -> new ArrayList<>());
         }
     };
+    @Nullable
+    @Autowired(required = false)
+    private EntityManager entityManager;
+    @Autowired
+    private Environment environment;
+    @Autowired
+    private SpringClassScanner springClassScanner;
 
     @PostConstruct
     private void generateConstraintMap() {

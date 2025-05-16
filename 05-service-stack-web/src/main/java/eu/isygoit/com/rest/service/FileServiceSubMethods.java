@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.DmsLinkFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
-import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;

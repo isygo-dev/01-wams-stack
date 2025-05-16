@@ -24,12 +24,12 @@ import java.util.List;
 /**
  * The type Mapped multi file controller.
  *
- * @param <I>     the type parameter
- * @param <T>     the type parameter
- * @param <L>     the type parameter
- * @param <M>  the type parameter
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <L> the type parameter
+ * @param <M> the type parameter
  * @param <F> the type parameter
- * @param <S>     the type parameter
+ * @param <S> the type parameter
  */
 @Slf4j
 public abstract class MappedMultiFileController<I extends Serializable, T extends IIdAssignable & IMultiFileEntity,

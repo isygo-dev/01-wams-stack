@@ -10,7 +10,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -36,8 +39,8 @@ public interface KeyServiceApi {
     })
     @PostMapping(path = "/random/new")
     ResponseEntity<String> newRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                             @RequestParam(name = RestApiConstants.LENGTH) Integer length,
-                                             @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
+                                        @RequestParam(name = RestApiConstants.LENGTH) Integer length,
+                                        @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
     /**
      * Renew key by name response entity.

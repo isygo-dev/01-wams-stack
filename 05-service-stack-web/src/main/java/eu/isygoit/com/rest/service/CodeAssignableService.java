@@ -6,7 +6,6 @@ import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
-import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
 import eu.isygoit.model.IIdAssignable;

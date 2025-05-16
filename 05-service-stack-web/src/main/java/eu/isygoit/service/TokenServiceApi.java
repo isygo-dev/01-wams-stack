@@ -39,10 +39,10 @@ public interface TokenServiceApi {
     })
     @PostMapping(path = "/builder")
     ResponseEntity<TokenDto> buildTokenByDomain(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                 @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
-                                                 @RequestParam(name = RestApiConstants.APPLICATION) String application,
-                                                 @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
-                                                 @Valid @RequestBody TokenRequestDto tokenRequestDto);
+                                                @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                                @RequestParam(name = RestApiConstants.APPLICATION) String application,
+                                                @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
+                                                @Valid @RequestBody TokenRequestDto tokenRequestDto);
 
     /**
      * Is token valid response entity.

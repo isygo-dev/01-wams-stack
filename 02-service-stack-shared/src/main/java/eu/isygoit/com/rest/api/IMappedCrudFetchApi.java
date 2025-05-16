@@ -82,8 +82,8 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
     })
     @GetMapping(path = "/{page}/{size}")
     ResponseEntity<List<M>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                       @PathVariable(name = RestApiConstants.PAGE) Integer page,
-                                       @PathVariable(name = RestApiConstants.SIZE) Integer size);
+                                    @PathVariable(name = RestApiConstants.PAGE) Integer page,
+                                    @PathVariable(name = RestApiConstants.SIZE) Integer size);
 
     /**
      * Find all full response entity.
@@ -120,8 +120,8 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
     })
     @GetMapping(path = "/full/{page}/{size}")
     ResponseEntity<List<F>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                            @PathVariable(name = RestApiConstants.PAGE) Integer page,
-                                            @PathVariable(name = RestApiConstants.SIZE) Integer size);
+                                        @PathVariable(name = RestApiConstants.PAGE) Integer page,
+                                        @PathVariable(name = RestApiConstants.SIZE) Integer size);
 
     /**
      * Find by id response entity.
@@ -140,7 +140,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
     })
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                   @PathVariable(name = RestApiConstants.ID) I id);
+                               @PathVariable(name = RestApiConstants.ID) I id);
 
     /**
      * Gets count.
@@ -176,7 +176,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
     })
     @GetMapping(path = "/filter")
     ResponseEntity<List<F>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                          @RequestParam(name = RestApiConstants.CRITERIA) String criteria);
+                                                      @RequestParam(name = RestApiConstants.CRITERIA) String criteria);
 
     /**
      * Find all filtered by criteria response entity.
@@ -197,9 +197,9 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
     })
     @GetMapping(path = "/filter/{page}/{size}")
     ResponseEntity<List<F>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                          @RequestParam(name = RestApiConstants.CRITERIA) String criteria,
-                                                          @PathVariable(name = RestApiConstants.PAGE) Integer page,
-                                                          @PathVariable(name = RestApiConstants.SIZE) Integer size);
+                                                      @RequestParam(name = RestApiConstants.CRITERIA) String criteria,
+                                                      @PathVariable(name = RestApiConstants.PAGE) Integer page,
+                                                      @PathVariable(name = RestApiConstants.SIZE) Integer size);
 
     /**
      * Find all filter criteria response entity.
