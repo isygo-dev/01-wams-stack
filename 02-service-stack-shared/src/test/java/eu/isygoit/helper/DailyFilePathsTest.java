@@ -2,7 +2,7 @@ package eu.isygoit.helper;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -38,9 +38,9 @@ class DailyFilePathsTest {
 
         // Verify
         assertEquals(4, paths.size());
-        assertTrue(paths.contains(invalidPath + File.separator + year + "_" + monthFormatted + File.separator + yesterdayFormatted));
-        assertTrue(paths.contains(invalidPath + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted));
-        assertTrue(paths.contains(validPath + File.separator + year + "_" + monthFormatted + File.separator + yesterdayFormatted));
-        assertTrue(paths.contains(validPath + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted));
+        assertTrue(paths.contains(Path.of(invalidPath).resolve(year + "_" + monthFormatted).resolve(yesterdayFormatted).toString()));
+        assertTrue(paths.contains(Path.of(invalidPath).resolve(year + "_" + monthFormatted).resolve(todayFormatted).toString()));
+        assertTrue(paths.contains(Path.of(validPath).resolve(year + "_" + monthFormatted).resolve(yesterdayFormatted).toString()));
+        assertTrue(paths.contains(Path.of(validPath).resolve(year + "_" + monthFormatted).resolve(todayFormatted).toString()));
     }
 }

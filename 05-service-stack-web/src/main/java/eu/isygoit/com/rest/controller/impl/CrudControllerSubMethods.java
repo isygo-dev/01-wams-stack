@@ -7,6 +7,7 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.IIdAssignable;
@@ -34,8 +35,8 @@ import java.util.Optional;
 @Slf4j
 public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable,
         M extends IIdentifiableDto,
-        F extends M, S
-        extends ICrudServiceMethod<I, T>>
+        F extends M,
+        S extends ICrudServiceMethod<I, T>>
         extends CrudControllerUtils<T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
@@ -46,20 +47,21 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     public ResponseEntity<F> subCreate(F object) {
         log.info("Create {} request received", persistentClass.getSimpleName());
 
-        return Optional.ofNullable(object)
-                .map(obj -> {
-                    try {
-                        var dto = beforeCreate(obj);
-                        var entity = mapper().dtoToEntity(dto);
-                        var createdEntity = crudService().create(entity);
-                        var resultDto = afterCreate(createdEntity);
-                        return ResponseFactory.ResponseOk(mapper().entityToDto(resultDto));
-                    } catch (Throwable e) {
-                        log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-                        return getBackExceptionResponse(e);
-                    }
-                })
-                .orElseGet(ResponseFactory::ResponseBadRequest);
+        try {
+            // Utilisation de Optional pour améliorer la sécurité et la lisibilité
+            var createdObject = Optional.of(object)
+                    .map(o -> beforeCreate(o))
+                    .map(o -> mapper().dtoToEntity(o))
+                    .map(crudService()::create)
+                    .map(o -> afterCreate(o))
+                    .map(mapper()::entityToDto)
+                    .orElseThrow(() -> new BadArgumentException("Object creation failed"));
+
+            return ResponseFactory.ResponseOk(createdObject);
+        } catch (Throwable e) {
+            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+            return getBackExceptionResponse(e);
+        }
     }
 
     @Override
@@ -70,17 +72,14 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                 .filter(list -> !list.isEmpty())
                 .map(list -> {
                     try {
-                        var processedDtos = list.stream()
+                        var processedDtos = list.parallelStream()
                                 .map(f -> beforeUpdate((I) f.getId(), f))
+                                .map(f -> mapper().dtoToEntity(f))
+                                .map(t -> crudService().update(t))
+                                .map(t -> afterUpdate(t))
                                 .toList();
 
-                        var updatedEntities = crudService().update(mapper().listDtoToEntity(processedDtos));
-
-                        var processedEntities = updatedEntities.stream()
-                                .map(this::afterUpdate)
-                                .toList();
-
-                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedEntities));
+                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedDtos));
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
@@ -97,17 +96,14 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                 .filter(list -> !list.isEmpty())
                 .map(list -> {
                     try {
-                        var processedDtos = list.stream()
-                                .map(this::beforeCreate)
+                        var processedDtos = list.parallelStream()
+                                .map(f -> beforeCreate(f))
+                                .map(f -> mapper().dtoToEntity(f))
+                                .map(t -> crudService().create(t))
+                                .map(t -> afterCreate(t))
                                 .toList();
 
-                        var createdEntities = crudService().create(mapper().listDtoToEntity(processedDtos));
-
-                        var processedEntities = createdEntities.stream()
-                                .map(this::afterCreate)
-                                .toList();
-
-                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedEntities));
+                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedDtos));
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
@@ -357,11 +353,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .map(o -> beforeUpdate(id, o))
                     .map(o -> mapper().dtoToEntity(o))
                     .map(crudService()::update)
+                    .map(o -> afterUpdate(o))
                     .map(mapper()::entityToDto)
-                    .map(o -> afterUpdate((T) o))
-                    .orElseThrow(() -> new IllegalArgumentException("Object update failed"));
+                    .orElseThrow(() -> new BadArgumentException("Object update failed"));
 
-            return ResponseFactory.ResponseOk((F) updatedObject);
+            return ResponseFactory.ResponseOk(updatedObject);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);

@@ -14,10 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -74,9 +74,9 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                 entity.setCode(this.getNextCode());
             }
 
-            entity.setPath(this.getUploadDirectory() +
-                    File.separator + (entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                    File.separator + this.persistentClass.getSimpleName().toLowerCase());
+            entity.setPath(Path.of(this.getUploadDirectory())
+                    .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                    .resolve(this.persistentClass.getSimpleName().toLowerCase()).toString());
 
             entity.setOriginalFileName(file.getOriginalFilename());
             entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
@@ -120,9 +120,9 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                     entity.setCode(((ICodeAssignableService) this).getNextCode());
                 }
 
-                entity.setPath(this.getUploadDirectory() +
-                        File.separator + (entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                        File.separator + this.persistentClass.getSimpleName().toLowerCase());
+                entity.setPath(Path.of(this.getUploadDirectory())
+                        .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                        .resolve(this.persistentClass.getSimpleName().toLowerCase()).toString());
                 entity.setOriginalFileName(file.getOriginalFilename());
                 entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
             } else {
@@ -162,9 +162,9 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                     entity.setCode(((ICodeAssignableService) this).getNextCode());
                 }
 
-                entity.setPath(this.getUploadDirectory() +
-                        File.separator + (entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                        File.separator + this.persistentClass.getSimpleName().toLowerCase());
+                entity.setPath(Path.of(this.getUploadDirectory())
+                        .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                        .resolve(this.persistentClass.getSimpleName().toLowerCase()).toString());
                 entity.setOriginalFileName(file.getOriginalFilename());
                 entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
 

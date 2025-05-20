@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -131,7 +132,7 @@ public class DatabaseHelper {
                         "-p", datasourceUrl.split(":")[1],
                         "-U", databaseUser,
                         "-F", "t",  // t = .tra
-                        "-b", "-v", "-f", backupFilePath.getAbsolutePath() + File.separator + backupFileName,
+                        "-b", "-v", "-f", Path.of(backupFilePath.getAbsolutePath()).resolve(backupFileName).toString(),
                         "-d", databaseName,
                         "--column-inserts", "--attribute-inserts"
                 );
@@ -148,7 +149,7 @@ public class DatabaseHelper {
                         "-F", "t",
                         "-U", databaseUser,
                         "-d", databaseName,
-                        "-v", backupFilePath.getAbsolutePath() + File.separator + backupFileName
+                        "-v", Path.of(backupFilePath.getAbsolutePath()).resolve(backupFileName).toString()
                 );
                 break;
             default:
@@ -166,7 +167,7 @@ public class DatabaseHelper {
      * @return true if file exists, false otherwise
      */
     public static boolean verifyBackupFileExistence(String dumpDir, String backupFileName) {
-        File file = new File(dumpDir + File.separator + backupFileName);
+        File file = new File(Path.of(dumpDir).resolve(backupFileName).toString());
         return file.exists();
     }
 

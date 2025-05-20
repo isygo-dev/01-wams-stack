@@ -251,10 +251,10 @@ public interface FileHelper {
         String yesterdayFormatted = new DecimalFormat("#00").format(yesterday);
 
         List<String> filePaths = List.of(
-                basePathInvalid + File.separator + year + "_" + monthFormatted + File.separator + yesterdayFormatted,
-                basePathInvalid + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted,
-                basePathValid + File.separator + year + "_" + monthFormatted + File.separator + yesterdayFormatted,
-                basePathValid + File.separator + year + "_" + monthFormatted + File.separator + todayFormatted
+                Path.of(basePathInvalid).resolve(year + "_" + monthFormatted).resolve(yesterdayFormatted).toString(),
+                Path.of(basePathInvalid).resolve(year + "_" + monthFormatted).resolve(todayFormatted).toString(),
+                Path.of(basePathValid).resolve(year + "_" + monthFormatted).resolve(yesterdayFormatted).toString(),
+                Path.of(basePathValid).resolve(year + "_" + monthFormatted).resolve(todayFormatted).toString()
         );
 
         logger.debug("Generated file paths: {}", filePaths);

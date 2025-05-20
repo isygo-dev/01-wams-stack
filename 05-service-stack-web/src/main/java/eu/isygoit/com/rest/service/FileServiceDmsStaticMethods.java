@@ -11,7 +11,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public final class FileServiceDmsStaticMethods {
                                 ? domainAssignable.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME))
                         .code(entity.getCode())
-                        .path(File.separator + entity.getClass().getSimpleName().toLowerCase())
+                        .path(entity.getClass().getSimpleName().toLowerCase())
                         .tags(entity.getTags())
                         .categoryNames(List.of(entity.getClass().getSimpleName()))
                         .file(file)

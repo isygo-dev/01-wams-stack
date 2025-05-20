@@ -55,14 +55,15 @@ public final class FileServiceLocalStaticMethods {
      */
     static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
         if (StringUtils.hasText(entity.getPath())) {
-            Resource resource = new UrlResource(Path.of(entity.getPath() +
-                    File.separator + entity.getFileName()).toUri());
+            Resource resource = new UrlResource(Path.of(entity.getPath())
+                    .resolve(entity.getFileName())
+                    .toUri());
             if (!resource.exists()) {
                 throw new ResourceNotFoundException("No resource found for "
                         + (entity instanceof IDomainAssignable IDomainAssignable
                         ? IDomainAssignable.getDomain()
                         : DomainConstants.DEFAULT_DOMAIN_NAME
-                        + '/' + entity.getFileName()
+                        + "/" + entity.getFileName()
                         + "/" + version));
             }
             return resource;
@@ -71,7 +72,7 @@ public final class FileServiceLocalStaticMethods {
                     + (entity instanceof IDomainAssignable IDomainAssignable
                     ? IDomainAssignable.getDomain()
                     : DomainConstants.DEFAULT_DOMAIN_NAME
-                    + '/' + entity.getFileName()
+                    + "/" + entity.getFileName()
                     + "/" + version));
         }
     }
@@ -85,14 +86,13 @@ public final class FileServiceLocalStaticMethods {
      * @throws IOException the io exception
      */
     public static <L extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(L entity) throws IOException {
-        File file = new File(entity.getPath()
-                + File.separator + entity.getFileName());
+        File file = new File(Path.of(entity.getPath())
+                .resolve(entity.getFileName()).toString());
         if (file.exists()) {
             FileUtils.delete(file);
             return true;
         }
 
-        throw new FileNotFoundException(entity.getPath()
-                + File.separator + entity.getCode());
+        throw new FileNotFoundException(Path.of(entity.getPath()).resolve(entity.getCode()).toString());
     }
 }

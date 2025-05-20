@@ -12,11 +12,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,9 +66,9 @@ public abstract class MultiFileService<I extends Serializable, T extends IMultiF
                         }
                         linkedFile.setOriginalFileName(file.getOriginalFilename());
                         linkedFile.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-                        linkedFile.setPath(this.getUploadDirectory() +
-                                File.separator + (entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME) +
-                                File.separator + persistentClass.getSimpleName().toLowerCase() + File.separator + "additional");
+                        linkedFile.setPath(Path.of(this.getUploadDirectory())
+                                .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                                .resolve(persistentClass.getSimpleName().toLowerCase()).resolve("additional").toString());
                         linkedFile.setMimetype(file.getContentType());
                         linkedFile.setCrc16(CRC16Helper.calculate(file.getBytes()));
                         linkedFile.setCrc32(CRC32Helper.calculate(file.getBytes()));
