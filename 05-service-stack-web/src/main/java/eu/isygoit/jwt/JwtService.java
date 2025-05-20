@@ -36,13 +36,13 @@ public class JwtService implements IJwtService {
     @Override
     public Optional<String> extractDomain(String token) {
         log.debug("Extracting domain from token");
-        return extractClaim(token, JwtConstants.JWT_SENDER_DOMAIN);
+        return extractClaim(token, JwtConstants.JWT_SENDER_DOMAIN, String.class);
     }
 
     @Override
     public Boolean extractIsAdmin(String token) {
         log.debug("Extracting isAdmin flag from token");
-        return extractClaim(token, JwtConstants.JWT_IS_ADMIN)
+        return extractClaim(token, JwtConstants.JWT_IS_ADMIN, Boolean.class)
                 .map(Boolean.class::cast)
                 .orElse(Boolean.FALSE);
     }
@@ -50,19 +50,19 @@ public class JwtService implements IJwtService {
     @Override
     public Optional<String> extractApplication(String token) {
         log.debug("Extracting application from token");
-        return extractClaim(token, JwtConstants.JWT_LOG_APP);
+        return extractClaim(token, JwtConstants.JWT_LOG_APP, String.class);
     }
 
     @Override
     public Optional<String> extractAccountType(String token) {
         log.debug("Extracting account type from token");
-        return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE);
+        return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class);
     }
 
     @Override
     public Optional<String> extractUserName(String token) {
         log.debug("Extracting username from token");
-        return extractClaim(token, JwtConstants.JWT_SENDER_USER);
+        return extractClaim(token, JwtConstants.JWT_SENDER_USER, String.class);
     }
 
     @Override
@@ -71,9 +71,9 @@ public class JwtService implements IJwtService {
         return extractClaim(token, Claims::getSubject, key);
     }
 
-    private Optional<String> extractClaim(String token, String claimKey) {
+    private <T> Optional<T> extractClaim(String token, String claimKey, Class<T> claimClass) {
         log.debug("Extracting claim: {}", claimKey);
-        return Optional.ofNullable(extractAllClaims(token).get(claimKey, String.class));
+        return Optional.ofNullable(extractAllClaims(token).get(claimKey, claimClass));
     }
 
     @Override
