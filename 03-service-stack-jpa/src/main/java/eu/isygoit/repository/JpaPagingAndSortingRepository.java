@@ -16,6 +16,6 @@ import java.io.Serializable;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingRepository<T extends IIdAssignable, I extends Serializable>
+public interface JpaPagingAndSortingRepository<T extends IIdAssignable<I>, I extends Serializable>
         extends JpaRepository<T, I>, JpaSpecificationExecutor<T> {
 }

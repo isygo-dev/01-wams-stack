@@ -31,11 +31,11 @@ import java.io.Serializable;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable & IFileEntity,
+public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable<I> & IFileEntity,
         M extends IIdentifiableDto & IFileUploadDto,
         F extends M,
         S extends IFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, M, F, S>
+        extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 
     @Override

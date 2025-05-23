@@ -9,7 +9,7 @@ import org.springframework.data.repository.Repository;
  *
  * @param <T> the type parameter
  */
-public interface ICrudServiceUtils<T extends IIdAssignable> {
+public interface ICrudServiceUtils<I, T extends IIdAssignable<I>> {
 
     /**
      * Repository repository.

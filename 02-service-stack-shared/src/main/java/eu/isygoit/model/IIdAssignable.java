@@ -7,18 +7,18 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-public interface IIdAssignable<T> extends Serializable {
+public interface IIdAssignable<I> extends Serializable {
     /**
      * Gets id.
      *
      * @return the id
      */
-    T getId();
+    I getId();
 
     /**
      * Sets id.
      *
      * @param id the id
      */
-    void setId(T id);
+    void setId(I id);
 }

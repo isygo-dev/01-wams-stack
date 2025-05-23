@@ -40,7 +40,7 @@ import java.util.*;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CassandraCrudService<I extends Serializable, T extends IIdAssignable, R extends CassandraRepository> extends CrudServiceUtils<T, R>
+public abstract class CassandraCrudService<I extends Serializable, T extends IIdAssignable<I>, R extends CassandraRepository<T, I>> extends CrudServiceUtils<I, T, R>
         implements ICrudServiceMethod<I, T> {
 
     //Attention !!! should get the class type of th persist entity

@@ -24,7 +24,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @SuperBuilder
 @MappedSuperclass
-public abstract class NextCodeModel<T extends Serializable> implements IIdAssignable<T>, IDomainAssignable {
+public abstract class NextCodeModel<I extends Serializable> implements IIdAssignable<I>, IDomainAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")

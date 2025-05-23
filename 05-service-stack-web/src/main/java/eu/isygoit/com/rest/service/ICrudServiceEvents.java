@@ -11,7 +11,7 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceEvents<I extends Serializable, T extends IIdAssignable> {
+public interface ICrudServiceEvents<I extends Serializable, T extends IIdAssignable<I>> {
 
     /**
      * Before update t.

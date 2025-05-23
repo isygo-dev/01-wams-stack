@@ -33,11 +33,11 @@ import java.util.Optional;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable,
+public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdentifiableDto,
         F extends M,
         S extends ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, M, F, S>
+        extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
     //Attention !!! should get the class type of th persist entity

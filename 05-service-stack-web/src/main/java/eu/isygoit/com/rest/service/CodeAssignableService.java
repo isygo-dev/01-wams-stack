@@ -33,7 +33,7 @@ import java.util.Map;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodeAssignableService<I extends Serializable, T extends IIdAssignable, R extends JpaPagingAndSortingRepository>
+public abstract class CodeAssignableService<I extends Serializable, T extends IIdAssignable<I>, R extends JpaPagingAndSortingRepository<T, I>>
         extends CrudService<I, T, R>
         implements ICodeAssignableService<I, T> {
 

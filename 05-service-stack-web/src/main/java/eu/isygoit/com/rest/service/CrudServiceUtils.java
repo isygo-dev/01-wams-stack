@@ -1,12 +1,14 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.annotation.SrvRepo;
+import eu.isygoit.annotation.ServRepo;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
+
+import java.io.Serializable;
 
 /**
  * The type Crud service utils.
@@ -15,20 +17,20 @@ import org.springframework.data.repository.Repository;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudServiceUtils<T extends IIdAssignable, R extends Repository>
-        implements ICrudServiceUtils<T> {
+public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssignable<I>, R extends Repository<T, I>>
+        implements ICrudServiceUtils<I, T> {
 
     @Autowired
-    private ApplicationContextService applicationContextServie;
+    private ApplicationContextService applicationContextService;
 
     private R repository;
 
     @Override
     public final R repository() throws JpaRepositoryNotDefinedException {
         if (this.repository == null) {
-            SrvRepo controllerDefinition = this.getClass().getAnnotation(SrvRepo.class);
+            ServRepo controllerDefinition = this.getClass().getAnnotation(ServRepo.class);
             if (controllerDefinition != null) {
-                this.repository = (R) applicationContextServie.getBean(controllerDefinition.value())
+                this.repository = (R) applicationContextService.getBean(controllerDefinition.value())
                         .orElseThrow(() -> new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found"));
             } else {
                 log.error("<Error>: Repository bean not defined for {}", this.getClass().getSimpleName());

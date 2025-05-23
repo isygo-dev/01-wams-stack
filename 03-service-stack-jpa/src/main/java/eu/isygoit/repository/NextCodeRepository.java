@@ -19,7 +19,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface NextCodeRepository<T extends NextCodeModel & IDomainAssignable, I extends Serializable>
+public interface NextCodeRepository<T extends NextCodeModel<I> & IDomainAssignable, I extends Serializable>
         extends JpaPagingAndSortingSAASRepository<T, I> {
 
     /**

@@ -5,14 +5,10 @@ import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IDomainAssignable;
-import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.*;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.JpaPagingAndSortingSAASRepository;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.NotSupportedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +22,8 @@ import org.springframework.util.StringUtils;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * The type Crud service.
@@ -35,11 +33,13 @@ import java.util.*;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudService<I extends Serializable, T extends IIdAssignable, R extends JpaPagingAndSortingRepository> extends CrudServiceUtils<T, R>
+public abstract class CrudService<I extends Serializable, T extends IIdAssignable<I>,
+        R extends JpaPagingAndSortingRepository<T, I>> extends CrudServiceUtils<I, T, R>
         implements ICrudServiceMethod<I, T> {
 
+    public static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     //Attention !!! should get the class type of th persist entity
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
 
     @Override
     @Transactional(readOnly = true)
@@ -49,12 +49,12 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
 
     @Override
     @Transactional(readOnly = true)
-    public Long count(String domain) {
-        if (repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            return jpaPagingAndSortingSAASRepository.countByDomainIgnoreCase(domain);
-        } else {
-            throw new UnsupportedOperationException("this is not a SAS entity/repository: " + repository().getClass().getSimpleName());
+    public Long count(String domain) throws NotSupportedException {
+        if (!(repository() instanceof JpaPagingAndSortingSAASRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not domain assignable: " + persistentClass.getSimpleName());
         }
+
+        return jpaRepo.countByDomainIgnoreCase(domain);
     }
 
     @Override
@@ -79,17 +79,13 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        if (object.getId() == null) {
-            object = this.beforeCreate(object);
-            if (this instanceof ICodeAssignableService codeAssignableService &&
-                    object instanceof ICodeAssignable codeAssignable &&
-                    !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(codeAssignableService.getNextCode());
-            }
-            return this.afterCreate((T) repository().save(object));
-        } else {
-            throw new EntityExistsException();
+        if (object.getId() != null) {
+            throw new ObjectAlreadyExistsException(object.getClass().getSimpleName() + ": with id " + object.getId());
         }
+
+        assignCodeIfEmpty(object);
+        object = this.beforeCreate(object);
+        return this.afterCreate((T) repository().save(object));
     }
 
     @Override
@@ -99,17 +95,13 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        if (object.getId() == null) {
-            object = this.beforeCreate(object);
-            if (this instanceof ICodeAssignableService codeAssignableService &&
-                    object instanceof ICodeAssignable codeAssignable &&
-                    !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(codeAssignableService.getNextCode());
-            }
-            return this.afterCreate((T) repository().saveAndFlush(object));
-        } else {
-            throw new EntityExistsException();
+        if (object.getId() != null) {
+            throw new ObjectAlreadyExistsException(object.getClass().getSimpleName() + ": with id " + object.getId());
         }
+
+        assignCodeIfEmpty(object);
+        object = this.beforeCreate(object);
+        return this.afterCreate((T) repository().saveAndFlush(object));
     }
 
     @Override
@@ -118,52 +110,95 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        List<T> createdObjects = new ArrayList<>();
-        objects.forEach(object -> {
-            createdObjects.add(this.create(object));
-        });
-
-        return createdObjects;
+        return objects.stream()
+                .map(this::create)
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public T update(T object) {
-        if (Objects.isNull(object)) {
+        if (object == null) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        if (object.getId() != null) {
-            object = this.beforeUpdate(object);
-            if (this instanceof ICodeAssignableService codeAssignableService &&
-                    object instanceof ICodeAssignable codeAssignable &&
-                    !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(codeAssignableService.getNextCode());
-            }
-            return this.afterUpdate((T) repository().save(object));
-        } else {
-            throw new EntityNotFoundException();
+        if (object.getId() == null) {
+            throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
+        }
+
+        Optional<T> optional = repository().findById(object.getId());
+        if (optional.isPresent()) {
+            T existing = optional.get();
+            applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
+                t.setType(s.getType());
+                t.setFileName(s.getFileName());
+                t.setOriginalFileName(s.getOriginalFileName());
+                t.setPath(s.getPath());
+                t.setExtension(s.getExtension());
+                t.setTags(s.getTags());
+            });
+
+            applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
+                t.setImagePath(s.getImagePath());
+            });
+        }
+
+        assignCodeIfEmpty(object);
+
+        object = beforeUpdate(object);
+
+        return afterUpdate((T) repository().save(object));
+    }
+
+    private <I> void applyIfInstance(T target, T source, Class<I> type, BiConsumer<I, I> action) {
+        if (type.isInstance(target) && type.isInstance(source)) {
+            action.accept(type.cast(target), type.cast(source));
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private void assignCodeIfEmpty(T object) {
+        if (this instanceof ICodeAssignableService service &&
+                object instanceof ICodeAssignable assignable &&
+                !StringUtils.hasText(assignable.getCode())) {
+            assignable.setCode(service.getNextCode());
+        }
+    }
+
 
     @Override
     @Transactional
     public T updateAndFlush(T object) {
-        if (Objects.isNull(object)) {
+        if (object == null) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        if (object.getId() != null) {
-            object = this.beforeUpdate(object);
-            if (this instanceof ICodeAssignableService codeAssignableService &&
-                    object instanceof ICodeAssignable codeAssignable &&
-                    !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(codeAssignableService.getNextCode());
-            }
-            return this.afterUpdate((T) repository().saveAndFlush(object));
-        } else {
-            throw new EntityNotFoundException();
+        if (object.getId() == null) {
+            throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
         }
+
+        Optional<T> optional = repository().findById(object.getId());
+        if (optional.isPresent()) {
+            T existing = optional.get();
+            applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
+                t.setType(s.getType());
+                t.setFileName(s.getFileName());
+                t.setOriginalFileName(s.getOriginalFileName());
+                t.setPath(s.getPath());
+                t.setExtension(s.getExtension());
+                t.setTags(s.getTags());
+            });
+
+            applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
+                t.setImagePath(s.getImagePath());
+            });
+        }
+
+        assignCodeIfEmpty(object);
+
+        object = beforeUpdate(object);
+
+        return afterUpdate((T) repository().saveAndFlush(object));
     }
 
     @Override
@@ -172,12 +207,10 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
-        List<T> updatedObjects = new ArrayList<>();
-        objects.forEach(object -> {
-            updatedObjects.add(this.update(object));
-        });
 
-        return updatedObjects;
+        return objects.stream()
+                .map(this::update)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -187,56 +220,45 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            objects.forEach(object -> {
-                if (!senderDomain.equals(((IDomainAssignable) object).getDomain())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
-                }
-            });
-        }
-
         this.beforeDelete(objects);
-        repository().deleteAll(objects);
+
+        objects.parallelStream()
+                .map(T::getId)
+                .forEach(id -> delete(senderDomain, id));
+
         this.afterDelete(objects);
     }
+
 
     @Override
     @Transactional
     public void delete(String senderDomain, I id) {
         // Validate the input id argument using Objects.requireNonNull
         if (Objects.isNull(id)) {
-            throw new BadArgumentException(LogConstants.NULL_ID_PROVIDED);
+            throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
         }
 
-        // Use Optional to handle the absence of the entity more concisely
-        var optional = this.findById(id);
-
-        optional.ifPresentOrElse(object -> {
-            // Check for ISAASEntity-specific domain validation
-            if (object instanceof IDomainAssignable entity && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-                if (!senderDomain.equals(entity.getDomain())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
-                }
+        this.findById(id).ifPresentOrElse(object -> {
+            if (object instanceof IDomainAssignable entity &&
+                    !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain) &&
+                    !senderDomain.equals(entity.getDomain())) {
+                throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
             }
 
-            // Perform beforeDelete operations
-            this.beforeDelete(id);
+            beforeDelete(id);
 
-            // Check for CancelableEntity and perform necessary updates
             if (object instanceof CancelableEntity cancelable) {
-                cancelable.setCheckCancel(true);
-                cancelable.setCancelDate(new Date());
-                this.update(object);
+                if (!cancelable.getCheckCancel()) { // check if already canceled
+                    cancelable.setCheckCancel(true);
+                    cancelable.setCancelDate(new Date());
+                    update(object);
+                }
             } else {
-                // If not CancelableEntity, proceed with deletion
                 repository().deleteById(id);
             }
 
-            // Perform afterDelete operations
-            this.afterDelete(id);
+            afterDelete(id);
         }, () -> {
-            // Handle the case where the entity is not found
             throw new ObjectNotFoundException(" with id: " + id);
         });
     }
@@ -246,43 +268,50 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
     @Transactional
     public void delete(List<T> objects) {
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)) {
-            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
+            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
+
         this.beforeDelete(objects);
-        repository().deleteAll(objects);
+
+        objects.parallelStream()
+                .map(T::getId)
+                .forEach(id -> delete(id));
+
         this.afterDelete(objects);
     }
 
     @Override
     @Transactional
     public void delete(I id) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)) {
-            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingSAASRepository) {
+            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
 
-        Optional<T> optional = this.findById(id);
-        if (optional.isPresent()) {
-            T object = optional.get();
-            this.beforeDelete(id);
+        this.findById(id).ifPresentOrElse(object -> {
+            beforeDelete(id);
+
             if (object instanceof CancelableEntity cancelable) {
-                cancelable.setCheckCancel(true);
-                cancelable.setCancelDate(new Date());
-                this.update(object);
+                if (!cancelable.getCheckCancel()) { // check if already canceled
+                    cancelable.setCheckCancel(true);
+                    cancelable.setCancelDate(new Date());
+                    update(object);
+                }
             } else {
                 repository().deleteById(id);
             }
-            this.afterDelete(id);
-        } else {
+
+            afterDelete(id);
+        }, () -> {
             throw new ObjectNotFoundException(" with id: " + id);
-        }
+        });
     }
 
     @Override
@@ -304,66 +333,55 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll() {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository) {
-            log.warn("Find all give vulnerability to SAS entity...");
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass) ||
+                repository() instanceof JpaPagingAndSortingSAASRepository) {
+            throw new OperationNotAllowedException("FindAll for " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
+
         List<T> list = repository().findAll();
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.EMPTY_LIST;
-
-        }
-
-        return this.afterFindAll(list);
+        return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll(Pageable pageable) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository) {
-            log.warn("Find all give vulnerability to SAS entity...");
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass) ||
+                repository() instanceof JpaPagingAndSortingSAASRepository) {
+            throw new OperationNotAllowedException("FindAll for " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
-        Page<T> page = repository().findAll(pageable);
-        if (page.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
-        return this.afterFindAll(page.getContent());
+        List<T> content = repository().findAll(pageable).getContent();
+        return content.isEmpty() ? Collections.emptyList() : this.afterFindAll(content);
     }
 
     @Override
     public List<T> findAll(String domain) throws NotSupportedException {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            List<T> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
-            if (CollectionUtils.isEmpty(list)) {
-                return Collections.EMPTY_LIST;
-            }
-            return this.afterFindAll(list);
-        } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+        if (!IDomainAssignable.class.isAssignableFrom(persistentClass) ||
+                !(repository() instanceof JpaPagingAndSortingSAASRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not domain assignable: " + persistentClass.getSimpleName());
         }
+
+        List<T> list = jpaRepo.findByDomainIgnoreCase(domain);
+        return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
     }
 
-    @Override
     public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            Page<T> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
-            if (page.isEmpty()) {
-                return Collections.EMPTY_LIST;
-            }
-            return this.afterFindAll(page.getContent());
-        } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+        if (!IDomainAssignable.class.isAssignableFrom(persistentClass) ||
+                !(repository() instanceof JpaPagingAndSortingSAASRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not domain assignable: " + persistentClass.getSimpleName());
         }
+
+        Page<T> page = jpaRepo.findByDomainIgnoreCase(domain, pageable);
+        return page.isEmpty() ? Collections.emptyList() : this.afterFindAll(page.getContent());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<T> findById(I id) throws ObjectNotFoundException {
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingSAASRepository) {
+            throw new OperationNotAllowedException("findById " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
+        }
+
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
@@ -394,12 +412,9 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        List<T> updatedObjects = new ArrayList<>();
-        objects.forEach(object -> {
-            updatedObjects.add(this.saveOrUpdate(object));
-        });
-
-        return updatedObjects;
+        return objects.stream()
+                .map(this::saveOrUpdate)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -424,25 +439,33 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
 
     @Override
     public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
-        if (!CollectionUtils.isEmpty(criteria)) {
-            //get criteria data to validate filter
-            Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
-            return repository().findAll(specification);
-        } else {
+        if (!StringUtils.hasText(domain) && IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingSAASRepository) {
+            throw new OperationNotAllowedException("findAllByCriteriaFilter " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
+        }
+
+        if (CollectionUtils.isEmpty(criteria)) {
             log.error("Criteria filter map is null");
             throw new EmptyCriteriaFilterException("Criteria filter map is null");
         }
+
+        //get criteria data to validate filter
+        Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
+        return repository().findAll(specification);
     }
 
     @Override
     public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
-        if (!CollectionUtils.isEmpty(criteria)) {
-            //get criteria data to validate filter
-            Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
-            return repository().findAll(specification, pageRequest).getContent();
-        } else {
+        if (!StringUtils.hasText(domain) && IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingSAASRepository) {
+            throw new OperationNotAllowedException("findAllByCriteriaFilter " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
+        }
+
+        if (CollectionUtils.isEmpty(criteria)) {
             log.error("Criteria filter map is null");
             throw new EmptyCriteriaFilterException("Criteria filter map is null");
         }
+
+        //get criteria data to validate filter
+        Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
+        return repository().findAll(specification, pageRequest).getContent();
     }
 }

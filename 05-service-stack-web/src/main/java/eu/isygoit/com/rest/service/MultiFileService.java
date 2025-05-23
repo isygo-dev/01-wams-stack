@@ -30,8 +30,12 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileService<I extends Serializable, T extends IMultiFileEntity & IIdAssignable, L extends ILinkedFile & ICodeAssignable & IIdAssignable, R extends JpaPagingAndSortingRepository>
-        extends MultiFileServiceSubMethods<I, T, L, R>
+public abstract class MultiFileService<I extends Serializable,
+        T extends IMultiFileEntity & IIdAssignable<I>,
+        L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
+        R extends JpaPagingAndSortingRepository<T, I>,
+        RL extends JpaPagingAndSortingRepository<L, I>>
+        extends MultiFileServiceSubMethods<I, T, L, R, RL>
         implements IMultiFileServiceMethods<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];

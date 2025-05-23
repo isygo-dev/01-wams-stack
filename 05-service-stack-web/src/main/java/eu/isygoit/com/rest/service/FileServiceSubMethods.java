@@ -23,7 +23,8 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileServiceSubMethods<I extends Serializable, T extends IFileEntity & IIdAssignable & ICodeAssignable, R extends JpaPagingAndSortingRepository>
+public abstract class FileServiceSubMethods<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
+        R extends JpaPagingAndSortingRepository<T, I>>
         extends CodeAssignableService<I, T, R> {
 
     @Autowired

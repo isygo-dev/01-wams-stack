@@ -17,9 +17,9 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssignable>
+public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssignable<I>>
         extends ICrudServiceEvents<I, T>,
-        ICrudServiceUtils<T> {
+        ICrudServiceUtils<I, T> {
 
     /**
      * Count long.
@@ -34,7 +34,7 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @param domain the domain
      * @return the long
      */
-    Long count(String domain);
+    Long count(String domain) throws NotSupportedException;
 
     /**
      * Exists by id boolean.

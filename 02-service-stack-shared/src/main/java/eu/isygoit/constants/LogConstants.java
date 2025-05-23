@@ -12,7 +12,7 @@ public class LogConstants {
     /**
      * The constant NULL_OBJECT_PROVIDED.
      */
-    public static final String NULL_ID_PROVIDED = "Null identifier provided";
+    public static final String NULL_OBJECT_ID_PROVIDED = "Null object identifier provided";
     /**
      * The constant EMPTY_OBJECT_LIST_PROVIDED.
      */

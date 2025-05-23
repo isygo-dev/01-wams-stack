@@ -25,12 +25,12 @@ import java.lang.reflect.ParameterizedType;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class CrudControllerUtils<T extends IIdAssignable,
+public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         M extends IIdentifiableDto,
         F extends M,
-        S extends ICrudServiceUtils<T>>
+        S extends ICrudServiceUtils<I, T>>
         extends ControllerExceptionHandler
-        implements ICrudControllerUtils<T, M, F, S> {
+        implements ICrudControllerUtils<I, T, M, F, S> {
 
     /**
      * The constant ERROR_BEAN_NOT_FOUND.

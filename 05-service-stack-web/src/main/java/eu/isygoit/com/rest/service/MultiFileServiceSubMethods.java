@@ -1,8 +1,10 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.annotation.DmsLinkFileService;
+import eu.isygoit.annotation.ServLinkFileRepo;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
@@ -25,13 +27,34 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class MultiFileServiceSubMethods<I extends Serializable, T extends IMultiFileEntity & IIdAssignable, L extends ILinkedFile & ICodeAssignable & IIdAssignable, R extends JpaPagingAndSortingRepository>
+public abstract class MultiFileServiceSubMethods<I extends Serializable,
+        T extends IMultiFileEntity & IIdAssignable<I>,
+        L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
+        R extends JpaPagingAndSortingRepository<T, I>,
+        RL extends JpaPagingAndSortingRepository<L, I>>
         extends CodeAssignableService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;
 
     private ILinkedFileApi linkedFileApi;
+
+    private RL linkFileRepository;
+
+    public final RL linkFileRepository() throws JpaRepositoryNotDefinedException {
+        if (this.linkFileRepository == null) {
+            ServLinkFileRepo controllerDefinition = this.getClass().getAnnotation(ServLinkFileRepo.class);
+            if (controllerDefinition != null) {
+                this.linkFileRepository = (RL) applicationContextService.getBean(controllerDefinition.value())
+                        .orElseThrow(() -> new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found"));
+            } else {
+                log.error("<Error>: Link file Repository bean not defined for {}", this.getClass().getSimpleName());
+                throw new JpaRepositoryNotDefinedException("Link file Repository");
+            }
+        }
+
+        return this.linkFileRepository;
+    }
 
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
         if (this.linkedFileApi == null) {
@@ -98,7 +121,7 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable, T exten
      */
     final boolean subDeleteFile(L entity) {
         try {
-            repository().delete(entity);
+            linkFileRepository().delete(entity);
             ILinkedFileApi linkedFileService = this.linkedFileService();
             if (linkedFileService != null) {
                 return FileServiceDmsStaticMethods.delete(entity, linkedFileService);

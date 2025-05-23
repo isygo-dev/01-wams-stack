@@ -16,10 +16,10 @@ import eu.isygoit.model.IIdAssignable;
  * @param <F> the type parameter
  * @param <S> the type parameter
  */
-public interface ICrudControllerUtils<T extends IIdAssignable,
+public interface ICrudControllerUtils<I, T extends IIdAssignable<I>,
         M extends IIdentifiableDto,
         F extends M,
-        S extends ICrudServiceUtils<T>> {
+        S extends ICrudServiceUtils<I, T>> {
 
     /**
      * Mapper entity mapper.

@@ -20,7 +20,7 @@ import java.util.Map;
  * @param <F> the type parameter
  */
 @Slf4j
-public abstract class FakeCrudController<I extends Serializable, T extends IIdAssignable,
+public abstract class FakeCrudController<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdentifiableDto,
         F extends M>
         implements IMappedCrudApi<I, M, F> {

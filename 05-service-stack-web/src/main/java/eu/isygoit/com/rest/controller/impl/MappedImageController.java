@@ -33,11 +33,11 @@ import java.nio.file.Files;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedImageController<I extends Serializable, T extends IIdAssignable & IImageEntity,
+public abstract class MappedImageController<I extends Serializable, T extends IIdAssignable<I> & IImageEntity,
         M extends IIdentifiableDto & IImageUploadDto,
         F extends M,
         S extends IImageServiceMethods<I, T> & ICrudServiceMethod<I, T>>
-        extends CrudControllerUtils<T, M, F, S>
+        extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedImageApi<I, F> {
 
     @Override

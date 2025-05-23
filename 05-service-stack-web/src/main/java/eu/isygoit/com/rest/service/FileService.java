@@ -28,7 +28,8 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable & ICodeAssignable, R extends JpaPagingAndSortingRepository>
+public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
+        R extends JpaPagingAndSortingRepository<T, I>>
         extends FileServiceSubMethods<I, T, R>
         implements IFileServiceMethods<I, T> {
 
