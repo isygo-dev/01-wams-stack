@@ -3,10 +3,12 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.ServRepo;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
+import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.Repository;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 
@@ -39,5 +41,14 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
         }
 
         return this.repository;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void assignCodeIfEmpty(Object object) {
+        if (this instanceof ICodeAssignableService codeAssignableService &&
+                object instanceof ICodeAssignable codeAssignable &&
+                !StringUtils.hasText(codeAssignable.getCode())) {
+            codeAssignable.setCode(codeAssignableService.getNextCode());
+        }
     }
 }

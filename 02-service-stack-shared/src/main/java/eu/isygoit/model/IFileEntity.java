@@ -83,11 +83,4 @@ public interface IFileEntity {
      * @return the tags
      */
     List<String> getTags();
-
-    /**
-     * Sets tags.
-     *
-     * @param tags the tags
-     */
-    void setTags(List<String> tags);
 }

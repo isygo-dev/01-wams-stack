@@ -1,7 +1,6 @@
 package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
-import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.LogConstants;
@@ -10,7 +9,6 @@ import eu.isygoit.exception.EmptyListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
 import eu.isygoit.filter.QueryCriteria;
-import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
@@ -26,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -40,7 +37,10 @@ import java.util.*;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CassandraCrudService<I extends Serializable, T extends IIdAssignable<I>, R extends CassandraRepository<T, I>> extends CrudServiceUtils<I, T, R>
+public abstract class CassandraCrudService<I extends Serializable,
+        T extends IIdAssignable<I>,
+        R extends CassandraRepository<T, I>>
+        extends CrudServiceUtils<I, T, R>
         implements ICrudServiceMethod<I, T> {
 
     //Attention !!! should get the class type of th persist entity
@@ -86,11 +86,7 @@ public abstract class CassandraCrudService<I extends Serializable, T extends IId
 
         if (object.getId() == null) {
             object = this.beforeCreate(object);
-            if (this instanceof ICodeAssignableService codeAssignableService &&
-                    object instanceof ICodeAssignable codeAssignable &&
-                    !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(codeAssignableService.getNextCode());
-            }
+            assignCodeIfEmpty(object);
             return this.afterCreate((T) repository().save(object));
         } else {
             throw new EntityExistsException();
@@ -126,11 +122,7 @@ public abstract class CassandraCrudService<I extends Serializable, T extends IId
 
         if (object.getId() != null) {
             object = this.beforeUpdate(object);
-            if (this instanceof ICodeAssignableService codeAssignableService &&
-                    object instanceof ICodeAssignable codeAssignable &&
-                    !StringUtils.hasText(codeAssignable.getCode())) {
-                codeAssignable.setCode(codeAssignableService.getNextCode());
-            }
+            assignCodeIfEmpty(object);
             return this.afterUpdate((T) repository().save(object));
         } else {
             throw new EntityNotFoundException();

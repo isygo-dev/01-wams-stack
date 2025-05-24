@@ -71,9 +71,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
 
         if (file != null && !file.isEmpty()) {
-            if (!StringUtils.hasText(entity.getCode())) {
-                entity.setCode(this.getNextCode());
-            }
+            assignCodeIfEmpty(entity);
 
             entity.setPath(Path.of(this.getUploadDirectory())
                     .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)

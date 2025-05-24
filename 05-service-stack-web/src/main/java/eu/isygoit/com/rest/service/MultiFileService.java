@@ -64,7 +64,7 @@ public abstract class MultiFileService<I extends Serializable,
                 try {
                     if (file != null && !file.isEmpty()) {
                         L linkedFile = linkedFileClass.newInstance();
-                        linkedFile.setCode(this.getNextCode());
+                        assignCodeIfEmpty(linkedFile);
                         if (entity instanceof IDomainAssignable IDomainAssignable && linkedFile instanceof IDomainAssignable isaasLinkedFile) {
                             isaasLinkedFile.setDomain(IDomainAssignable.getDomain());
                         }

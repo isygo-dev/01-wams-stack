@@ -5,7 +5,10 @@ import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.*;
+import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.JpaPagingAndSortingSAASRepository;
@@ -33,8 +36,10 @@ import java.util.stream.Collectors;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudService<I extends Serializable, T extends IIdAssignable<I>,
-        R extends JpaPagingAndSortingRepository<T, I>> extends CrudServiceUtils<I, T, R>
+public abstract class CrudService<I extends Serializable,
+        T extends IIdAssignable<I>,
+        R extends JpaPagingAndSortingRepository<T, I>>
+        extends CrudServiceUtils<I, T, R>
         implements ICrudServiceMethod<I, T> {
 
     public static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
@@ -126,6 +131,16 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
         }
 
+        keepOriginalAttributes(object);
+
+        assignCodeIfEmpty(object);
+
+        object = beforeUpdate(object);
+
+        return afterUpdate((T) repository().save(object));
+    }
+
+    private void keepOriginalAttributes(T object) {
         Optional<T> optional = repository().findById(object.getId());
         if (optional.isPresent()) {
             T existing = optional.get();
@@ -135,19 +150,12 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
                 t.setOriginalFileName(s.getOriginalFileName());
                 t.setPath(s.getPath());
                 t.setExtension(s.getExtension());
-                t.setTags(s.getTags());
             });
 
             applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
                 t.setImagePath(s.getImagePath());
             });
         }
-
-        assignCodeIfEmpty(object);
-
-        object = beforeUpdate(object);
-
-        return afterUpdate((T) repository().save(object));
     }
 
     private <I> void applyIfInstance(T target, T source, Class<I> type, BiConsumer<I, I> action) {
@@ -155,16 +163,6 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             action.accept(type.cast(target), type.cast(source));
         }
     }
-
-    @SuppressWarnings("unchecked")
-    private void assignCodeIfEmpty(T object) {
-        if (this instanceof ICodeAssignableService service &&
-                object instanceof ICodeAssignable assignable &&
-                !StringUtils.hasText(assignable.getCode())) {
-            assignable.setCode(service.getNextCode());
-        }
-    }
-
 
     @Override
     @Transactional
@@ -177,22 +175,7 @@ public abstract class CrudService<I extends Serializable, T extends IIdAssignabl
             throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
         }
 
-        Optional<T> optional = repository().findById(object.getId());
-        if (optional.isPresent()) {
-            T existing = optional.get();
-            applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
-                t.setType(s.getType());
-                t.setFileName(s.getFileName());
-                t.setOriginalFileName(s.getOriginalFileName());
-                t.setPath(s.getPath());
-                t.setExtension(s.getExtension());
-                t.setTags(s.getTags());
-            });
-
-            applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
-                t.setImagePath(s.getImagePath());
-            });
-        }
+        keepOriginalAttributes(object);
 
         assignCodeIfEmpty(object);
 

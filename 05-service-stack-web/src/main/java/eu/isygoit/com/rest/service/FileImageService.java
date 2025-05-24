@@ -89,9 +89,8 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
             ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
-        if (!StringUtils.hasText((entity).getCode())) {
-            entity.setCode(this.getNextCode());
-        }
+        assignCodeIfEmpty(entity);
+
         if (file != null && !file.isEmpty()) {
             Path target = Path.of(this.getUploadDirectory())
                     .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
