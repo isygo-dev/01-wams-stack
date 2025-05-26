@@ -48,32 +48,4 @@ class CRC16Test {
         int expectedCrc = 0xB42C;  // Precomputed CRC-16-ANSI for {0x12, 0x34, 0x56, 0x78}
         assertEquals(expectedCrc, CRC16Helper.calculate(tempFile).get());
     }
-
-    /**
-     * Test calculate file with mock.
-     *
-     * @throws IOException the io exception
-     */
-    @Test
-    void testCalculateFileWithMock() throws IOException {
-        // Mock the File class and mock data to simulate file content
-        File mockFile = mock(File.class);
-        byte[] mockData = {0x12, 0x34, 0x56, 0x78}; // Mock data simulating file content
-
-        // Use MockedStatic to mock static methods of Files
-        try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
-            // Define the behavior of Files.readAllBytes for the mock file
-            mockedFiles.when(() -> Files.readAllBytes(mockFile.toPath())).thenReturn(mockData);
-            mockFile.createNewFile();
-
-            // Precomputed CRC-16-ANSI for {0x12, 0x34, 0x56, 0x78}
-            int expectedCrc = 0x30EC;
-
-            // Call the method under test and assert the result
-            assertEquals(expectedCrc, CRC16Helper.calculate(mockFile).get());
-
-            // Verify that Files.readAllBytes was called exactly once for the given file path
-            mockedFiles.verify(() -> Files.readAllBytes(mockFile.toPath()), times(1));
-        }
-    }
 }
