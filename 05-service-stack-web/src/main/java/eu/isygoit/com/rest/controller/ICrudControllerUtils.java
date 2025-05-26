@@ -11,6 +11,7 @@ import eu.isygoit.model.IIdAssignable;
 /**
  * The interface Crud controller utils.
  *
+ * @param <I> the type parameter
  * @param <T> the type parameter
  * @param <M> the type parameter
  * @param <F> the type parameter

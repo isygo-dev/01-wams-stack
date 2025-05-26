@@ -46,7 +46,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                                          MultipartFile file) {
         log.info("Upload image request received");
         try {
-            return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderDomain(), id, file)));
+            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderDomain(), id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -79,7 +79,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                 isaasDto.setDomain(requestContext.getSenderDomain());
             }
             dto = this.beforeCreate(dto);
-            return ResponseFactory.ResponseOk(mapper().entityToDto(
+            return ResponseFactory.responseOk(mapper().entityToDto(
                     this.afterCreate(crudService().createWithImage(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: create with image : {} ", e);
@@ -95,7 +95,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);
-            return ResponseFactory.ResponseOk(mapper().entityToDto(
+            return ResponseFactory.responseOk(mapper().entityToDto(
                     this.afterUpdate(crudService().updateWithImage(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: update wth image : {} ", e);

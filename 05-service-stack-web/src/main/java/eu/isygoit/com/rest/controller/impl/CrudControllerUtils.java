@@ -19,6 +19,7 @@ import java.lang.reflect.ParameterizedType;
 /**
  * The type Crud controller utils.
  *
+ * @param <I> the type parameter
  * @param <T> the type parameter
  * @param <M> the type parameter
  * @param <F> the type parameter

@@ -42,6 +42,9 @@ public abstract class CrudService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudServiceMethod<I, T> {
 
+    /**
+     * The constant SHOULD_USE_SAAS_SPECIFIC_METHOD.
+     */
     public static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     //Attention !!! should get the class type of th persist entity
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];

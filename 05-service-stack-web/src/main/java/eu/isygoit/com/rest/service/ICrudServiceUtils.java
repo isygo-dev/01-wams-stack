@@ -7,6 +7,7 @@ import org.springframework.data.repository.Repository;
 /**
  * The interface Crud service utils.
  *
+ * @param <I> the type parameter
  * @param <T> the type parameter
  */
 public interface ICrudServiceUtils<I, T extends IIdAssignable<I>> {

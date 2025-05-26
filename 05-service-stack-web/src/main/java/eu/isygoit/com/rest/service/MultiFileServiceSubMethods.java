@@ -21,10 +21,11 @@ import java.io.Serializable;
 /**
  * The type Multi file service sub methods.
  *
- * @param <I> the type parameter
- * @param <T> the type parameter
- * @param <L> the type parameter
- * @param <R> the type parameter
+ * @param <I>  the type parameter
+ * @param <T>  the type parameter
+ * @param <L>  the type parameter
+ * @param <R>  the type parameter
+ * @param <RL> the type parameter
  */
 @Slf4j
 public abstract class MultiFileServiceSubMethods<I extends Serializable,
@@ -41,6 +42,12 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
 
     private RL linkFileRepository;
 
+    /**
+     * Link file repository rl.
+     *
+     * @return the rl
+     * @throws JpaRepositoryNotDefinedException the jpa repository not defined exception
+     */
     public final RL linkFileRepository() throws JpaRepositoryNotDefinedException {
         if (this.linkFileRepository == null) {
             ServLinkFileRepo controllerDefinition = this.getClass().getAnnotation(ServLinkFileRepo.class);

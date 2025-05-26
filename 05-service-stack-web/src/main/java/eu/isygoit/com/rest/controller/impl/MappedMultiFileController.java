@@ -53,7 +53,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
                                                          MultipartFile[] files) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(parentId, files)));
+            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(parentId, files)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -66,7 +66,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
                                                         MultipartFile file) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.ResponseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(parentId, file)));
+            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(parentId, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -79,7 +79,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
                                                         I fileId) {
         log.info("delete additional file");
         try {
-            return ResponseFactory.ResponseOk(crudService().deleteAdditionalFile(parentId, fileId));
+            return ResponseFactory.responseOk(crudService().deleteAdditionalFile(parentId, fileId));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);

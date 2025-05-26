@@ -57,7 +57,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .map(mapper()::entityToDto)
                     .orElseThrow(() -> new BadArgumentException("Object creation failed"));
 
-            return ResponseFactory.ResponseOk(createdObject);
+            return ResponseFactory.responseOk(createdObject);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -79,13 +79,13 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                                 .map(t -> afterUpdate(t))
                                 .toList();
 
-                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedDtos));
+                        return ResponseFactory.responseOk(mapper().listEntityToDto(processedDtos));
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
                     }
                 })
-                .orElseGet(ResponseFactory::ResponseBadRequest);
+                .orElseGet(ResponseFactory::responseBadRequest);
     }
 
     @Override
@@ -103,13 +103,13 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                                 .map(t -> afterCreate(t))
                                 .toList();
 
-                        return ResponseFactory.ResponseOk(mapper().listEntityToDto(processedDtos));
+                        return ResponseFactory.responseOk(mapper().listEntityToDto(processedDtos));
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
                     }
                 })
-                .orElseGet(ResponseFactory::ResponseBadRequest);
+                .orElseGet(ResponseFactory::responseBadRequest);
     }
 
 
@@ -124,13 +124,13 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                             crudService().delete(requestContext.getSenderDomain(), validId);
                             afterDelete(validId);
                         }
-                        return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+                        return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
                     }
                 })
-                .orElseGet(ResponseFactory::ResponseBadRequest);
+                .orElseGet(ResponseFactory::responseBadRequest);
     }
 
 
@@ -146,13 +146,13 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                             crudService().delete(requestContext.getSenderDomain(), mapper().listDtoToEntity(validObjects));
                             afterDelete(validObjects);
                         }
-                        return ResponseFactory.ResponseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+                        return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
                     }
                 })
-                .orElseGet(ResponseFactory::ResponseBadRequest);
+                .orElseGet(ResponseFactory::responseBadRequest);
     }
 
 
@@ -170,11 +170,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .orElseGet(List::of);
 
             if (list.isEmpty()) {
-                return ResponseFactory.ResponseNoContent();
+                return ResponseFactory.responseNoContent();
             }
 
             afterFindAll(requestContext, list);
-            return ResponseFactory.ResponseOk(list);
+            return ResponseFactory.responseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -197,11 +197,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .orElseGet(List::of);
 
             if (list.isEmpty()) {
-                return ResponseFactory.ResponseNoContent();
+                return ResponseFactory.responseNoContent();
             }
 
             afterFindAll(requestContext, list);
-            return ResponseFactory.ResponseOk(list);
+            return ResponseFactory.responseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -226,11 +226,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .orElseGet(List::of);
 
             if (list.isEmpty()) {
-                return ResponseFactory.ResponseNoContent();
+                return ResponseFactory.responseNoContent();
             }
 
             afterFindAll(requestContext, list);
-            return ResponseFactory.ResponseOk(list);
+            return ResponseFactory.responseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -253,11 +253,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .orElseGet(List::of);
 
             if (list.isEmpty()) {
-                return ResponseFactory.ResponseNoContent();
+                return ResponseFactory.responseNoContent();
             }
 
             afterFindAllFull(requestContext, list);
-            return ResponseFactory.ResponseOk(list);
+            return ResponseFactory.responseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -269,7 +269,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
 
         if (page == null || size == null) {
-            return ResponseFactory.ResponseBadRequest();
+            return ResponseFactory.responseBadRequest();
         }
 
         try {
@@ -285,11 +285,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .orElseGet(List::of);
 
             if (list.isEmpty()) {
-                return ResponseFactory.ResponseNoContent();
+                return ResponseFactory.responseNoContent();
             }
 
             afterFindAllFull(requestContext, list);
-            return ResponseFactory.ResponseOk(list);
+            return ResponseFactory.responseOk(list);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -308,10 +308,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
             var object = optionalObject.map(mapper()::entityToDto).orElse(null);
 
             if (object == null) {
-                return ResponseFactory.ResponseNoContent();
+                return ResponseFactory.responseNoContent();
             }
 
-            return ResponseFactory.ResponseOk(afterFindById(object));
+            return ResponseFactory.responseOk(afterFindById(object));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -329,7 +329,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     ? crudService().count(requestContext.getSenderDomain())
                     : crudService().count();
 
-            return ResponseFactory.ResponseOk(count);
+            return ResponseFactory.responseOk(count);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -342,7 +342,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Update {} request received", persistentClass.getSimpleName());
 
         if (object == null || id == null) {
-            return ResponseFactory.ResponseBadRequest();
+            return ResponseFactory.responseBadRequest();
         }
 
         try {
@@ -357,7 +357,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .map(mapper()::entityToDto)
                     .orElseThrow(() -> new BadArgumentException("Object update failed"));
 
-            return ResponseFactory.ResponseOk(updatedObject);
+            return ResponseFactory.responseOk(updatedObject);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -384,8 +384,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
             // Vérification de la liste et réponse appropriée
             return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.ResponseNoContent()
-                    : ResponseFactory.ResponseOk(list);
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
 
         } catch (Exception ex) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, ex); // Ajout de log pour faciliter le debugging
@@ -415,8 +415,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
             // Vérification de la liste et retour approprié
             return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.ResponseNoContent()
-                    : ResponseFactory.ResponseOk(list);
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
 
         } catch (Exception ex) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, ex); // Ajout d'un log d'erreur pour faciliter le debugging
@@ -433,8 +433,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
             // Vérification si la map est vide et renvoi de la réponse appropriée
             return CollectionUtils.isEmpty(criteriaMap)
-                    ? ResponseFactory.ResponseNoContent()
-                    : ResponseFactory.ResponseOk(criteriaMap);
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(criteriaMap);
 
         } catch (Exception ex) {
             // Log de l'erreur pour faciliter le débogage

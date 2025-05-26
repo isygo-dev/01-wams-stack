@@ -25,6 +25,9 @@ import java.util.function.Function;
 @Transactional
 public class JwtService implements IJwtService {
 
+    /**
+     * The constant AUTHORIZATION.
+     */
     public static final String AUTHORIZATION = "Authorization";
 
     @Override

@@ -43,7 +43,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
                                         I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
-            return ResponseFactory.ResponseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderDomain(), id, file)));
+            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderDomain(), id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -78,7 +78,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
             dto = this.beforeCreate(dto);
             F savedResume = mapper().entityToDto(this.afterCreate(
                     crudService().createWithFile(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), dto.getFile())));
-            return ResponseFactory.ResponseOk(savedResume);
+            return ResponseFactory.responseOk(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
         }
@@ -93,7 +93,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
             dto = this.beforeUpdate(dto);
             F savedResume = mapper().entityToDto(
                     this.afterUpdate(crudService().updateWithFile(requestContext.getSenderDomain(), id, mapper().dtoToEntity(dto), dto.getFile())));
-            return ResponseFactory.ResponseOk(savedResume);
+            return ResponseFactory.responseOk(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
         }

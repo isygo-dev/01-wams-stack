@@ -15,6 +15,7 @@ import java.io.Serializable;
 /**
  * The type Crud service utils.
  *
+ * @param <I> the type parameter
  * @param <T> the type parameter
  * @param <R> the type parameter
  */
@@ -43,6 +44,11 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
         return this.repository;
     }
 
+    /**
+     * Assign code if empty.
+     *
+     * @param object the object
+     */
     @SuppressWarnings("unchecked")
     protected void assignCodeIfEmpty(Object object) {
         if (this instanceof ICodeAssignableService codeAssignableService &&

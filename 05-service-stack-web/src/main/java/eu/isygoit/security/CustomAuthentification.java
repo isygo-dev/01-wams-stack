@@ -14,6 +14,9 @@ import java.util.Collection;
 @Setter
 public class CustomAuthentification extends UsernamePasswordAuthenticationToken {
 
+    /**
+     * The constant serialVersionUID.
+     */
     public static final long serialVersionUID = -1378977978987113579L;
 
     private String userName;

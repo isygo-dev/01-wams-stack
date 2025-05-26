@@ -33,6 +33,7 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      *
      * @param domain the domain
      * @return the long
+     * @throws NotSupportedException the not supported exception
      */
     Long count(String domain) throws NotSupportedException;
 

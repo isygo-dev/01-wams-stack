@@ -19,6 +19,9 @@ import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+ * The type Controller exception handler builder.
+ */
 @Slf4j
 @Data
 @Component
