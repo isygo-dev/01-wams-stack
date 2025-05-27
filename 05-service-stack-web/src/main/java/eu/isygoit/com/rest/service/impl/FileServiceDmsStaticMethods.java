@@ -40,7 +40,7 @@ public final class FileServiceDmsStaticMethods {
                                 ? isaasEntity.getDomain()
                                 : DomainConstants.DEFAULT_DOMAIN_NAME))
                         .code(entity.getCode())
-                        .path(File.separator + entity.getClass().getSimpleName().toLowerCase())
+                        .path(entity.getClass().getSimpleName().toLowerCase())
                         .tags(entity.getTags())
                         .categoryNames(List.of(entity.getClass().getSimpleName()))
                         .file(file)
