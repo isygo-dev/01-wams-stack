@@ -24,6 +24,11 @@ public class ApplicationContextServiceImpl implements ApplicationContextService 
 
     private final ApplicationContext applicationContext;
 
+    /**
+     * Instantiates a new Application context service.
+     *
+     * @param applicationContext the application context
+     */
     public ApplicationContextServiceImpl(@Autowired ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }

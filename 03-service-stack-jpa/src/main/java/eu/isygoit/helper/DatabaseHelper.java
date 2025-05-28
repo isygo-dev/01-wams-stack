@@ -175,7 +175,13 @@ public class DatabaseHelper {
      * The enum Backup operation.
      */
     public enum BackupOperation {
+        /**
+         * Load backup operation.
+         */
         LOAD,  // Load backup operation
+        /**
+         * The Dump.
+         */
         DUMP   // Dump backup operation
     }
 }

@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * The interface Id entity.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 public interface IIdAssignable<I> extends Serializable {
     /**

@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * The type Next code model.
  *
- * @param <T> the type parameter
+ * @param <I> the type parameter
  */
 @Data
 @NoArgsConstructor
