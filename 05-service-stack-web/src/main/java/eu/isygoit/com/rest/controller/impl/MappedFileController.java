@@ -91,9 +91,9 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);
-            F savedResume = mapper().entityToDto(
+            F saved = mapper().entityToDto(
                     this.afterUpdate(crudService().updateWithFile(requestContext.getSenderDomain(), id, mapper().dtoToEntity(dto), dto.getFile())));
-            return ResponseFactory.responseOk(savedResume);
+            return ResponseFactory.responseOk(saved);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
         }

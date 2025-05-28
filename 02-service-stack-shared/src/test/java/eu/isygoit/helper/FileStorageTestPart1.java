@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -51,8 +52,11 @@ class FileStorageTest {
                     tempDir,
                     "testFile",
                     mockFile,
-                    "txt"
-            );
+                    "txt",
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.SYNC);
 
             // Verify
             assertTrue(savedPath.toFile().exists());
@@ -74,7 +78,11 @@ class FileStorageTest {
                             "testFile",
                             mockFile,
                             "txt"
-                    )
+                            ,
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.WRITE,
+                            StandardOpenOption.TRUNCATE_EXISTING,
+                            StandardOpenOption.SYNC)
             );
         }
     }

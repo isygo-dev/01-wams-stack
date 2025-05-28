@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
 /**
@@ -49,7 +50,11 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
                         .resolve(entity.getClass().getSimpleName().toLowerCase())
                         .resolve("image");
                 entity.setImagePath(FileHelper.saveMultipartFile(target,
-                        (entity).getCode() + "_" + file.getOriginalFilename(), file, "png").toString());
+                        (entity).getCode() + "_" + file.getOriginalFilename(), file, "png",
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING,
+                        StandardOpenOption.SYNC).toString());
                 return this.update(entity);
             } else {
                 throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
@@ -97,7 +102,11 @@ public abstract class FileImageService<I extends Serializable, T extends IImageE
                     .resolve(entity.getClass().getSimpleName().toLowerCase())
                     .resolve("image");
             entity.setImagePath(FileHelper.saveMultipartFile(target,
-                    file.getOriginalFilename() + "_" + entity.getCode(), file, "png").toString());
+                    file.getOriginalFilename() + "_" + entity.getCode(), file, "png",
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.SYNC).toString());
         } else {
             log.warn("File is null or empty");
         }

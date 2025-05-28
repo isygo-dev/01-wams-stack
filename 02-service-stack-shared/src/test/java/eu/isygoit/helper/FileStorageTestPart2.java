@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -73,7 +74,11 @@ class FileStorageTestPart2 {
             when(mockFile.getOriginalFilename()).thenReturn("testfile.txt");
 
             // Execute the method under test
-            Path result = FileHelper.saveMultipartFile(tempTargetDir, "savedFile", mockFile, "txt");
+            Path result = FileHelper.saveMultipartFile(tempTargetDir, "savedFile", mockFile, "txt",
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.SYNC);
 
             // Verify that the file was saved correctly
             Path expectedPath = tempTargetDir.resolve("savedFile.txt");
@@ -102,7 +107,11 @@ class FileStorageTestPart2 {
 
             // Assert exception thrown
             IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-                FileHelper.saveMultipartFile(tempTargetDir, "emptyFile", mockFile, "txt");
+                FileHelper.saveMultipartFile(tempTargetDir, "emptyFile", mockFile, "txt",
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING,
+                        StandardOpenOption.SYNC);
             });
 
             assertEquals("Provided file is empty.", thrown.getMessage());
