@@ -112,11 +112,14 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
             ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
-        if (repository().existsById(id)) {
+        Optional<T> existing = repository().findById(id);
+        if (existing.isPresent()) {
             entity.setId(id);
             if (file != null && !file.isEmpty()) {
-                if (!StringUtils.hasText(entity.getCode())) {
+                if (!StringUtils.hasText(entity.getCode()) && !StringUtils.hasText(existing.get().getCode())) {
                     entity.setCode(((ICodeAssignableService) this).getNextCode());
+                } else {
+                    entity.setCode(existing.get().getCode());
                 }
 
                 entity.setPath(Path.of(this.getUploadDirectory())
@@ -127,6 +130,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
             } else {
                 log.warn("Update with file ({}) :File is null or empty", this.persistentClass.getSimpleName());
             }
+
             entity = this.updateAndFlush(entity);
 
             if (file != null && !file.isEmpty()) {
