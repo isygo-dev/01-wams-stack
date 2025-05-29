@@ -75,21 +75,16 @@ public class JwtService implements IJwtService {
     /**
      * Extract claim from token given a claim key and expected claim class.
      *
-     * @param token JWT token string.
-     * @param claimKey Claim key to extract.
+     * @param token      JWT token string.
+     * @param claimKey   Claim key to extract.
      * @param claimClass Expected class of claim value.
-     * @param <T> Type of claim.
+     * @param <T>        Type of claim.
      * @return Optional containing claim if present and valid.
      */
-    private <T> Optional<T> extractClaim(String token, String claimKey, Class<T> claimClass) {
+    public <T> Optional<T> extractClaim(String token, String claimKey, Class<T> claimClass) {
         log.debug("Extracting claim: {}", claimKey);
-        try {
-            Claims claims = extractAllClaims(token);
-            return Optional.ofNullable(claims.get(claimKey, claimClass));
-        } catch (JwtException | IllegalArgumentException ex) {
-            log.error("Failed to extract claim '{}': {}", claimKey, ex.getMessage());
-            return Optional.empty();
-        }
+        Claims claims = extractAllClaims(token);
+        return Optional.ofNullable(claims.get(claimKey, claimClass));
     }
 
     @Override
@@ -114,6 +109,9 @@ public class JwtService implements IJwtService {
                     .setSigningKey(key)
                     .parseClaimsJws(token)
                     .getBody();
+        } catch (ExpiredJwtException ex) {
+            log.error("Jwt expired {}", ex.getMessage());
+            throw ex;
         } catch (JwtException | IllegalArgumentException ex) {
             log.error("Failed to parse signed claims: {}", ex.getMessage());
             throw new TokenInvalidException("Failed to parse JWT claims with signing key", ex);
@@ -129,25 +127,15 @@ public class JwtService implements IJwtService {
     @Override
     public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
         log.debug("Extracting claim with key");
-        try {
-            Claims claims = extractAllClaims(token, key);
-            return Optional.ofNullable(claimsResolver.apply(claims));
-        } catch (TokenInvalidException ex) {
-            log.error("Claim extraction failed: {}", ex.getMessage());
-            return Optional.empty();
-        }
+        Claims claims = extractAllClaims(token, key);
+        return Optional.ofNullable(claimsResolver.apply(claims));
     }
 
     @Override
     public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver) {
         log.debug("Extracting claim");
-        try {
-            Claims claims = extractAllClaims(token);
-            return Optional.ofNullable(claimsResolver.apply(claims));
-        } catch (TokenInvalidException ex) {
-            log.error("Claim extraction failed: {}", ex.getMessage());
-            return Optional.empty();
-        }
+        Claims claims = extractAllClaims(token);
+        return Optional.ofNullable(claimsResolver.apply(claims));
     }
 
     @Override
@@ -187,9 +175,9 @@ public class JwtService implements IJwtService {
      * Validates the token with the given signing key and expected subject.
      * Throws TokenInvalidException if validation fails.
      *
-     * @param token JWT token string to validate.
+     * @param token   JWT token string to validate.
      * @param subject Expected subject to match.
-     * @param key Signing key.
+     * @param key     Signing key.
      */
     @Override
     public void validateToken(String token, String subject, String key) {
