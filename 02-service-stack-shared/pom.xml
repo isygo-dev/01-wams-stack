@@ -209,6 +209,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>6.2.5</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Mockito JUnit 5 Extension -->
         <dependency>
             <groupId>org.mockito</groupId>

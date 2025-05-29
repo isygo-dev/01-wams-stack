@@ -27,11 +27,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
 /**
- * The type Image service.
+ * Abstract service to manage image entities with upload/download functionality.
  *
- * @param <I> the type parameter
- * @param <T> the type parameter
- * @param <R> the type parameter
+ * @param <I> ID type
+ * @param <T> Entity type (extends IImageEntity and IIdAssignable)
+ * @param <R> Repository type
  */
 @Slf4j
 public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I>,
@@ -39,119 +39,132 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
         extends CodeAssignableService<I, T, R>
         implements IImageServiceMethods<I, T> {
 
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    // Persistent class derived via reflection for exception messages etc.
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
+            .getGenericSuperclass()).getActualTypeArguments()[1];
 
-    @Override
-    @Transactional
-    public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            Optional<T> optional = findById(id);
-            if (optional.isPresent()) {
-                T entity = optional.get();
-                Path target = Path.of(this.getUploadDirectory())
-                        .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
-                        .resolve(entity.getClass().getSimpleName().toLowerCase())
-                        .resolve("image");
-                entity.setImagePath(FileHelper.saveMultipartFile(target,
-                        file.getOriginalFilename() + "_" + (entity instanceof ICodeAssignable codeAssignable ? codeAssignable.getCode() : entity.getId()), file, "png",
+    /**
+     * Reusable method to save an image file for an entity.
+     *
+     * @param entity the entity
+     * @param file   the multipart file to save
+     * @return the string path of the saved image
+     * @throws IOException if saving fails
+     */
+    private String saveImageFile(T entity, MultipartFile file) throws IOException {
+        // Determine target directory based on entity domain and class name
+        Path target = Path.of(getUploadDirectory())
+                .resolve(entity instanceof IDomainAssignable domainAssignable
+                        ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                .resolve(entity.getClass().getSimpleName().toLowerCase())
+                .resolve("image");
+
+        // Build filename with original filename and code or ID
+        String filenameSuffix = entity instanceof ICodeAssignable codeAssignable
+                ? codeAssignable.getCode()
+                : entity.getId().toString();
+
+        // Save the file and return the path as string
+        return FileHelper.saveMultipartFile(target,
+                        file.getOriginalFilename() + "_" + filenameSuffix,
+                        file, "png",
                         StandardOpenOption.CREATE,
                         StandardOpenOption.WRITE,
                         StandardOpenOption.TRUNCATE_EXISTING,
                         StandardOpenOption.SYNC)
-                        .toString());
-                return this.update(entity);
-            } else {
-                throw new ObjectNotFoundException(persistentClass.getSimpleName() + "with id " + id);
-            }
-        } else {
+                .toString();
+    }
+
+    @Override
+    @Transactional
+    public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
+        // Validate input file
+        if (file == null || file.isEmpty()) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
 
-        throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
+        // Retrieve entity by id or throw exception
+        T entity = findById(id).orElseThrow(() ->
+                new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+
+        // Save image and update entity path
+        entity.setImagePath(saveImageFile(entity, file));
+        return update(entity);
     }
 
     @Override
     public Resource downloadImage(I id) throws IOException {
-        Optional<T> optional = findById(id);
-        if (optional.isPresent()) {
-            T entity = optional.get();
-            if (StringUtils.hasText(entity.getImagePath())) {
-                Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
-                if (!resource.exists()) {
-                    throw new ResourceNotFoundException("for path " + entity.getImagePath());
-                }
-                return resource;
-            } else {
-                throw new EmptyPathException(persistentClass.getSimpleName() + "for id " + id);
-            }
-        } else {
-            throw new ResourceNotFoundException(persistentClass.getSimpleName() + "with id " + id);
+        // Retrieve entity or throw exception if not found
+        T entity = findById(id).orElseThrow(() ->
+                new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+
+        // Validate image path
+        if (!StringUtils.hasText(entity.getImagePath())) {
+            throw new EmptyPathException(persistentClass.getSimpleName() + " with id " + id);
         }
+
+        Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());
+
+        // Check resource existence
+        if (!resource.exists()) {
+            throw new ResourceNotFoundException("Resource not found for path " + entity.getImagePath());
+        }
+        return resource;
     }
 
     @Override
     @Transactional
     public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        //Check SAAS entity modification
+        // Enforce domain if applicable and not super domain
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
+        // Assign code if empty
         assignCodeIfEmpty(entity);
 
+        // Save image if provided
         if (file != null && !file.isEmpty()) {
-            Path target = Path.of(this.getUploadDirectory())
-                    .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
-                    .resolve(entity.getClass().getSimpleName().toLowerCase())
-                    .resolve("image");
-            entity.setImagePath(FileHelper.saveMultipartFile(target,
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodeAssignable codeAssignable ? codeAssignable.getCode() : entity.getId()), file, "png",
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING,
-                    StandardOpenOption.SYNC)
-                    .toString());
+            entity.setImagePath(saveImageFile(entity, file));
         } else {
             log.warn("File is null or empty");
         }
-        return this.create(entity);
+        return create(entity);
     }
 
     @Override
     @Transactional
     public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        //Check SAAS entity modification
+        // Enforce domain if applicable and not super domain
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)
                 && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
             ((IDomainAssignable) entity).setDomain(senderDomain);
         }
 
         if (file != null && !file.isEmpty()) {
-            Path target = Path.of(this.getUploadDirectory())
-                    .resolve(entity instanceof IDomainAssignable domainAssignable ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
-                    .resolve(entity.getClass().getSimpleName().toLowerCase())
-                    .resolve("image");
-            entity.setImagePath(FileHelper.saveMultipartFile(target,
-                    file.getOriginalFilename() + "_" + (entity instanceof ICodeAssignable codeAssignable ? codeAssignable.getCode() : entity.getId()), file, "png",
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING,
-                    StandardOpenOption.SYNC)
-                    .toString());
+            // Save new image and update path
+            entity.setImagePath(saveImageFile(entity, file));
         } else {
-            entity.setImagePath(this.findById((I) entity.getId()).get().getImagePath());
+            // Keep existing image path if no new file provided
+            String existingPath = findById((I) entity.getId())
+                    .map(T::getImagePath)
+                    .orElse(null);
+            entity.setImagePath(existingPath);
             log.warn("File is null or empty");
         }
-        return this.update(entity);
+        return update(entity);
     }
 
     /**
-     * Gets upload directory.
+     * Abstract method to get upload directory path.
      *
-     * @return the upload directory
+     * @return upload directory path
      */
     protected abstract String getUploadDirectory();
+
+    // Lifecycle hooks for subclasses to override if needed
 
     public T beforeUpdate(T object) {
         return object;

@@ -21,11 +21,12 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * The type File service.
+ * Abstract service providing file management logic for entities implementing IFileEntity.
+ * Supports create, update, upload, and download operations with file processing.
  *
- * @param <I> the type parameter
- * @param <T> the type parameter
- * @param <R> the type parameter
+ * @param <I> ID type
+ * @param <T> File entity type
+ * @param <R> Repository type
  */
 @Slf4j
 public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
@@ -35,183 +36,24 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
-    /**
-     * Before upload t.
-     *
-     * @param domain the domain
-     * @param entity the entity
-     * @param file   the file
-     * @return the t
-     * @throws IOException the io exception
-     */
+    protected abstract String getUploadDirectory();
+
+    // Optional hooks to override before and after upload/create/update
     public T beforeUpload(String domain, T entity, MultipartFile file) throws IOException {
         return entity;
     }
 
-    /**
-     * After upload t.
-     *
-     * @param domain the domain
-     * @param entity the entity
-     * @param file   the file
-     * @return the t
-     * @throws IOException the io exception
-     */
     public T afterUpload(String domain, T entity, MultipartFile file) throws IOException {
         return entity;
     }
 
-    @Transactional
-    @Override
-    public T createWithFile(String senderDomain, T entity, MultipartFile file) throws IOException {
-        //Check SAAS entity modification
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((IDomainAssignable) entity).setDomain(senderDomain);
-        }
-
-        if (file != null && !file.isEmpty()) {
-            assignCodeIfEmpty(entity);
-
-            entity.setPath(Path.of(this.getUploadDirectory())
-                    .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
-                    .resolve(this.persistentClass.getSimpleName().toLowerCase()).toString());
-
-            entity.setOriginalFileName(file.getOriginalFilename());
-            entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-        } else {
-            log.warn("Create with file ({}) :File is null or empty", this.persistentClass.getSimpleName());
-        }
-        //Creating entity
-        entity = this.createAndFlush(entity);
-
-        if (file != null && !file.isEmpty()) {
-            //Uploading file
-            entity = this.beforeUpload((entity instanceof IDomainAssignable IDomainAssignable
-                            ? IDomainAssignable.getDomain()
-                            : DomainConstants.DEFAULT_DOMAIN_NAME)
-                    , entity
-                    , file);
-            subUploadFile(file, entity);
-            return this.afterUpload((entity instanceof IDomainAssignable IDomainAssignable
-                            ? IDomainAssignable.getDomain()
-                            : DomainConstants.DEFAULT_DOMAIN_NAME)
-                    , entity
-                    , file);
-        }
-
-        return entity;
+    public T beforeCreate(T object) {
+        return object;
     }
 
-    @Transactional
-    @Override
-    public T updateWithFile(String senderDomain, I id, T entity, MultipartFile file) throws IOException {
-        //Check SAAS entity modification
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((IDomainAssignable) entity).setDomain(senderDomain);
-        }
-
-        Optional<T> existing = repository().findById(id);
-        if (existing.isPresent()) {
-            entity.setId(id);
-            if (file != null && !file.isEmpty()) {
-                if (!StringUtils.hasText(entity.getCode()) && !StringUtils.hasText(existing.get().getCode())) {
-                    entity.setCode(((ICodeAssignableService) this).getNextCode());
-                } else {
-                    entity.setCode(existing.get().getCode());
-                }
-
-                entity.setPath(Path.of(this.getUploadDirectory())
-                        .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
-                        .resolve(this.persistentClass.getSimpleName().toLowerCase()).toString());
-                entity.setOriginalFileName(file.getOriginalFilename());
-                entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-            } else {
-                log.warn("Update with file ({}) :File is null or empty", this.persistentClass.getSimpleName());
-            }
-
-            entity = this.updateAndFlush(entity);
-
-            if (file != null && !file.isEmpty()) {
-                //Uploading file
-                entity = this.beforeUpload((entity instanceof IDomainAssignable IDomainAssignable
-                                ? IDomainAssignable.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        entity,
-                        file);
-                subUploadFile(file, entity);
-                return this.afterUpload((entity instanceof IDomainAssignable IDomainAssignable
-                                ? IDomainAssignable.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        entity,
-                        file);
-            }
-
-            return entity;
-        } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
-        }
+    public T afterCreate(T object) {
+        return object;
     }
-
-    @Transactional
-    @Override
-    public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
-        Optional<T> optional = this.findById(id);
-        if (optional.isPresent()) {
-            T entity = optional.get();
-            if (file != null && !file.isEmpty()) {
-                if (!StringUtils.hasText(entity.getCode())) {
-                    entity.setCode(((ICodeAssignableService) this).getNextCode());
-                }
-
-                entity.setPath(Path.of(this.getUploadDirectory())
-                        .resolve(entity instanceof IDomainAssignable IDomainAssignable ? IDomainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
-                        .resolve(this.persistentClass.getSimpleName().toLowerCase()).toString());
-                entity.setOriginalFileName(file.getOriginalFilename());
-                entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-
-                entity = this.updateAndFlush(entity);
-
-                //Uploading file
-                entity = this.beforeUpload((entity instanceof IDomainAssignable IDomainAssignable
-                                ? IDomainAssignable.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        entity,
-                        file);
-                subUploadFile(file, entity);
-                return this.afterUpload((entity instanceof IDomainAssignable IDomainAssignable
-                                ? IDomainAssignable.getDomain()
-                                : DomainConstants.DEFAULT_DOMAIN_NAME),
-                        entity,
-                        file);
-            } else {
-                log.warn("Upload file ({}) :File is null or empty", this.persistentClass.getSimpleName());
-            }
-
-            return entity;
-        } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
-        }
-    }
-
-    @Override
-    public Resource downloadFile(I id, Long version) throws IOException {
-        Optional<T> optional = this.findById(id);
-        if (optional.isPresent()) {
-            T entity = optional.get();
-            return subDownloadFile(entity, version);
-        } else {
-            throw new ObjectNotFoundException(this.persistentClass.getSimpleName() + " with id " + id);
-        }
-    }
-
-    /**
-     * Gets upload directory.
-     *
-     * @return the upload directory
-     */
-    protected abstract String getUploadDirectory();
 
     public T beforeUpdate(T object) {
         return object;
@@ -221,11 +63,141 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         return object;
     }
 
-    public T beforeCreate(T object) {
-        return object;
+    @Transactional
+    @Override
+    public T createWithFile(String senderDomain, T entity, MultipartFile file) throws IOException {
+        setDomainIfApplicable(senderDomain, entity);
+
+        if (file != null && !file.isEmpty()) {
+            assignCodeIfEmpty(entity);
+            setFileAttributes(entity, file);
+        } else {
+            log.warn("CreateWithFile ({}): File is null or empty", persistentClass.getSimpleName());
+        }
+
+        entity = beforeCreate(entity);
+        entity = createAndFlush(entity);
+        entity = afterCreate(entity);
+
+        if (file != null && !file.isEmpty()) {
+            return handleFileUpload(entity, file);
+        }
+
+        return entity;
     }
 
-    public T afterCreate(T object) {
-        return object;
+    @Transactional
+    @Override
+    public T updateWithFile(String senderDomain, I id, T entity, MultipartFile file) throws IOException {
+        setDomainIfApplicable(senderDomain, entity);
+
+        T existing = repository().findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+        entity.setId(id);
+
+        if (file != null && !file.isEmpty()) {
+            assignOrPreserveCode(entity, existing);
+            setFileAttributes(entity, file);
+        } else {
+            log.warn("UpdateWithFile ({}): File is null or empty", persistentClass.getSimpleName());
+        }
+
+        entity = beforeUpdate(entity);
+        entity = updateAndFlush(entity);
+        entity = afterUpdate(entity);
+
+        if (file != null && !file.isEmpty()) {
+            return handleFileUpload(entity, file);
+        }
+
+        return entity;
+    }
+
+    @Transactional
+    @Override
+    public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
+        T entity = findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+
+        if (file != null && !file.isEmpty()) {
+            assignCodeIfEmpty(entity);
+            setFileAttributes(entity, file);
+            entity = updateAndFlush(entity);
+
+            return handleFileUpload(entity, file);
+        } else {
+            log.warn("UploadFile ({}): File is null or empty", persistentClass.getSimpleName());
+        }
+
+        return entity;
+    }
+
+    @Override
+    public Resource downloadFile(I id, Long version) throws IOException {
+        return findById(id)
+                .map(entity -> subDownloadFile(entity, version))
+                .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+    }
+
+    /**
+     * Utility: Assigns code if not already set.
+     */
+    private void assignCodeIfEmpty(T entity) {
+        if (!StringUtils.hasText(entity.getCode())) {
+            entity.setCode(((ICodeAssignableService) this).getNextCode());
+        }
+    }
+
+    /**
+     * Utility: Assigns code from existing or generates new.
+     */
+    private void assignOrPreserveCode(T entity, T existing) {
+        if (!StringUtils.hasText(entity.getCode()) && !StringUtils.hasText(existing.getCode())) {
+            entity.setCode(((ICodeAssignableService) this).getNextCode());
+        } else {
+            entity.setCode(existing.getCode());
+        }
+    }
+
+    /**
+     * Utility: Sets file attributes on the entity.
+     */
+    private void setFileAttributes(T entity, MultipartFile file) {
+        Path path = Path.of(getUploadDirectory())
+                .resolve(getEntityDomainOrDefault(entity))
+                .resolve(persistentClass.getSimpleName().toLowerCase());
+
+        entity.setPath(path.toString());
+        entity.setOriginalFileName(file.getOriginalFilename());
+        entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
+    }
+
+    /**
+     * Utility: Determine domain name from entity or use default.
+     */
+    private String getEntityDomainOrDefault(T entity) {
+        return entity instanceof IDomainAssignable assignable
+                ? assignable.getDomain()
+                : DomainConstants.DEFAULT_DOMAIN_NAME;
+    }
+
+    /**
+     * Utility: Apply domain rules for SAAS-based restrictions.
+     */
+    private void setDomainIfApplicable(String senderDomain, T entity) {
+        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
+                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+            ((IDomainAssignable) entity).setDomain(senderDomain);
+        }
+    }
+
+    /**
+     * Utility: Handles file upload lifecycle hooks and actual storage.
+     */
+    private T handleFileUpload(T entity, MultipartFile file) throws IOException {
+        String domain = getEntityDomainOrDefault(entity);
+        entity = beforeUpload(domain, entity, file);
+        subUploadFile(file, entity);
+        return afterUpload(domain, entity, file);
     }
 }

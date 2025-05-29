@@ -18,16 +18,14 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Service de gestion des JWT.
+ * Service for managing JWT tokens.
+ * Provides methods to create, validate, and extract information from JWTs.
  */
 @Slf4j
 @Service
 @Transactional
 public class JwtService implements IJwtService {
 
-    /**
-     * The constant AUTHORIZATION.
-     */
     public static final String AUTHORIZATION = "Authorization";
 
     @Override
@@ -74,27 +72,52 @@ public class JwtService implements IJwtService {
         return extractClaim(token, Claims::getSubject, key);
     }
 
+    /**
+     * Extract claim from token given a claim key and expected claim class.
+     *
+     * @param token JWT token string.
+     * @param claimKey Claim key to extract.
+     * @param claimClass Expected class of claim value.
+     * @param <T> Type of claim.
+     * @return Optional containing claim if present and valid.
+     */
     private <T> Optional<T> extractClaim(String token, String claimKey, Class<T> claimClass) {
         log.debug("Extracting claim: {}", claimKey);
-        return Optional.ofNullable(extractAllClaims(token).get(claimKey, claimClass));
+        try {
+            Claims claims = extractAllClaims(token);
+            return Optional.ofNullable(claims.get(claimKey, claimClass));
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.error("Failed to extract claim '{}': {}", claimKey, ex.getMessage());
+            return Optional.empty();
+        }
     }
 
     @Override
     public Claims extractAllClaims(String token) {
         log.debug("Extracting all claims (unsigned) from token");
-        //This is To avoid signing check !!!!!!!
-        return Jwts.parser()
-                .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
-                .getBody();
+        try {
+            // Extract claims without verifying signature
+            return Jwts.parser()
+                    .parseClaimsJwt(token.substring(0, token.lastIndexOf('.') + 1))
+                    .getBody();
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.error("Failed to parse unsigned claims: {}", ex.getMessage());
+            throw new TokenInvalidException("Failed to parse JWT claims", ex);
+        }
     }
 
     @Override
     public Claims extractAllClaims(String token, String key) {
         log.debug("Extracting all claims from signed token");
-        return Jwts.parser()
-                .setSigningKey(key)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parser()
+                    .setSigningKey(key)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.error("Failed to parse signed claims: {}", ex.getMessage());
+            throw new TokenInvalidException("Failed to parse JWT claims with signing key", ex);
+        }
     }
 
     @Override
@@ -106,13 +129,25 @@ public class JwtService implements IJwtService {
     @Override
     public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key) {
         log.debug("Extracting claim with key");
-        return Optional.ofNullable(claimsResolver.apply(extractAllClaims(token, key)));
+        try {
+            Claims claims = extractAllClaims(token, key);
+            return Optional.ofNullable(claimsResolver.apply(claims));
+        } catch (TokenInvalidException ex) {
+            log.error("Claim extraction failed: {}", ex.getMessage());
+            return Optional.empty();
+        }
     }
 
     @Override
     public <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver) {
         log.debug("Extracting claim");
-        return Optional.ofNullable(claimsResolver.apply(extractAllClaims(token)));
+        try {
+            Claims claims = extractAllClaims(token);
+            return Optional.ofNullable(claimsResolver.apply(claims));
+        } catch (TokenInvalidException ex) {
+            log.error("Claim extraction failed: {}", ex.getMessage());
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -120,7 +155,7 @@ public class JwtService implements IJwtService {
         log.debug("Checking if token is expired");
         return extractExpiration(token, key)
                 .map(exp -> exp.before(Date.from(Instant.now())))
-                .orElse(true);
+                .orElse(true); // If expiration missing or extraction failed, treat as expired
     }
 
     @Override
@@ -148,6 +183,14 @@ public class JwtService implements IJwtService {
         return new TokenDto(IEnumWebToken.Types.Bearer, token, expiryDate);
     }
 
+    /**
+     * Validates the token with the given signing key and expected subject.
+     * Throws TokenInvalidException if validation fails.
+     *
+     * @param token JWT token string to validate.
+     * @param subject Expected subject to match.
+     * @param key Signing key.
+     */
     @Override
     public void validateToken(String token, String subject, String key) {
         log.info("Validating JWT token for subject: {}", subject);
@@ -157,7 +200,10 @@ public class JwtService implements IJwtService {
             throw new TokenInvalidException("Invalid JWT token: null or empty");
         }
         try {
+            // Validate signature and parse claims
             Jwts.parser().setSigningKey(key).parseClaimsJws(token);
+
+            // Validate subject matches expected subject
             extractSubject(token, key)
                     .filter(sub -> StringUtils.hasText(sub) && sub.equalsIgnoreCase(subject))
                     .orElseThrow(() -> new TokenInvalidException("Invalid JWT: subject does not match"));
@@ -177,7 +223,7 @@ public class JwtService implements IJwtService {
             log.error("Unsupported JWT token");
             throw new TokenInvalidException("Invalid JWT: unsupported", ex);
         } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty");
+            log.error("JWT claims string is empty or illegal");
             throw new TokenInvalidException("Invalid JWT: illegal argument", ex);
         }
     }

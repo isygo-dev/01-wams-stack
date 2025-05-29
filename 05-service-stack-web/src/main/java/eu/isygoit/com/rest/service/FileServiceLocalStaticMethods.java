@@ -20,79 +20,107 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 /**
- * The type File service local static methods.
+ * Utility class providing static methods for local file operations such as upload, download, and delete.
+ * This class is stateless and should not be instantiated.
  */
 @Slf4j
 public final class FileServiceLocalStaticMethods {
 
-    /**
-     * Upload string.
-     *
-     * @param <T>    the type parameter
-     * @param file   the file
-     * @param entity the entity
-     * @return the string
-     * @throws IOException the io exception
-     */
-    static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity) throws IOException {
-        Path filePath = Path.of(entity.getPath());
-        if (!Files.exists(filePath)) {
-            Files.createDirectories(filePath);
-        }
+    // Private constructor to prevent instantiation of this utility class
+    private FileServiceLocalStaticMethods() {}
 
-        Files.copy(file.getInputStream(), filePath.resolve(entity.getCode()), StandardCopyOption.REPLACE_EXISTING);
+    /**
+     * Uploads a file to the local file system under a given entity's path.
+     *
+     * @param <T>    A type that supports file operations and has path, id, and code attributes.
+     * @param file   The file to be uploaded (typically from an HTTP request).
+     * @param entity The entity providing the storage path and file name.
+     * @return The code used as the file name.
+     * @throws IOException If writing the file fails.
+     */
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity) throws IOException {
+        Path directory = Path.of(entity.getPath());
+
+        // Ensure the directory exists (creates it and its parents if missing)
+        Files.createDirectories(directory);
+
+        // Determine the target path using the entity's code
+        Path targetPath = directory.resolve(entity.getCode());
+
+        // Copy the uploaded file to the target location, replacing any existing file
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
         return entity.getCode();
     }
 
     /**
-     * Download resource.
+     * Downloads a file as a Spring Resource from the local file system based on an entity's path and file name.
      *
-     * @param <T>     the type parameter
-     * @param entity  the entity
-     * @param version the version
-     * @return the resource
-     * @throws MalformedURLException the malformed url exception
+     * @param <T>     A type that supports file operations and has path, id, and code attributes.
+     * @param entity  The entity providing the file path and file name.
+     * @param version The file version (used for error reporting only).
+     * @return The file as a Spring Resource.
+     * @throws MalformedURLException If the file path cannot be converted to a URL.
+     * @throws ResourceNotFoundException If the file does not exist.
+     * @throws EmptyPathException If the entity's path is missing.
      */
-    static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
-        if (StringUtils.hasText(entity.getPath())) {
-            Resource resource = new UrlResource(Path.of(entity.getPath())
-                    .resolve(entity.getFileName())
-                    .toUri());
-            if (!resource.exists()) {
-                throw new ResourceNotFoundException("No resource found for "
-                        + (entity instanceof IDomainAssignable IDomainAssignable
-                        ? IDomainAssignable.getDomain()
-                        : DomainConstants.DEFAULT_DOMAIN_NAME
-                        + "/" + entity.getFileName()
-                        + "/" + version));
-            }
-            return resource;
-        } else {
-            throw new EmptyPathException("For entity "
-                    + (entity instanceof IDomainAssignable IDomainAssignable
-                    ? IDomainAssignable.getDomain()
-                    : DomainConstants.DEFAULT_DOMAIN_NAME
-                    + "/" + entity.getFileName()
-                    + "/" + version));
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
+        String path = entity.getPath();
+
+        // Ensure the path is not null or empty
+        if (!StringUtils.hasText(path)) {
+            throw new EmptyPathException(buildErrorMessage(entity, version, "Empty path"));
         }
+
+        Path filePath = Path.of(path).resolve(entity.getFileName());
+        Resource resource = new UrlResource(filePath.toUri());
+
+        // Check if the file exists, otherwise throw an exception
+        if (!resource.exists()) {
+            throw new ResourceNotFoundException(buildErrorMessage(entity, version, "Resource not found"));
+        }
+
+        return resource;
     }
 
     /**
-     * Delete boolean.
+     * Deletes a file from the local file system based on the provided entity's path and file name.
      *
-     * @param <L>    the type parameter
-     * @param entity the entity
-     * @return the boolean
-     * @throws IOException the io exception
+     * @param <T>    A type that represents a linked file and provides a code, path, and ID.
+     * @param entity The entity containing the file to delete.
+     * @return true if the file was successfully deleted.
+     * @throws IOException If deletion fails or file does not exist.
      */
-    public static <L extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(L entity) throws IOException {
-        File file = new File(Path.of(entity.getPath())
-                .resolve(entity.getFileName()).toString());
-        if (file.exists()) {
-            FileUtils.delete(file);
-            return true;
+    public static <T extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(T entity) throws IOException {
+        Path filePath = Path.of(entity.getPath()).resolve(entity.getFileName());
+        File file = filePath.toFile();
+
+        // If the file exists, delete it; otherwise, throw a custom not-found exception
+        if (!file.exists()) {
+            throw new FileNotFoundException(filePath.toString());
         }
 
-        throw new FileNotFoundException(Path.of(entity.getPath()).resolve(entity.getCode()).toString());
+        FileUtils.delete(file);
+        return true;
+    }
+
+    /**
+     * Builds a consistent error message for missing resources or paths.
+     *
+     * @param entity The entity related to the file.
+     * @param version The version involved in the request.
+     * @param prefix A message prefix such as "Resource not found" or "Empty path".
+     * @return A formatted error message with domain and file info.
+     */
+    private static String buildErrorMessage(Object entity, Long version, String prefix) {
+        String domain = (entity instanceof IDomainAssignable da)
+                ? da.getDomain()
+                : DomainConstants.DEFAULT_DOMAIN_NAME;
+
+        String fileName = (entity instanceof IFileEntity fe)
+                ? fe.getFileName()
+                : "unknown";
+
+        return String.format("%s: %s/%s/%d", prefix, domain, fileName, version);
     }
 }

@@ -29,7 +29,7 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class MultiFileServiceSubMethods<I extends Serializable,
-        T extends IMultiFileEntity & IIdAssignable<I>,
+        T extends IMultiFileEntity<L> & IIdAssignable<I>,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
         R extends JpaPagingAndSortingRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>>
@@ -78,67 +78,57 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
     }
 
     /**
-     * Sub upload file l.
-     *
-     * @param file   the file
-     * @param entity the entity
-     * @return the l
+     * Functional interface for operations throwing checked exceptions.
      */
-    final L subUploadFile(MultipartFile file, L entity) {
+    @FunctionalInterface
+    private interface CheckedSupplier<T> {
+        T get() throws Exception;
+    }
+
+    /**
+     * Executes the operation, logs exceptions, and returns a default value on error.
+     */
+    private <T> T executeSafely(CheckedSupplier<T> operation, T defaultValue) {
         try {
-            ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
-                entity.setCode(FileServiceDmsStaticMethods.upload(file, entity, linkedFileService).getCode());
+            return operation.get();
+        } catch (Exception e) {
+            log.error("Remote feign call failed:", e);
+            return defaultValue;
+        }
+    }
+
+    final L subUploadFile(MultipartFile file, L entity) {
+        return executeSafely(() -> {
+            ILinkedFileApi service = linkedFileService();
+            if (service != null) {
+                entity.setCode(FileServiceDmsStaticMethods.upload(file, entity, service).getCode());
             } else {
                 entity.setCode(FileServiceLocalStaticMethods.upload(file, entity));
             }
-        } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
-        }
-
-        return entity;
+            return entity;
+        }, entity);
     }
 
-    /**
-     * Sub download file resource.
-     *
-     * @param entity  the entity
-     * @param version the version
-     * @return the resource
-     */
     final Resource subDownloadFile(L entity, Long version) {
-        try {
-            ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
-                return FileServiceDmsStaticMethods.download(entity, version, linkedFileService);
+        return executeSafely(() -> {
+            ILinkedFileApi service = linkedFileService();
+            if (service != null) {
+                return FileServiceDmsStaticMethods.download(entity, version, service);
             } else {
                 return FileServiceLocalStaticMethods.download(entity, version);
             }
-        } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
-        }
-        return null;
+        }, null);
     }
 
-    /**
-     * Sub delete file boolean.
-     *
-     * @param entity the entity
-     * @return the boolean
-     */
     final boolean subDeleteFile(L entity) {
-        try {
+        return executeSafely(() -> {
             linkFileRepository().delete(entity);
-            ILinkedFileApi linkedFileService = this.linkedFileService();
-            if (linkedFileService != null) {
-                return FileServiceDmsStaticMethods.delete(entity, linkedFileService);
+            ILinkedFileApi service = linkedFileService();
+            if (service != null) {
+                return FileServiceDmsStaticMethods.delete(entity, service);
             } else {
                 return FileServiceLocalStaticMethods.delete(entity);
             }
-        } catch (Exception e) {
-            log.error("Remote feign call failed : ", e);
-        }
-
-        return false;
+        }, false);
     }
 }
