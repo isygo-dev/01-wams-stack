@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.filter.QueryCriteria;
+import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;

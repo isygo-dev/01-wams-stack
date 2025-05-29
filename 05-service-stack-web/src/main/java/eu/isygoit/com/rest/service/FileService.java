@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  * Abstract service providing file management logic for entities implementing IFileEntity.
@@ -36,13 +35,36 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
+    /**
+     * Gets upload directory.
+     *
+     * @return the upload directory
+     */
     protected abstract String getUploadDirectory();
 
-    // Optional hooks to override before and after upload/create/update
+    /**
+     * Before upload t.
+     *
+     * @param domain the domain
+     * @param entity the entity
+     * @param file   the file
+     * @return the t
+     * @throws IOException the io exception
+     */
+// Optional hooks to override before and after upload/create/update
     public T beforeUpload(String domain, T entity, MultipartFile file) throws IOException {
         return entity;
     }
 
+    /**
+     * After upload t.
+     *
+     * @param domain the domain
+     * @param entity the entity
+     * @param file   the file
+     * @return the t
+     * @throws IOException the io exception
+     */
     public T afterUpload(String domain, T entity, MultipartFile file) throws IOException {
         return entity;
     }

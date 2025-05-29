@@ -5,8 +5,9 @@ import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.model.Resume;
 import eu.isygoit.model.ResumeLinkedFile;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -25,6 +26,11 @@ class FileServiceLocalStaticMethodsTest {
     // Temporary directory for testing file operations
     private static final Path TEMP_DIR = Path.of(System.getProperty("java.io.tmpdir"), "file-service-test");
 
+    /**
+     * Sets .
+     *
+     * @throws IOException the io exception
+     */
     @BeforeEach
     void setup() throws IOException {
         // Ensure the temporary directory is clean and exists before each test
@@ -34,6 +40,11 @@ class FileServiceLocalStaticMethodsTest {
         //Files.createDirectories(TEMP_DIR);
     }
 
+    /**
+     * Cleanup.
+     *
+     * @throws IOException the io exception
+     */
     @AfterEach
     void cleanup() throws IOException {
         // Clean up after each test to avoid residue files
@@ -68,6 +79,8 @@ class FileServiceLocalStaticMethodsTest {
 
     /**
      * Test uploading a file creates directory and stores the file correctly.
+     *
+     * @throws IOException the io exception
      */
     @Test
     void upload_shouldCreateDirectoryAndStoreFile() throws IOException {
@@ -93,6 +106,8 @@ class FileServiceLocalStaticMethodsTest {
 
     /**
      * Test downloading a file resource when file exists.
+     *
+     * @throws IOException the io exception
      */
     @Test
     void download_shouldReturnResource_whenFileExists() throws IOException {
@@ -140,6 +155,8 @@ class FileServiceLocalStaticMethodsTest {
 
     /**
      * Test deleting a file successfully deletes it.
+     *
+     * @throws IOException the io exception
      */
     @Test
     void delete_shouldDeleteFile_whenFileExists() throws IOException {
@@ -170,6 +187,8 @@ class FileServiceLocalStaticMethodsTest {
 
     /**
      * Test upload overwrites existing file.
+     *
+     * @throws IOException the io exception
      */
     @Test
     void upload_shouldOverwriteExistingFile() throws IOException {

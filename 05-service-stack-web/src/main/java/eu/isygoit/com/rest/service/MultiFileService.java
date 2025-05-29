@@ -21,6 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The type Multi file service.
+ *
+ * @param <I>  the type parameter
+ * @param <T>  the type parameter
+ * @param <L>  the type parameter
+ * @param <R>  the type parameter
+ * @param <RL> the type parameter
+ */
 @Slf4j
 public abstract class MultiFileService<I extends Serializable,
         T extends IMultiFileEntity<L> & IIdAssignable<I>,
@@ -119,12 +128,24 @@ public abstract class MultiFileService<I extends Serializable,
         return true;
     }
 
+    /**
+     * Gets entity or throw.
+     *
+     * @param id the id
+     * @return the entity or throw
+     */
     protected T getEntityOrThrow(I id) {
         Optional<T> optional = findById(id);
         return optional.orElseThrow(() ->
                 new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + id));
     }
 
+    /**
+     * Extract domain string.
+     *
+     * @param entity the entity
+     * @return the string
+     */
     protected String extractDomain(T entity) {
         if (entity instanceof IDomainAssignable domainAssignable) {
             return domainAssignable.getDomain();
@@ -132,6 +153,13 @@ public abstract class MultiFileService<I extends Serializable,
         return DomainConstants.DEFAULT_DOMAIN_NAME;
     }
 
+    /**
+     * Find linked file l.
+     *
+     * @param entity the entity
+     * @param fileId the file id
+     * @return the l
+     */
     protected L findLinkedFile(T entity, I fileId) {
         if (entity.getAdditionalFiles() == null) return null;
         return entity.getAdditionalFiles().stream()
@@ -140,13 +168,36 @@ public abstract class MultiFileService<I extends Serializable,
                 .orElse(null);
     }
 
+    /**
+     * Before upload l.
+     *
+     * @param domain the domain
+     * @param entity the entity
+     * @param file   the file
+     * @return the l
+     * @throws IOException the io exception
+     */
     public L beforeUpload(String domain, L entity, MultipartFile file) throws IOException {
         return entity;
     }
 
+    /**
+     * After upload l.
+     *
+     * @param domain the domain
+     * @param entity the entity
+     * @param file   the file
+     * @return the l
+     * @throws IOException the io exception
+     */
     public L afterUpload(String domain, L entity, MultipartFile file) throws IOException {
         return entity;
     }
 
+    /**
+     * Gets upload directory.
+     *
+     * @return the upload directory
+     */
     protected abstract String getUploadDirectory();
 }

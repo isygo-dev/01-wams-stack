@@ -26,6 +26,9 @@ import java.util.function.Function;
 @Transactional
 public class JwtService implements IJwtService {
 
+    /**
+     * The constant AUTHORIZATION.
+     */
     public static final String AUTHORIZATION = "Authorization";
 
     @Override
@@ -75,10 +78,10 @@ public class JwtService implements IJwtService {
     /**
      * Extract claim from token given a claim key and expected claim class.
      *
+     * @param <T>        Type of claim.
      * @param token      JWT token string.
      * @param claimKey   Claim key to extract.
      * @param claimClass Expected class of claim value.
-     * @param <T>        Type of claim.
      * @return Optional containing claim if present and valid.
      */
     public <T> Optional<T> extractClaim(String token, String claimKey, Class<T> claimClass) {

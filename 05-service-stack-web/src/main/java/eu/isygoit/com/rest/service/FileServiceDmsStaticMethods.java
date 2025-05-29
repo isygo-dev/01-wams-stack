@@ -6,7 +6,6 @@ import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.EntityNullException;
-import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
 import eu.isygoit.exception.MultiPartFileNullException;
 import eu.isygoit.model.*;

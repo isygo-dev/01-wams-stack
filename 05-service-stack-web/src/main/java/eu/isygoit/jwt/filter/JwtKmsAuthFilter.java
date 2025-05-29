@@ -1,4 +1,4 @@
-package eu.isygoit.filter;
+package eu.isygoit.jwt.filter;
 
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;

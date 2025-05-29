@@ -1,4 +1,4 @@
-package eu.isygoit.filter;
+package eu.isygoit.jwt.filter;
 
 import eu.isygoit.constants.DomainConstants;
 import eu.isygoit.constants.JwtConstants;

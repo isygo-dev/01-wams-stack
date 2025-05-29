@@ -18,6 +18,9 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * The type File service dms static methods test.
+ */
 class FileServiceDmsStaticMethodsTest {
 
     /**
@@ -44,6 +47,11 @@ class FileServiceDmsStaticMethodsTest {
                 .build();
     }
 
+    /**
+     * Upload should throw linked file service null exception when linked file service is null.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void upload_shouldThrowLinkedFileServiceNullException_whenLinkedFileServiceIsNull() throws IOException {
         MultipartFile file = mock(MultipartFile.class);
@@ -54,6 +62,11 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("LinkedFileApi service is null", ex.getMessage());
     }
 
+    /**
+     * Upload should throw multi part file null exception when multipart file is null.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void upload_shouldThrowMultiPartFileNullException_whenMultipartFileIsNull() throws IOException {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -64,6 +77,11 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("MultipartFile must not be null", ex.getMessage());
     }
 
+    /**
+     * Upload should throw entity null exception when entity is null.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void upload_shouldThrowEntityNullException_whenEntityIsNull() throws IOException {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -74,6 +92,11 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("Entity must not be null", ex.getMessage());
     }
 
+    /**
+     * Upload should return response when upload is successful.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void upload_shouldReturnResponse_whenUploadIsSuccessful() throws IOException {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -91,6 +114,11 @@ class FileServiceDmsStaticMethodsTest {
         verify(linkedFileService, times(1)).upload(any());
     }
 
+    /**
+     * Download should throw linked file service null exception when linked file service is null.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void download_shouldThrowLinkedFileServiceNullException_whenLinkedFileServiceIsNull() throws IOException {
         Resume entity = createResume("resume", "code123", "file.txt");
@@ -100,6 +128,11 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("LinkedFileApi service is null", ex.getMessage());
     }
 
+    /**
+     * Download should throw entity null exception when entity is null.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void download_shouldThrowEntityNullException_whenEntityIsNull() throws IOException {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -109,6 +142,11 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("Entity must not be null", ex.getMessage());
     }
 
+    /**
+     * Download should return resource when download is successful.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void download_shouldReturnResource_whenDownloadIsSuccessful() throws IOException {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -124,6 +162,9 @@ class FileServiceDmsStaticMethodsTest {
         verify(linkedFileService, times(1)).download(any(), anyString(), anyString());
     }
 
+    /**
+     * Delete should throw linked file service null exception when linked file service is null.
+     */
     @Test
     void delete_shouldThrowLinkedFileServiceNullException_whenLinkedFileServiceIsNull() {
         ResumeLinkedFile entity = createLinkedFile("resumeLinkedFile", "code123", "file.txt");
@@ -133,6 +174,9 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("LinkedFileApi service is null", ex.getMessage());
     }
 
+    /**
+     * Delete should throw entity null exception when entity is null.
+     */
     @Test
     void delete_shouldThrowEntityNullException_whenEntityIsNull() {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -142,6 +186,9 @@ class FileServiceDmsStaticMethodsTest {
         assertEquals("Entity must not be null", ex.getMessage());
     }
 
+    /**
+     * Delete should return true when deletion is successful.
+     */
     @Test
     void delete_shouldReturnTrue_whenDeletionIsSuccessful() {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
@@ -156,6 +203,9 @@ class FileServiceDmsStaticMethodsTest {
         verify(linkedFileService, times(1)).deleteFile(any(), anyString(), anyString());
     }
 
+    /**
+     * Delete should return false when deletion fails.
+     */
     @Test
     void delete_shouldReturnFalse_whenDeletionFails() {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);

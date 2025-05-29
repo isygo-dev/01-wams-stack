@@ -34,11 +34,18 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     private ILinkedFileApi linkedFileApi;
 
     /**
-     * Functional interface to encapsulate DMS operations that may throw exceptions.
+     * Uploads a file either to the DMS service if available, or to the local storage.
+     *
+     * @param file   the file
+     * @param entity the entity
+     * @return the string
      */
-    @FunctionalInterface
-    interface FileOperation<R> {
-        R execute(ILinkedFileApi linkedFileApi) throws Exception;
+    final String subUploadFile(MultipartFile file, T entity) {
+        return executeWithFallback(
+                dms -> FileServiceDmsStaticMethods.upload(file, entity, dms).getCode(),
+                () -> FileServiceLocalStaticMethods.upload(file, entity),
+                "upload"
+        );
     }
 
     /**
@@ -85,18 +92,11 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     }
 
     /**
-     * Uploads a file either to the DMS service if available, or to the local storage.
-     */
-    final String subUploadFile(MultipartFile file, T entity) {
-        return executeWithFallback(
-                dms -> FileServiceDmsStaticMethods.upload(file, entity, dms).getCode(),
-                () -> FileServiceLocalStaticMethods.upload(file, entity),
-                "upload"
-        );
-    }
-
-    /**
      * Downloads a file from either the DMS service or local storage.
+     *
+     * @param entity  the entity
+     * @param version the version
+     * @return the resource
      */
     final Resource subDownloadFile(T entity, Long version) {
         return executeWithFallback(
@@ -107,10 +107,35 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     }
 
     /**
+     * Functional interface to encapsulate DMS operations that may throw exceptions.
+     *
+     * @param <R> the type parameter
+     */
+    @FunctionalInterface
+    interface FileOperation<R> {
+        /**
+         * Execute r.
+         *
+         * @param linkedFileApi the linked file api
+         * @return the r
+         * @throws Exception the exception
+         */
+        R execute(ILinkedFileApi linkedFileApi) throws Exception;
+    }
+
+    /**
      * Fallback functional interface to supply results without arguments.
+     *
+     * @param <R> the type parameter
      */
     @FunctionalInterface
     interface FallbackSupplier<R> {
+        /**
+         * Get r.
+         *
+         * @return the r
+         * @throws Exception the exception
+         */
         R get() throws Exception;
     }
 }

@@ -61,8 +61,6 @@ public final class FileServiceLocalStaticMethods {
      * @param version The file version (used for error reporting only).
      * @return The file as a Spring Resource.
      * @throws MalformedURLException If the file path cannot be converted to a URL.
-     * @throws ResourceNotFoundException If the file does not exist.
-     * @throws EmptyPathException If the entity's path is missing.
      */
     public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
         String path = entity.getPath();

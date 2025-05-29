@@ -1,25 +1,11 @@
 package eu.isygoit.model;
 
-import eu.isygoit.annotation.Criteria;
-import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.converter.CamelCaseConverter;
-import eu.isygoit.converter.LowerCaseConverter;
-import eu.isygoit.listener.TimeLineListener;
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
-import eu.isygoit.model.schema.ComSchemaColumnConstantName;
-import eu.isygoit.model.schema.ComSchemaConstantSize;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Table;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.*;
 
-import javax.validation.constraints.Email;
 import java.time.LocalDate;
 import java.util.List;
 

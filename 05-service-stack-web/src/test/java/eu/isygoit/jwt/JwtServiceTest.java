@@ -18,6 +18,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The type Jwt service test.
+ */
 class JwtServiceTest {
 
     private JwtService jwtService;
@@ -33,11 +36,17 @@ class JwtServiceTest {
             JwtConstants.JWT_SENDER_USER, "testuser"
     );
 
+    /**
+     * Sets .
+     */
     @BeforeEach
     void setup() {
         jwtService = new JwtService();
     }
 
+    /**
+     * Test create token and basic claims.
+     */
     @Test
     void testCreateTokenAndBasicClaims() {
         TokenDto tokenDto = jwtService.createToken(
@@ -66,6 +75,9 @@ class JwtServiceTest {
         assertEquals("testuser", jwtService.extractUserName(token).orElse(null));
     }
 
+    /**
+     * Test extract subject unsigned.
+     */
     @Test
     void testExtractSubjectUnsigned() {
         TokenDto tokenDto = jwtService.createToken(
@@ -85,6 +97,9 @@ class JwtServiceTest {
         assertEquals(subject, extracted.get());
     }
 
+    /**
+     * Test extract subject with key.
+     */
     @Test
     void testExtractSubjectWithKey() {
         TokenDto tokenDto = jwtService.createToken(
@@ -104,6 +119,9 @@ class JwtServiceTest {
         assertEquals(subject, extracted.get());
     }
 
+    /**
+     * Test extract claim with function and key.
+     */
     @Test
     void testExtractClaimWithFunctionAndKey() {
         TokenDto tokenDto = jwtService.createToken(
@@ -122,6 +140,9 @@ class JwtServiceTest {
         assertTrue(expiration.isPresent());
     }
 
+    /**
+     * Test extract claim with function no key.
+     */
     @Test
     void testExtractClaimWithFunctionNoKey() {
         TokenDto tokenDto = jwtService.createToken(
@@ -140,6 +161,9 @@ class JwtServiceTest {
         assertTrue(expiration.isPresent());
     }
 
+    /**
+     * Test extract claim with claim key and class.
+     */
     @Test
     void testExtractClaimWithClaimKeyAndClass() {
         TokenDto tokenDto = jwtService.createToken(
@@ -159,6 +183,9 @@ class JwtServiceTest {
         assertEquals("example.com", domain.get());
     }
 
+    /**
+     * Test extract all claims signed.
+     */
     @Test
     void testExtractAllClaimsSigned() {
         TokenDto tokenDto = jwtService.createToken(
@@ -179,6 +206,9 @@ class JwtServiceTest {
         });
     }
 
+    /**
+     * Test extract all claims unsigned.
+     */
     @Test
     void testExtractAllClaimsUnsigned() {
         TokenDto tokenDto = jwtService.createToken(
@@ -199,6 +229,9 @@ class JwtServiceTest {
         });
     }
 
+    /**
+     * Test is token expired false.
+     */
     @Test
     void testIsTokenExpiredFalse() {
         TokenDto tokenDto = jwtService.createToken(
@@ -215,6 +248,11 @@ class JwtServiceTest {
         assertFalse(jwtService.isTokenExpired(token, testKey));
     }
 
+    /**
+     * Test is token expired true.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     void testIsTokenExpiredTrue() throws InterruptedException {
         TokenDto tokenDto = jwtService.createToken(
@@ -233,11 +271,32 @@ class JwtServiceTest {
         assertThrows(ExpiredJwtException.class, () -> jwtService.isTokenExpired(token, testKey));
     }
 
+    /**
+     * Test calc expiry date.
+     */
+    @Test
+    void testCalcExpiryDate() {
+        Date now = new Date();
+        int offsetMs = 1000 * 60 * 5;
+
+        Date expiry = jwtService.calcExpiryDate(offsetMs);
+
+        assertTrue(expiry.after(now));
+        long diff = expiry.getTime() - now.getTime();
+        assertTrue(diff >= offsetMs);
+    }
+
+    /**
+     * The type Validate token tests.
+     */
     @Nested
     class ValidateTokenTests {
 
         private String validToken;
 
+        /**
+         * Generate valid token.
+         */
         @BeforeEach
         void generateValidToken() {
             TokenDto tokenDto = jwtService.createToken(
@@ -252,11 +311,17 @@ class JwtServiceTest {
             validToken = tokenDto.getToken();
         }
 
+        /**
+         * Validate token success.
+         */
         @Test
         void validateTokenSuccess() {
             assertDoesNotThrow(() -> jwtService.validateToken(validToken, subject, testKey));
         }
 
+        /**
+         * Validate token empty throws.
+         */
         @Test
         void validateTokenEmptyThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -264,6 +329,9 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().contains("null or empty"));
         }
 
+        /**
+         * Validate token wrong subject throws.
+         */
         @Test
         void validateTokenWrongSubjectThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -271,6 +339,9 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().contains("subject does not match"));
         }
 
+        /**
+         * Validate token invalid signature throws.
+         */
         @Test
         void validateTokenInvalidSignatureThrows() {
             String invalidSignatureToken = validToken + "junk";
@@ -280,6 +351,9 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().toLowerCase().contains("signature"));
         }
 
+        /**
+         * Validate token malformed throws.
+         */
         @Test
         void validateTokenMalformedThrows() {
             String malformedToken = "abc.def";
@@ -289,6 +363,11 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().toLowerCase().contains("malformed"));
         }
 
+        /**
+         * Validate token expired throws.
+         *
+         * @throws InterruptedException the interrupted exception
+         */
         @Test
         void validateTokenExpiredThrows() throws InterruptedException {
             TokenDto shortLivedTokenDto = jwtService.createToken(
@@ -308,6 +387,9 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().toLowerCase().contains("expired"));
         }
 
+        /**
+         * Validate token unsupported throws.
+         */
         @Test
         void validateTokenUnsupportedThrows() {
             String unsupportedToken = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0.";
@@ -317,6 +399,9 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().toLowerCase().contains("unsupported"));
         }
 
+        /**
+         * Validate token illegal argument throws.
+         */
         @Test
         void validateTokenIllegalArgumentThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -325,9 +410,15 @@ class JwtServiceTest {
         }
     }
 
+    /**
+     * The type Extract claims error handling.
+     */
     @Nested
     class ExtractClaimsErrorHandling {
 
+        /**
+         * Extract claim with invalid token should throw token invalid exception.
+         */
         @Test
         void extractClaimWithInvalidTokenShouldThrowTokenInvalidException() {
             String invalidToken = "invalid.token.value";
@@ -338,6 +429,9 @@ class JwtServiceTest {
             assertThrows(TokenInvalidException.class, () -> jwtService.extractIsAdmin(invalidToken));
         }
 
+        /**
+         * Extract claim with null token should throw null pointer exception.
+         */
         @Test
         void extractClaimWithNullTokenShouldThrowNullPointerException() {
             assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null));
@@ -345,17 +439,5 @@ class JwtServiceTest {
             assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null));
             assertThrows(NullPointerException.class, () -> jwtService.extractIsAdmin(null));
         }
-    }
-
-    @Test
-    void testCalcExpiryDate() {
-        Date now = new Date();
-        int offsetMs = 1000 * 60 * 5;
-
-        Date expiry = jwtService.calcExpiryDate(offsetMs);
-
-        assertTrue(expiry.after(now));
-        long diff = expiry.getTime() - now.getTime();
-        assertTrue(diff >= offsetMs);
     }
 }

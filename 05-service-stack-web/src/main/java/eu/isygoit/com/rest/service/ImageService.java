@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Optional;
 
 /**
  * Abstract service to manage image entities with upload/download functionality.

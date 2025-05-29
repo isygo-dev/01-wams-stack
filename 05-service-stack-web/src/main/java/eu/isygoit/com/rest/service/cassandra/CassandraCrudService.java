@@ -8,7 +8,7 @@ import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
-import eu.isygoit.filter.QueryCriteria;
+import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;

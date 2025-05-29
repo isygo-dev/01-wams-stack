@@ -78,11 +78,22 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
     }
 
     /**
-     * Functional interface for operations throwing checked exceptions.
+     * Sub upload file l.
+     *
+     * @param file   the file
+     * @param entity the entity
+     * @return the l
      */
-    @FunctionalInterface
-    private interface CheckedSupplier<T> {
-        T get() throws Exception;
+    final L subUploadFile(MultipartFile file, L entity) {
+        return executeSafely(() -> {
+            ILinkedFileApi service = linkedFileService();
+            if (service != null) {
+                entity.setCode(FileServiceDmsStaticMethods.upload(file, entity, service).getCode());
+            } else {
+                entity.setCode(FileServiceLocalStaticMethods.upload(file, entity));
+            }
+            return entity;
+        }, entity);
     }
 
     /**
@@ -97,18 +108,13 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
         }
     }
 
-    final L subUploadFile(MultipartFile file, L entity) {
-        return executeSafely(() -> {
-            ILinkedFileApi service = linkedFileService();
-            if (service != null) {
-                entity.setCode(FileServiceDmsStaticMethods.upload(file, entity, service).getCode());
-            } else {
-                entity.setCode(FileServiceLocalStaticMethods.upload(file, entity));
-            }
-            return entity;
-        }, entity);
-    }
-
+    /**
+     * Sub download file resource.
+     *
+     * @param entity  the entity
+     * @param version the version
+     * @return the resource
+     */
     final Resource subDownloadFile(L entity, Long version) {
         return executeSafely(() -> {
             ILinkedFileApi service = linkedFileService();
@@ -120,6 +126,12 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
         }, null);
     }
 
+    /**
+     * Sub delete file boolean.
+     *
+     * @param entity the entity
+     * @return the boolean
+     */
     final boolean subDeleteFile(L entity) {
         return executeSafely(() -> {
             linkFileRepository().delete(entity);
@@ -130,5 +142,19 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
                 return FileServiceLocalStaticMethods.delete(entity);
             }
         }, false);
+    }
+
+    /**
+     * Functional interface for operations throwing checked exceptions.
+     */
+    @FunctionalInterface
+    private interface CheckedSupplier<T> {
+        /**
+         * Get t.
+         *
+         * @return the t
+         * @throws Exception the exception
+         */
+        T get() throws Exception;
     }
 }
