@@ -5,6 +5,7 @@ import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
 import eu.isygoit.model.*;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -32,9 +33,9 @@ import java.util.Optional;
  */
 @Slf4j
 public abstract class MultiFileService<I extends Serializable,
-        T extends IMultiFileEntity<L> & IIdAssignable<I>,
+        T extends IMultiFileEntity<L> & IIdAssignable<I> & ICodeAssignable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
-        R extends JpaPagingAndSortingRepository<T, I>,
+        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>>
         extends MultiFileServiceSubMethods<I, T, L, R, RL>
         implements IMultiFileServiceMethods<I, T> {

@@ -11,7 +11,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
-import eu.isygoit.repository.JpaPagingAndSortingRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -33,8 +33,8 @@ import java.nio.file.StandardOpenOption;
  * @param <R> Repository type
  */
 @Slf4j
-public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I>,
-        R extends JpaPagingAndSortingRepository<T, I>>
+public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I> & ICodeAssignable,
+        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
         extends CodeAssignableService<I, T, R>
         implements IImageServiceMethods<I, T> {
 
@@ -58,14 +58,9 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
                 .resolve(entity.getClass().getSimpleName().toLowerCase())
                 .resolve("image");
 
-        // Build filename with original filename and code or ID
-        String filenameSuffix = entity instanceof ICodeAssignable codeAssignable
-                ? codeAssignable.getCode()
-                : entity.getId().toString();
-
         // Save the file and return the path as string
         return FileHelper.saveMultipartFile(target,
-                        file.getOriginalFilename() + "_" + filenameSuffix,
+                        file.getOriginalFilename() + "_" + entity.getCode(),
                         file, "png",
                         StandardOpenOption.CREATE,
                         StandardOpenOption.WRITE,

@@ -19,7 +19,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingSAASRepository<T extends IDomainAssignable & IIdAssignable<I>, I extends Serializable>
+public interface JpaPagingAndSortingDomainAssignableRepository<T extends IDomainAssignable & IIdAssignable<I>, I extends Serializable>
         extends JpaPagingAndSortingRepository<T, I> {
 
 

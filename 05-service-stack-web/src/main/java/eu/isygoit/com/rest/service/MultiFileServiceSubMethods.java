@@ -10,6 +10,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.IMultiFileEntity;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,9 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class MultiFileServiceSubMethods<I extends Serializable,
-        T extends IMultiFileEntity<L> & IIdAssignable<I>,
+        T extends IMultiFileEntity<L> & IIdAssignable<I> & ICodeAssignable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
-        R extends JpaPagingAndSortingRepository<T, I>,
+        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>>
         extends CodeAssignableService<I, T, R> {
 

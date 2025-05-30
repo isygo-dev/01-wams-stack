@@ -8,6 +8,7 @@ import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.ICodeGeneratorService;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * The interface Codifiable service.
@@ -55,4 +56,13 @@ public interface ICodeAssignableService<I extends Serializable, T extends IIdAss
      * @return the next code key
      */
     String getNextCodeKey(NextCodeModel initNextCode);
+
+
+    /**
+     * Find by code optional.
+     *
+     * @param code the code
+     * @return the optional
+     */
+    Optional<T> findByCode(String code);
 }

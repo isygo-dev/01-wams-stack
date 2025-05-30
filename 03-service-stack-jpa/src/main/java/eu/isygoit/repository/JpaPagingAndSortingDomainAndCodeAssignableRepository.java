@@ -17,8 +17,8 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingSAASCodifiableRepository<T extends IDomainAssignable & ICodeAssignable & IIdAssignable<I>, I extends Serializable>
-        extends JpaPagingAndSortingSAASRepository<T, I>, JpaPagingAndSortingCodifiableRepository<T, I> {
+public interface JpaPagingAndSortingDomainAndCodeAssignableRepository<T extends IDomainAssignable & ICodeAssignable & IIdAssignable<I>, I extends Serializable>
+        extends JpaPagingAndSortingDomainAssignableRepository<T, I>, JpaPagingAndSortingCodeAssingnableRepository<T, I> {
 
     /**
      * Find by domain ignore case and code ignore case optional.

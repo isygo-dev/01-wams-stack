@@ -20,7 +20,7 @@ import java.util.Optional;
 @IgnoreRepository
 @NoRepositoryBean
 public interface NextCodeRepository<T extends NextCodeModel<I> & IDomainAssignable, I extends Serializable>
-        extends JpaPagingAndSortingSAASRepository<T, I> {
+        extends JpaPagingAndSortingDomainAssignableRepository<T, I> {
 
     /**
      * Find by entity optional.

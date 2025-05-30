@@ -9,9 +9,10 @@ import eu.isygoit.exception.BadResponseException;
 import eu.isygoit.exception.NextCodeGenMethodNotDefinedException;
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
+import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
-import eu.isygoit.repository.JpaPagingAndSortingRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.ICodeGeneratorService;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +36,10 @@ import java.util.Optional;
  * @param <R> Repository type
  */
 @Slf4j
-public abstract class CodeAssignableService<I extends Serializable, T extends IIdAssignable<I>, R extends JpaPagingAndSortingRepository<T, I>>
-        extends CrudService<I, T, R>
-        implements ICodeAssignableService<I, T> {
+public abstract class CodeAssignableService<I extends Serializable,
+        T extends IIdAssignable<I> & ICodeAssignable,
+        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
+        extends CrudService<I, T, R> implements ICodeAssignableService<I, T> {
 
     private static final Map<String, NextCodeModel> inMemoryNextCodes = new HashMap<>();
 
@@ -195,5 +197,10 @@ public abstract class CodeAssignableService<I extends Serializable, T extends II
             }
         }
         return this.nextCodeService;
+    }
+
+    @Override
+    public Optional<T> findByCode(String code) {
+        return repository().findByCodeIgnoreCase(code);
     }
 }

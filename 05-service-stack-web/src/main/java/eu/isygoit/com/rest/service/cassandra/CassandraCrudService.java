@@ -12,7 +12,7 @@ import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IDomainAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
-import eu.isygoit.repository.JpaPagingAndSortingSAASRepository;
+import eu.isygoit.repository.JpaPagingAndSortingDomainAssignableRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.NotSupportedException;
@@ -55,8 +55,8 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public Long count(String domain) {
-        if (repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            return jpaPagingAndSortingSAASRepository.countByDomainIgnoreCase(domain);
+        if (repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaPagingAndSortingDomainAssignableRepository) {
+            return jpaPagingAndSortingDomainAssignableRepository.countByDomainIgnoreCase(domain);
         } else {
             throw new UnsupportedOperationException("this is not a SAS entity/repository: " + repository().getClass().getSimpleName());
         }
@@ -264,7 +264,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Transactional(readOnly = true)
     public List<T> findAll() {
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository) {
+                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
@@ -280,7 +280,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Transactional(readOnly = true)
     public List<T> findAll(Pageable pageable) {
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository) {
+                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
@@ -295,8 +295,8 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     public List<T> findAll(String domain) throws NotSupportedException {
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            List<T> list = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain);
+                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaPagingAndSortingDomainAssignableRepository) {
+            List<T> list = jpaPagingAndSortingDomainAssignableRepository.findByDomainIgnoreCase(domain);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
             }
@@ -309,8 +309,8 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
         if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingSAASRepository jpaPagingAndSortingSAASRepository) {
-            Page<T> page = jpaPagingAndSortingSAASRepository.findByDomainIgnoreCase(domain, pageable);
+                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaPagingAndSortingDomainAssignableRepository) {
+            Page<T> page = jpaPagingAndSortingDomainAssignableRepository.findByDomainIgnoreCase(domain, pageable);
             if (page.isEmpty()) {
                 return Collections.EMPTY_LIST;
             }
