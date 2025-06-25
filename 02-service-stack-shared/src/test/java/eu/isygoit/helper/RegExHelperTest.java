@@ -136,7 +136,7 @@ class RegExHelperTest {
         void validateValidEmail() {
             assertTrue(RegExHelper.validateEmail("test@example.com"));
             assertTrue(RegExHelper.validateEmail("user.name+tag@example.co.uk"));
-            assertTrue(RegExHelper.validateEmail("user_name@domain.com"));
+            assertTrue(RegExHelper.validateEmail("user_name@tenant.com"));
         }
 
         /**
@@ -146,7 +146,7 @@ class RegExHelperTest {
         @DisplayName("Should reject invalid email format")
         void validateInvalidEmail() {
             assertFalse(RegExHelper.validateEmail("invalid.email@"));
-            assertFalse(RegExHelper.validateEmail("@domain.com"));
+            assertFalse(RegExHelper.validateEmail("@tenant.com"));
             assertFalse(RegExHelper.validateEmail("email@.com"));
         }
     }

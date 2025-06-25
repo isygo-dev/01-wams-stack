@@ -20,23 +20,23 @@ public interface ICodeGeneratorService<T extends NextCodeModel> {
     Optional<T> findByEntity(String entity);
 
     /**
-     * Find by domain and entity and attribute t.
+     * Find by tenant and entity and attribute t.
      *
-     * @param domain    the domain
+     * @param tenant    the tenant
      * @param entity    the entity
      * @param attribute the attribute
      * @return the t
      */
-    Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute);
+    Optional<T> findByTenantAndEntityAndAttribute(String tenant, String entity, String attribute);
 
     /**
      * Increment.
      *
-     * @param domain    the domain
+     * @param tenant    the tenant
      * @param entity    the entity
      * @param increment the increment
      */
-    void increment(String domain, String entity, Integer increment);
+    void increment(String tenant, String entity, Integer increment);
 
     /**
      * Save and flush t.

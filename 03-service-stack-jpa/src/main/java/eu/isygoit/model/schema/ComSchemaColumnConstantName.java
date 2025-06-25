@@ -213,13 +213,13 @@ public interface ComSchemaColumnConstantName {
      */
     String C_CANCEL_DATE = "CANCEL_DATE";
     /**
-     * The constant C_DOMAIN_CODE.
+     * The constant C_TENANT_CODE.
      */
-    String C_DOMAIN_CODE = "DOMAIN_CODE";
+    String C_TENANT_CODE = "TENANT_CODE";
     /**
-     * The constant C_DOMAIN.
+     * The constant C_TENANT.
      */
-    String C_DOMAIN = "DOMAIN";
+    String C_TENANT = "TENANT";
     /**
      * The constant C_LANG_CODE.
      */

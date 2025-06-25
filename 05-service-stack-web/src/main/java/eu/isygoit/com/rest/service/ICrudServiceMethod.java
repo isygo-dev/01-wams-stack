@@ -31,11 +31,11 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Count long.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      * @return the long
      * @throws NotSupportedException the not supported exception
      */
-    Long count(String domain) throws NotSupportedException;
+    Long count(String tenant) throws NotSupportedException;
 
     /**
      * Exists by id boolean.
@@ -72,18 +72,18 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Delete.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param id           the id
      */
-    void delete(String senderDomain, I id);
+    void delete(String senderTenant, I id);
 
     /**
      * Delete.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param objects      the objects
      */
-    void delete(String senderDomain, List<T> objects);
+    void delete(String senderTenant, List<T> objects);
 
     /**
      * Delete.
@@ -109,11 +109,11 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Find all list.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String domain) throws NotSupportedException;
+    List<T> findAll(String tenant) throws NotSupportedException;
 
     /**
      * Find all list.
@@ -126,12 +126,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Find all list.
      *
-     * @param domain   the domain
+     * @param tenant   the tenant
      * @param pageable the pageable
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String domain, Pageable pageable) throws NotSupportedException;
+    List<T> findAll(String tenant, Pageable pageable) throws NotSupportedException;
 
     /**
      * Find by id t.
@@ -185,19 +185,19 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Find all by criteria filter list.
      *
-     * @param domain   the domain
+     * @param tenant   the tenant
      * @param criteria the criteria
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria);
+    List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria);
 
     /**
      * Find all by criteria filter list.
      *
-     * @param domain      the domain
+     * @param tenant      the tenant
      * @param criteria    the criteria
      * @param pageRequest the page request
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest);
+    List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest);
 }

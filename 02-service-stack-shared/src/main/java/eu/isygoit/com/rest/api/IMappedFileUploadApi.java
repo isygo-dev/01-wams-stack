@@ -64,7 +64,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     })
     @PostMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> createWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                     //@RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                     //@RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                      @ModelAttribute(RestApiConstants.FILE_UPLOAD) D fileUpload);
 
 

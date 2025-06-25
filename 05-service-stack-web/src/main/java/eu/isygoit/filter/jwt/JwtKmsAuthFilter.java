@@ -1,4 +1,4 @@
-package eu.isygoit.jwt.filter;
+package eu.isygoit.filter.jwt;
 
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
@@ -51,35 +51,35 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
 
     /**
      * Validates a JWT token using the token service.
-     * Creates a user identifier by combining username and domain.
+     * Creates a user identifier by combining username and tenant.
      *
      * @param jwt         the JWT token to validate
-     * @param domain      the domain extracted from token
+     * @param tenant      the tenant extracted from token
      * @param application the application identifier from token
      * @param userName    the username from token
      * @return true if token is valid
      * @throws TokenInvalidException if token is invalid or token service is unavailable
      */
     @Override
-    public boolean isTokenValid(String jwt, String domain, String application, String userName) {
+    public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
         if (tokenService == null) {
             log.error("Token validation failed: Token service is not available");
             throw new TokenInvalidException("No token validator available");
         }
 
-        // Create user identifier by combining lowercase username with domain
-        String userIdentifier = userName.toLowerCase() + "@" + domain;
+        // Create user identifier by combining lowercase username with tenant
+        String userIdentifier = userName.toLowerCase() + "@" + tenant;
 
         // Validate token using token service
-        if (!tokenService.isTokenValid(domain, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)) {
-            log.warn("Invalid token for user: {}, application: {}, domain: {}",
-                    userName, application, domain);
+        if (!tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)) {
+            log.warn("Invalid token for user: {}, application: {}, tenant: {}",
+                    userName, application, tenant);
             throw new TokenInvalidException("KMS::isTokenValid");
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Token successfully validated for user: {}, application: {}, domain: {}",
-                    userName, application, domain);
+            log.debug("Token successfully validated for user: {}, application: {}, tenant: {}",
+                    userName, application, tenant);
         }
 
         return true;

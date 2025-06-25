@@ -18,7 +18,7 @@ import org.hibernate.annotations.ColumnDefault;
 import java.io.Serializable;
 
 /**
- * The type Domain model.
+ * The type Tenant model.
  *
  * @param <T> the type parameter
  */
@@ -27,7 +27,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class DomainModel<T extends Serializable> extends AuditableCancelableEntity<T> {
+public abstract class TenantModel<T extends Serializable> extends AuditableCancelableEntity<T> {
 
     @Column(name = ComSchemaColumnConstantName.C_NAME, length = ComSchemaConstantSize.S_NAME, updatable = false)
     private String name;

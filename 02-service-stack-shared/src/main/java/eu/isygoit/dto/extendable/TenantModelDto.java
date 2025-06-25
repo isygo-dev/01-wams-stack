@@ -11,7 +11,7 @@ import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
 /**
- * The type Domain model dto.
+ * The type Tenant model dto.
  *
  * @param <T> the type parameter
  */
@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class DomainModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class TenantModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
 
     @NotEmpty
     private String name;

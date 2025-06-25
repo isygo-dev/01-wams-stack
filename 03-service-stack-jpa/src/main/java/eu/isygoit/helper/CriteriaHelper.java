@@ -84,12 +84,12 @@ public class CriteriaHelper {
      * Build specification specification.
      *
      * @param <T>       the type parameter
-     * @param domain    the domain
+     * @param tenant    the tenant
      * @param criteria  the criteria
      * @param classType the class type
      * @return the specification
      */
-    public static <T extends IIdAssignable> Specification<T> buildSpecification(String domain, List<QueryCriteria> criteria, Class<?> classType) {
+    public static <T extends IIdAssignable> Specification<T> buildSpecification(String tenant, List<QueryCriteria> criteria, Class<?> classType) {
         Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(classType);
         Specification<T> specification = Specification.where(null);
         for (QueryCriteria cr : criteria) {
@@ -140,8 +140,8 @@ public class CriteriaHelper {
                     specification = specification.or(criteriaSpec);
             }
         }
-        if (StringUtils.hasText(domain)) {
-            specification = specification.and(CriteriaHelper.equal("domain", domain));
+        if (StringUtils.hasText(tenant)) {
+            specification = specification.and(CriteriaHelper.equal("tenant", tenant));
         }
         return specification;
     }

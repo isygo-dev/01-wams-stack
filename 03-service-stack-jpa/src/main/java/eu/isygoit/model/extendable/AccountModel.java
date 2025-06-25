@@ -1,10 +1,10 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.enums.IEnumAccountSystemStatus;
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
@@ -32,15 +32,15 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AccountModel<T extends Serializable> extends AuditableCancelableEntity<T> implements IDomainAssignable, ICodeAssignable {
+public abstract class AccountModel<T extends Serializable> extends AuditableCancelableEntity<T> implements ITenantAssignable, ICodeAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
     private String code;
     //@Convert(converter = LowerCaseConverter.class)
-    @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")
-    @Column(name = ComSchemaColumnConstantName.C_DOMAIN, length = ComSchemaConstantSize.DOMAIN, updatable = false, nullable = false)
-    private String domain;
+    @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
+    @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
+    private String tenant;
     @Column(name = ComSchemaColumnConstantName.C_EMAIL, length = ComSchemaConstantSize.EMAIL, nullable = false)
     @Email(message = "email.should.be.valid")
     private String email;

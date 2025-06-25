@@ -29,7 +29,7 @@ class JwtServiceTest {
 
     private final String subject = "testSubject";
     private final Map<String, Object> claims = Map.of(
-            JwtConstants.JWT_SENDER_DOMAIN, "example.com",
+            JwtConstants.JWT_SENDER_TENANT, "example.com",
             JwtConstants.JWT_IS_ADMIN, true,
             JwtConstants.JWT_LOG_APP, "TestApp",
             JwtConstants.JWT_SENDER_ACCOUNT_TYPE, "premium",
@@ -68,7 +68,7 @@ class JwtServiceTest {
 
         // Basic claim extractions
         assertEquals(subject, jwtService.extractSubject(token, testKey).orElse(null));
-        assertEquals("example.com", jwtService.extractDomain(token).orElse(null));
+        assertEquals("example.com", jwtService.extractTenant(token).orElse(null));
         assertTrue(jwtService.extractIsAdmin(token));
         assertEquals("TestApp", jwtService.extractApplication(token).orElse(null));
         assertEquals("premium", jwtService.extractAccountType(token).orElse(null));
@@ -178,9 +178,9 @@ class JwtServiceTest {
 
         String token = tokenDto.getToken();
 
-        Optional<String> domain = jwtService.extractClaim(token, JwtConstants.JWT_SENDER_DOMAIN, String.class);
-        assertTrue(domain.isPresent());
-        assertEquals("example.com", domain.get());
+        Optional<String> tenant = jwtService.extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
+        assertTrue(tenant.isPresent());
+        assertEquals("example.com", tenant.get());
     }
 
     /**
@@ -423,7 +423,7 @@ class JwtServiceTest {
         void extractClaimWithInvalidTokenShouldThrowTokenInvalidException() {
             String invalidToken = "invalid.token.value";
 
-            assertThrows(TokenInvalidException.class, () -> jwtService.extractDomain(invalidToken));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractTenant(invalidToken));
             assertThrows(TokenInvalidException.class, () -> jwtService.extractSubject(invalidToken));
             assertThrows(TokenInvalidException.class, () -> jwtService.extractApplication(invalidToken));
             assertThrows(TokenInvalidException.class, () -> jwtService.extractIsAdmin(invalidToken));
@@ -435,7 +435,7 @@ class JwtServiceTest {
         @Test
         void extractClaimWithNullTokenShouldThrowNullPointerException() {
             assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractDomain(null));
+            assertThrows(NullPointerException.class, () -> jwtService.extractTenant(null));
             assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null));
             assertThrows(NullPointerException.class, () -> jwtService.extractIsAdmin(null));
         }

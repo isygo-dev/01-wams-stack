@@ -22,13 +22,13 @@ public interface IRemoteNextCodeService {
      * Generate next code response entity.
      *
      * @param requestContext the request context
-     * @param domain         the domain
+     * @param tenant         the tenant
      * @param entity         the entity
      * @param attribute      the attribute
      * @return the response entity
      */
     @Operation(summary = "Generate next incremental code",
-            description = "For a given domain, entity and attribute, generate the next incremental code")
+            description = "For a given tenant, entity and attribute, generate the next incremental code")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully, and returns the new incremental code",
@@ -37,19 +37,19 @@ public interface IRemoteNextCodeService {
     })
     @GetMapping(path = "/incremental/next")
     ResponseEntity<String> generateNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                            @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                             @RequestParam(name = RestApiConstants.ENTITY) String entity,
                                             @RequestParam(name = RestApiConstants.ATTRIBUTE) String attribute);
 
     /**
      * Subscribe next code response entity.
      *
-     * @param domain            the domain
+     * @param tenant            the tenant
      * @param incrementalConfig the incremental config
      * @return the response entity
      */
     @Operation(summary = "Subscribe next incremental code generator",
-            description = "For a given domain, entity and attribute, subscribe the next incremental code generator")
+            description = "For a given tenant, entity and attribute, subscribe the next incremental code generator")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
@@ -58,6 +58,6 @@ public interface IRemoteNextCodeService {
     })
     @PostMapping(path = "/incremental/config")
     ResponseEntity<String> subscribeNextCode(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                             @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                             @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                              @Valid @RequestBody NextCodeDto incrementalConfig);
 }

@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
@@ -62,23 +62,23 @@ public abstract class MultiFileService<I extends Serializable,
         }
 
         var entity = getEntityOrThrow(parentId);
-        var domain = extractDomain(entity);
+        var tenant = extractTenant(entity);
 
         L linkedFile;
         try {
             linkedFile = linkedFileClass.getDeclaredConstructor().newInstance();
             assignCodeIfEmpty(linkedFile);
 
-            if (entity instanceof IDomainAssignable domainAssignableEntity
-                    && linkedFile instanceof IDomainAssignable domainAssignableFile) {
-                domainAssignableFile.setDomain(domainAssignableEntity.getDomain());
+            if (entity instanceof ITenantAssignable tenantAssignableEntity
+                    && linkedFile instanceof ITenantAssignable tenantAssignableFile) {
+                tenantAssignableFile.setTenant(tenantAssignableEntity.getTenant());
             }
 
             var originalFilename = file.getOriginalFilename();
             linkedFile.setOriginalFileName(originalFilename);
             linkedFile.setExtension(FilenameUtils.getExtension(originalFilename));
             linkedFile.setPath(Path.of(getUploadDirectory())
-                    .resolve(domain)
+                    .resolve(tenant)
                     .resolve(persistentClass.getSimpleName().toLowerCase())
                     .resolve("additional").toString());
             linkedFile.setMimetype(file.getContentType());
@@ -88,9 +88,9 @@ public abstract class MultiFileService<I extends Serializable,
             linkedFile.setSize(file.getSize());
             linkedFile.setVersion(1L);
 
-            linkedFile = beforeUpload(domain, linkedFile, file);
+            linkedFile = beforeUpload(tenant, linkedFile, file);
             linkedFile = subUploadFile(file, linkedFile);
-            linkedFile = afterUpload(domain, linkedFile, file);
+            linkedFile = afterUpload(tenant, linkedFile, file);
 
             if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
                 entity.setAdditionalFiles(new ArrayList<>());
@@ -142,16 +142,16 @@ public abstract class MultiFileService<I extends Serializable,
     }
 
     /**
-     * Extract domain string.
+     * Extract tenant string.
      *
      * @param entity the entity
      * @return the string
      */
-    protected String extractDomain(T entity) {
-        if (entity instanceof IDomainAssignable domainAssignable) {
-            return domainAssignable.getDomain();
+    protected String extractTenant(T entity) {
+        if (entity instanceof ITenantAssignable tenantAssignable) {
+            return tenantAssignable.getTenant();
         }
-        return DomainConstants.DEFAULT_DOMAIN_NAME;
+        return TenantConstants.DEFAULT_TENANT_NAME;
     }
 
     /**
@@ -172,26 +172,26 @@ public abstract class MultiFileService<I extends Serializable,
     /**
      * Before upload l.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      * @param entity the entity
      * @param file   the file
      * @return the l
      * @throws IOException the io exception
      */
-    public L beforeUpload(String domain, L entity, MultipartFile file) throws IOException {
+    public L beforeUpload(String tenant, L entity, MultipartFile file) throws IOException {
         return entity;
     }
 
     /**
      * After upload l.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      * @param entity the entity
      * @param file   the file
      * @return the l
      * @throws IOException the io exception
      */
-    public L afterUpload(String domain, L entity, MultipartFile file) throws IOException {
+    public L afterUpload(String tenant, L entity, MultipartFile file) throws IOException {
         return entity;
     }
 

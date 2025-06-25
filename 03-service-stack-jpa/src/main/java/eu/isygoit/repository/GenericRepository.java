@@ -35,15 +35,15 @@ public class GenericRepository {
     /**
      * Gets repository.
      *
-     * @param domainClass the domain class
+     * @param tenantClass the tenant class
      * @return the repository
      */
-    public JpaRepository getRepository(Class<?> domainClass) {
-        Optional<Object> optional = repositories.getRepositoryFor(domainClass);
+    public JpaRepository getRepository(Class<?> tenantClass) {
+        Optional<Object> optional = repositories.getRepositoryFor(tenantClass);
         if (optional.isPresent()) {
             return (JpaRepository) optional.get();
         }
-        throw new JpaRepositoryNotDefinedException("for entity " + domainClass.getSimpleName());
+        throw new JpaRepositoryNotDefinedException("for entity " + tenantClass.getSimpleName());
     }
 
     /**

@@ -1,0 +1,17 @@
+# You must choose at startup between:
+# SINGLE (default)
+# DATABASE
+# SCHEMA
+# DISCRIMINATOR
+spring:
+  jpa:
+    properties:
+      hibernate:
+        multiTenancy: SCHEMA
+
+app:
+  tenants:
+    tenant1:
+      schema: tenant1_schema
+    tenant2:
+      schema: tenant2_schema

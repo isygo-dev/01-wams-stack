@@ -17,10 +17,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Resume extends AuditableCancelableEntity<Long>
-        implements IDomainAssignable, ICodeAssignable, ITLEntity, IFileEntity, IMultiFileEntity<ResumeLinkedFile>, IImageEntity {
+        implements ITenantAssignable, ICodeAssignable, ITLEntity, IFileEntity, IMultiFileEntity<ResumeLinkedFile>, IImageEntity {
 
     private Long id;
-    private String domain;
+    private String tenant;
     private String code;
     private String firstName;
     private String lastName;

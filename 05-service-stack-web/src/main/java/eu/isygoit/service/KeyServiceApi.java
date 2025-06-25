@@ -46,7 +46,7 @@ public interface KeyServiceApi {
      * Renew key by name response entity.
      *
      * @param requestContext the request context
-     * @param domain         the domain
+     * @param tenant         the tenant
      * @param keyName        the key name
      * @param length         the length
      * @param charSetType    the char set type
@@ -62,7 +62,7 @@ public interface KeyServiceApi {
     })
     @PostMapping(path = "/random/renew")
     ResponseEntity<String> renewRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                          @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                          @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                           @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
                                           @RequestParam(name = RestApiConstants.LENGTH) Integer length,
                                           @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
@@ -71,7 +71,7 @@ public interface KeyServiceApi {
      * Gets key by name.
      *
      * @param requestContext the request context
-     * @param domain         the domain
+     * @param tenant         the tenant
      * @param keyName        the key name
      * @return the key by name
      */
@@ -85,6 +85,6 @@ public interface KeyServiceApi {
     })
     @GetMapping(path = "/random")
     ResponseEntity<String> getRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                        @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                        @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                         @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
 }

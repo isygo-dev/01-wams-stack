@@ -6,9 +6,9 @@ package eu.isygoit.constants;
 public interface RestApiConstants {
 
     /**
-     * The constant DOMAIN_NAME.
+     * The constant TENANT_NAME.
      */
-    String DOMAIN_NAME = "domain";
+    String TENANT_NAME = "tenant";
     /**
      * The constant USER_NAME.
      */
@@ -50,9 +50,9 @@ public interface RestApiConstants {
      */
     String SENDER_ID = "SenderId";
     /**
-     * The constant DOMAIN_ID.
+     * The constant TENANT_ID.
      */
-    String DOMAIN_ID = "domainId";
+    String TENANT_ID = "tenantId";
     /**
      * The constant ENTITY.
      */
@@ -166,9 +166,9 @@ public interface RestApiConstants {
      */
     String SUBJECT = "subject";
     /**
-     * The constant SENDER_DOMAIN_NAME.
+     * The constant SENDER_TENANT_NAME.
      */
-    String SENDER_DOMAIN_NAME = "senderDomainName";
+    String SENDER_TENANT_NAME = "senderTenantName";
     /**
      * The constant TEMPLATE.
      */
@@ -262,9 +262,9 @@ public interface RestApiConstants {
      */
     String EMAIL = "email";
     /**
-     * The constant DOMAIN_CODE.
+     * The constant TENANT_CODE.
      */
-    String DOMAIN_CODE = "domainCode";
+    String TENANT_CODE = "tenantCode";
     /**
      * The constant RESUME_CODE.
      */

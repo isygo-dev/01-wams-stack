@@ -1,9 +1,9 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -31,12 +31,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class CustomerModel<T extends Serializable> extends AuditableEntity<T> implements IDomainAssignable, ICodeAssignable, IImageEntity {
+public abstract class CustomerModel<T extends Serializable> extends AuditableEntity<T> implements ITenantAssignable, ICodeAssignable, IImageEntity {
 
     //@Convert(converter = LowerCaseConverter.class)
-    @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")
-    @Column(name = ComSchemaColumnConstantName.C_DOMAIN, length = ComSchemaConstantSize.DOMAIN, updatable = false, nullable = false)
-    private String domain;
+    @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
+    @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
+    private String tenant;
 
     //@Convert(converter = LowerCaseConverter.class)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)

@@ -1,9 +1,9 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
@@ -45,27 +45,27 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     /**
      * Before upload t.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      * @param entity the entity
      * @param file   the file
      * @return the t
      * @throws IOException the io exception
      */
 // Optional hooks to override before and after upload/create/update
-    public T beforeUpload(String domain, T entity, MultipartFile file) throws IOException {
+    public T beforeUpload(String tenant, T entity, MultipartFile file) throws IOException {
         return entity;
     }
 
     /**
      * After upload t.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      * @param entity the entity
      * @param file   the file
      * @return the t
      * @throws IOException the io exception
      */
-    public T afterUpload(String domain, T entity, MultipartFile file) throws IOException {
+    public T afterUpload(String tenant, T entity, MultipartFile file) throws IOException {
         return entity;
     }
 
@@ -87,8 +87,8 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     @Transactional
     @Override
-    public T createWithFile(String senderDomain, T entity, MultipartFile file) throws IOException {
-        setDomainIfApplicable(senderDomain, entity);
+    public T createWithFile(String senderTenant, T entity, MultipartFile file) throws IOException {
+        setTenantIfApplicable(senderTenant, entity);
 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
@@ -110,8 +110,8 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     @Transactional
     @Override
-    public T updateWithFile(String senderDomain, I id, T entity, MultipartFile file) throws IOException {
-        setDomainIfApplicable(senderDomain, entity);
+    public T updateWithFile(String senderTenant, I id, T entity, MultipartFile file) throws IOException {
+        setTenantIfApplicable(senderTenant, entity);
 
         T existing = repository().findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
@@ -137,7 +137,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     @Transactional
     @Override
-    public T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException {
+    public T uploadFile(String senderTenant, I id, MultipartFile file) throws IOException {
         T entity = findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
 
@@ -186,7 +186,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
      */
     private void setFileAttributes(T entity, MultipartFile file) {
         Path path = Path.of(getUploadDirectory())
-                .resolve(getEntityDomainOrDefault(entity))
+                .resolve(getEntityTenantOrDefault(entity))
                 .resolve(persistentClass.getSimpleName().toLowerCase());
 
         entity.setPath(path.toString());
@@ -195,21 +195,21 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     }
 
     /**
-     * Utility: Determine domain name from entity or use default.
+     * Utility: Determine tenant name from entity or use default.
      */
-    private String getEntityDomainOrDefault(T entity) {
-        return entity instanceof IDomainAssignable assignable
-                ? assignable.getDomain()
-                : DomainConstants.DEFAULT_DOMAIN_NAME;
+    private String getEntityTenantOrDefault(T entity) {
+        return entity instanceof ITenantAssignable assignable
+                ? assignable.getTenant()
+                : TenantConstants.DEFAULT_TENANT_NAME;
     }
 
     /**
-     * Utility: Apply domain rules for SAAS-based restrictions.
+     * Utility: Apply tenant rules for SAAS-based restrictions.
      */
-    private void setDomainIfApplicable(String senderDomain, T entity) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((IDomainAssignable) entity).setDomain(senderDomain);
+    private void setTenantIfApplicable(String senderTenant, T entity) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
+            ((ITenantAssignable) entity).setTenant(senderTenant);
         }
     }
 
@@ -217,9 +217,9 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
      * Utility: Handles file upload lifecycle hooks and actual storage.
      */
     private T handleFileUpload(T entity, MultipartFile file) throws IOException {
-        String domain = getEntityDomainOrDefault(entity);
-        entity = beforeUpload(domain, entity, file);
+        String tenant = getEntityTenantOrDefault(entity);
+        entity = beforeUpload(tenant, entity, file);
         subUploadFile(file, entity);
-        return afterUpload(domain, entity, file);
+        return afterUpload(tenant, entity, file);
     }
 }

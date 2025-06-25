@@ -10,9 +10,9 @@ public interface JwtConstants {
      */
     String JWT_USER_CONTEXT = "user-context";
     /**
-     * The constant JWT_SENDER_DOMAIN.
+     * The constant JWT_SENDER_TENANT.
      */
-    String JWT_SENDER_DOMAIN = "sender-domain";
+    String JWT_SENDER_TENANT = "sender-tenant";
     /**
      * The constant JWT_LOG_APP.
      */

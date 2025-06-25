@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
@@ -108,17 +108,17 @@ public final class FileServiceLocalStaticMethods {
      * @param entity The entity related to the file.
      * @param version The version involved in the request.
      * @param prefix A message prefix such as "Resource not found" or "Empty path".
-     * @return A formatted error message with domain and file info.
+     * @return A formatted error message with tenant and file info.
      */
     private static String buildErrorMessage(Object entity, Long version, String prefix) {
-        String domain = (entity instanceof IDomainAssignable da)
-                ? da.getDomain()
-                : DomainConstants.DEFAULT_DOMAIN_NAME;
+        String tenant = (entity instanceof ITenantAssignable da)
+                ? da.getTenant()
+                : TenantConstants.DEFAULT_TENANT_NAME;
 
         String fileName = (entity instanceof IFileEntity fe)
                 ? fe.getFileName()
                 : "unknown";
 
-        return String.format("%s: %s/%s/%d", prefix, domain, fileName, version);
+        return String.format("%s: %s/%s/%d", prefix, tenant, fileName, version);
     }
 }

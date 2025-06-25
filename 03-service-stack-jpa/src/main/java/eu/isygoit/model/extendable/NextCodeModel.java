@@ -1,7 +1,7 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.constants.DomainConstants;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
@@ -24,12 +24,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 @SuperBuilder
 @MappedSuperclass
-public abstract class NextCodeModel<I extends Serializable> implements IIdAssignable<I>, IDomainAssignable {
+public abstract class NextCodeModel<I extends Serializable> implements IIdAssignable<I>, ITenantAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
-    @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")
-    @Column(name = ComSchemaColumnConstantName.C_DOMAIN, length = ComSchemaConstantSize.DOMAIN, updatable = false, nullable = false)
-    private String domain;
+    @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
+    @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
+    private String tenant;
     @Column(name = ComSchemaColumnConstantName.C_ENTITY, nullable = false)
     private String entity;
     @Column(name = ComSchemaColumnConstantName.C_ATTRIBUTE, nullable = false)

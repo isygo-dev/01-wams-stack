@@ -43,7 +43,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
                                         I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
-            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderDomain(), id, file)));
+            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(requestContext.getSenderTenant(), id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -72,12 +72,12 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
                                             F dto) {
         log.info("Create with file request received");
         try {
-            if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getDomain())) {
-                ISAASDto.setDomain(requestContext.getSenderDomain());
+            if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getTenant())) {
+                ISAASDto.setTenant(requestContext.getSenderTenant());
             }
             dto = this.beforeCreate(dto);
             F savedResume = mapper().entityToDto(this.afterCreate(
-                    crudService().createWithFile(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), dto.getFile())));
+                    crudService().createWithFile(requestContext.getSenderTenant(), mapper().dtoToEntity(dto), dto.getFile())));
             return ResponseFactory.responseOk(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
@@ -92,7 +92,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
         try {
             dto = this.beforeUpdate(dto);
             F saved = mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithFile(requestContext.getSenderDomain(), id, mapper().dtoToEntity(dto), dto.getFile())));
+                    this.afterUpdate(crudService().updateWithFile(requestContext.getSenderTenant(), id, mapper().dtoToEntity(dto), dto.getFile())));
             return ResponseFactory.responseOk(saved);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);

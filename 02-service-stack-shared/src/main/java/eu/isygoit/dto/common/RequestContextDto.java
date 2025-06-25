@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 @SuperBuilder
 public class RequestContextDto extends AbstractDto {
 
-    private String senderDomain;
+    private String senderTenant;
     private String senderUser;
     private Boolean isAdmin;
     private String logApp;
@@ -29,9 +29,9 @@ public class RequestContextDto extends AbstractDto {
      */
     @JsonIgnore
     public String getCreatedByString() {
-        if (StringUtils.isEmpty(senderUser) || StringUtils.isEmpty(senderDomain)) {
+        if (StringUtils.isEmpty(senderUser) || StringUtils.isEmpty(senderTenant)) {
             return "anonymousUser";
         }
-        return new StringBuilder(senderUser).append("@").append(senderDomain).toString();
+        return new StringBuilder(senderUser).append("@").append(senderTenant).toString();
     }
 }

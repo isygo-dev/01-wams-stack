@@ -46,7 +46,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                                          MultipartFile file) {
         log.info("Upload image request received");
         try {
-            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderDomain(), id, file)));
+            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderTenant(), id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -75,12 +75,12 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                                              F dto) {
         log.info("Create with image request received");
         try {
-            if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getDomain())) {
-                isaasDto.setDomain(requestContext.getSenderDomain());
+            if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getTenant())) {
+                isaasDto.setTenant(requestContext.getSenderTenant());
             }
             dto = this.beforeCreate(dto);
             return ResponseFactory.responseOk(mapper().entityToDto(
-                    this.afterCreate(crudService().createWithImage(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), file))));
+                    this.afterCreate(crudService().createWithImage(requestContext.getSenderTenant(), mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: create with image : {} ", e);
             return getBackExceptionResponse(e);
@@ -96,7 +96,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
         try {
             dto = this.beforeUpdate(dto);
             return ResponseFactory.responseOk(mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithImage(requestContext.getSenderDomain(), mapper().dtoToEntity(dto), file))));
+                    this.afterUpdate(crudService().updateWithImage(requestContext.getSenderTenant(), mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: update wth image : {} ", e);
             return getBackExceptionResponse(e);

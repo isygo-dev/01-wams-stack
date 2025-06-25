@@ -28,14 +28,14 @@ public abstract class AbstractCodeGeneratorService<T extends NextCodeModel>
     }
 
     @Override
-    public Optional<T> findByDomainAndEntityAndAttribute(String domain, String entity, String attribute) {
-        return nextCodeRepository().findByDomainIgnoreCaseAndEntityAndAttribute(domain, entity, attribute);
+    public Optional<T> findByTenantAndEntityAndAttribute(String tenant, String entity, String attribute) {
+        return nextCodeRepository().findByTenantIgnoreCaseAndEntityAndAttribute(tenant, entity, attribute);
     }
 
     @Override
     @Transactional
-    public void increment(String domain, String entity, Integer increment) {
-        nextCodeRepository().increment(domain, entity, increment);
+    public void increment(String tenant, String entity, Integer increment) {
+        nextCodeRepository().increment(tenant, entity, increment);
         nextCodeRepository().flush();
     }
 

@@ -16,7 +16,7 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
     @Builder.Default
-    private boolean domainEnabled = false;
+    private boolean tenantEnabled = false;
     @Builder.Default
     private boolean accountEnabled = false;
     @Builder.Default
@@ -39,7 +39,7 @@ public class CustomUserDetails implements UserDetails {
      * @param password        the password
      * @param isAdmin         the is admin
      * @param authorities     the authorities
-     * @param domainEnabled   the domain enabled
+     * @param tenantEnabled   the tenant enabled
      * @param accountEnabled  the account enabled
      * @param accountExpired  the account expired
      * @param passwordExpired the password expired
@@ -49,7 +49,7 @@ public class CustomUserDetails implements UserDetails {
                              String password,
                              Boolean isAdmin,
                              Collection<? extends GrantedAuthority> authorities,
-                             boolean domainEnabled,
+                             boolean tenantEnabled,
                              boolean accountEnabled,
                              boolean accountExpired,
                              boolean passwordExpired,
@@ -58,7 +58,7 @@ public class CustomUserDetails implements UserDetails {
         this.isAdmin = isAdmin;
         this.password = password;
         this.authorities = authorities;
-        this.domainEnabled = domainEnabled;
+        this.tenantEnabled = tenantEnabled;
         this.accountEnabled = accountEnabled;
         this.accountExpired = accountExpired;
         this.passwordExpired = passwordExpired;
@@ -82,6 +82,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.domainEnabled && this.accountEnabled;
+        return this.tenantEnabled && this.accountEnabled;
     }
 }

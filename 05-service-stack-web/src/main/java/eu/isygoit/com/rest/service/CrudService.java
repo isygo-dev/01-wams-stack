@@ -1,17 +1,17 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
-import eu.isygoit.repository.JpaPagingAndSortingDomainAssignableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.transaction.NotSupportedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -57,12 +57,12 @@ public abstract class CrudService<I extends Serializable,
 
     @Override
     @Transactional(readOnly = true)
-    public Long count(String domain) throws NotSupportedException {
-        if (!(repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaRepo)) {
-            throw new NotSupportedException("Entity not domain assignable: " + persistentClass.getSimpleName());
+    public Long count(String tenant) throws NotSupportedException {
+        if (!(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not tenant assignable: " + persistentClass.getSimpleName());
         }
 
-        return jpaRepo.countByDomainIgnoreCase(domain);
+        return jpaRepo.countByTenantIgnoreCase(tenant);
     }
 
     @Override
@@ -201,7 +201,7 @@ public abstract class CrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void delete(String senderDomain, List<T> objects) {
+    public void delete(String senderTenant, List<T> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
@@ -210,7 +210,7 @@ public abstract class CrudService<I extends Serializable,
 
         objects.parallelStream()
                 .map(T::getId)
-                .forEach(id -> delete(senderDomain, id));
+                .forEach(id -> delete(senderTenant, id));
 
         this.afterDelete(objects);
     }
@@ -218,16 +218,16 @@ public abstract class CrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void delete(String senderDomain, I id) {
+    public void delete(String senderTenant, I id) {
         // Validate the input id argument using Objects.requireNonNull
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
         }
 
         this.findById(id).ifPresentOrElse(object -> {
-            if (object instanceof IDomainAssignable entity &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain) &&
-                    !senderDomain.equals(entity.getDomain())) {
+            if (object instanceof ITenantAssignable entity &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant) &&
+                    !senderTenant.equals(entity.getTenant())) {
                 throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
             }
 
@@ -253,7 +253,7 @@ public abstract class CrudService<I extends Serializable,
     @Override
     @Transactional
     public void delete(List<T> objects) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -273,7 +273,7 @@ public abstract class CrudService<I extends Serializable,
     @Override
     @Transactional
     public void delete(I id) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -319,8 +319,8 @@ public abstract class CrudService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll() {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass) ||
-                repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass) ||
+                repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             throw new OperationNotAllowedException("FindAll for " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -331,8 +331,8 @@ public abstract class CrudService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll(Pageable pageable) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass) ||
-                repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass) ||
+                repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             throw new OperationNotAllowedException("FindAll for " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -341,30 +341,30 @@ public abstract class CrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAll(String domain) throws NotSupportedException {
-        if (!IDomainAssignable.class.isAssignableFrom(persistentClass) ||
-                !(repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaRepo)) {
-            throw new NotSupportedException("Entity not domain assignable: " + persistentClass.getSimpleName());
+    public List<T> findAll(String tenant) throws NotSupportedException {
+        if (!ITenantAssignable.class.isAssignableFrom(persistentClass) ||
+                !(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not tenant assignable: " + persistentClass.getSimpleName());
         }
 
-        List<T> list = jpaRepo.findByDomainIgnoreCase(domain);
+        List<T> list = jpaRepo.findByTenantIgnoreCase(tenant);
         return CollectionUtils.isEmpty(list) ? Collections.emptyList() : this.afterFindAll(list);
     }
 
-    public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
-        if (!IDomainAssignable.class.isAssignableFrom(persistentClass) ||
-                !(repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaRepo)) {
-            throw new NotSupportedException("Entity not domain assignable: " + persistentClass.getSimpleName());
+    public List<T> findAll(String tenant, Pageable pageable) throws NotSupportedException {
+        if (!ITenantAssignable.class.isAssignableFrom(persistentClass) ||
+                !(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not tenant assignable: " + persistentClass.getSimpleName());
         }
 
-        Page<T> page = jpaRepo.findByDomainIgnoreCase(domain, pageable);
+        Page<T> page = jpaRepo.findByTenantIgnoreCase(tenant, pageable);
         return page.isEmpty() ? Collections.emptyList() : this.afterFindAll(page.getContent());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<T> findById(I id) throws ObjectNotFoundException {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             throw new OperationNotAllowedException("findById " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -424,8 +424,8 @@ public abstract class CrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
-        if (!StringUtils.hasText(domain) && IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
+        if (!StringUtils.hasText(tenant) && ITenantAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             throw new OperationNotAllowedException("findAllByCriteriaFilter " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -435,13 +435,13 @@ public abstract class CrudService<I extends Serializable,
         }
 
         //get criteria data to validate filter
-        Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
+        Specification<T> specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
         return repository().findAll(specification);
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
-        if (!StringUtils.hasText(domain) && IDomainAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+        if (!StringUtils.hasText(tenant) && ITenantAssignable.class.isAssignableFrom(persistentClass) || repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             throw new OperationNotAllowedException("findAllByCriteriaFilter " + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
 
@@ -451,7 +451,7 @@ public abstract class CrudService<I extends Serializable,
         }
 
         //get criteria data to validate filter
-        Specification<T> specification = CriteriaHelper.buildSpecification(domain, criteria, persistentClass);
+        Specification<T> specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
         return repository().findAll(specification, pageRequest).getContent();
     }
 }

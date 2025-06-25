@@ -20,19 +20,19 @@ public interface IFileServiceMethods<I extends Serializable, T extends IIdAssign
     /**
      * Create with file t.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param entity       the entity
      * @param file         the file
      * @return the t
      * @throws IOException the io exception
      */
     @Transactional
-    T createWithFile(String senderDomain, T entity, MultipartFile file) throws IOException;
+    T createWithFile(String senderTenant, T entity, MultipartFile file) throws IOException;
 
     /**
      * Update with file t.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param id           the id
      * @param entity       the entity
      * @param file         the file
@@ -40,19 +40,19 @@ public interface IFileServiceMethods<I extends Serializable, T extends IIdAssign
      * @throws IOException the io exception
      */
     @Transactional
-    T updateWithFile(String senderDomain, I id, T entity, MultipartFile file) throws IOException;
+    T updateWithFile(String senderTenant, I id, T entity, MultipartFile file) throws IOException;
 
     /**
      * Upload file t.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param id           the id
      * @param file         the file
      * @return the t
      * @throws IOException the io exception
      */
     @Transactional
-    T uploadFile(String senderDomain, I id, MultipartFile file) throws IOException;
+    T uploadFile(String senderTenant, I id, MultipartFile file) throws IOException;
 
     /**
      * Download file resource.

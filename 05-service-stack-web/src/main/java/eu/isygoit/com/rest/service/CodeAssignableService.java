@@ -59,9 +59,9 @@ public abstract class CodeAssignableService<I extends Serializable,
                 .ifPresent(code -> {
                     Optional.ofNullable(remoteNextCodeService()).ifPresent(remoteService -> {
                         try {
-                            ResponseEntity<String> result = remoteService.subscribeNextCode(code.getDomain(),
+                            ResponseEntity<String> result = remoteService.subscribeNextCode(code.getTenant(),
                                     NextCodeDto.builder()
-                                            .domain(code.getDomain())
+                                            .tenant(code.getTenant())
                                             .entity(code.getEntity())
                                             .attribute(code.getAttribute())
                                             .prefix(code.getPrefix())
@@ -104,8 +104,8 @@ public abstract class CodeAssignableService<I extends Serializable,
         String key = getNextCodeKey(initNextCode);
 
         NextCodeModel nextCode = inMemoryNextCodes.computeIfAbsent(key, k -> {
-            return nextCodeService().findByDomainAndEntityAndAttribute(
-                    initNextCode.getDomain(),
+            return nextCodeService().findByTenantAndEntityAndAttribute(
+                    initNextCode.getTenant(),
                     initNextCode.getEntity(),
                     initNextCode.getAttribute()
             ).orElseGet(() -> nextCodeService().saveAndFlush(initNextCode));
@@ -113,7 +113,7 @@ public abstract class CodeAssignableService<I extends Serializable,
 
         if (nextCode != null) {
             nextCodeService().increment(
-                    nextCode.getDomain(),
+                    nextCode.getTenant(),
                     nextCode.getEntity(),
                     nextCode.getIncrement()
             );
@@ -130,7 +130,7 @@ public abstract class CodeAssignableService<I extends Serializable,
         try {
             ResponseEntity<String> response = remoteNextCodeService().generateNextCode(
                     RequestContextDto.builder().build(),
-                    initNextCode.getDomain(),
+                    initNextCode.getTenant(),
                     initNextCode.getEntity(),
                     initNextCode.getAttribute()
             );
@@ -151,7 +151,7 @@ public abstract class CodeAssignableService<I extends Serializable,
      */
     @Override
     public String getNextCodeKey(NextCodeModel initNextCode) {
-        return initNextCode.getEntity() + "@" + initNextCode.getDomain();
+        return initNextCode.getEntity() + "@" + initNextCode.getTenant();
     }
 
     /**

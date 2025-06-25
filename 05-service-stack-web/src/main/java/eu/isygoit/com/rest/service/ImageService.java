@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyPathException;
@@ -8,7 +8,7 @@ import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.helper.FileHelper;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
@@ -51,10 +51,10 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
      * @throws IOException if saving fails
      */
     private String saveImageFile(T entity, MultipartFile file) throws IOException {
-        // Determine target directory based on entity domain and class name
+        // Determine target directory based on entity tenant and class name
         Path target = Path.of(getUploadDirectory())
-                .resolve(entity instanceof IDomainAssignable domainAssignable
-                        ? domainAssignable.getDomain() : DomainConstants.DEFAULT_DOMAIN_NAME)
+                .resolve(entity instanceof ITenantAssignable tenantAssignable
+                        ? tenantAssignable.getTenant() : TenantConstants.DEFAULT_TENANT_NAME)
                 .resolve(entity.getClass().getSimpleName().toLowerCase())
                 .resolve("image");
 
@@ -71,7 +71,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     @Transactional
-    public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
+    public T uploadImage(String senderTenant, I id, MultipartFile file) throws IOException {
         // Validate input file
         if (file == null || file.isEmpty()) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
@@ -109,11 +109,11 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     @Transactional
-    public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        // Enforce domain if applicable and not super domain
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((IDomainAssignable) entity).setDomain(senderDomain);
+    public T createWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
+        // Enforce tenant if applicable and not super tenant
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
+            ((ITenantAssignable) entity).setTenant(senderTenant);
         }
 
         // Assign code if empty
@@ -130,11 +130,11 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     @Transactional
-    public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        // Enforce domain if applicable and not super domain
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((IDomainAssignable) entity).setDomain(senderDomain);
+    public T updateWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
+        // Enforce tenant if applicable and not super tenant
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
+            ((ITenantAssignable) entity).setTenant(senderTenant);
         }
 
         if (file != null && !file.isEmpty()) {

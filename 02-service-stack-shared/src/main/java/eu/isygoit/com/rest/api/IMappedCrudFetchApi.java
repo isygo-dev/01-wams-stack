@@ -52,8 +52,8 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
      * @param requestContext the request context
      * @return the response entity
      */
-    @Operation(summary = "Find all default domain objects with minimal data (uses Min Dto)",
-            description = "Find all default domain objects with minimal data (uses Min Dto)")
+    @Operation(summary = "Find all default tenant objects with minimal data (uses Min Dto)",
+            description = "Find all default tenant objects with minimal data (uses Min Dto)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",

@@ -2,6 +2,7 @@ package eu.isygoit.jwt.filter;
 
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
+import eu.isygoit.filter.jwt.JwtKmsAuthFilter;
 import eu.isygoit.service.ITokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,18 +62,18 @@ class JwtKmsAuthFilterTest {
     @Test
     void testIsTokenValid_ValidToken_ReturnsTrue() {
         String jwt = "valid.jwt.token";
-        String domain = "domain.com";
+        String tenant = "tenant.com";
         String application = "myApp";
         String userName = "JohnDoe";
-        String expectedUserId = "johndoe@domain.com";
+        String expectedUserId = "johndoe@tenant.com";
 
-        when(tokenService.isTokenValid(domain, application, IEnumToken.Types.ACCESS, jwt, expectedUserId))
+        when(tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId))
                 .thenReturn(true);
 
-        boolean result = jwtKmsAuthFilter.isTokenValid(jwt, domain, application, userName);
+        boolean result = jwtKmsAuthFilter.isTokenValid(jwt, tenant, application, userName);
 
         assertTrue(result, "Token should be valid");
-        verify(tokenService).isTokenValid(domain, application, IEnumToken.Types.ACCESS, jwt, expectedUserId);
+        verify(tokenService).isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId);
     }
 
     /**
@@ -81,19 +82,19 @@ class JwtKmsAuthFilterTest {
     @Test
     void testIsTokenValid_InvalidToken_ThrowsTokenInvalidException() {
         String jwt = "invalid.jwt.token";
-        String domain = "test.org";
+        String tenant = "test.org";
         String application = "testApp";
         String userName = "Alice";
         String expectedUserId = "alice@test.org";
 
-        when(tokenService.isTokenValid(domain, application, IEnumToken.Types.ACCESS, jwt, expectedUserId))
+        when(tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId))
                 .thenReturn(false);
 
         TokenInvalidException ex = assertThrows(TokenInvalidException.class, () ->
-                jwtKmsAuthFilter.isTokenValid(jwt, domain, application, userName));
+                jwtKmsAuthFilter.isTokenValid(jwt, tenant, application, userName));
 
         assertEquals("KMS::isTokenValid", ex.getMessage());
-        verify(tokenService).isTokenValid(domain, application, IEnumToken.Types.ACCESS, jwt, expectedUserId);
+        verify(tokenService).isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId);
     }
 
     /**

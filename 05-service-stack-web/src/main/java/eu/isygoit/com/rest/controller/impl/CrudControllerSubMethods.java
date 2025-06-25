@@ -4,12 +4,12 @@ import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -121,7 +121,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                 .map(validId -> {
                     try {
                         if (beforeDelete(validId)) {
-                            crudService().delete(requestContext.getSenderDomain(), validId);
+                            crudService().delete(requestContext.getSenderTenant(), validId);
                             afterDelete(validId);
                         }
                         return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
@@ -143,7 +143,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                 .map(validObjects -> {
                     try {
                         if (beforeDelete(validObjects)) {
-                            crudService().delete(requestContext.getSenderDomain(), mapper().listDtoToEntity(validObjects));
+                            crudService().delete(requestContext.getSenderTenant(), mapper().listDtoToEntity(validObjects));
                             afterDelete(validObjects);
                         }
                         return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
@@ -162,9 +162,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
         try {
             var list = Optional.ofNullable(
-                            IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                                    ? crudService().findAll(requestContext.getSenderDomain())
+                            ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                                    ? crudService().findAll(requestContext.getSenderTenant())
                                     : crudService().findAll()
                     ).map(minDtoMapper()::listEntityToDto)
                     .orElseGet(List::of);
@@ -187,9 +187,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
-            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? crudService().findAll(DomainConstants.DEFAULT_DOMAIN_NAME)
+            var entities = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? crudService().findAll(TenantConstants.DEFAULT_TENANT_NAME)
                     : crudService().findAll();
 
             var list = Optional.ofNullable(entities)
@@ -216,9 +216,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         try {
             var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
-            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? crudService().findAll(requestContext.getSenderDomain(), pageRequest)
+            var entities = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? crudService().findAll(requestContext.getSenderTenant(), pageRequest)
                     : crudService().findAll(pageRequest);
 
             var list = Optional.ofNullable(entities)
@@ -243,9 +243,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
-            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? crudService().findAll(requestContext.getSenderDomain())
+            var entities = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? crudService().findAll(requestContext.getSenderTenant())
                     : crudService().findAll();
 
             var list = Optional.ofNullable(entities)
@@ -275,9 +275,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         try {
             var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
-            var entities = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? crudService().findAll(requestContext.getSenderDomain(), pageRequest)
+            var entities = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? crudService().findAll(requestContext.getSenderTenant(), pageRequest)
                     : crudService().findAll(pageRequest);
 
             var list = Optional.ofNullable(entities)
@@ -324,9 +324,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Get count {} request received", persistentClass.getSimpleName());
 
         try {
-            var count = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? crudService().count(requestContext.getSenderDomain())
+            var count = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? crudService().count(requestContext.getSenderTenant())
                     : crudService().count();
 
             return ResponseFactory.responseOk(count);
@@ -371,15 +371,15 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
             // Utilisation de var pour simplifier les déclarations
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
 
-            // Sélection du domaine de recherche
-            var senderDomain = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? requestContext.getSenderDomain()
+            // Sélection du tenante de recherche
+            var senderTenant = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? requestContext.getSenderTenant()
                     : null;
 
             // Récupération des objets filtrés par critères
             var list = this.mapper().listEntityToDto(
-                    this.crudService().findAllByCriteriaFilter(senderDomain, criteriaList)
+                    this.crudService().findAllByCriteriaFilter(senderTenant, criteriaList)
             );
 
             // Vérification de la liste et réponse appropriée
@@ -402,15 +402,15 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
             var pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createDate"));
 
-            // Détermination conditionnelle du domaine de recherche
-            var senderDomain = IDomainAssignable.class.isAssignableFrom(persistentClass) &&
-                    !DomainConstants.SUPER_DOMAIN_NAME.equals(requestContext.getSenderDomain())
-                    ? requestContext.getSenderDomain()
+            // Détermination conditionnelle du tenante de recherche
+            var senderTenant = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? requestContext.getSenderTenant()
                     : null;
 
             // Récupération des entités filtrées avec les critères et pagination
             var list = this.mapper().listEntityToDto(
-                    this.crudService().findAllByCriteriaFilter(senderDomain, criteriaList, pageRequest)
+                    this.crudService().findAllByCriteriaFilter(senderTenant, criteriaList, pageRequest)
             );
 
             // Vérification de la liste et retour approprié

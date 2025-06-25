@@ -31,7 +31,7 @@ class FileServiceDmsStaticMethodsTest {
                 .path(path)
                 .code(code)
                 .fileName(fileName)
-                .domain("testDomain")
+                .tenant("testTenant")
                 .build();
     }
 
@@ -40,7 +40,7 @@ class FileServiceDmsStaticMethodsTest {
      */
     private ResumeLinkedFile createLinkedFile(String path, String code, String fileName) {
         return ResumeLinkedFile.builder()
-                .domain("testDomain")
+                .tenant("testTenant")
                 .path(path)
                 .code(code)
                 .fileName(fileName)

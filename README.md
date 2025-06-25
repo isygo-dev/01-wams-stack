@@ -10,7 +10,7 @@
  Spring Boot     | 3.2.1      
  Spring security | 6.1.1      
  Postgred SQL    | 17         
- Hibernate       | 6.2.2      
+ Hibernate       | 6.4.4      
  Maven           | 3          
 
 # Getting Started

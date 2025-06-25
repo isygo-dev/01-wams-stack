@@ -1,6 +1,6 @@
-package eu.isygoit.jwt.filter;
+package eu.isygoit.filter.jwt;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.TokenInvalidException;
@@ -43,7 +43,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
     // Default RequestContextDto for unauthenticated requests (immutable singleton)
     private static final RequestContextDto DEFAULT_CONTEXT = RequestContextDto.builder()
-            .senderDomain(DomainConstants.SUPER_DOMAIN_NAME)
+            .senderTenant(TenantConstants.SUPER_TENANT_NAME)
             .senderUser("root")
             .isAdmin(true)
             .logApp("application")
@@ -63,12 +63,12 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
      * Validates if the JWT token is valid for the given context.
      *
      * @param jwt         the JWT token string
-     * @param domain      the domain extracted from token
+     * @param tenant      the tenant extracted from token
      * @param application the application identifier from token
      * @param userName    the username from token
      * @return true if token is valid, false otherwise
      */
-    public abstract boolean isTokenValid(String jwt, String domain, String application, String userName);
+    public abstract boolean isTokenValid(String jwt, String tenant, String application, String userName);
 
     /**
      * Adds custom attributes to the request.
@@ -141,17 +141,17 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         String subject = jwtService.extractSubject(jwt).orElseThrow();
         String userName = jwtService.extractUserName(jwt).orElseThrow();
         String application = jwtService.extractApplication(jwt).orElseThrow();
-        String domain = jwtService.extractDomain(jwt).orElseThrow();
+        String tenant = jwtService.extractTenant(jwt).orElseThrow();
         Boolean isAdmin = jwtService.extractIsAdmin(jwt);
 
         // Validate token
-        isTokenValid(jwt, domain, application, userName);
+        isTokenValid(jwt, tenant, application, userName);
 
         // Set security context
         setSecurityContext(subject, isAdmin);
 
         // Add context attributes to request
-        RequestContextDto contextDto = buildRequestContext(domain, userName, isAdmin, application);
+        RequestContextDto contextDto = buildRequestContext(tenant, userName, isAdmin, application);
         addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, contextDto));
 
         // Continue filter chain
@@ -167,7 +167,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
                 .isAdmin(isAdmin)
                 .password("password") // Consider using a more secure approach
                 .passwordExpired(false)
-                .domainEnabled(true)
+                .tenantEnabled(true)
                 .accountEnabled(true)
                 .accountExpired(true)
                 .accountLocked(true)
@@ -183,9 +183,9 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     /**
      * Builds a RequestContextDto from token claims.
      */
-    private RequestContextDto buildRequestContext(String domain, String userName, Boolean isAdmin, String application) {
+    private RequestContextDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application) {
         return RequestContextDto.builder()
-                .senderDomain(domain)
+                .senderTenant(tenant)
                 .senderUser(userName)
                 .isAdmin(isAdmin)
                 .logApp(application)

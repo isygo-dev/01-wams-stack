@@ -1,8 +1,8 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.enums.IEnumLanguage;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
@@ -29,7 +29,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class AnnexModel<T extends Serializable> extends AuditableEntity<T> implements IDomainAssignable {
+public abstract class AnnexModel<T extends Serializable> extends AuditableEntity<T> implements ITenantAssignable {
 
     @Length(max = ComSchemaConstantSize.TABLE_CODE)
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_CODE, length = ComSchemaConstantSize.TABLE_CODE, nullable = false)
@@ -52,7 +52,7 @@ public abstract class AnnexModel<T extends Serializable> extends AuditableEntity
     private String reference;
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_ORDER)
     private Integer annexOrder;
-    @ColumnDefault("'" + DomainConstants.DEFAULT_DOMAIN_NAME + "'")
-    @Column(name = ComSchemaColumnConstantName.C_DOMAIN, length = ComSchemaConstantSize.DOMAIN, updatable = false, nullable = false)
-    private String domain;
+    @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
+    @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
+    private String tenant;
 }

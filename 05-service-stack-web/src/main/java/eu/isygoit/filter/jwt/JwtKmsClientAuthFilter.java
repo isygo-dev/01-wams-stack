@@ -1,4 +1,4 @@
-package eu.isygoit.jwt.filter;
+package eu.isygoit.filter.jwt;
 
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.enums.IEnumToken;
@@ -35,22 +35,22 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
      * Makes a Feign client call to the token service and handles the response.
      *
      * @param jwt         the JWT token to validate
-     * @param domain      the domain extracted from token
+     * @param tenant      the tenant extracted from token
      * @param application the application identifier from token
      * @param userName    the username from token
      * @return true if token is valid
      * @throws TokenInvalidException if token validation fails or service is unavailable
      */
     @Override
-    public boolean isTokenValid(String jwt, String domain, String application, String userName) {
+    public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
         if (tokenService == null) {
             log.error("Token validation failed: TokenServiceApi is not available");
             throw new TokenInvalidException("No token validator available");
         }
 
-        // Create user identifier by combining lowercase username with domain
+        // Create user identifier by combining lowercase username with tenant
         // Do this once to avoid recreating the string multiple times
-        String userIdentifier = userName.toLowerCase() + "@" + domain;
+        String userIdentifier = userName.toLowerCase() + "@" + tenant;
 
         try {
             long startTime = System.nanoTime();
@@ -58,7 +58,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             // Use the constant empty context to avoid object creation
             ResponseEntity<Boolean> result = tokenService.isTokenValid(
                     EMPTY_CONTEXT,
-                    domain,
+                    tenant,
                     application,
                     IEnumToken.Types.ACCESS,
                     jwt,
@@ -76,8 +76,8 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
                     !result.hasBody() ||
                     Boolean.FALSE.equals(result.getBody())) {
 
-                log.warn("Token validation failed for user: {}, application: {}, domain: {}, status: {}",
-                        userName, application, domain,
+                log.warn("Token validation failed for user: {}, application: {}, tenant: {}, status: {}",
+                        userName, application, tenant,
                         result.getStatusCode());
 
                 throw new TokenInvalidException("KMS::isTokenValid");
@@ -94,8 +94,8 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
         } catch (Exception e) {
             // Log the exception but allow the request to proceed
             // Consider if this is the desired behavior or if you should throw an exception
-            log.error("Remote token service call failed for user: {}, application: {}, domain: {}",
-                    userName, application, domain, e);
+            log.error("Remote token service call failed for user: {}, application: {}, tenant: {}",
+                    userName, application, tenant, e);
 
             // Uncomment to throw exception instead of continuing
             // throw new TokenInvalidException("Token validation service unavailable", e);

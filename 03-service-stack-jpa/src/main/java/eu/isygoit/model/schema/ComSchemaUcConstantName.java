@@ -18,7 +18,7 @@ public interface ComSchemaUcConstantName {
     String UC_CODE_LOCALE = "UC_CODE_LOCALE";
 
     /**
-     * The constant UC_DOMAIN_NAME.
+     * The constant UC_TENANT_NAME.
      */
-    String UC_DOMAIN_NAME = "UC_DOMAIN";
+    String UC_TENANT_NAME = "UC_TENANT";
 }

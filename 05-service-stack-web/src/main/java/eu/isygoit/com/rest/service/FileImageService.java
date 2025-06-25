@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyPathException;
@@ -44,7 +44,7 @@ public abstract class FileImageService<I extends Serializable,
     /**
      * Uploads an image for the entity with the given ID.
      *
-     * @param senderDomain the domain of the sender
+     * @param senderTenant the tenant of the sender
      * @param id           the entity ID
      * @param file         the image file
      * @return the updated entity
@@ -52,7 +52,7 @@ public abstract class FileImageService<I extends Serializable,
      */
     @Override
     @Transactional
-    public T uploadImage(String senderDomain, I id, MultipartFile file) throws IOException {
+    public T uploadImage(String senderTenant, I id, MultipartFile file) throws IOException {
         validateFile(file);
 
         T entity = findEntityByIdOrThrow(id);
@@ -95,7 +95,7 @@ public abstract class FileImageService<I extends Serializable,
     /**
      * Creates a new entity with an image.
      *
-     * @param senderDomain the domain of the sender
+     * @param senderTenant the tenant of the sender
      * @param entity       the entity to create
      * @param file         the image file
      * @return the created entity
@@ -103,8 +103,8 @@ public abstract class FileImageService<I extends Serializable,
      */
     @Override
     @Transactional
-    public T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        assignDomainIfApplicable(senderDomain, entity);
+    public T createWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
+        assignTenantIfApplicable(senderTenant, entity);
         assignCodeIfEmpty(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -126,7 +126,7 @@ public abstract class FileImageService<I extends Serializable,
     /**
      * Updates an existing entity and its image.
      *
-     * @param senderDomain the domain of the sender
+     * @param senderTenant the tenant of the sender
      * @param entity       the entity to update
      * @param file         the image file
      * @return the updated entity
@@ -134,8 +134,8 @@ public abstract class FileImageService<I extends Serializable,
      */
     @Override
     @Transactional
-    public T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException {
-        assignDomainIfApplicable(senderDomain, entity);
+    public T updateWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
+        assignTenantIfApplicable(senderTenant, entity);
 
         if (file != null && !file.isEmpty()) {
             String filename = file.getOriginalFilename() + "_" + entity.getCode();
@@ -171,12 +171,12 @@ public abstract class FileImageService<I extends Serializable,
     }
 
     /**
-     * Applies domain restriction for SAAS model.
+     * Applies tenant restriction for SAAS model.
      */
-    private void assignDomainIfApplicable(String senderDomain, T entity) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-            ((IDomainAssignable) entity).setDomain(senderDomain);
+    private void assignTenantIfApplicable(String senderTenant, T entity) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
+            ((ITenantAssignable) entity).setTenant(senderTenant);
         }
     }
 
@@ -185,12 +185,12 @@ public abstract class FileImageService<I extends Serializable,
      */
     private Function<T, Path> resolveTargetPath() {
         return entity -> {
-            String domain = (entity instanceof IDomainAssignable da)
-                    ? da.getDomain()
-                    : DomainConstants.DEFAULT_DOMAIN_NAME;
+            String tenant = (entity instanceof ITenantAssignable da)
+                    ? da.getTenant()
+                    : TenantConstants.DEFAULT_TENANT_NAME;
 
             return Path.of(getUploadDirectory())
-                    .resolve(domain)
+                    .resolve(tenant)
                     .resolve(entity.getClass().getSimpleName().toLowerCase())
                     .resolve("image");
         };

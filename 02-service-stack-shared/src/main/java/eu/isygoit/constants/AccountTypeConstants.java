@@ -10,12 +10,12 @@ public interface AccountTypeConstants {
      */
     String SUPER_ADMIN = "super-admin";
     /**
-     * The constant DOMAIN_ADMIN.
+     * The constant TENANT_ADMIN.
      */
-    String DOMAIN_ADMIN = "domain-admin";
+    String TENANT_ADMIN = "tenant-admin";
 
     /**
-     * The constant DOMAIN_USER.
+     * The constant TENANT_USER.
      */
-    String DOMAIN_USER = "domain-user";
+    String TENANT_USER = "tenant-user";
 }

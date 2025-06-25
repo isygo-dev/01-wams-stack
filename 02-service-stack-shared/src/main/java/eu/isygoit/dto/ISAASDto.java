@@ -7,16 +7,16 @@ package eu.isygoit.dto;
 public interface ISAASDto extends IDto {
 
     /**
-     * Gets domain.
+     * Gets tenant.
      *
-     * @return the domain
+     * @return the tenant
      */
-    String getDomain();
+    String getTenant();
 
     /**
-     * Sets domain.
+     * Sets tenant.
      *
-     * @param domain the domain
+     * @param tenant the tenant
      */
-    void setDomain(String domain);
+    void setTenant(String tenant);
 }

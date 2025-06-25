@@ -13,8 +13,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResumeLinkedFile extends LinkedFileModel<Long> implements IDomainAssignable {
+public class ResumeLinkedFile extends LinkedFileModel<Long> implements ITenantAssignable {
 
     private Long id;
-    private String domain;
+    private String tenant;
 }

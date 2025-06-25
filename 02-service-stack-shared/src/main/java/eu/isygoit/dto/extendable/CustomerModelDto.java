@@ -27,7 +27,7 @@ public abstract class CustomerModelDto<T extends Serializable> extends AbstractA
     private String email;
     private String phoneNumber;
     private String imagePath;
-    private String domain;
+    private String tenant;
     @Builder.Default
     private IEnumEnabledBinaryStatus.Types adminStatus = IEnumEnabledBinaryStatus.Types.ENABLED;
 }

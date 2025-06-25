@@ -1,7 +1,7 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,8 +19,8 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface NextCodeRepository<T extends NextCodeModel<I> & IDomainAssignable, I extends Serializable>
-        extends JpaPagingAndSortingDomainAssignableRepository<T, I> {
+public interface NextCodeRepository<T extends NextCodeModel<I> & ITenantAssignable, I extends Serializable>
+        extends JpaPagingAndSortingTenantAssignableRepository<T, I> {
 
     /**
      * Find by entity optional.
@@ -31,25 +31,25 @@ public interface NextCodeRepository<T extends NextCodeModel<I> & IDomainAssignab
     Optional<T> findByEntity(String entity);
 
     /**
-     * Find by domain ignore case and entity and attribute optional.
+     * Find by tenant ignore case and entity and attribute optional.
      *
-     * @param domain    the domain
+     * @param tenant    the tenant
      * @param entity    the entity
      * @param attribute the attribute
      * @return the optional
      */
-    Optional<T> findByDomainIgnoreCaseAndEntityAndAttribute(String domain, String entity, String attribute);
+    Optional<T> findByTenantIgnoreCaseAndEntityAndAttribute(String tenant, String entity, String attribute);
 
     /**
      * Increment.
      *
-     * @param domain    the domain
+     * @param tenant    the tenant
      * @param entity    the entity
      * @param increment the increment
      */
     @Modifying
-    @Query("update AppNextCode set value = value + :increment where domain = :domain and entity = :entity")
-    void increment(@Param("domain") String domain,
+    @Query("update AppNextCode set value = value + :increment where tenant = :tenant and entity = :entity")
+    void increment(@Param("tenant") String tenant,
                    @Param("entity") String entity,
                    @Param("increment") Integer increment);
 }

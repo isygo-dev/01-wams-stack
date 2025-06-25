@@ -48,7 +48,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
      * Download response entity.
      *
      * @param requestContext the request context
-     * @param domain         the domain
+     * @param tenant         the tenant
      * @param code           the code
      * @return the response entity
      * @throws IOException the io exception
@@ -63,14 +63,14 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     })
     @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                      @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                       @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
 
     /**
      * Delete file response entity.
      *
      * @param requestContext the request context
-     * @param domain         the domain
+     * @param tenant         the tenant
      * @param code           the code
      * @return the response entity
      */
@@ -84,7 +84,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     })
     @DeleteMapping(path = "/deleteFile")
     ResponseEntity<Boolean> deleteFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                       @RequestParam(name = RestApiConstants.DOMAIN_NAME) String domain,
+                                       @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                        @RequestParam(name = RestApiConstants.CODE) String code);
 
 }

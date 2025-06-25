@@ -20,7 +20,7 @@ public class CustomAuthentification extends UsernamePasswordAuthenticationToken 
     public static final long serialVersionUID = -1378977978987113579L;
 
     private String userName;
-    private String domain;
+    private String tenant;
     private String application;
 
     /**

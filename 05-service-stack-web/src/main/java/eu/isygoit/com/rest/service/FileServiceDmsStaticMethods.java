@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -51,14 +51,14 @@ public final class FileServiceDmsStaticMethods {
             throw new EntityNullException("Entity must not be null");
         }
 
-        // Determine domain, fallback to default if entity doesn't implement IDomainAssignable
-        var domain = (entity instanceof IDomainAssignable domainAssignable)
-                ? domainAssignable.getDomain()
-                : DomainConstants.DEFAULT_DOMAIN_NAME;
+        // Determine tenant, fallback to default if entity doesn't implement ITenantAssignable
+        var tenant = (entity instanceof ITenantAssignable tenantAssignable)
+                ? tenantAssignable.getTenant()
+                : TenantConstants.DEFAULT_TENANT_NAME;
 
         // Prepare the request DTO for uploading the linked file
         var requestDto = LinkedFileRequestDto.builder()
-                .domain(domain)
+                .tenant(tenant)
                 .code(entity.getCode())
                 .path(entity.getClass().getSimpleName().toLowerCase())
                 .tags(entity.getTags())
@@ -104,19 +104,19 @@ public final class FileServiceDmsStaticMethods {
             throw new EntityNullException("Entity must not be null");
         }
 
-        var domain = (entity instanceof IDomainAssignable domainAssignable)
-                ? domainAssignable.getDomain()
-                : DomainConstants.DEFAULT_DOMAIN_NAME;
+        var tenant = (entity instanceof ITenantAssignable tenantAssignable)
+                ? tenantAssignable.getTenant()
+                : TenantConstants.DEFAULT_TENANT_NAME;
 
         // Perform the download request
-        ResponseEntity<Resource> response = linkedFileService.download(RequestContextDto.builder().build(), domain, entity.getCode());
+        ResponseEntity<Resource> response = linkedFileService.download(RequestContextDto.builder().build(), tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
-            log.info("File downloaded successfully with domain {} and code {}", domain, entity.getCode());
+            log.info("File downloaded successfully with tenant {} and code {}", tenant, entity.getCode());
             return response.getBody();
         }
 
-        log.warn("Failed to download file for domain {} and code {}", domain, entity.getCode());
+        log.warn("Failed to download file for tenant {} and code {}", tenant, entity.getCode());
         return null;
     }
 
@@ -142,18 +142,18 @@ public final class FileServiceDmsStaticMethods {
             throw new EntityNullException("Entity must not be null");
         }
 
-        var domain = (entity instanceof IDomainAssignable domainAssignable)
-                ? domainAssignable.getDomain()
-                : DomainConstants.DEFAULT_DOMAIN_NAME;
+        var tenant = (entity instanceof ITenantAssignable tenantAssignable)
+                ? tenantAssignable.getTenant()
+                : TenantConstants.DEFAULT_TENANT_NAME;
 
-        var response = linkedFileService.deleteFile(RequestContextDto.builder().build(), domain, entity.getCode());
+        var response = linkedFileService.deleteFile(RequestContextDto.builder().build(), tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && Boolean.TRUE.equals(response.getBody())) {
-            log.info("File deleted successfully with domain {} and code {}", domain, entity.getCode());
+            log.info("File deleted successfully with tenant {} and code {}", tenant, entity.getCode());
             return true;
         }
 
-        log.warn("Failed to delete file with domain {} and code {}", domain, entity.getCode());
+        log.warn("Failed to delete file with tenant {} and code {}", tenant, entity.getCode());
         return false;
     }
 }

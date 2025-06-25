@@ -25,6 +25,9 @@
         <module>05-service-stack-web</module>
         <module>06-service-stack-quartz</module>
         <module>07-service-stack-cassandra</module>
+        <module>08-service-stack-tenacy</module>
+
+        <module>00-service-stack-poc</module>
     </modules>
 
     <properties>

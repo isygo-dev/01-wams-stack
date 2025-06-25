@@ -19,7 +19,7 @@ import java.util.Date;
 @SuperBuilder
 public abstract class LicenceModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
 
-    private String domain;
+    private String tenant;
     private String provider;
     private String type;
     private String user;

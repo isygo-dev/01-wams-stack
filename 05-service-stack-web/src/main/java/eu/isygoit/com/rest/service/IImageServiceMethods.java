@@ -19,13 +19,13 @@ public interface IImageServiceMethods<I extends Serializable, T extends IIdAssig
     /**
      * Upload image t.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param id           the id
      * @param image        the image
      * @return the t
      * @throws IOException the io exception
      */
-    T uploadImage(String senderDomain, I id, MultipartFile image) throws IOException;
+    T uploadImage(String senderTenant, I id, MultipartFile image) throws IOException;
 
     /**
      * Download image resource.
@@ -39,22 +39,22 @@ public interface IImageServiceMethods<I extends Serializable, T extends IIdAssig
     /**
      * Create with image t.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param entity       the entity
      * @param file         the file
      * @return the t
      * @throws IOException the io exception
      */
-    T createWithImage(String senderDomain, T entity, MultipartFile file) throws IOException;
+    T createWithImage(String senderTenant, T entity, MultipartFile file) throws IOException;
 
     /**
      * Update with image t.
      *
-     * @param senderDomain the sender domain
+     * @param senderTenant the sender tenant
      * @param entity       the entity
      * @param file         the file
      * @return the t
      * @throws IOException the io exception
      */
-    T updateWithImage(String senderDomain, T entity, MultipartFile file) throws IOException;
+    T updateWithImage(String senderTenant, T entity, MultipartFile file) throws IOException;
 }

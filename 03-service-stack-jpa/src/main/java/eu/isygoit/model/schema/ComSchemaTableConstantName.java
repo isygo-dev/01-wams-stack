@@ -35,7 +35,7 @@ public interface ComSchemaTableConstantName {
     String T_ACCOUNT_CONTACT = "T_ACCOUNT_CONTACT";
 
     /**
-     * The constant T_DOMAIN.
+     * The constant T_TENANT.
      */
-    String T_DOMAIN = "T_DOMAIN";
+    String T_TENANT = "T_TENANT";
 }

@@ -2,17 +2,17 @@ package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
-import eu.isygoit.constants.DomainConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
 import eu.isygoit.jwt.filter.QueryCriteria;
-import eu.isygoit.model.IDomainAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
-import eu.isygoit.repository.JpaPagingAndSortingDomainAssignableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.NotSupportedException;
@@ -54,9 +54,9 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional(readOnly = true)
-    public Long count(String domain) {
-        if (repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaPagingAndSortingDomainAssignableRepository) {
-            return jpaPagingAndSortingDomainAssignableRepository.countByDomainIgnoreCase(domain);
+    public Long count(String tenant) {
+        if (repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
+            return jpaPagingAndSortingTenantAssignableRepository.countByTenantIgnoreCase(tenant);
         } else {
             throw new UnsupportedOperationException("this is not a SAS entity/repository: " + repository().getClass().getSimpleName());
         }
@@ -151,15 +151,15 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void delete(String senderDomain, List<T> objects) {
+    public void delete(String senderTenant, List<T> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
 
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
             objects.forEach(object -> {
-                if (!senderDomain.equals(((IDomainAssignable) object).getDomain())) {
+                if (!senderTenant.equals(((ITenantAssignable) object).getTenant())) {
                     throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
                 }
             });
@@ -172,7 +172,7 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void delete(String senderDomain, I id) {
+    public void delete(String senderTenant, I id) {
         if (Objects.isNull(id)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
@@ -180,9 +180,9 @@ public abstract class CassandraCrudService<I extends Serializable,
         Optional<T> optional = this.findById(id);
         if (optional.isPresent()) {
             T object = optional.get();
-            if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                    && !DomainConstants.SUPER_DOMAIN_NAME.equals(senderDomain)) {
-                if (!senderDomain.equals(((IDomainAssignable) object).getDomain())) {
+            if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                    && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
+                if (!senderTenant.equals(((ITenantAssignable) object).getTenant())) {
                     throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
                 }
             }
@@ -204,7 +204,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional
     public void delete(List<T> objects) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
         }
 
@@ -219,7 +219,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional
     public void delete(I id) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
         }
 
@@ -263,8 +263,8 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll() {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
@@ -279,8 +279,8 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll(Pageable pageable) {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository) {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
@@ -293,30 +293,30 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAll(String domain) throws NotSupportedException {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaPagingAndSortingDomainAssignableRepository) {
-            List<T> list = jpaPagingAndSortingDomainAssignableRepository.findByDomainIgnoreCase(domain);
+    public List<T> findAll(String tenant) throws NotSupportedException {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
+            List<T> list = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
             }
             return this.afterFindAll(list);
         } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+            throw new NotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
     }
 
     @Override
-    public List<T> findAll(String domain, Pageable pageable) throws NotSupportedException {
-        if (IDomainAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingDomainAssignableRepository jpaPagingAndSortingDomainAssignableRepository) {
-            Page<T> page = jpaPagingAndSortingDomainAssignableRepository.findByDomainIgnoreCase(domain, pageable);
+    public List<T> findAll(String tenant, Pageable pageable) throws NotSupportedException {
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
+            Page<T> page = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant, pageable);
             if (page.isEmpty()) {
                 return Collections.EMPTY_LIST;
             }
             return this.afterFindAll(page.getContent());
         } else {
-            throw new NotSupportedException("find all by domain for :" + persistentClass.getSimpleName());
+            throw new NotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
     }
 
@@ -382,12 +382,12 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria) {
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
         return null;
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String domain, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
         return null;
     }
 }

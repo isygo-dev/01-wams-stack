@@ -14,17 +14,21 @@ import java.lang.reflect.InvocationTargetException;
  * The type Service starter.
  */
 @Slf4j
-public class ServiceStarter {
+public abstract class ServiceStarter {
 
     /**
      * The constant ERROR_EXTRACT_API_FAILS.
      */
     public static final String ERROR_EXTRACT_API_FAILS = "<Error>: Extract api fails {}";
 
-    @Autowired
-    private ApplicationContextService applicationContextService;
-    @Autowired
-    private IApiExtractor apiExtractor;
+    private final ApplicationContextService applicationContextService;
+    private final IApiExtractor apiExtractor;
+
+    protected ServiceStarter(@Autowired ApplicationContextService applicationContextService,
+                             @Autowired IApiExtractor apiExtractor) {
+        this.applicationContextService = applicationContextService;
+        this.apiExtractor = apiExtractor;
+    }
 
     /**
      * Extract apis.

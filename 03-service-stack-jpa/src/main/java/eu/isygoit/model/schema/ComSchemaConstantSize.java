@@ -19,9 +19,9 @@ public interface ComSchemaConstantSize {
 
 
     /**
-     * The constant DOMAIN.
+     * The constant TENANT.
      */
-    int DOMAIN = 100;
+    int TENANT = 100;
     /**
      * The constant tags.
      */

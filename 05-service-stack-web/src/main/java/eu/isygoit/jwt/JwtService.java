@@ -38,9 +38,9 @@ public class JwtService implements IJwtService {
     }
 
     @Override
-    public Optional<String> extractDomain(String token) {
-        log.debug("Extracting domain from token");
-        return extractClaim(token, JwtConstants.JWT_SENDER_DOMAIN, String.class);
+    public Optional<String> extractTenant(String token) {
+        log.debug("Extracting tenant from token");
+        return extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
     }
 
     @Override

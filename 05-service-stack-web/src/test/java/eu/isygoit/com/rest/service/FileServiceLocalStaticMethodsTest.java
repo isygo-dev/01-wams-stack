@@ -61,7 +61,7 @@ class FileServiceLocalStaticMethodsTest {
                 .path(path)
                 .code(code)
                 .fileName(fileName)
-                .domain("testDomain")
+                .tenant("testTenant")
                 .build();
     }
 
@@ -70,7 +70,7 @@ class FileServiceLocalStaticMethodsTest {
      */
     private ResumeLinkedFile createLinkedFile(String path, String code, String fileName) {
         return ResumeLinkedFile.builder()
-                .domain("testDomain")
+                .tenant("testTenant")
                 .path(path)
                 .code(code)
                 .fileName(fileName)
@@ -136,7 +136,7 @@ class FileServiceLocalStaticMethodsTest {
                 FileServiceLocalStaticMethods.download(resume, 123L)
         );
 
-        assertTrue(thrown.getMessage().contains("Resource not found: testDomain/missing.txt"));
+        assertTrue(thrown.getMessage().contains("Resource not found: testTenant/missing.txt"));
     }
 
     /**
@@ -150,7 +150,7 @@ class FileServiceLocalStaticMethodsTest {
                 FileServiceLocalStaticMethods.download(resume, 456L)
         );
 
-        assertTrue(thrown.getMessage().contains("Empty path: testDomain/file.txt"));
+        assertTrue(thrown.getMessage().contains("Empty path: testTenant/file.txt"));
     }
 
     /**

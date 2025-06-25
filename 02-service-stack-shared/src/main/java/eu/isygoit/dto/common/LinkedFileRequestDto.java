@@ -19,7 +19,7 @@ import java.util.List;
 @SuperBuilder
 public class LinkedFileRequestDto extends AbstractAuditableDto<Long> implements IFileUploadDto {
 
-    private String domain;
+    private String tenant;
     private String code;    //Unique file name
     private String originalFileName;    //original file name
     private String path;

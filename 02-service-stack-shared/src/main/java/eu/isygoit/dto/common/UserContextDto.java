@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 public class UserContextDto extends AbstractAuditableDto<Long> {
 
     @NotEmpty
-    private String domain;
+    private String tenant;
     @NotEmpty
     private String application;
     @NotEmpty

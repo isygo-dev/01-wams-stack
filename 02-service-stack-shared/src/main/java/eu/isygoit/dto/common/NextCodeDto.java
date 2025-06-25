@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class NextCodeDto extends AbstractAuditableDto<Long> {
 
-    private String domain;
+    private String tenant;
     private String entity;
     private String attribute;
     private String prefix;

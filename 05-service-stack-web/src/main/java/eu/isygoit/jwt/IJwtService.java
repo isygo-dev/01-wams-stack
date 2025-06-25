@@ -15,12 +15,12 @@ import java.util.function.Function;
 public interface IJwtService {
 
     /**
-     * Extract domain string.
+     * Extract tenant string.
      *
      * @param token the token
      * @return the string
      */
-    Optional<String> extractDomain(String token);
+    Optional<String> extractTenant(String token);
 
     /**
      * Extract application string.
