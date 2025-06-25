@@ -27,7 +27,7 @@
         <module>07-service-stack-cassandra</module>
         <module>08-service-stack-tenacy</module>
 
-        <module>00-service-stack-poc</module>
+        <module>00-service-stack-demo</module>
     </modules>
 
     <properties>

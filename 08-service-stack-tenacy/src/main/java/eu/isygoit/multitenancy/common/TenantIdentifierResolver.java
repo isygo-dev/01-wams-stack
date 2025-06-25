@@ -7,8 +7,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-        String tenantId = TenantContext.getTenantId();
-        return (tenantId != null) ? tenantId : TenantConstants.DEFAULT_TENANT_NAME;
+        return TenantContext.getTenantId();
     }
 
     @Override

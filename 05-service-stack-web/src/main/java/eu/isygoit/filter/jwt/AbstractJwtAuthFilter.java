@@ -1,7 +1,7 @@
 package eu.isygoit.filter.jwt;
 
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.JwtConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.helper.UrlHelper;

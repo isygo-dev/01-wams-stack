@@ -11,7 +11,7 @@ spring:
 
 app:
   tenants:
-    tenant1:
+    TENANT1:
       schema: tenant1_schema
-    tenant2:
+    TENANT2:
       schema: tenant2_schema

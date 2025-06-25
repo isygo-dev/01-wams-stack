@@ -23,10 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JwtServiceTest {
 
-    private JwtService jwtService;
-
     private final String testKey = "testkeytestkeytestkeytestkey";
-
     private final String subject = "testSubject";
     private final Map<String, Object> claims = Map.of(
             JwtConstants.JWT_SENDER_TENANT, "example.com",
@@ -35,6 +32,7 @@ class JwtServiceTest {
             JwtConstants.JWT_SENDER_ACCOUNT_TYPE, "premium",
             JwtConstants.JWT_SENDER_USER, "testuser"
     );
+    private JwtService jwtService;
 
     /**
      * Sets .

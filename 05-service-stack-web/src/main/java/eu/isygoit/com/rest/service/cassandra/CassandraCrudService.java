@@ -2,15 +2,15 @@ package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.LogConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
 import eu.isygoit.jwt.filter.QueryCriteria;
-import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityExistsException;

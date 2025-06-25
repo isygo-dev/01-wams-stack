@@ -1,14 +1,14 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.constants.LogConstants;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
-import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.JpaPagingAndSortingTenantAssignableRepository;

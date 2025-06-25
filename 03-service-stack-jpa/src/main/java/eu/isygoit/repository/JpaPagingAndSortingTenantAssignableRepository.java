@@ -1,8 +1,8 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
-import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.NoRepositoryBean;

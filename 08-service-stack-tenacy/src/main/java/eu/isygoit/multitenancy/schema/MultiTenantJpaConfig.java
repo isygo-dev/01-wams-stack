@@ -1,16 +1,21 @@
 package eu.isygoit.multitenancy.schema;
 
-
+import eu.isygoit.multitenancy.common.MultiTenantProperties;
+import eu.isygoit.multitenancy.common.TenantIdentifierResolver;
 import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -18,56 +23,59 @@ import java.util.Map;
 
 @ConditionalOnProperty(name = "spring.jpa.properties.hibernate.multiTenancy", havingValue = "SCHEMA")
 @Configuration
+@EnableTransactionManagement
 public class MultiTenantJpaConfig {
 
     private final DataSource dataSource;
-    private final Environment environment;
-    private final JpaProperties jpaProperties;
+    private final MultiTenantProperties multiTenantProperties;
 
-    public MultiTenantJpaConfig(DataSource dataSource, Environment environment, JpaProperties jpaProperties) {
+    public MultiTenantJpaConfig(DataSource dataSource, MultiTenantProperties multiTenantProperties) {
         this.dataSource = dataSource;
-        this.environment = environment;
-        this.jpaProperties = jpaProperties;
+        this.multiTenantProperties = multiTenantProperties;
     }
 
     @Bean
-    public Map<String, String> tenantSchemas() {
-        // Load schemas from environment or yml
-        Map<String, String> map = new HashMap<>();
-        map.put("tenant1", environment.getProperty("app.tenants.tenant1.schema", "public"));
-        map.put("tenant2", environment.getProperty("app.tenants.tenant2.schema", "public"));
-        return map;
-    }
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        em.setPackagesToScan("eu.isygoit.multitenancy.model");
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
-    @Bean
-    public DataSourceBasedMultiTenantConnectionProviderImpl multiTenantConnectionProvider() {
-        return new DataSourceBasedMultiTenantConnectionProviderImpl(dataSource, tenantSchemas());
-    }
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.multi_tenant_connection_provider", multiTenantConnectionProvider());
+        properties.put("hibernate.tenant_identifier_resolver", currentTenantIdentifierResolver());
 
-    @Bean
-    public SchemaCurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
-        return new SchemaCurrentTenantIdentifierResolver();
-    }
+        // Use properties from YAML via MultiTenantProperties bean
+        properties.put("hibernate.multiTenancy", multiTenantProperties.getMultiTenancy());
+        properties.put("hibernate.dialect", multiTenantProperties.getDialect());
+        properties.put("hibernate.show_sql", multiTenantProperties.isShowSql());
+        properties.put("hibernate.format_sql", multiTenantProperties.isFormatSql());
+        properties.put("hibernate.hbm2ddl.auto", multiTenantProperties.getDdlAuto());
 
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder) {
+        // Also set username/password from Spring datasource config, no need to hardcode
+        // Those can be automatically picked by Spring Boot but you can still specify if needed:
+        // e.g. properties.put("hibernate.connection.username", ...);
 
-        Map<String, Object> hibernateProps = new HashMap<>(jpaProperties.getProperties());
+        properties.put("spring.jpa.hibernate.ddl-auto", multiTenantProperties.getDdlAuto());
 
-        // Hibernate multi-tenancy properties using string keys
-        hibernateProps.put("hibernate.multiTenancy", "SCHEMA");
-        hibernateProps.put("hibernate.multi_tenant_connection_provider", multiTenantConnectionProvider());
-        hibernateProps.put("hibernate.tenant_identifier_resolver", currentTenantIdentifierResolver());
-
-        return builder
-                .dataSource(dataSource)
-                .packages("com.example.multitenancy") // your base package
-                .properties(hibernateProps)
-                .build();
+        em.setJpaPropertyMap(properties);
+        return em;
     }
 
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
-        return new JpaTransactionManager(emf);
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(emf);
+        return transactionManager;
+    }
+
+    @Bean
+    public MultiTenantConnectionProvider multiTenantConnectionProvider() {
+        return new SchemaPerTenantConnectionProvider(dataSource);
+    }
+
+    @Bean
+    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver() {
+        return new TenantIdentifierResolver();
     }
 }

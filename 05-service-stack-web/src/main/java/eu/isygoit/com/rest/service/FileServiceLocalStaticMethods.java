@@ -27,7 +27,8 @@ import java.nio.file.StandardCopyOption;
 public final class FileServiceLocalStaticMethods {
 
     // Private constructor to prevent instantiation of this utility class
-    private FileServiceLocalStaticMethods() {}
+    private FileServiceLocalStaticMethods() {
+    }
 
     /**
      * Uploads a file to the local file system under a given entity's path.
@@ -105,9 +106,9 @@ public final class FileServiceLocalStaticMethods {
     /**
      * Builds a consistent error message for missing resources or paths.
      *
-     * @param entity The entity related to the file.
+     * @param entity  The entity related to the file.
      * @param version The version involved in the request.
-     * @param prefix A message prefix such as "Resource not found" or "Empty path".
+     * @param prefix  A message prefix such as "Resource not found" or "Empty path".
      * @return A formatted error message with tenant and file info.
      */
     private static String buildErrorMessage(Object entity, Long version, String prefix) {

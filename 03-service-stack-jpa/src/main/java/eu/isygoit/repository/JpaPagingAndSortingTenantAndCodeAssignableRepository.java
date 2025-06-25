@@ -2,8 +2,8 @@ package eu.isygoit.repository;
 
 import eu.isygoit.annotation.IgnoreRepository;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;

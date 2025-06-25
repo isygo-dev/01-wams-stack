@@ -1,0 +1,53 @@
+server:
+  port: 8081  # ? Set your custom server port
+
+spring:
+  application:
+    name: Multi tenacy poc
+  h2:
+    console:
+      enabled: true
+      path: /h2-ui
+
+  datasource:
+    url: jdbc:h2:file:./data/master_db;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    show-sql: true
+    format_sql: true
+    properties:
+      hibernate:
+        schema: PUBLIC
+        dialect: org.hibernate.dialect.H2Dialect
+        multiTenancy: DATABASE
+    hibernate:
+      ddl-auto: update
+
+app:
+  tenants:
+    DEFAULT:
+      url: jdbc:h2:file:./data/tenant1_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: ""
+      schema: PUBLIC
+    TENANT1:
+      url: jdbc:h2:file:./data/tenant1_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: ""
+      schema: PUBLIC
+    TENANT2:
+      url: jdbc:h2:file:./data/tenant2_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      driver-class-name: org.h2.Driver
+      username: sa
+      password: ""
+      schema: PUBLIC
+
+multi-tenant:
+  db-prefix: ./data/tenant_db_
+  username: sa
+  password:
