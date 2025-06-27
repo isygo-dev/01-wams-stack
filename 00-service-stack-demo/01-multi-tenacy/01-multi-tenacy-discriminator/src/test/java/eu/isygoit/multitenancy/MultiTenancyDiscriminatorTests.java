@@ -2,6 +2,7 @@ package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
+import eu.isygoit.multitenancy.service.TenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,114 +17,175 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for DISCRIMINATOR multi-tenancy strategy.
+ * Verifies tenant isolation via tenant ID filtering on a shared table.
+ */
 @SpringBootTest(properties = {
-        "spring.jpa.properties.hibernate.multiTenancy=DISCRIMINATOR"
+        "spring.jpa.hibernate.ddl-auto=update",
+        "multi-tenancy.mode=DISCRIMINATOR"
 })
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MultiTenancyDiscriminatorTests {
 
-    private static final String TEST_TENANT_ID = "test-tenant";
-    private static Long createdTutorialId;
-    private final String BASE_URL = "/api/tutorials";
+    private static final String TENANT_1 = "tenant1";
+    private static final String TENANT_2 = "tenant2";
+    private static final String INVALID_TENANT = "unknown";
+
+    private static final String BASE_URL = "/api/tutorials";
+
+    private static Long tenant1TutorialId;
+
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
-    @Value("${spring.jpa.properties.hibernate.multiTenancy}")
+
+    @Value("${multi-tenancy.mode}")
     private String multiTenancyProperty;
 
-    private TutorialDto buildDto() {
+    @BeforeAll
+    static void initSharedSchema(@Autowired TenantService tenantService) {
+        tenantService.initializeTenantSchema("public");
+    }
+
+    private TutorialDto buildDto(String title) {
         return TutorialDto.builder()
-                // tenantId will be assigned by backend using header
-                .title("Intro to Spring")
-                .description("Learn Spring Boot with tests")
+                .title(title)
+                .description("Learn Spring Boot with Discriminator strategy")
                 .published(true)
                 .build();
     }
 
     @Test
     @Order(0)
-    void shouldValidateMultiTenancyProperty() {
+    void shouldValidateDiscriminatorMode() {
         Assertions.assertEquals("DISCRIMINATOR", multiTenancyProperty);
     }
 
     @Test
     @Order(1)
-    void shouldCreateTutorial() throws Exception {
-        var tutorialDto = buildDto();
+    void shouldCreateTutorialForTenant1() throws Exception {
+        var dto = buildDto("Tenant1 Tutorial");
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
-                        .header("X-Tenant-ID", TEST_TENANT_ID)
+                        .header("X-Tenant-ID", TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(tutorialDto)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value("Intro to Spring"))
-                .andExpect(jsonPath("$.tenant").value(TEST_TENANT_ID)) // ✅ Check tenantId assigned
+                .andExpect(jsonPath("$.tenant").value(TENANT_1))
                 .andReturn();
 
-        var response = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class);
-        createdTutorialId = response.getId();
+        tenant1TutorialId = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class).getId();
+        Assertions.assertNotNull(tenant1TutorialId);
     }
 
     @Test
     @Order(2)
-    void shouldGetTutorialById() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/" + createdTutorialId)
-                        .header("X-Tenant-ID", TEST_TENANT_ID))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(createdTutorialId))
-                .andExpect(jsonPath("$.title").value("Intro to Spring"));
-    }
-
-    @Test
-    @Order(3)
-    void shouldGetAllTutorials() throws Exception {
-        mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TEST_TENANT_ID))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(1))))
-                .andExpect(jsonPath("$[*].title", hasItem("Intro to Spring")));
-    }
-
-    @Test
-    @Order(4)
-    void shouldUpdateTutorial() throws Exception {
-        var updatedDto = buildDto();
-        updatedDto.setTitle("Updated Spring Boot");
-        updatedDto.setPublished(false);
-
-        mockMvc.perform(put(BASE_URL + "/" + createdTutorialId)
-                        .header("X-Tenant-ID", TEST_TENANT_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Spring Boot"))
-                .andExpect(jsonPath("$.published").value(false));
-    }
-
-    @Test
-    @Order(5)
-    void shouldDeleteTutorial() throws Exception {
-        mockMvc.perform(delete(BASE_URL + "/" + createdTutorialId)
-                        .header("X-Tenant-ID", TEST_TENANT_ID))
-                .andExpect(status().isNoContent());
-
-        mockMvc.perform(get(BASE_URL + "/" + createdTutorialId)
-                        .header("X-Tenant-ID", TEST_TENANT_ID))
+    void shouldRejectAccessToOtherTenantData() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
+                        .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @Order(3)
+    void shouldRetrieveOwnDataForTenant1() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
+                        .header("X-Tenant-ID", TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Tenant1 Tutorial"))
+                .andExpect(jsonPath("$.tenant").value(TENANT_1));
+    }
+
+    @Test
+    @Order(4)
+    void shouldCreateTutorialForTenant2() throws Exception {
+        var dto = buildDto("Tenant2 Tutorial");
+
+        mockMvc.perform(post(BASE_URL)
+                        .header("X-Tenant-ID", TENANT_2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenant").value(TENANT_2));
+    }
+
+    @Test
+    @Order(5)
+    void shouldReturnOnlyTenant1TutorialsForTenant1() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                        .header("X-Tenant-ID", TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))))
+                .andExpect(jsonPath("$[*].title", hasItem("Tenant1 Tutorial")))
+                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))));
+    }
+
+    @Test
     @Order(6)
-    void shouldHandleEmptyListWhenNoTutorialsExist() throws Exception {
-        mockMvc.perform(delete(BASE_URL)
-                        .header("X-Tenant-ID", TEST_TENANT_ID))
+    void shouldReturnOnlyTenant2TutorialsForTenant2() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                        .header("X-Tenant-ID", TENANT_2))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_2))))
+                .andExpect(jsonPath("$[*].title", hasItem("Tenant2 Tutorial")))
+                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant1 Tutorial"))));
+    }
+
+    @Test
+    @Order(7)
+    void shouldUpdateTutorialForTenant1() throws Exception {
+        var updated = buildDto("Updated Title");
+        updated.setId(tenant1TutorialId);
+
+        mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
+                        .header("X-Tenant-ID", TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updated)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Title"));
+    }
+
+    @Test
+    @Order(8)
+    void shouldRejectUpdateByOtherTenant() throws Exception {
+        var updated = buildDto("Hacked Title");
+        updated.setId(tenant1TutorialId);
+
+        mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
+                        .header("X-Tenant-ID", TENANT_2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updated)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(9)
+    void shouldDeleteTenant1Tutorial() throws Exception {
+        mockMvc.perform(delete(BASE_URL + "/" + tenant1TutorialId)
+                        .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isNoContent());
 
+        mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
+                        .header("X-Tenant-ID", TENANT_1))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(10)
+    void shouldRejectMissingTenantHeader() throws Exception {
+        mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isBadRequest()); // Ensure your TenantFilter enforces this
+    }
+
+    @Test
+    @Order(11)
+    void shouldRejectUnknownTenant() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TEST_TENANT_ID))
-                .andExpect(status().isNoContent());
+                        .header("X-Tenant-ID", INVALID_TENANT))
+                .andExpect(status().isInternalServerError()); // Or 403 if your logic throws custom exception
     }
 }

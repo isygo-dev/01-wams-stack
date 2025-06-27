@@ -8,11 +8,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 
-@ConditionalOnProperty(
-        name = "app.tenacy.request",
-        havingValue = "true"
-)
 @Component
+@ConditionalOnProperty(name = "multi-tenancy.mode", havingValue = "DISCRIMINATOR")
 public class EntityManagerTenantFilterConfigurer {
 
     @PersistenceContext

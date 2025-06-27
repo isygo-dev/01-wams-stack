@@ -1,5 +1,6 @@
 package eu.isygoit.multitenancy.controller;
 
+import eu.isygoit.multitenancy.common.TenantContext;
 import eu.isygoit.multitenancy.dto.TutorialDto;
 import eu.isygoit.multitenancy.mapper.TutorialMapper;
 import eu.isygoit.multitenancy.repository.TutorialRepository;
@@ -37,7 +38,7 @@ public class TutorialController {
             @Parameter(description = "Filter tutorials by title") @RequestParam(required = false) String title) {
         try {
             var tutorials = tutorialMapper.listEntityToDto((title == null)
-                    ? tutorialRepository.findAll()
+                    ? tutorialRepository.findAll().stream().filter(tutorial -> tutorial.getTenant().equals(TenantContext.getTenantId())).toList()
                     : tutorialRepository.findByTitleContainingIgnoreCase(title));
 
             return tutorials.isEmpty()
@@ -56,6 +57,7 @@ public class TutorialController {
     @GetMapping("/{id}")
     public ResponseEntity<TutorialDto> getTutorialById(@PathVariable long id) {
         return tutorialRepository.findById(id)
+                .filter(tutorial -> tutorial.getTenant().equals(TenantContext.getTenantId()))
                 .map(tutorialMapper::entityToDto)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -85,6 +87,7 @@ public class TutorialController {
     @PutMapping("/{id}")
     public ResponseEntity<TutorialDto> updateTutorial(@PathVariable long id, @RequestBody TutorialDto TutorialDto) {
         return tutorialRepository.findById(id)
+                .filter(tutorial -> tutorial.getTenant().equals(TenantContext.getTenantId()))
                 .map(existing -> {
                     existing.setTitle(TutorialDto.getTitle());
                     existing.setDescription(TutorialDto.getDescription());

@@ -16,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "TUTORIALS")
 @EntityListeners(TenantEntityListener.class)
+//@DiscriminatorColumn(name = "TENANT_ID", discriminatorType = DiscriminatorType.STRING)
 public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable {
 
     @Id

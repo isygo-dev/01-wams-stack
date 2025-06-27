@@ -2,6 +2,7 @@ package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
+import eu.isygoit.multitenancy.service.TenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,28 +18,50 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for the TutorialController with DATABASE multi-tenancy strategy.
+ * This test suite verifies tenant isolation at the database level by simulating HTTP calls using MockMvc.
+ */
 @SpringBootTest(properties = {
-        "spring.jpa.properties.hibernate.multiTenancy=SCHEMA"
+        "spring.jpa.hibernate.ddl-auto=update",
+        "multi-tenancy.mode=SCHEMA"
 })
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MultiTenancySchemaTests {
 
-    private static final String TENANT_1 = "TENANT1";
-    private static final String TENANT_2 = "TENANT2";
+    private static final String TENANT_1 = "tenant1";
+    private static final String TENANT_2 = "tenant2";
+
     private static Long tenant1TutorialId;
+
     private final String BASE_URL = "/api/tutorials";
+
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
-    @Value("${spring.jpa.properties.hibernate.multiTenancy}")
+
+    @Value("${multi-tenancy.mode}")
     private String multiTenancyProperty;
 
-    private TutorialDto buildDto() {
+    /**
+     * Initialize database schema for tenant1 and tenant2 before all tests.
+     */
+    @BeforeAll
+    static void initTenants(@Autowired TenantService tenantService) {
+        tenantService.initializeTenantSchema(TENANT_1);
+        tenantService.initializeTenantSchema(TENANT_2);
+    }
+
+    /**
+     * Utility method to build a standard TutorialDto object.
+     */
+    private TutorialDto buildDto(String title) {
         return TutorialDto.builder()
-                .title("Intro to Spring")
-                .description("Learn Spring Boot with schema-based multi-tenancy")
+                .title(title)
+                .description("Learn Spring Boot with DB-per-tenant")
                 .published(true)
                 .build();
     }
@@ -46,13 +69,17 @@ class MultiTenancySchemaTests {
     @Test
     @Order(0)
     void shouldValidateMultiTenancyProperty() {
-        Assertions.assertEquals("SCHEMA", multiTenancyProperty);
+        Assertions.assertEquals("SCHEMA", multiTenancyProperty,
+                "Expected multi-tenancy mode to be DATABASE");
     }
 
+    /**
+     * Create a tutorial for tenant1 and store its ID.
+     */
     @Test
     @Order(1)
     void shouldCreateTutorialForTenant1() throws Exception {
-        var dto = buildDto();
+        var dto = buildDto("Tenant1 Tutorial");
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header("X-Tenant-ID", TENANT_1)
@@ -60,14 +87,17 @@ class MultiTenancySchemaTests {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value("Intro to Spring"))
-                .andExpect(jsonPath("$.tenant").value(TENANT_1)) // ✅ Check tenantId assigned
+                .andExpect(jsonPath("$.title").value(dto.getTitle()))
+                .andExpect(jsonPath("$.tenant").value(TENANT_1))
                 .andReturn();
 
         var response = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class);
         tenant1TutorialId = response.getId();
     }
 
+    /**
+     * Ensure that tenant2 cannot access tenant1's data.
+     */
     @Test
     @Order(2)
     void shouldNotFindTenant1TutorialFromTenant2() throws Exception {
@@ -76,43 +106,53 @@ class MultiTenancySchemaTests {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Ensure that tenant1 can retrieve its own tutorial.
+     */
     @Test
     @Order(3)
     void shouldGetTutorialByIdForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Intro to Spring"))
-                .andExpect(jsonPath("$.tenant").value(TENANT_1)); // ✅ Check tenantId assigned
+                .andExpect(jsonPath("$.title").value("Tenant1 Tutorial"))
+                .andExpect(jsonPath("$.tenant").value(TENANT_1));
     }
 
+    /**
+     * Create a separate tutorial for tenant2.
+     */
     @Test
     @Order(4)
     void shouldCreateSeparateTutorialForTenant2() throws Exception {
-        var dto = buildDto();
-        dto.setTitle("Tenant2 Tutorial");
+        var dto = buildDto("Tenant2 Tutorial");
 
         mockMvc.perform(post(BASE_URL)
                         .header("X-Tenant-ID", TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Tenant2 Tutorial"))
-                .andExpect(jsonPath("$.tenant").value(TENANT_2)) // ✅ Check tenantId assigned
-                .andReturn();
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.title").value(dto.getTitle()))
+                .andExpect(jsonPath("$.tenant").value(TENANT_2));
     }
 
+    /**
+     * Verify tenant1 only sees its own tutorial(s).
+     */
     @Test
     @Order(5)
     void shouldReturnOnlyTenant1TutorialsForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].title", hasItem("Intro to Spring")))
-                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))))
-                .andExpect(jsonPath("$[*].tenant", not(hasItem(TENANT_2)))); // ✅ Check tenantId assigned
+                .andExpect(jsonPath("$[*].title", hasItem("Tenant1 Tutorial")))
+                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))));
     }
 
+    /**
+     * Verify tenant2 only sees its own tutorial(s).
+     */
     @Test
     @Order(6)
     void shouldReturnOnlyTenant2TutorialsForTenant2() throws Exception {
@@ -120,17 +160,21 @@ class MultiTenancySchemaTests {
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].title", hasItem("Tenant2 Tutorial")))
-                .andExpect(jsonPath("$[*].title", not(hasItem("Intro to Spring"))))
-                .andExpect(jsonPath("$[*].tenant", not(hasItem(TENANT_1)))); // ✅ Check tenantId assigned
+                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant1 Tutorial"))));
     }
 
+    /**
+     * Delete tenant1's tutorial and verify it no longer exists.
+     */
     @Test
     @Order(7)
     void shouldDeleteTutorialFromTenant1Only() throws Exception {
+        // Delete tutorial
         mockMvc.perform(delete(BASE_URL + "/" + tenant1TutorialId)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isNoContent());
 
+        // Confirm deletion
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isNotFound());

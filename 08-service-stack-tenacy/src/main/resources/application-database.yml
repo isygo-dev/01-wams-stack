@@ -11,11 +11,11 @@ spring:
 
 app:
   tenants:
-    TENANT1:
+    tenant1:
       url: jdbc:postgresql://localhost:5432/tenant1_db
       username: user1
       password: pass1
-    TENANT2:
+    tenant2:
       url: jdbc:postgresql://localhost:5432/tenant2_db
       username: user2
       password: pass2

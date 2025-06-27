@@ -1,15 +1,18 @@
 # 🏗️ Spring Boot Multi-Tenancy Examples
 
-This repository demonstrates multiple strategies for implementing **multi-tenancy** in a Spring Boot application using Hibernate 6 and JPA.
+This repository demonstrates multiple strategies for implementing **multi-tenancy** in a Spring Boot application using
+Hibernate 6 and JPA.
 
 ## 🚀 Implemented Multi-Tenancy Strategies
 
-### 1. 🧩 Discriminator-Based Multi-Tenancy 
+### 1. 🧩 Discriminator-Based Multi-Tenancy
+
 - Uses a shared schema with a **tenant identifier column** (e.g. `tenant_id`) on every multi-tenant entity.
 - Hibernate filters or interceptors are used to isolate tenant data based on the current context.
 - **⚠️ Note:** Hibernate 6 deprecated support for discriminator-based multi-tenancy using filters.
 
 ### 2. 🏛️ Schema per Tenant
+
 - All tenants share the same database but are **isolated in separate schemas**.
 - Implemented using:
     - `MultiTenantConnectionProvider` to resolve connections dynamically.
@@ -18,6 +21,7 @@ This repository demonstrates multiple strategies for implementing **multi-tenanc
 - Enables **runtime schema switching** based on the request context.
 
 ### 3. 🗄️ Database per Tenant
+
 - Each tenant has its **own dedicated database**.
 - Implemented via dynamic `DataSource` routing:
     - A master registry loads tenant database configurations from a YAML file or a central database.

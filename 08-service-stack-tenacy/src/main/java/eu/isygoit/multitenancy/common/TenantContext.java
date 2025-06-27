@@ -8,7 +8,9 @@ public class TenantContext {
     private static final ThreadLocal<String> CURRENT_TENANT = new ThreadLocal<>();
 
     public static String getTenantId() {
-        return CURRENT_TENANT.get() != null ? CURRENT_TENANT.get() : TenantConstants.DEFAULT_TENANT_NAME;
+        return CURRENT_TENANT.get() != null
+                ? CURRENT_TENANT.get()
+                : TenantConstants.DEFAULT_TENANT_NAME;
     }
 
     public static void setTenantId(String tenant) {

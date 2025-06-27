@@ -3,51 +3,31 @@ server:
 
 spring:
   application:
-    name: Multi tenacy poc
-  h2:
-    console:
-      enabled: true
-      path: /h2-ui
+    name: Multi tenacy - database per tenant demo
 
   datasource:
-    url: jdbc:h2:file:./data/master_db;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/tenants?currentSchema=public
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     show-sql: true
     format_sql: true
-    properties:
-      hibernate:
-        schema: PUBLIC
-        dialect: org.hibernate.dialect.H2Dialect
-        multiTenancy: DATABASE
     hibernate:
       ddl-auto: update
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
 
-app:
+multi-tenancy:
+  mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
   tenants:
-    DEFAULT:
-      url: jdbc:h2:file:./data/tenant1_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      driver-class-name: org.h2.Driver
-      username: sa
-      password: ""
-      schema: PUBLIC
-    TENANT1:
-      url: jdbc:h2:file:./data/tenant1_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      driver-class-name: org.h2.Driver
-      username: sa
-      password: ""
-      schema: PUBLIC
-    TENANT2:
-      url: jdbc:h2:file:./data/tenant2_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      driver-class-name: org.h2.Driver
-      username: sa
-      password: ""
-      schema: PUBLIC
-
-multi-tenant:
-  db-prefix: ./data/tenant_db_
-  username: sa
-  password:
+    - id: tenant1
+      url: jdbc:postgresql://localhost:5432/tenant1?currentSchema=public
+      username: postgres
+      password: root
+    - id: tenant2
+      url: jdbc:postgresql://localhost:5432/tenant2?currentSchema=public
+      username: postgres
+      password: root

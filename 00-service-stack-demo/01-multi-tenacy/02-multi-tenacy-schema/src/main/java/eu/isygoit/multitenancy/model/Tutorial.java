@@ -16,10 +16,12 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "TUTORIALS")
 @EntityListeners(TenantEntityListener.class)
+//@DiscriminatorColumn(name = "TENANT_ID", discriminatorType = DiscriminatorType.STRING)
 public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorial_seq")
+    @SequenceGenerator(name = "tutorial_seq", sequenceName = "TUTORIALS_SEQ", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false)
