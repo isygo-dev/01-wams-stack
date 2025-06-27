@@ -2,13 +2,15 @@ package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
-import eu.isygoit.multitenancy.service.TenantService;
+import eu.isygoit.multitenancy.service.ITenantService;
+import eu.isygoit.multitenancy.service.PGTenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -26,9 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.jpa.hibernate.ddl-auto=update",
         "multi-tenancy.mode=DATABASE"
 })
+@ActiveProfiles("postgres")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class MultiTenancyDatabaseTests {
+class MultiTenancyDatabasePostgresTests {
 
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
@@ -50,9 +53,9 @@ class MultiTenancyDatabaseTests {
      * Initialize database schema for tenant1 and tenant2 before all tests.
      */
     @BeforeAll
-    static void initTenants(@Autowired TenantService tenantService) {
-        tenantService.initializeTenantSchema(TENANT_1);
-        tenantService.initializeTenantSchema(TENANT_2);
+    static void initTenants(@Autowired ITenantService PGTenantService) {
+        PGTenantService.initializeTenantSchema(TENANT_1);
+        PGTenantService.initializeTenantSchema(TENANT_2);
     }
 
     /**

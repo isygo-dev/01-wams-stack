@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
-import eu.isygoit.multitenancy.service.TenantService;
+import eu.isygoit.multitenancy.service.ITenantService;
+import eu.isygoit.multitenancy.service.PGTenantService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +29,11 @@ public class MultiTenancyApplication {
     }
 
     @Bean
-    public CommandLineRunner initH2Schemas(TenantService tenantService) {
+    public CommandLineRunner initH2Schemas(ITenantService PGTenantService) {
         return args -> {
             // Create your initial tenants
-            tenantService.initializeTenantSchema("tenant1");
-            tenantService.initializeTenantSchema("tenant2");
+            PGTenantService.initializeTenantSchema("tenant1");
+            PGTenantService.initializeTenantSchema("tenant2");
         };
     }
 }
