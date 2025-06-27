@@ -31,7 +31,7 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
         Connection connection = dataSource.getConnection();
         try {
             // Set the current schema for this connection
-            connection.createStatement().execute("SET SCHEMA '" + tenantIdentifier + "'");
+            connection.createStatement().execute("SET SCHEMA '" + tenantIdentifier.toUpperCase() + "'");
         } catch (SQLException e) {
             connection.close();
             throw new SQLException("Could not set schema to " + tenantIdentifier, e);

@@ -2,6 +2,8 @@ package eu.isygoit.multitenancy.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -11,13 +13,14 @@ import java.sql.Statement;
 /**
  * Initializes tenant-specific schema and database objects for the SCHEMA-per-tenant strategy.
  */
+@Profile("postgres")
 @Slf4j
 @Service
-public class TenantService {
+public class PGTenantService implements ITenantService{
 
     private final MultiTenantConnectionProvider multiTenantConnectionProvider;
 
-    public TenantService(MultiTenantConnectionProvider multiTenantConnectionProvider) {
+    public PGTenantService(MultiTenantConnectionProvider multiTenantConnectionProvider) {
         this.multiTenantConnectionProvider = multiTenantConnectionProvider;
     }
 
@@ -30,7 +33,8 @@ public class TenantService {
         try (Connection connection = multiTenantConnectionProvider.getAnyConnection();
              Statement stmt = connection.createStatement()) {
 
-            // Create the schema if it doesn't exist
+            // Create SCHEMA (optional if schema-per-tenant is not used)
+            // For DATABASE mode this may be skipped
             stmt.execute("CREATE SCHEMA IF NOT EXISTS \"" + tenantId + "\"");
 
             // Set the connection to use the tenant schema

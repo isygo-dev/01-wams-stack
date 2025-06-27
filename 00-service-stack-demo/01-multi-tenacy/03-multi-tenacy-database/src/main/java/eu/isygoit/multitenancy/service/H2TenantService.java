@@ -16,11 +16,11 @@ import java.sql.Statement;
 public class H2TenantService implements ITenantService {
 
     @Autowired
-    private MultiTenantConnectionProvider tenantDataSourceProvider;
+    private MultiTenantConnectionProvider multiTenantConnectionProvider;
 
     @Override
     public void initializeTenantSchema(String tenantId) {
-        try (Connection connection = tenantDataSourceProvider.getConnection(tenantId);
+        try (Connection connection = multiTenantConnectionProvider.getConnection(tenantId);
              Statement stmt = connection.createStatement()) {
 
             // Create sequence (H2 syntax)

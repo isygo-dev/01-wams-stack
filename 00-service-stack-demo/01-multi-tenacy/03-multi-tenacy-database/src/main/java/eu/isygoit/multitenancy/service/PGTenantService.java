@@ -10,16 +10,27 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Initializes tenant-specific schema and database objects for the SCHEMA-per-tenant strategy.
+ */
 @Profile("postgres")
 @Slf4j
 @Service
 public class PGTenantService implements ITenantService {
+    
+    private final MultiTenantConnectionProvider multiTenantConnectionProvider;
 
-    @Autowired
-    private MultiTenantConnectionProvider tenantDataSourceProvider;
+    public PGTenantService(MultiTenantConnectionProvider multiTenantConnectionProvider) {
+        this.multiTenantConnectionProvider = multiTenantConnectionProvider;
+    }
 
+    /**
+     * Creates schema, sequence, and table for a given tenant (schema name).
+     *
+     * @param tenantId The tenant schema to initialize.
+     */
     public void initializeTenantSchema(String tenantId) {
-        try (Connection connection = tenantDataSourceProvider.getConnection(tenantId);
+        try (Connection connection = multiTenantConnectionProvider.getConnection(tenantId);
              Statement stmt = connection.createStatement()) {
 
             // Create SCHEMA (optional if schema-per-tenant is not used)
@@ -39,7 +50,7 @@ public class PGTenantService implements ITenantService {
                         CACHE 1;
                     """);
 
-            // Create TABLE
+            // Create tutorials table inside the tenant schema
             stmt.execute("""
                         CREATE TABLE IF NOT EXISTS tutorials (
                             id BIGINT PRIMARY KEY DEFAULT nextval('tutorials_seq'),
