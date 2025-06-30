@@ -4,10 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 @Profile("h2")
@@ -23,31 +26,24 @@ public class H2TenantService implements ITenantService {
         try (Connection connection = multiTenantConnectionProvider.getConnection(tenantId);
              Statement stmt = connection.createStatement()) {
 
-            // Create sequence (H2 syntax)
-            stmt.execute("""
-                    CREATE SEQUENCE IF NOT EXISTS tutorials_seq 
-                    START WITH 1 INCREMENT BY 1;
-                """);
+            // Load SQL file from classpath
+            ClassPathResource resource = new ClassPathResource("db/h2_tenant-schema.sql");
+            try (InputStream inputStream = resource.getInputStream()) {
+                String sql = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
 
-            // Create table with H2 sequence syntax
-            stmt.execute("""
-                CREATE TABLE IF NOT EXISTS tutorials (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    tenant_id VARCHAR(255) NOT NULL,
-                    title VARCHAR(255),
-                    description VARCHAR(1000),
-                    published BOOLEAN,
-                    create_date TIMESTAMP,
-                    created_by VARCHAR(255),
-                    update_date TIMESTAMP,
-                    updated_by VARCHAR(255)
-                );
-            """);
+                // Split and execute each statement
+                for (String statement : sql.split(";")) {
+                    String trimmed = statement.trim();
+                    if (!trimmed.isEmpty()) {
+                        stmt.execute(trimmed);
+                    }
+                }
+            }
 
-            log.info("Initialized H2 schema and tutorials table for tenant: {}", tenantId);
+            log.info("Initialized schema from SQL script for tenant: {}", tenantId);
 
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to initialize schema for tenant: " + tenantId, e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error initializing schema for tenant: " + tenantId, e);
         }
     }
 }

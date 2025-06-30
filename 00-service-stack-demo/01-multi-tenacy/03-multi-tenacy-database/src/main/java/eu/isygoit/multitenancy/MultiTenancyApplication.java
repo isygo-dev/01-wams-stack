@@ -1,17 +1,13 @@
 package eu.isygoit.multitenancy;
 
-import eu.isygoit.multitenancy.service.ITenantService;
-import eu.isygoit.multitenancy.service.PGTenantService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Slf4j
@@ -26,14 +22,5 @@ public class MultiTenancyApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MultiTenancyApplication.class, args);
-    }
-
-    @Bean
-    public CommandLineRunner initH2Schemas(ITenantService PGTenantService) {
-        return args -> {
-            // Create your initial tenants
-            PGTenantService.initializeTenantSchema("tenant1");
-            PGTenantService.initializeTenantSchema("tenant2");
-        };
     }
 }

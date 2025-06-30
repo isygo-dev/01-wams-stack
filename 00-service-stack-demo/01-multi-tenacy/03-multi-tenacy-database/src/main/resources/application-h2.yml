@@ -11,7 +11,7 @@ spring:
       path: /h2-console
 
   datasource:
-    url: jdbc:h2:mem:masterdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:masterdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -28,10 +28,10 @@ multi-tenancy:
   mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
   tenants:
     - id: tenant1
-      url: jdbc:h2:mem:tenant1db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      url: jdbc:h2:mem:tenant1db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
       username: sa
       password:
     - id: tenant2
-      url: jdbc:h2:mem:tenant2db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      url: jdbc:h2:mem:tenant2db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
       username: sa
       password:

@@ -2,7 +2,6 @@ package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
-import eu.isygoit.multitenancy.service.H2TenantService;
 import eu.isygoit.multitenancy.service.ITenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=update",

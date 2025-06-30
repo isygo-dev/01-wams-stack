@@ -30,12 +30,25 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
     public Connection getConnection(String tenantIdentifier) throws SQLException {
         Connection connection = dataSource.getConnection();
         try {
-            // Set the current schema for this connection
-            connection.createStatement().execute("SET SCHEMA '" + tenantIdentifier.toUpperCase() + "'");
+            String dbProductName = connection.getMetaData().getDatabaseProductName().toLowerCase();
+
+            String setSchemaSql;
+            if (dbProductName.contains("postgresql")) {
+                // PostgreSQL uses search_path
+                setSchemaSql = "SET search_path TO " + tenantIdentifier;
+            } else if (dbProductName.contains("h2")) {
+                // H2 uses SET SCHEMA
+                setSchemaSql = "SET SCHEMA " + tenantIdentifier;
+            } else {
+                throw new SQLException("Unsupported database: " + dbProductName);
+            }
+
+            connection.createStatement().execute(setSchemaSql);
         } catch (SQLException e) {
             connection.close();
             throw new SQLException("Could not set schema to " + tenantIdentifier, e);
         }
+
         return connection;
     }
 

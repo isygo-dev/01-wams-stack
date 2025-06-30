@@ -3,7 +3,6 @@ package eu.isygoit.multitenancy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
 import eu.isygoit.multitenancy.service.ITenantService;
-import eu.isygoit.multitenancy.service.PGTenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +10,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -31,23 +35,49 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("postgres")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Testcontainers
 class MultiTenancySchemaPostgresTests {
 
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
-
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("postgres") // initial database
+            .withUsername("postgres")
+            .withPassword("root")
+            .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
     private static Long tenant1TutorialId;
-
     private final String BASE_URL = "/api/tutorials";
-
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
-
     @Value("${multi-tenancy.mode}")
     private String multiTenancyProperty;
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+
+        String baseUrl = postgres.getJdbcUrl();
+        registry.add("spring.datasource.url", () -> baseUrl);
+
+        String tenant1Url = baseUrl.replace("/postgres", "/tenants")
+                .replace("public", "tenant1");
+        String tenant2Url = baseUrl.replace("/postgres", "/tenants")
+                .replace("public", "tenant2");
+
+        registry.add("multi-tenancy.tenants[0].id", () -> "tenant1");
+        registry.add("multi-tenancy.tenants[0].url", () -> tenant1Url);
+        registry.add("multi-tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("multi-tenancy.tenants[0].password", postgres::getPassword);
+
+        registry.add("multi-tenancy.tenants[1].id", () -> "tenant2");
+        registry.add("multi-tenancy.tenants[1].url", () -> tenant2Url);
+        registry.add("multi-tenancy.tenants[1].username", postgres::getUsername);
+        registry.add("multi-tenancy.tenants[1].password", postgres::getPassword);
+    }
 
     /**
      * Initialize database schema for tenant1 and tenant2 before all tests.

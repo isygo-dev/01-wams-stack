@@ -2,13 +2,14 @@ package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
-import eu.isygoit.multitenancy.service.TenantService;
+import eu.isygoit.multitenancy.service.ITenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -18,16 +19,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Integration tests for DISCRIMINATOR multi-tenancy strategy.
- * Verifies tenant isolation via tenant ID filtering on a shared table.
+ * Integration tests for the TutorialController with DATABASE multi-tenancy strategy.
+ * This test suite verifies tenant isolation at the database level by simulating HTTP calls using MockMvc.
  */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=update",
         "multi-tenancy.mode=DISCRIMINATOR"
 })
+@ActiveProfiles("h2")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class MultiTenancyDiscriminatorTests {
+class MultiTenancyDiscriminatorH2Tests {
+
 
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
@@ -46,8 +49,11 @@ class MultiTenancyDiscriminatorTests {
     @Value("${multi-tenancy.mode}")
     private String multiTenancyProperty;
 
+    /**
+     * Initialize database schema for tenant1 and tenant2 before all tests.
+     */
     @BeforeAll
-    static void initSharedSchema(@Autowired TenantService tenantService) {
+    static void initSharedSchema(@Autowired ITenantService tenantService) {
         tenantService.initializeTenantSchema("public");
     }
 
