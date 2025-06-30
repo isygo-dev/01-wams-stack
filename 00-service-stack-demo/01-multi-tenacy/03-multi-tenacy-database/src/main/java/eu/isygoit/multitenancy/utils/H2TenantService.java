@@ -1,7 +1,8 @@
-package eu.isygoit.multitenancy.service;
+package eu.isygoit.multitenancy.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -12,31 +13,21 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
 
-/**
- * Initializes tenant-specific schema and database objects for the SCHEMA-per-tenant strategy.
- */
-@Profile("postgres")
+@Profile("h2")
 @Slf4j
 @Service
-public class PGTenantService implements ITenantService {
+public class H2TenantService implements ITenantService {
 
-    private final MultiTenantConnectionProvider multiTenantConnectionProvider;
+    @Autowired
+    private MultiTenantConnectionProvider multiTenantConnectionProvider;
 
-    public PGTenantService(MultiTenantConnectionProvider multiTenantConnectionProvider) {
-        this.multiTenantConnectionProvider = multiTenantConnectionProvider;
-    }
-
-    /**
-     * Creates schema, sequence, and table for a given tenant (schema name).
-     *
-     * @param tenantId The tenant schema to initialize.
-     */
+    @Override
     public void initializeTenantSchema(String tenantId) {
         try (Connection connection = multiTenantConnectionProvider.getConnection(tenantId);
              Statement stmt = connection.createStatement()) {
 
             // Load SQL file from classpath
-            ClassPathResource resource = new ClassPathResource("db/pg_tenant-schema.sql");
+            ClassPathResource resource = new ClassPathResource("db/h2_tenant-schema.sql");
             try (InputStream inputStream = resource.getInputStream()) {
                 String sql = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
 

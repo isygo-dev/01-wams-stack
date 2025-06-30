@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.service;
+package eu.isygoit.multitenancy.utils;
 
 public interface ITenantService {
 

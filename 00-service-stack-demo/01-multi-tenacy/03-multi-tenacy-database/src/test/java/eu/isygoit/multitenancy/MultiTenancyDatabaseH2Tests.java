@@ -2,7 +2,7 @@ package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
-import eu.isygoit.multitenancy.service.ITenantService;
+import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

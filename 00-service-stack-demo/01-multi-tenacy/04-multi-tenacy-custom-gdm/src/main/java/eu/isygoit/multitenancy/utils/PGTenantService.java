@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.service;
+package eu.isygoit.multitenancy.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;

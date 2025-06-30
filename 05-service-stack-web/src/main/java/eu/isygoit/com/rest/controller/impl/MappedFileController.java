@@ -7,7 +7,7 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdentifiableDto;
-import eu.isygoit.dto.ISAASDto;
+import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
@@ -72,8 +72,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
                                             F dto) {
         log.info("Create with file request received");
         try {
-            if (dto instanceof ISAASDto ISAASDto && StringUtils.isEmpty(ISAASDto.getTenant())) {
-                ISAASDto.setTenant(requestContext.getSenderTenant());
+            if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
+                ITenantAssignableDto.setTenant(requestContext.getSenderTenant());
             }
             dto = this.beforeCreate(dto);
             F savedResume = mapper().entityToDto(this.afterCreate(

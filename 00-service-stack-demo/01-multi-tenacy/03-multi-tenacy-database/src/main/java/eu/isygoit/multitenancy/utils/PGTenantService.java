@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.service;
+package eu.isygoit.multitenancy.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
@@ -32,18 +32,15 @@ public class PGTenantService implements ITenantService {
      * @param tenantId The tenant schema to initialize.
      */
     public void initializeTenantSchema(String tenantId) {
-        try (Connection connection = multiTenantConnectionProvider.getAnyConnection();
+        try (Connection connection = multiTenantConnectionProvider.getConnection(tenantId);
              Statement stmt = connection.createStatement()) {
 
             // Load SQL file from classpath
             ClassPathResource resource = new ClassPathResource("db/pg_tenant-schema.sql");
             try (InputStream inputStream = resource.getInputStream()) {
-                String rawSql = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
+                String sql = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
 
-                // Replace the schema name placeholder
-                String sql = rawSql.replace("public", tenantId);
-
-                // Execute each statement separately
+                // Split and execute each statement
                 for (String statement : sql.split(";")) {
                     String trimmed = statement.trim();
                     if (!trimmed.isEmpty()) {

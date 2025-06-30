@@ -7,7 +7,7 @@ import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
 import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.IImageUploadDto;
-import eu.isygoit.dto.ISAASDto;
+import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
@@ -75,8 +75,8 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                                              F dto) {
         log.info("Create with image request received");
         try {
-            if (dto instanceof ISAASDto isaasDto && StringUtils.isEmpty(isaasDto.getTenant())) {
-                isaasDto.setTenant(requestContext.getSenderTenant());
+            if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
+                ITenantAssignableDto.setTenant(requestContext.getSenderTenant());
             }
             dto = this.beforeCreate(dto);
             return ResponseFactory.responseOk(mapper().entityToDto(

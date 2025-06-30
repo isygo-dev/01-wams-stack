@@ -32,6 +32,7 @@
         <module>01-multi-tenacy-discriminator</module>
         <module>02-multi-tenacy-schema</module>
         <module>03-multi-tenacy-database</module>
+        <module>04-multi-tenacy-custom-gdm</module>
     </modules>
 
     <build>

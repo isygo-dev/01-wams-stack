@@ -62,8 +62,6 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
                     this.crudService = getApplicationContextService().getBean((Class<S>) ctrlService.value())
                             .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
                 }
-                log.error("<Error>: Service bean not defined");
-                throw new ServiceNotDefinedException(CONTROLLER_SERVICE);
             }
         }
 

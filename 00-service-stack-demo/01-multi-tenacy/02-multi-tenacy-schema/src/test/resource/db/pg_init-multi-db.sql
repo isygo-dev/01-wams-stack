@@ -1,1 +1,2 @@
-CREATE DATABASE tenants;
+CREATE
+DATABASE tenants;

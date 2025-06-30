@@ -142,6 +142,8 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      */
     Optional<T> findById(I id) throws ObjectNotFoundException;
 
+    Optional<T> findById(String tenant,I id) throws ObjectNotFoundException, NotSupportedException;
+
     /**
      * Save or update t.
      *

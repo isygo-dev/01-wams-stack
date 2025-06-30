@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy.discriminator;
 
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,9 @@ import java.sql.SQLException;
  * Always returns the same connection since all tenants share the same schema.
  */
 @Component
-@ConditionalOnProperty(name = "multi-tenancy.mode", havingValue = "DISCRIMINATOR")
+@ConditionalOnExpression(
+        "'${multi-tenancy.mode}'=='DISCRIMINATOR' || '${multi-tenancy.mode}'=='GDM'"
+)
 public class DiscriminatorMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String> {
 
     private final DataSource dataSource;

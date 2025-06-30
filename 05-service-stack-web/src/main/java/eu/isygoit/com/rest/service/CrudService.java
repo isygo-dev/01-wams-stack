@@ -47,7 +47,7 @@ public abstract class CrudService<I extends Serializable,
      */
     public static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     //Attention !!! should get the class type of th persist entity
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
     @Transactional(readOnly = true)
@@ -374,6 +374,24 @@ public abstract class CrudService<I extends Serializable,
 
         // Retrieve the entity and apply afterFindById if present
         return repository().findById(id)
+                .map(entity -> afterFindById((T) entity));  // Using lambda instead of method reference
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<T> findById(String tenant,I id) throws ObjectNotFoundException, NotSupportedException {
+        if (!ITenantAssignable.class.isAssignableFrom(persistentClass) ||
+                !(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
+            throw new NotSupportedException("Entity not tenant assignable: " + persistentClass.getSimpleName());
+        }
+
+        if (Objects.isNull(id)) {
+            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
+        }
+
+        // Retrieve the entity and apply afterFindById if present
+        return repository().findById(id)
+                .filter(t -> ((ITenantAssignable)t).getTenant().equals(tenant))
                 .map(entity -> afterFindById((T) entity));  // Using lambda instead of method reference
     }
 

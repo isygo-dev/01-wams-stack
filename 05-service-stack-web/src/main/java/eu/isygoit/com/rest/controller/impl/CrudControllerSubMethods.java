@@ -57,7 +57,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                     .map(mapper()::entityToDto)
                     .orElseThrow(() -> new BadArgumentException("Object creation failed"));
 
-            return ResponseFactory.responseOk(createdObject);
+            return ResponseFactory.responseCreated(createdObject);
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -302,13 +302,16 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         log.info("Find {} by id request received", persistentClass.getSimpleName());
 
         try {
-            var optionalObject = crudService().findById(id);
+            var optionalObject = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+                    !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant())
+                    ? crudService().findById(requestContext.getSenderTenant(), id)
+                    : crudService().findById(id);
 
             // Utilisation de Optional pour éviter les appels potentiellement risqués à .get()
             var object = optionalObject.map(mapper()::entityToDto).orElse(null);
 
             if (object == null) {
-                return ResponseFactory.responseNoContent();
+                return ResponseFactory.responseNotFound();
             }
 
             return ResponseFactory.responseOk(afterFindById(object));

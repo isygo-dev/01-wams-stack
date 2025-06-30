@@ -24,7 +24,7 @@ public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable
     @SequenceGenerator(name = "tutorial_seq", sequenceName = "TUTORIALS_SEQ", allocationSize = 1)
     private Long id;
 
-    @Column(name = "TENANT_ID", nullable = false)
+    @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 
     @Column(name = "TITLE")
