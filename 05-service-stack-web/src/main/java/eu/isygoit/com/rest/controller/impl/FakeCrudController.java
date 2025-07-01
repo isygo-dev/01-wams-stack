@@ -73,6 +73,10 @@ public abstract class FakeCrudController<I extends Serializable, T extends IIdAs
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
+    public ResponseEntity<List<F>> createBatch(RequestContextDto requestContext, List<F> objects) {
+        throw new UnsupportedOperationException("This is a fake controller");
+    }
+
     @Override
     public ResponseEntity<F> update(RequestContextDto requestContext,
                                     I id,

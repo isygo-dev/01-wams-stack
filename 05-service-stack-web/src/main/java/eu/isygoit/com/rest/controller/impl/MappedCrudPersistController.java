@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The type Mapped crud persist controller.
@@ -29,6 +30,10 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
 
     public final ResponseEntity<F> create(RequestContextDto requestContext, F object) {
         return subCreate(requestContext, object);
+    }
+
+    public final ResponseEntity<List<F>> createBatch(RequestContextDto requestContext, List<F> objects) {
+        return subCreate(requestContext, objects);
     }
 
     public final ResponseEntity<F> update(RequestContextDto requestContext, I id, F object) {

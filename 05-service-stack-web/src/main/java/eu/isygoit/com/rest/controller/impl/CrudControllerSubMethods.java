@@ -75,6 +75,14 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     public final ResponseEntity<List<F>> subUpdate(RequestContextDto requestContext, List<F> objects) {
         log.info("Update {} request received", persistentClass.getSimpleName());
 
+        Function<T, T> updateFunction = obj -> {
+            if (obj instanceof ITenantAssignable) {
+                return crudService().update(requestContext.getSenderTenant(), obj);
+            } else {
+                return crudService().update(obj);
+            }
+        };
+
         return Optional.ofNullable(objects)
                 .filter(list -> !list.isEmpty())
                 .map(list -> {
@@ -82,7 +90,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                         var processedDtos = list.parallelStream()
                                 .map(f -> beforeUpdate((I) f.getId(), f))
                                 .map(f -> mapper().dtoToEntity(f))
-                                .map(t -> crudService().update(t))
+                                .map(updateFunction)
                                 .map(t -> afterUpdate(t))
                                 .toList();
 
@@ -99,6 +107,14 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     public final ResponseEntity<List<F>> subCreate(RequestContextDto requestContext, List<F> objects) {
         log.info("Create {} request received", persistentClass.getSimpleName());
 
+        Function<T, T> createFunction = obj -> {
+            if (obj instanceof ITenantAssignable) {
+                return crudService().create(requestContext.getSenderTenant(), obj);
+            } else {
+                return crudService().create(obj);
+            }
+        };
+
         return Optional.ofNullable(objects)
                 .filter(list -> !list.isEmpty())
                 .map(list -> {
@@ -106,7 +122,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                         var processedDtos = list.parallelStream()
                                 .map(f -> beforeCreate(f))
                                 .map(f -> mapper().dtoToEntity(f))
-                                .map(t -> crudService().create(t))
+                                .map(createFunction)
                                 .map(t -> afterCreate(t))
                                 .toList();
 

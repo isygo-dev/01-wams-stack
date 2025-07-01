@@ -1,5 +1,6 @@
 package eu.isygoit.multitenancy.model;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import jakarta.persistence.*;
@@ -24,6 +25,7 @@ public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 
+    @Criteria
     @Column(name = "TITLE")
     private String title;
 

@@ -35,6 +35,10 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
         return subCreate(requestContext, object);
     }
 
+    public final ResponseEntity<List<F>> createBatch(RequestContextDto requestContext, List<F> objects) {
+        return subCreate(requestContext, objects);
+    }
+
     @Override
     public final ResponseEntity<?> delete(RequestContextDto requestContext, I id) {
         return subDelete(requestContext, id);

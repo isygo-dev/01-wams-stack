@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The interface Mapped crud persist api.
@@ -41,6 +42,19 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdenti
     @PostMapping(path = "", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> create(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                              @Valid @RequestBody D object);
+
+    @Operation(summary = "Create multiple objects",
+            description = "Create multiple objects in a single request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Objects created successfully",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifiableDto.class))})
+    })
+    @PostMapping(path = "/batch", consumes = "application/json", produces = "application/json")
+    ResponseEntity<List<D>> createBatch(
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @Valid @RequestBody List<D> objects);
 
     /**
      * Update response entity.
