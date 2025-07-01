@@ -26,11 +26,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- * Abstract service to manage image entities with upload/download functionality.
+ * The type Image service.
  *
- * @param <I> ID type
- * @param <T> Entity type (extends IImageEntity and IIdAssignable)
- * @param <R> Repository type
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <R> the type parameter
  */
 @Slf4j
 public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I> & ICodeAssignable,
@@ -42,14 +42,6 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1];
 
-    /**
-     * Reusable method to save an image file for an entity.
-     *
-     * @param entity the entity
-     * @param file   the multipart file to save
-     * @return the string path of the saved image
-     * @throws IOException if saving fails
-     */
     private String saveImageFile(T entity, MultipartFile file) throws IOException {
         // Determine target directory based on entity tenant and class name
         Path target = Path.of(getUploadDirectory())
@@ -142,7 +134,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
             entity.setImagePath(saveImageFile(entity, file));
         } else {
             // Keep existing image path if no new file provided
-            String existingPath = findById((I) entity.getId())
+            String existingPath = findById(entity.getId())
                     .map(T::getImagePath)
                     .orElse(null);
             entity.setImagePath(existingPath);
@@ -152,9 +144,9 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
     }
 
     /**
-     * Abstract method to get upload directory path.
+     * Gets upload directory.
      *
-     * @return upload directory path
+     * @return the upload directory
      */
     protected abstract String getUploadDirectory();
 

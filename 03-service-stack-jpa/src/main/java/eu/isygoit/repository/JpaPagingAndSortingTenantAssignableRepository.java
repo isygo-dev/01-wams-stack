@@ -22,7 +22,6 @@ import java.util.Optional;
 public interface JpaPagingAndSortingTenantAssignableRepository<T extends ITenantAssignable & IIdAssignable<I>, I extends Serializable>
         extends JpaPagingAndSortingRepository<T, I> {
 
-
     /**
      * Find by tenant ignore case list.
      *

@@ -11,8 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * The interface Mapped crud delete api.
@@ -36,7 +36,7 @@ public interface IMappedCrudDeleteApi<I> {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = IdentifiableDto.class))})
     })
-    @DeleteMapping(path = "")
+    @DeleteMapping(path = "/{id}")
     ResponseEntity<?> delete(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                             @RequestParam(name = RestApiConstants.ID) I id);
+                             @PathVariable(name = RestApiConstants.ID) I id);
 }

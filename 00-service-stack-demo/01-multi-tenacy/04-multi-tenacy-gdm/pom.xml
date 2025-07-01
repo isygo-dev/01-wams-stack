@@ -10,7 +10,7 @@
     </organization>
 
     <groupId>eu.isygo-it.services</groupId>
-    <artifactId>poc-multi-tenacy-custom-gdm-gdm</artifactId>
+    <artifactId>poc-multi-tenacy-gdm</artifactId>
     <version>WC-1.0.250516-T0922</version>
     <packaging>jar</packaging>
     <name>poc-multi-tenacy-custom-gdm</name>

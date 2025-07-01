@@ -215,5 +215,5 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
                             schema = @Schema(implementation = Map.class))})
     })
     @GetMapping(path = "/filter/criteria")
-    ResponseEntity<Map<String, String>> findAllFilterCriteria();
+    ResponseEntity<Map<String, String>> findAllFilterCriterias();
 }

@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * The type Crud controller sub methods.
@@ -44,16 +45,22 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
-    public ResponseEntity<F> subCreate(F object) {
+    public final ResponseEntity<F> subCreate(RequestContextDto requestContext, F object) {
         log.info("Create {} request received", persistentClass.getSimpleName());
-
         try {
-            // Utilisation de Optional pour améliorer la sécurité et la lisibilité
+            Function<T, T> createFunction = obj -> {
+                if (obj instanceof ITenantAssignable) {
+                    return crudService().create(requestContext.getSenderTenant(), obj);
+                } else {
+                    return crudService().create(obj);
+                }
+            };
+
             var createdObject = Optional.of(object)
-                    .map(o -> beforeCreate(o))
-                    .map(o -> mapper().dtoToEntity(o))
-                    .map(crudService()::create)
-                    .map(o -> afterCreate(o))
+                    .map(this::beforeCreate)
+                    .map(mapper()::dtoToEntity)
+                    .map(createFunction)
+                    .map(this::afterCreate)
                     .map(mapper()::entityToDto)
                     .orElseThrow(() -> new BadArgumentException("Object creation failed"));
 
@@ -65,7 +72,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     @Override
-    public ResponseEntity<List<F>> subUpdate(List<F> objects) {
+    public final ResponseEntity<List<F>> subUpdate(RequestContextDto requestContext, List<F> objects) {
         log.info("Update {} request received", persistentClass.getSimpleName());
 
         return Optional.ofNullable(objects)
@@ -89,7 +96,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     @Override
-    public ResponseEntity<List<F>> subCreate(List<F> objects) {
+    public final ResponseEntity<List<F>> subCreate(RequestContextDto requestContext, List<F> objects) {
         log.info("Create {} request received", persistentClass.getSimpleName());
 
         return Optional.ofNullable(objects)
@@ -114,7 +121,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
+    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
         log.info("Delete {} request received", persistentClass.getSimpleName());
 
         return Optional.ofNullable(id)
@@ -124,7 +131,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
                             crudService().delete(requestContext.getSenderTenant(), validId);
                             afterDelete(validId);
                         }
-                        return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+                        return ResponseFactory.responseNoContent();
                     } catch (Throwable e) {
                         log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
                         return getBackExceptionResponse(e);
@@ -135,7 +142,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
+    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
         log.info("Delete {} request received", persistentClass.getSimpleName());
 
         return Optional.ofNullable(objects)
@@ -157,7 +164,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
+    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
@@ -183,7 +190,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
+    public final ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
@@ -210,7 +217,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
+    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
 
         try {
@@ -239,7 +246,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
+    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
         log.info("Find all {}s request received", persistentClass.getSimpleName());
 
         try {
@@ -265,7 +272,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     @Override
-    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
+    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
         log.info("Find all {}s by page/size request received {}/{}", persistentClass.getSimpleName(), page, size);
 
         if (page == null || size == null) {
@@ -298,7 +305,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
+    public final ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
         log.info("Find {} by id request received", persistentClass.getSimpleName());
 
         try {
@@ -323,7 +330,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
+    public final ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
         log.info("Get count {} request received", persistentClass.getSimpleName());
 
         try {
@@ -341,7 +348,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<F> subUpdate(I id, F object) {
+    public final ResponseEntity<F> subUpdate(RequestContextDto requestContext, I id, F object) {
         log.info("Update {} request received", persistentClass.getSimpleName());
 
         if (object == null || id == null) {
@@ -351,11 +358,19 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         try {
             object.setId(id);
 
+            Function<T, T> updateFunction = obj -> {
+                if (obj instanceof ITenantAssignable) {
+                    return crudService().update(requestContext.getSenderTenant(), obj);
+                } else {
+                    return crudService().update(obj);
+                }
+            };
+
             // Utilisation de Optional pour améliorer la sécurité et la lisibilité
             var updatedObject = Optional.of(object)
                     .map(o -> beforeUpdate(id, o))
                     .map(o -> mapper().dtoToEntity(o))
-                    .map(crudService()::update)
+                    .map(updateFunction)
                     .map(o -> afterUpdate(o))
                     .map(mapper()::entityToDto)
                     .orElseThrow(() -> new BadArgumentException("Object update failed"));
@@ -369,7 +384,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
+    public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
         try {
             // Utilisation de var pour simplifier les déclarations
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
@@ -398,8 +413,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
-                                                                Integer page, Integer size) {
+    public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
+                                                                      Integer page, Integer size) {
         try {
             // Conversion des critères en liste et préparation de la page
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
@@ -429,7 +444,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
 
 
     @Override
-    public ResponseEntity<Map<String, String>> subFindAllFilterCriteria() {
+    public final ResponseEntity<Map<String, String>> subfindAllFilterCriterias() {
         try {
             // Récupération des critères à partir de CriteriaHelper
             var criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);

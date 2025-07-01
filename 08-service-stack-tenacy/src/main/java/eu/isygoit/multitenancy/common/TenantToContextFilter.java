@@ -14,6 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * The type Tenant to context filter.
+ */
 @ConditionalOnProperty(name = "multi-tenancy.filter", havingValue = "CONTEXT")
 @Component
 public class TenantToContextFilter extends OncePerRequestFilter {
@@ -22,6 +25,11 @@ public class TenantToContextFilter extends OncePerRequestFilter {
 
     private final ITenantValidator tenantValidator;
 
+    /**
+     * Instantiates a new Tenant to context filter.
+     *
+     * @param tenantValidator the tenant validator
+     */
     public TenantToContextFilter(ITenantValidator tenantValidator) {
         this.tenantValidator = tenantValidator;
     }

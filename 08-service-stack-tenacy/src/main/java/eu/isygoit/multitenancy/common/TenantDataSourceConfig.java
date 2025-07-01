@@ -3,6 +3,9 @@ package eu.isygoit.multitenancy.common;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * The type Tenant data source config.
+ */
 @Getter
 @Setter
 public class TenantDataSourceConfig {

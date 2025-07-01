@@ -10,6 +10,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * The type Tenant filter.
+ */
 @ConditionalOnProperty(name = "multi-tenancy.filter", havingValue = "TENANT")
 @Component
 public class TenantFilter extends OncePerRequestFilter {
@@ -18,6 +21,11 @@ public class TenantFilter extends OncePerRequestFilter {
 
     private final ITenantValidator tenantValidator;
 
+    /**
+     * Instantiates a new Tenant filter.
+     *
+     * @param tenantValidator the tenant validator
+     */
     public TenantFilter(ITenantValidator tenantValidator) {
         this.tenantValidator = tenantValidator;
     }

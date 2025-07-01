@@ -4,10 +4,7 @@ import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
-import eu.isygoit.exception.BadArgumentException;
-import eu.isygoit.exception.EmptyListException;
-import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.exception.OperationNotAllowedException;
+import eu.isygoit.exception.*;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -15,7 +12,6 @@ import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.NotSupportedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
@@ -87,7 +83,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         if (object.getId() == null) {
             object = this.beforeCreate(object);
             assignCodeIfEmpty(object);
-            return this.afterCreate((T) repository().save(object));
+            return this.afterCreate(repository().save(object));
         } else {
             throw new EntityExistsException();
         }
@@ -123,7 +119,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         if (object.getId() != null) {
             object = this.beforeUpdate(object);
             assignCodeIfEmpty(object);
-            return this.afterUpdate((T) repository().save(object));
+            return this.afterUpdate(repository().save(object));
         } else {
             throw new EntityNotFoundException();
         }
@@ -293,7 +289,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAll(String tenant) throws NotSupportedException {
+    public List<T> findAll(String tenant) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
                 && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
             List<T> list = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant);
@@ -302,12 +298,12 @@ public abstract class CassandraCrudService<I extends Serializable,
             }
             return this.afterFindAll(list);
         } else {
-            throw new NotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
+            throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
     }
 
     @Override
-    public List<T> findAll(String tenant, Pageable pageable) throws NotSupportedException {
+    public List<T> findAll(String tenant, Pageable pageable) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
                 && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
             Page<T> page = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant, pageable);
@@ -316,7 +312,7 @@ public abstract class CassandraCrudService<I extends Serializable,
             }
             return this.afterFindAll(page.getContent());
         } else {
-            throw new NotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
+            throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
     }
 
@@ -329,7 +325,7 @@ public abstract class CassandraCrudService<I extends Serializable,
 
         // Retrieve the entity and apply afterFindById if present
         return repository().findById(id)
-                .map(entity -> afterFindById((T) entity));  // Apply afterFindById if value is present
+                .map(entity -> afterFindById(entity));  // Apply afterFindById if value is present
     }
 
     @Override

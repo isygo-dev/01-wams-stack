@@ -3,10 +3,8 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.dto.IIdentifiableDto;
-import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
@@ -34,10 +32,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     @Override
     public final ResponseEntity<F> create(RequestContextDto requestContext,
                                           F object) {
-        if (object instanceof ITenantAssignableDto tenantAssignable){
-            tenantAssignable.setTenant(requestContext.getSenderTenant());
-        }
-        return subCreate(object);
+        return subCreate(requestContext, object);
     }
 
     @Override
@@ -84,7 +79,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     public final ResponseEntity<F> update(RequestContextDto requestContext,
                                           I id,
                                           F object) {
-        return subUpdate(id, object);
+        return subUpdate(requestContext, id, object);
     }
 
     @Override
@@ -103,7 +98,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriteria() {
-        return subFindAllFilterCriteria();
+    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
+        return subfindAllFilterCriterias();
     }
 }

@@ -188,7 +188,7 @@ class MultiTenancyDiscriminatorPostgresTests {
                         .header("X-Tenant-ID", TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

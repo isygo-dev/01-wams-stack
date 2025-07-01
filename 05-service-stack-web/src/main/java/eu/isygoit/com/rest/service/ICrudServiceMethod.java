@@ -35,7 +35,7 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @return the long
      * @throws NotSupportedException the not supported exception
      */
-    Long count(String tenant) throws NotSupportedException;
+    Long count(String tenant);
 
     /**
      * Exists by id boolean.
@@ -46,12 +46,32 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     boolean existsById(I id);
 
     /**
+     * Exists by id boolean.
+     *
+     * @param tenant the tenant
+     * @param id     the id
+     * @return the boolean
+     * @throws NotSupportedException the not supported exception
+     */
+    boolean existsById(String tenant, I id);
+
+    /**
      * Create t.
      *
      * @param object the object
      * @return the t
      */
     T create(T object);
+
+    /**
+     * Create t.
+     *
+     * @param tenant the tenant
+     * @param object the object
+     * @return the t
+     * @throws NotSupportedException the not supported exception
+     */
+    T create(String tenant, T object);
 
     /**
      * Create and flush t.
@@ -62,6 +82,16 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     T createAndFlush(T object);
 
     /**
+     * Create and flush t.
+     *
+     * @param tenant the tenant
+     * @param object the object
+     * @return the t
+     * @throws NotSupportedException the not supported exception
+     */
+    T createAndFlush(String tenant, T object);
+
+    /**
      * Create list.
      *
      * @param objects the objects
@@ -70,20 +100,14 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     List<T> create(List<T> objects);
 
     /**
-     * Delete.
+     * Create list.
      *
-     * @param senderTenant the sender tenant
-     * @param id           the id
+     * @param tenant  the tenant
+     * @param objects the objects
+     * @return the list
+     * @throws NotSupportedException the not supported exception
      */
-    void delete(String senderTenant, I id);
-
-    /**
-     * Delete.
-     *
-     * @param senderTenant the sender tenant
-     * @param objects      the objects
-     */
-    void delete(String senderTenant, List<T> objects);
+    List<T> create(String tenant, List<T> objects);
 
     /**
      * Delete.
@@ -95,9 +119,27 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Delete.
      *
+     * @param tenant the tenant
+     * @param id     the id
+     * @throws NotSupportedException the not supported exception
+     */
+    void delete(String tenant, I id);
+
+    /**
+     * Delete.
+     *
      * @param objects the objects
      */
     void delete(List<T> objects);
+
+    /**
+     * Delete.
+     *
+     * @param tenant  the tenant
+     * @param objects the objects
+     * @throws NotSupportedException the not supported exception
+     */
+    void delete(String tenant, List<T> objects);
 
     /**
      * Find all list.
@@ -113,7 +155,7 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String tenant) throws NotSupportedException;
+    List<T> findAll(String tenant);
 
     /**
      * Find all list.
@@ -131,18 +173,27 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String tenant, Pageable pageable) throws NotSupportedException;
+    List<T> findAll(String tenant, Pageable pageable);
 
     /**
-     * Find by id t.
+     * Find by id optional.
      *
      * @param id the id
-     * @return the t
+     * @return the optional
      * @throws ObjectNotFoundException the object not found exception
      */
     Optional<T> findById(I id) throws ObjectNotFoundException;
 
-    Optional<T> findById(String tenant,I id) throws ObjectNotFoundException, NotSupportedException;
+    /**
+     * Find by id optional.
+     *
+     * @param tenant the tenant
+     * @param id     the id
+     * @return the optional
+     * @throws ObjectNotFoundException the object not found exception
+     * @throws NotSupportedException   the not supported exception
+     */
+    Optional<T> findById(String tenant, I id) throws ObjectNotFoundException, NotSupportedException;
 
     /**
      * Save or update t.
@@ -153,12 +204,32 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     T saveOrUpdate(T object);
 
     /**
+     * Save or update t.
+     *
+     * @param tenant the tenant
+     * @param object the object
+     * @return the t
+     * @throws NotSupportedException the not supported exception
+     */
+    T saveOrUpdate(String tenant, T object);
+
+    /**
      * Save or update list.
      *
      * @param objects the objects
      * @return the list
      */
     List<T> saveOrUpdate(List<T> objects);
+
+    /**
+     * Save or update list.
+     *
+     * @param tenant  the tenant
+     * @param objects the objects
+     * @return the list
+     * @throws NotSupportedException the not supported exception
+     */
+    List<T> saveOrUpdate(String tenant, List<T> objects);
 
     /**
      * Update t.
@@ -169,12 +240,32 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     T update(T object);
 
     /**
+     * Update t.
+     *
+     * @param tenant the tenant
+     * @param object the object
+     * @return the t
+     * @throws NotSupportedException the not supported exception
+     */
+    T update(String tenant, T object);
+
+    /**
      * Update and flush t.
      *
      * @param object the object
      * @return the t
      */
     T updateAndFlush(T object);
+
+    /**
+     * Update and flush t.
+     *
+     * @param tenant the tenant
+     * @param object the object
+     * @return the t
+     * @throws NotSupportedException the not supported exception
+     */
+    T updateAndFlush(String tenant, T object);
 
     /**
      * Update list.
@@ -185,13 +276,41 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     List<T> update(List<T> objects);
 
     /**
+     * Update list.
+     *
+     * @param tenant  the tenant
+     * @param objects the objects
+     * @return the list
+     * @throws NotSupportedException the not supported exception
+     */
+    List<T> update(String tenant, List<T> objects);
+
+    /**
+     * Find all by criteria filter list.
+     *
+     * @param criteria the criteria
+     * @return the list
+     */
+    List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria);
+
+    /**
      * Find all by criteria filter list.
      *
      * @param tenant   the tenant
      * @param criteria the criteria
      * @return the list
+     * @throws NotSupportedException the not supported exception
      */
     List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria);
+
+    /**
+     * Find all by criteria filter list.
+     *
+     * @param criteria    the criteria
+     * @param pageRequest the page request
+     * @return the list
+     */
+    List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest);
 
     /**
      * Find all by criteria filter list.
@@ -200,6 +319,7 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @param criteria    the criteria
      * @param pageRequest the page request
      * @return the list
+     * @throws NotSupportedException the not supported exception
      */
     List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest);
 }

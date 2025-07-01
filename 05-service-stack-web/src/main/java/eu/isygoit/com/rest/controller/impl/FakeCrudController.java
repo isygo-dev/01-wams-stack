@@ -96,7 +96,7 @@ public abstract class FakeCrudController<I extends Serializable, T extends IIdAs
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriteria() {
+    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 }

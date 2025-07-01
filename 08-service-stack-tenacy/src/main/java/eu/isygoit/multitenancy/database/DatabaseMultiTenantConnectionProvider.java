@@ -10,12 +10,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
+/**
+ * The type Database multi tenant connection provider.
+ */
 @Component
 @ConditionalOnProperty(name = "multi-tenancy.mode", havingValue = "DATABASE")
 public class DatabaseMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String> {
 
     private final Map<String, DataSource> tenantDataSources;
 
+    /**
+     * Instantiates a new Database multi tenant connection provider.
+     *
+     * @param tenantDataSources the tenant data sources
+     */
     public DatabaseMultiTenantConnectionProvider(@Qualifier("tenantDataSources") Map<String, DataSource> tenantDataSources) {
         this.tenantDataSources = tenantDataSources;
     }

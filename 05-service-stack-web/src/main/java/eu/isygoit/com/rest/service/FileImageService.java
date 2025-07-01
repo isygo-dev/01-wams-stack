@@ -25,11 +25,11 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Generic abstract service to handle file and image upload/download logic.
+ * The type File image service.
  *
- * @param <I> Identifier type
- * @param <T> Entity type supporting image, file, code, and ID
- * @param <R> JPA repository
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <R> the type parameter
  */
 @Slf4j
 public abstract class FileImageService<I extends Serializable,
@@ -41,15 +41,6 @@ public abstract class FileImageService<I extends Serializable,
     private final Class<T> persistentClass =
             (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
-    /**
-     * Uploads an image for the entity with the given ID.
-     *
-     * @param senderTenant the tenant of the sender
-     * @param id           the entity ID
-     * @param file         the image file
-     * @return the updated entity
-     * @throws IOException if file cannot be saved
-     */
     @Override
     @Transactional
     public T uploadImage(String senderTenant, I id, MultipartFile file) throws IOException {
@@ -69,13 +60,6 @@ public abstract class FileImageService<I extends Serializable,
         return update(entity);
     }
 
-    /**
-     * Downloads the image of the entity by ID.
-     *
-     * @param id the entity ID
-     * @return the image resource
-     * @throws IOException if file cannot be read
-     */
     @Override
     public Resource downloadImage(I id) throws IOException {
         T entity = findEntityByIdOrThrow(id);
@@ -92,15 +76,6 @@ public abstract class FileImageService<I extends Serializable,
         return resource;
     }
 
-    /**
-     * Creates a new entity with an image.
-     *
-     * @param senderTenant the tenant of the sender
-     * @param entity       the entity to create
-     * @param file         the image file
-     * @return the created entity
-     * @throws IOException if file saving fails
-     */
     @Override
     @Transactional
     public T createWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
@@ -123,15 +98,6 @@ public abstract class FileImageService<I extends Serializable,
         return create(entity);
     }
 
-    /**
-     * Updates an existing entity and its image.
-     *
-     * @param senderTenant the tenant of the sender
-     * @param entity       the entity to update
-     * @param file         the image file
-     * @return the updated entity
-     * @throws IOException if file saving fails
-     */
     @Override
     @Transactional
     public T updateWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
@@ -152,9 +118,6 @@ public abstract class FileImageService<I extends Serializable,
         return update(entity);
     }
 
-    /**
-     * Validates the image file.
-     */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
@@ -162,17 +125,11 @@ public abstract class FileImageService<I extends Serializable,
         }
     }
 
-    /**
-     * Finds an entity or throws {@link ObjectNotFoundException}.
-     */
     private T findEntityByIdOrThrow(I id) {
         return findById(id).orElseThrow(() ->
                 new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
     }
 
-    /**
-     * Applies tenant restriction for SAAS model.
-     */
     private void assignTenantIfApplicable(String senderTenant, T entity) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
                 && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
@@ -180,9 +137,6 @@ public abstract class FileImageService<I extends Serializable,
         }
     }
 
-    /**
-     * Returns a function that resolves the image directory path based on entity properties.
-     */
     private Function<T, Path> resolveTargetPath() {
         return entity -> {
             String tenant = (entity instanceof ITenantAssignable da)
@@ -196,10 +150,5 @@ public abstract class FileImageService<I extends Serializable,
         };
     }
 
-    /**
-     * Gets the base upload directory.
-     *
-     * @return upload path root
-     */
     protected abstract String getUploadDirectory();
 }

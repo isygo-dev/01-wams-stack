@@ -1,6 +1,7 @@
 # Multi-Tenancy Implementation
 
-A comprehensive Spring Boot multi-tenancy solution supporting four different isolation strategies: Database, Schema, Discriminator-based, and Generic Discriminator Multi-tenancy (GDM).
+A comprehensive Spring Boot multi-tenancy solution supporting four different isolation strategies: Database, Schema,
+Discriminator-based, and Generic Discriminator Multi-tenancy (GDM).
 
 ## Features
 
@@ -29,21 +30,25 @@ The implementation consists of several key components:
 ### Tenancy Strategies
 
 #### 1. DATABASE Strategy
+
 - **Isolation Level**: Complete database separation
 - **Use Case**: High security requirements, complete data isolation
 - **Implementation**: Each tenant has its own database with separate DataSource
 
 #### 2. SCHEMA Strategy
+
 - **Isolation Level**: Schema-level separation within the same database
 - **Use Case**: Moderate isolation with shared database infrastructure
 - **Implementation**: Single database with multiple schemas, dynamic schema switching
 
 #### 3. DISCRIMINATOR Strategy
+
 - **Isolation Level**: Row-level separation using tenant columns
 - **Use Case**: Shared schema with logical separation
 - **Implementation**: Hibernate filters with tenant discriminator columns
 
 #### 4. GDM (Generic Discriminator Multi-tenancy) Strategy
+
 - **Isolation Level**: Row-level separation with generic implementation
 - **Use Case**: Flexible discriminator-based approach with enhanced features
 - **Implementation**: Extended discriminator pattern with generic tenant handling
@@ -70,19 +75,19 @@ multi-tenancy:
 
 ### Tenant Configuration Options
 
-| Mode | Description | Database Support | Isolation Level |
-|------|-------------|------------------|-----------------|
-| `DATABASE` | Separate database per tenant | PostgreSQL, H2 | Complete |
-| `SCHEMA` | Separate schema per tenant | PostgreSQL, H2 | Schema-level |
-| `DISCRIMINATOR` | Shared schema with filters | PostgreSQL, H2 | Row-level |
-| `GDM` | Generic Discriminator Multi-tenancy | PostgreSQL, H2 | Row-level |
+| Mode            | Description                         | Database Support | Isolation Level |
+|-----------------|-------------------------------------|------------------|-----------------|
+| `DATABASE`      | Separate database per tenant        | PostgreSQL, H2   | Complete        |
+| `SCHEMA`        | Separate schema per tenant          | PostgreSQL, H2   | Schema-level    |
+| `DISCRIMINATOR` | Shared schema with filters          | PostgreSQL, H2   | Row-level       |
+| `GDM`           | Generic Discriminator Multi-tenancy | PostgreSQL, H2   | Row-level       |
 
 ### Filter Configuration Options
 
-| Filter Type | Description | Context Features |
-|-------------|-------------|------------------|
-| `TENANT` | Basic tenant extraction and validation | Tenant ID only |
-| `CONTEXT` | Enhanced context with user information | Full RequestContextDto |
+| Filter Type | Description                            | Context Features       |
+|-------------|----------------------------------------|------------------------|
+| `TENANT`    | Basic tenant extraction and validation | Tenant ID only         |
+| `CONTEXT`   | Enhanced context with user information | Full RequestContextDto |
 
 ## Usage
 
@@ -173,16 +178,19 @@ TenantContext.clear();
 ### Connection Providers
 
 #### DatabaseMultiTenantConnectionProvider
+
 - Manages separate DataSource instances per tenant
 - Routes connections based on tenant identifier
 - Suitable for complete database isolation
 
 #### SchemaMultiTenantConnectionProvider
+
 - Uses single DataSource with dynamic schema switching
 - Executes `SET SCHEMA` or `SET search_path` commands
 - Supports PostgreSQL and H2 databases
 
 #### DiscriminatorMultiTenantConnectionProvider
+
 - Always returns the same connection
 - Relies on Hibernate filters for data isolation
 - Most resource-efficient approach
@@ -191,18 +199,21 @@ TenantContext.clear();
 ### Filters
 
 #### TenantFilter
+
 - Extracts tenant ID from `X-Tenant-ID` header
 - Validates tenant existence
 - Sets tenant context for request duration
 - Basic tenant-only filtering
 
 #### TenantToContextFilter
+
 - Extended version that also builds request context
 - Creates `RequestContextDto` with tenant and user information
 - Adds comprehensive context attributes to request
 - Useful for auditing and user tracking across tenants
 
 #### TenantFilterActivationFilter
+
 - Activates Hibernate tenant filters for DISCRIMINATOR and GDM modes
 - Ensures proper data filtering at database level
 
@@ -223,6 +234,7 @@ public class RequestContextDto extends AbstractDto {
 ```
 
 **Key Features:**
+
 - **Audit Trail Support**: `getCreatedByString()` provides formatted identifiers
 - **Anonymous User Handling**: Returns "anonymousUser" when user/tenant is empty
 - **Extensible**: Built on `AbstractDto` for additional functionality
@@ -230,11 +242,13 @@ public class RequestContextDto extends AbstractDto {
 ## Database Support
 
 ### PostgreSQL
+
 - Full support for all tenancy strategies
 - Uses `search_path` for schema switching
 - Recommended for production environments
 
 ### H2
+
 - Primarily for development and testing
 - Uses `SET SCHEMA` for schema switching
 - In-memory and file-based modes supported
@@ -298,25 +312,26 @@ logging:
 ### Upgrading Filter Types
 
 When switching from TENANT to CONTEXT filter:
+
 1. Update `multi-tenancy.filter` property
 2. Modify code to use `RequestContextDto` instead of just tenant ID
 3. Update any custom filtering logic
 
 ## Performance Considerations
 
-| Strategy | Memory Usage | Connection Overhead | Query Performance | Context Overhead |
-|----------|--------------|-------------------|-------------------|------------------|
-| DATABASE | High (multiple pools) | High | Excellent | Low |
-| SCHEMA | Medium | Medium | Good | Low |
-| DISCRIMINATOR | Low | Low | Good (with proper indexing) | Low |
-| GDM | Low | Low | Good (with proper indexing) | Low |
+| Strategy      | Memory Usage          | Connection Overhead | Query Performance           | Context Overhead |
+|---------------|-----------------------|---------------------|-----------------------------|------------------|
+| DATABASE      | High (multiple pools) | High                | Excellent                   | Low              |
+| SCHEMA        | Medium                | Medium              | Good                        | Low              |
+| DISCRIMINATOR | Low                   | Low                 | Good (with proper indexing) | Low              |
+| GDM           | Low                   | Low                 | Good (with proper indexing) | Low              |
 
 ### Filter Performance
 
-| Filter Type | Overhead | Features | Use Case |
-|-------------|----------|----------|----------|
-| TENANT | Minimal | Basic tenant extraction | Simple multi-tenancy |
-| CONTEXT | Low | Full context + audit support | Enterprise applications |
+| Filter Type | Overhead | Features                     | Use Case                |
+|-------------|----------|------------------------------|-------------------------|
+| TENANT      | Minimal  | Basic tenant extraction      | Simple multi-tenancy    |
+| CONTEXT     | Low      | Full context + audit support | Enterprise applications |
 
 ## Advanced Configuration
 

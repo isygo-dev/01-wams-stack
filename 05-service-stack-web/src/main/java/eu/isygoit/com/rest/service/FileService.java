@@ -20,12 +20,11 @@ import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 
 /**
- * Abstract service providing file management logic for entities implementing IFileEntity.
- * Supports create, update, upload, and download operations with file processing.
+ * The type File service.
  *
- * @param <I> ID type
- * @param <T> File entity type
- * @param <R> Repository type
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <R> the type parameter
  */
 @Slf4j
 public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
@@ -161,18 +160,12 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
     }
 
-    /**
-     * Utility: Assigns code if not already set.
-     */
     private void assignCodeIfEmpty(T entity) {
         if (!StringUtils.hasText(entity.getCode())) {
             entity.setCode(((ICodeAssignableService) this).getNextCode());
         }
     }
 
-    /**
-     * Utility: Assigns code from existing or generates new.
-     */
     private void assignOrPreserveCode(T entity, T existing) {
         if (!StringUtils.hasText(entity.getCode()) && !StringUtils.hasText(existing.getCode())) {
             entity.setCode(((ICodeAssignableService) this).getNextCode());
@@ -181,9 +174,6 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
     }
 
-    /**
-     * Utility: Sets file attributes on the entity.
-     */
     private void setFileAttributes(T entity, MultipartFile file) {
         Path path = Path.of(getUploadDirectory())
                 .resolve(getEntityTenantOrDefault(entity))
@@ -194,18 +184,12 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
     }
 
-    /**
-     * Utility: Determine tenant name from entity or use default.
-     */
     private String getEntityTenantOrDefault(T entity) {
         return entity instanceof ITenantAssignable assignable
                 ? assignable.getTenant()
                 : TenantConstants.DEFAULT_TENANT_NAME;
     }
 
-    /**
-     * Utility: Apply tenant rules for SAAS-based restrictions.
-     */
     private void setTenantIfApplicable(String senderTenant, T entity) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
                 && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
@@ -213,9 +197,6 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
     }
 
-    /**
-     * Utility: Handles file upload lifecycle hooks and actual storage.
-     */
     private T handleFileUpload(T entity, MultipartFile file) throws IOException {
         String tenant = getEntityTenantOrDefault(entity);
         entity = beforeUpload(tenant, entity, file);

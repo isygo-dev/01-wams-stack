@@ -3,8 +3,16 @@ package eu.isygoit.multitenancy.common;
 import eu.isygoit.model.ITenantAssignable;
 import jakarta.persistence.PrePersist;
 
+/**
+ * The type Tenant entity listener.
+ */
 public class TenantEntityListener {
 
+    /**
+     * Sets tenant.
+     *
+     * @param entity the entity
+     */
     @PrePersist
     public void setTenant(Object entity) {
         if (entity instanceof ITenantAssignable tenantEntity && tenantEntity.getTenant() == null) {

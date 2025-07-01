@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedCrudPersistApi;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +27,11 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
         extends CrudControllerSubMethods<I, T, M, F, S>
         implements IMappedCrudPersistApi<I, F> {
 
-    public final ResponseEntity<F> create(F object) {
-        return subCreate(object);
+    public final ResponseEntity<F> create(RequestContextDto requestContext, F object) {
+        return subCreate(requestContext, object);
     }
 
-    public final ResponseEntity<F> update(I id, F object) {
-        return subUpdate(id, object);
+    public final ResponseEntity<F> update(RequestContextDto requestContext, I id, F object) {
+        return subUpdate(requestContext, id, object);
     }
 }

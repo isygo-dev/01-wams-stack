@@ -18,20 +18,20 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Utility class for managing file operations via DMS (Document Management System) linked file service.
+ * The type File service dms static methods.
  */
 @Slf4j
 public final class FileServiceDmsStaticMethods {
 
     /**
-     * Uploads a file and associates it with the given entity through the linked file service.
+     * Upload linked file response dto.
      *
-     * @param <T>               the type parameter constrained to file entities with id and code
-     * @param file              the multipart file to upload
-     * @param entity            the entity associated with the file
-     * @param linkedFileService the linked file service interface
-     * @return LinkedFileResponseDto containing upload response data, or null if upload fails
-     * @throws IOException if an I/O error occurs during file upload
+     * @param <T>               the type parameter
+     * @param file              the file
+     * @param entity            the entity
+     * @param linkedFileService the linked file service
+     * @return the linked file response dto
+     * @throws IOException the io exception
      */
     static <T extends IFileEntity & IIdAssignable & ICodeAssignable> LinkedFileResponseDto upload(
             MultipartFile file,
@@ -80,14 +80,14 @@ public final class FileServiceDmsStaticMethods {
     }
 
     /**
-     * Downloads the resource associated with the entity and version from the linked file service.
+     * Download resource.
      *
-     * @param <T>               the type parameter constrained to file entities with id and code
-     * @param entity            the entity whose file to download
-     * @param version           the version of the file (currently unused but kept for interface compatibility)
-     * @param linkedFileService the linked file service interface
-     * @return the downloaded Resource, or null if download fails
-     * @throws IOException if an I/O error occurs during download
+     * @param <T>               the type parameter
+     * @param entity            the entity
+     * @param version           the version
+     * @param linkedFileService the linked file service
+     * @return the resource
+     * @throws IOException the io exception
      */
     static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(
             T entity,
@@ -121,12 +121,12 @@ public final class FileServiceDmsStaticMethods {
     }
 
     /**
-     * Deletes the linked file associated with the given entity via the linked file service.
+     * Delete boolean.
      *
-     * @param <L>               the type parameter constrained to linked files with code and id
-     * @param entity            the linked file entity to delete
-     * @param linkedFileService the linked file service interface
-     * @return true if deletion was successful, false otherwise
+     * @param <L>               the type parameter
+     * @param entity            the entity
+     * @param linkedFileService the linked file service
+     * @return the boolean
      */
     public static <L extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(
             L entity,

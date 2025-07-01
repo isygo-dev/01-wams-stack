@@ -16,11 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.Serializable;
 
 /**
- * Provides shared sub-methods for file service operations, including DMS and local upload/download logic.
+ * The type File service sub methods.
  *
- * @param <I> ID type
- * @param <T> File entity type
- * @param <R> Repository type
+ * @param <I> the type parameter
+ * @param <T> the type parameter
+ * @param <R> the type parameter
  */
 @Slf4j
 public abstract class FileServiceSubMethods<I extends Serializable,
@@ -34,7 +34,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     private ILinkedFileApi linkedFileApi;
 
     /**
-     * Uploads a file either to the DMS service if available, or to the local storage.
+     * Sub upload file string.
      *
      * @param file   the file
      * @param entity the entity
@@ -48,9 +48,6 @@ public abstract class FileServiceSubMethods<I extends Serializable,
         );
     }
 
-    /**
-     * Get the DMS file service bean from annotation, or return null to fallback to local.
-     */
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
         if (linkedFileApi == null) {
             DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
@@ -69,9 +66,6 @@ public abstract class FileServiceSubMethods<I extends Serializable,
         return linkedFileApi;
     }
 
-    /**
-     * Generic wrapper that tries the DMS operation and falls back to local in case of errors or null service.
-     */
     private <R> R executeWithFallback(FileOperation<R> dmsOperation, FallbackSupplier<R> fallback, String operationType) {
         try {
             ILinkedFileApi linkedService = linkedFileService();
@@ -92,7 +86,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     }
 
     /**
-     * Downloads a file from either the DMS service or local storage.
+     * Sub download file resource.
      *
      * @param entity  the entity
      * @param version the version
@@ -107,7 +101,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     }
 
     /**
-     * Functional interface to encapsulate DMS operations that may throw exceptions.
+     * The interface File operation.
      *
      * @param <R> the type parameter
      */
@@ -124,7 +118,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
     }
 
     /**
-     * Fallback functional interface to supply results without arguments.
+     * The interface Fallback supplier.
      *
      * @param <R> the type parameter
      */

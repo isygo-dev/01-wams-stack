@@ -25,35 +25,39 @@ public interface ICrudControllerSubMethods<I extends Serializable, T extends IId
     /**
      * Sub create response entity.
      *
-     * @param object the object
+     * @param requestContext the request context
+     * @param object         the object
      * @return the response entity
      */
-    ResponseEntity<F> subCreate(F object);
+    ResponseEntity<F> subCreate(RequestContextDto requestContext, F object);
 
     /**
      * Sub create response entity.
      *
-     * @param objects the objects
+     * @param requestContext the request context
+     * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> subCreate(List<F> objects);
+    ResponseEntity<List<F>> subCreate(RequestContextDto requestContext, List<F> objects);
 
     /**
      * Sub update response entity.
      *
-     * @param id     the id
-     * @param object the object
+     * @param requestContext the request context
+     * @param id             the id
+     * @param object         the object
      * @return the response entity
      */
-    ResponseEntity<F> subUpdate(I id, F object);
+    ResponseEntity<F> subUpdate(RequestContextDto requestContext, I id, F object);
 
     /**
      * Sub update response entity.
      *
-     * @param objects the objects
+     * @param requestContext the request context
+     * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> subUpdate(List<F> objects);
+    ResponseEntity<List<F>> subUpdate(RequestContextDto requestContext, List<F> objects);
 
     /**
      * Sub delete response entity.
@@ -140,7 +144,7 @@ public interface ICrudControllerSubMethods<I extends Serializable, T extends IId
      *
      * @return the response entity
      */
-    ResponseEntity<Map<String, String>> subFindAllFilterCriteria();
+    ResponseEntity<Map<String, String>> subfindAllFilterCriterias();
 
     /**
      * Sub find all filtered by criteria response entity.

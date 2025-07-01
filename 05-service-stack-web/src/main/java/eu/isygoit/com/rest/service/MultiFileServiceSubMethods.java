@@ -97,9 +97,6 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
         }, entity);
     }
 
-    /**
-     * Executes the operation, logs exceptions, and returns a default value on error.
-     */
     private <T> T executeSafely(CheckedSupplier<T> operation, T defaultValue) {
         try {
             return operation.get();
@@ -145,9 +142,6 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
         }, false);
     }
 
-    /**
-     * Functional interface for operations throwing checked exceptions.
-     */
     @FunctionalInterface
     private interface CheckedSupplier<T> {
         /**

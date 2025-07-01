@@ -9,9 +9,18 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The type Data source factory.
+ */
 @Configuration
 public class DataSourceFactory {
 
+    /**
+     * Tenant data sources map.
+     *
+     * @param properties the properties
+     * @return the map
+     */
     @Bean(name = "tenantDataSources")
     public Map<String, DataSource> tenantDataSources(MultiTenancyProperties properties) {
         Map<String, DataSource> map = new HashMap<>();
@@ -26,6 +35,12 @@ public class DataSourceFactory {
         return map;
     }
 
+    /**
+     * Default data source data source.
+     *
+     * @param properties the properties
+     * @return the data source
+     */
     @Bean
     public DataSource defaultDataSource(MultiTenancyProperties properties) {
         // Use the first tenant as default

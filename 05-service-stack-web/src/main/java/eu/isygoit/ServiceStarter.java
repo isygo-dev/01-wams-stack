@@ -24,6 +24,12 @@ public abstract class ServiceStarter {
     private final ApplicationContextService applicationContextService;
     private final IApiExtractor apiExtractor;
 
+    /**
+     * Instantiates a new Service starter.
+     *
+     * @param applicationContextService the application context service
+     * @param apiExtractor              the api extractor
+     */
     protected ServiceStarter(@Autowired ApplicationContextService applicationContextService,
                              @Autowired IApiExtractor apiExtractor) {
         this.applicationContextService = applicationContextService;

@@ -17,6 +17,9 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The type Multi tenant jpa config.
+ */
 @Configuration
 @EnableTransactionManagement
 public class MultiTenantJpaConfig {
@@ -27,6 +30,12 @@ public class MultiTenantJpaConfig {
     @Autowired
     private MultiTenantConnectionProvider multiTenantConnectionProvider;
 
+    /**
+     * Entity manager factory local container entity manager factory bean.
+     *
+     * @param defaultDataSource the default data source
+     * @return the local container entity manager factory bean
+     */
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(
             DataSource defaultDataSource) {
@@ -51,6 +60,12 @@ public class MultiTenantJpaConfig {
         return em;
     }
 
+    /**
+     * Transaction manager platform transaction manager.
+     *
+     * @param em the em
+     * @return the platform transaction manager
+     */
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory em) {
         return new JpaTransactionManager(em);

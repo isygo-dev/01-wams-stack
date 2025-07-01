@@ -20,8 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 /**
- * Utility class providing static methods for local file operations such as upload, download, and delete.
- * This class is stateless and should not be instantiated.
+ * The type File service local static methods.
  */
 @Slf4j
 public final class FileServiceLocalStaticMethods {
@@ -31,13 +30,13 @@ public final class FileServiceLocalStaticMethods {
     }
 
     /**
-     * Uploads a file to the local file system under a given entity's path.
+     * Upload string.
      *
-     * @param <T>    A type that supports file operations and has path, id, and code attributes.
-     * @param file   The file to be uploaded (typically from an HTTP request).
-     * @param entity The entity providing the storage path and file name.
-     * @return The code used as the file name.
-     * @throws IOException If writing the file fails.
+     * @param <T>    the type parameter
+     * @param file   the file
+     * @param entity the entity
+     * @return the string
+     * @throws IOException the io exception
      */
     public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity) throws IOException {
         Path directory = Path.of(entity.getPath());
@@ -55,13 +54,13 @@ public final class FileServiceLocalStaticMethods {
     }
 
     /**
-     * Downloads a file as a Spring Resource from the local file system based on an entity's path and file name.
+     * Download resource.
      *
-     * @param <T>     A type that supports file operations and has path, id, and code attributes.
-     * @param entity  The entity providing the file path and file name.
-     * @param version The file version (used for error reporting only).
-     * @return The file as a Spring Resource.
-     * @throws MalformedURLException If the file path cannot be converted to a URL.
+     * @param <T>     the type parameter
+     * @param entity  the entity
+     * @param version the version
+     * @return the resource
+     * @throws MalformedURLException the malformed url exception
      */
     public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
         String path = entity.getPath();
@@ -83,12 +82,12 @@ public final class FileServiceLocalStaticMethods {
     }
 
     /**
-     * Deletes a file from the local file system based on the provided entity's path and file name.
+     * Delete boolean.
      *
-     * @param <T>    A type that represents a linked file and provides a code, path, and ID.
-     * @param entity The entity containing the file to delete.
-     * @return true if the file was successfully deleted.
-     * @throws IOException If deletion fails or file does not exist.
+     * @param <T>    the type parameter
+     * @param entity the entity
+     * @return the boolean
+     * @throws IOException the io exception
      */
     public static <T extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(T entity) throws IOException {
         Path filePath = Path.of(entity.getPath()).resolve(entity.getFileName());
@@ -103,14 +102,6 @@ public final class FileServiceLocalStaticMethods {
         return true;
     }
 
-    /**
-     * Builds a consistent error message for missing resources or paths.
-     *
-     * @param entity  The entity related to the file.
-     * @param version The version involved in the request.
-     * @param prefix  A message prefix such as "Resource not found" or "Empty path".
-     * @return A formatted error message with tenant and file info.
-     */
     private static String buildErrorMessage(Object entity, Long version, String prefix) {
         String tenant = (entity instanceof ITenantAssignable da)
                 ? da.getTenant()

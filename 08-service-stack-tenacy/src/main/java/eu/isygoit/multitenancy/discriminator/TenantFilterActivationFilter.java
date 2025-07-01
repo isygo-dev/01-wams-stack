@@ -15,6 +15,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * The type Tenant filter activation filter.
+ */
 @Component
 @ConditionalOnProperty(name = "multi-tenancy.mode", havingValue = "DISCRIMINATOR")
 public class TenantFilterActivationFilter extends OncePerRequestFilter {

@@ -57,6 +57,10 @@ public abstract class ControllerExceptionHandler implements IControllerException
     @Override
     public ResponseEntity getBackExceptionResponse(Throwable e) {
         log.error("<Error>: Exception {}", e);
-        return ResponseFactory.responseInternalServerError(exceptionHandler().handleError(e));
+        try {
+            return ResponseFactory.responseInternalServerError(exceptionHandler().handleError(e));
+        } catch (ExceptionHandlerNotDefinedException ex) {
+            return ResponseFactory.responseInternalServerError(e.getMessage());
+        }
     }
 }

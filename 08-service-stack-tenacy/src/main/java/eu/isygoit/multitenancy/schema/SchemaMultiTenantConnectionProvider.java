@@ -18,6 +18,11 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
 
     private final DataSource dataSource;
 
+    /**
+     * Instantiates a new Schema multi tenant connection provider.
+     *
+     * @param dataSource the data source
+     */
     public SchemaMultiTenantConnectionProvider(DataSource dataSource) {
         this.dataSource = dataSource;
     }

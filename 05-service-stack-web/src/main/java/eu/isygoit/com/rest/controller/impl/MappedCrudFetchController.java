@@ -76,7 +76,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriteria() {
-        return subFindAllFilterCriteria();
+    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
+        return subfindAllFilterCriterias();
     }
 }

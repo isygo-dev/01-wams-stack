@@ -2,6 +2,7 @@ package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
@@ -76,5 +77,9 @@ public abstract class ManagedException extends RuntimeException {
                             .append(this.getClass().getSimpleName())
                             .toString();
                 });
+    }
+
+    public int getHttpStatus() {
+        return HttpStatus.SC_OK;
     }
 }

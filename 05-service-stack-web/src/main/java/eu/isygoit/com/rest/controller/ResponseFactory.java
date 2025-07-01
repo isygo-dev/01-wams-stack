@@ -83,8 +83,8 @@ public class ResponseFactory {
     /**
      * Response created response entity.
      *
-     * @param <T>      the type parameter
-     * @param body     the body
+     * @param <T>  the type parameter
+     * @param body the body
      * @return the response entity
      */
     public static <T> ResponseEntity<T> responseCreated(T body) {

@@ -2,7 +2,6 @@ package eu.isygoit.multitenancy.discriminator;
 
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -21,6 +20,11 @@ public class DiscriminatorMultiTenantConnectionProvider implements MultiTenantCo
 
     private final DataSource dataSource;
 
+    /**
+     * Instantiates a new Discriminator multi tenant connection provider.
+     *
+     * @param dataSource the data source
+     */
     public DiscriminatorMultiTenantConnectionProvider(DataSource dataSource) {
         this.dataSource = dataSource;
     }
