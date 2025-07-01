@@ -9,6 +9,7 @@ import eu.isygoit.dto.IIdentifiableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.CriteriaHelper;
+import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -24,33 +25,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Enhanced CRUD Controller providing comprehensive sub-methods for entity management.
- * This abstract class implements common CRUD operations with multi-tenant support,
- * performance optimizations, and comprehensive logging.
+ * Abstract base class for CRUD controller sub-methods with tenant-aware operations.
+ * Provides implementations for create, read, update, and delete operations using functional interfaces.
  *
- * <p>Features:
- * <ul>
- *   <li>Multi-tenant aware operations</li>
- *   <li>Comprehensive error handling and logging</li>
- *   <li>Performance monitoring with execution time tracking</li>
- *   <li>Parallel processing for bulk operations</li>
- *   <li>Optimized memory usage with streaming operations</li>
- * </ul>
- *
- * @param <I> the ID type parameter extending Serializable
- * @param <T> the entity type parameter extending IIdAssignable
- * @param <M> the minimal DTO type parameter extending IIdentifiableDto
- * @param <F> the full DTO type parameter extending M
- * @param <S> the service type parameter extending ICrudServiceMethod
- *
- * @author Enhanced with Java 17 best practices
- * @version 2.0
- * @since Java 17
+ * @param <I> the type of the identifier (must be Serializable)
+ * @param <T> the entity type (must implement IIdAssignable)
+ * @param <M> the minimal DTO type (must implement IIdentifiableDto)
+ * @param <F> the full DTO type (extends M)
+ * @param <S> the service type (must implement ICrudServiceMethod)
  */
 @Slf4j
 public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable<I>,
@@ -60,765 +46,595 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
-    /**
-     * Cached persistent class type to avoid repeated reflection calls.
-     * This optimization reduces the overhead of generic type resolution.
-     */
     private final Class<T> persistentClass =
             (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
-    /**
-     * Default page size for pagination operations to prevent memory issues
-     */
     private static final int DEFAULT_PAGE_SIZE = 50;
-
-    /**
-     * Maximum allowed page size to prevent DoS attacks
-     */
     private static final int MAX_PAGE_SIZE = 1000;
 
     /**
-     * Creates a single entity with comprehensive validation and performance monitoring.
+     * Creates a single entity for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param object the entity DTO to create
-     * @return ResponseEntity containing the created entity or error response
+     * @param object the DTO to create
+     * @return ResponseEntity containing the created DTO
      */
     @Override
     public final ResponseEntity<F> subCreate(RequestContextDto requestContext, F object) {
-        var stopWatch = new StopWatch("subCreate");
-        stopWatch.start();
+        return executeWithPerformanceMonitoring("subCreate", () -> {
+            log.info("Create {} request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+            log.debug("Input DTO: {}", object);
 
-        log.info("Create {} request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-        try {
+            // Validate input and prepare creation function
             validateCreateRequest(object);
-
             var createFunction = buildCreateFunction(requestContext);
 
-            var createdObject = Optional.of(object)
+            // Process creation pipeline
+            return Optional.of(object)
                     .map(this::beforeCreate)
-                    .map(mapper()::dtoToEntity)
+                    .map(dto -> {
+                        log.debug("After pre-create hook: {}", dto);
+                        return mapper().dtoToEntity(dto);
+                    })
                     .map(createFunction)
                     .map(this::afterCreate)
-                    .map(mapper()::entityToDto)
-                    .orElseThrow(() -> new BadArgumentException("Object creation failed"));
-
-            stopWatch.stop();
-            log.info("Successfully created {} in {}ms",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseCreated(createdObject);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to create {} after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Updates multiple entities using parallel processing for improved performance.
-     *
-     * @param requestContext the request context containing tenant information
-     * @param objects the list of entity DTOs to update
-     * @return ResponseEntity containing the updated entities or error response
-     */
-    @Override
-    public final ResponseEntity<List<F>> subUpdate(RequestContextDto requestContext, List<F> objects) {
-        var stopWatch = new StopWatch("subUpdate");
-        stopWatch.start();
-
-        log.info("Update {} entities request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-        if (CollectionUtils.isEmpty(objects)) {
-            log.warn("Empty or null objects list received for update operation");
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
-            validateBulkSize(objects.size());
-            var updateFunction = buildUpdateFunction(requestContext);
-
-            // Use parallel stream for better performance on large datasets
-            var processedDtos = objects.parallelStream()
-                    .map(f -> {
-                        log.debug("Processing update for entity with ID: {}", f.getId());
-                        return beforeUpdate((I) f.getId(), f);
+                    .map(entity -> {
+                        log.debug("After post-create hook: {}", entity);
+                        return mapper().entityToDto(entity);
                     })
-                    .map(mapper()::dtoToEntity)
-                    .map(updateFunction)
-                    .map(this::afterUpdate)
-                    .toList();
-
-            var result = mapper().listEntityToDto(processedDtos);
-
-            stopWatch.stop();
-            log.info("Successfully updated {} entities in {}ms",
-                    objects.size(), stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseOk(result);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to update {} entities after {}ms. Error: {}",
-                    objects.size(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+                    .map(dto -> {
+                        log.debug("Final created DTO: {}", dto);
+                        return ResponseFactory.responseCreated(dto);
+                    })
+                    .orElseThrow(() -> new BadArgumentException("Object creation failed"));
+        });
     }
 
     /**
-     * Creates multiple entities using parallel processing for improved performance.
+     * Creates multiple entities in bulk for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param objects the list of entity DTOs to create
-     * @return ResponseEntity containing the created entities or error response
+     * @param objects the list of DTOs to create
+     * @return ResponseEntity containing the list of created DTOs
      */
     @Override
     public final ResponseEntity<List<F>> subCreate(RequestContextDto requestContext, List<F> objects) {
-        var stopWatch = new StopWatch("subCreateBulk");
-        stopWatch.start();
+        return executeWithPerformanceMonitoring("subCreateBulk", () -> {
+            log.info("Bulk create {} entities request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+            log.debug("Number of entities to create: {}", objects.size());
 
-        log.info("Bulk create {} entities request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
+            // Validate input list
+            if (CollectionUtils.isEmpty(objects)) {
+                log.warn("Empty or null objects list received for bulk create operation");
+                return ResponseFactory.responseBadRequest();
+            }
 
-        if (CollectionUtils.isEmpty(objects)) {
-            log.warn("Empty or null objects list received for bulk create operation");
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
             validateBulkSize(objects.size());
             var createFunction = buildCreateFunction(requestContext);
 
-            // Use parallel processing for bulk operations
+            // Process bulk creation in parallel
             var processedDtos = objects.parallelStream()
-                    .map(f -> {
-                        log.debug("Processing creation for new entity");
-                        return beforeCreate(f);
+                    .map(dto -> {
+                        log.debug("Processing creation for DTO: {}", dto);
+                        return beforeCreate(dto);
                     })
-                    .map(mapper()::dtoToEntity)
+                    .map(dto -> {
+                        log.debug("Converting DTO to entity: {}", dto);
+                        return mapper().dtoToEntity(dto);
+                    })
                     .map(createFunction)
-                    .map(this::afterCreate)
+                    .map(entity -> {
+                        log.debug("Applying post-create hook to entity: {}", entity);
+                        return afterCreate(entity);
+                    })
                     .toList();
 
+            // Convert entities back to DTOs
             var result = mapper().listEntityToDto(processedDtos);
-
-            stopWatch.stop();
-            log.info("Successfully created {} entities in {}ms",
-                    objects.size(), stopWatch.getTotalTimeMillis());
-
+            log.debug("Created {} entities successfully", result.size());
             return ResponseFactory.responseOk(result);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to create {} entities after {}ms. Error: {}",
-                    objects.size(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+        });
     }
 
     /**
-     * Deletes a single entity by ID with proper validation and lifecycle hooks.
+     * Updates multiple entities in bulk for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param id the ID of the entity to delete
-     * @return ResponseEntity indicating success or failure
+     * @param objects the list of DTOs to update
+     * @return ResponseEntity containing the list of updated DTOs
      */
     @Override
-    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
-        var stopWatch = new StopWatch("subDelete");
-        stopWatch.start();
+    public final ResponseEntity<List<F>> subUpdate(RequestContextDto requestContext, List<F> objects) {
+        return executeWithPerformanceMonitoring("subUpdate", () -> {
+            log.info("Update {} entities request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+            log.debug("Number of entities to update: {}", objects.size());
 
-        log.info("Delete {} with ID: {} request received for tenant: {}",
-                persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
-
-        if (id == null) {
-            log.warn("Null ID received for delete operation");
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
-            if (beforeDelete(id)) {
-                log.debug("Pre-delete validation passed for ID: {}", id);
-                crudService().delete(requestContext.getSenderTenant(), id);
-                afterDelete(id);
-
-                stopWatch.stop();
-                log.info("Successfully deleted {} with ID: {} in {}ms",
-                        persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis());
-            } else {
-                log.warn("Pre-delete validation failed for ID: {}", id);
+            // Validate input list
+            if (CollectionUtils.isEmpty(objects)) {
+                log.warn("Empty or null objects list received for update operation");
+                return ResponseFactory.responseBadRequest();
             }
 
-            return ResponseFactory.responseNoContent();
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to delete {} with ID: {} after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Deletes multiple entities with bulk validation and processing.
-     *
-     * @param requestContext the request context containing tenant information
-     * @param objects the list of entity DTOs to delete
-     * @return ResponseEntity indicating success or failure
-     */
-    @Override
-    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
-        var stopWatch = new StopWatch("subDeleteBulk");
-        stopWatch.start();
-
-        log.info("Bulk delete {} entities request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-        if (CollectionUtils.isEmpty(objects)) {
-            log.warn("Empty or null objects list received for bulk delete operation");
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
             validateBulkSize(objects.size());
+            var updateFunction = buildUpdateFunction(requestContext);
 
-            if (beforeDelete(objects)) {
-                log.debug("Pre-delete validation passed for {} entities", objects.size());
-                crudService().delete(requestContext.getSenderTenant(), mapper().listDtoToEntity(objects));
-                afterDelete(objects);
-
-                stopWatch.stop();
-                log.info("Successfully deleted {} entities in {}ms",
-                        objects.size(), stopWatch.getTotalTimeMillis());
-            } else {
-                log.warn("Pre-delete validation failed for bulk delete operation");
-            }
-
-            return ResponseFactory.responseOk(
-                    exceptionHandler().handleMessage("object.deleted.successfully"));
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to delete {} entities after {}ms. Error: {}",
-                    objects.size(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Retrieves all entities with tenant-aware filtering and performance optimization.
-     *
-     * @param requestContext the request context containing tenant information
-     * @return ResponseEntity containing all entities or no content response
-     */
-    @Override
-    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
-        var stopWatch = new StopWatch("subFindAll");
-        stopWatch.start();
-
-        log.info("Find all {}s request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-        try {
-            var entities = isTenantAware(requestContext)
-                    ? crudService().findAll(requestContext.getSenderTenant())
-                    : crudService().findAll();
-
-            var list = Optional.ofNullable(entities)
-                    .map(minDtoMapper()::listEntityToDto)
-                    .orElse(Collections.emptyList());
-
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No {} entities found in {}ms",
-                        persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} entities in {}ms",
-                    list.size(), stopWatch.getTotalTimeMillis());
-
-            afterFindAll(requestContext, list);
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find all {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Retrieves all entities from default tenant with optimized processing.
-     *
-     * @param requestContext the request context containing tenant information
-     * @return ResponseEntity containing all entities from default tenant
-     */
-    @Override
-    public final ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
-        var stopWatch = new StopWatch("subFindAllDefault");
-        stopWatch.start();
-
-        log.info("Find all default {}s request received", persistentClass.getSimpleName());
-
-        try {
-            var entities = isTenantAware(requestContext)
-                    ? crudService().findAll(TenantConstants.DEFAULT_TENANT_NAME)
-                    : crudService().findAll();
-
-            var list = Optional.ofNullable(entities)
-                    .map(minDtoMapper()::listEntityToDto)
-                    .orElse(Collections.emptyList());
-
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No default {} entities found in {}ms",
-                        persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} default entities in {}ms",
-                    list.size(), stopWatch.getTotalTimeMillis());
-
-            afterFindAll(requestContext, list);
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find all default {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Retrieves entities with pagination and performance monitoring.
-     *
-     * @param requestContext the request context containing tenant information
-     * @param page the page number (0-based)
-     * @param size the page size
-     * @return ResponseEntity containing paginated entities
-     */
-    @Override
-    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
-        var stopWatch = new StopWatch("subFindAllPaginated");
-        stopWatch.start();
-
-        log.info("Find all {}s by page/size request received {}/{} for tenant: {}",
-                persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
-
-        try {
-            var validatedSize = validateAndAdjustPageSize(size);
-            var pageRequest = PageRequest.of(page, validatedSize,
-                    Sort.by(Sort.Direction.DESC, "createDate"));
-
-            var entities = isTenantAware(requestContext)
-                    ? crudService().findAll(requestContext.getSenderTenant(), pageRequest)
-                    : crudService().findAll(pageRequest);
-
-            var list = Optional.ofNullable(entities)
-                    .map(minDtoMapper()::listEntityToDto)
-                    .orElse(Collections.emptyList());
-
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No {} entities found for page {}/{} in {}ms",
-                        persistentClass.getSimpleName(), page, validatedSize, stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} entities (page {}/{}) in {}ms",
-                    list.size(), page, validatedSize, stopWatch.getTotalTimeMillis());
-
-            afterFindAll(requestContext, list);
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find paginated {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Retrieves all full entities with comprehensive data and performance optimization.
-     *
-     * @param requestContext the request context containing tenant information
-     * @return ResponseEntity containing all full entities
-     */
-    @Override
-    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
-        var stopWatch = new StopWatch("subFindAllFull");
-        stopWatch.start();
-
-        log.info("Find all full {}s request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-        try {
-            var entities = isTenantAware(requestContext)
-                    ? crudService().findAll(requestContext.getSenderTenant())
-                    : crudService().findAll();
-
-            var list = Optional.ofNullable(entities)
-                    .map(mapper()::listEntityToDto)
-                    .orElse(Collections.emptyList());
-
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No full {} entities found in {}ms",
-                        persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} full entities in {}ms",
-                    list.size(), stopWatch.getTotalTimeMillis());
-
-            afterFindAllFull(requestContext, list);
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find all full {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Retrieves paginated full entities with validation and performance monitoring.
-     *
-     * @param requestContext the request context containing tenant information
-     * @param page the page number (0-based)
-     * @param size the page size
-     * @return ResponseEntity containing paginated full entities
-     */
-    @Override
-    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
-        var stopWatch = new StopWatch("subFindAllFullPaginated");
-        stopWatch.start();
-
-        log.info("Find all full {}s by page/size request received {}/{} for tenant: {}",
-                persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
-
-        if (page == null || size == null) {
-            log.warn("Invalid pagination parameters: page={}, size={}", page, size);
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
-            var validatedSize = validateAndAdjustPageSize(size);
-            var pageRequest = PageRequest.of(page, validatedSize,
-                    Sort.by(Sort.Direction.DESC, "createDate"));
-
-            var entities = isTenantAware(requestContext)
-                    ? crudService().findAll(requestContext.getSenderTenant(), pageRequest)
-                    : crudService().findAll(pageRequest);
-
-            var list = Optional.ofNullable(entities)
-                    .map(mapper()::listEntityToDto)
-                    .orElse(Collections.emptyList());
-
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No full {} entities found for page {}/{} in {}ms",
-                        persistentClass.getSimpleName(), page, validatedSize, stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} full entities (page {}/{}) in {}ms",
-                    list.size(), page, validatedSize, stopWatch.getTotalTimeMillis());
-
-            afterFindAllFull(requestContext, list);
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find paginated full {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Retrieves a single entity by ID with comprehensive validation and performance monitoring.
-     *
-     * @param requestContext the request context containing tenant information
-     * @param id the entity ID to search for
-     * @return ResponseEntity containing the found entity or not found response
-     */
-    @Override
-    public final ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
-        var stopWatch = new StopWatch("subFindById");
-        stopWatch.start();
-
-        log.info("Find {} by id {} request received for tenant: {}",
-                persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
-
-        if (id == null) {
-            log.warn("Null ID received for find by ID operation");
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
-            var optionalEntity = isTenantAware(requestContext)
-                    ? crudService().findById(requestContext.getSenderTenant(), id)
-                    : crudService().findById(id);
-
-            stopWatch.stop();
-
-            return optionalEntity
-                    .map(mapper()::entityToDto)
+            // Process bulk update in parallel
+            var processedDtos = objects.parallelStream()
                     .map(dto -> {
-                        log.info("Successfully found {} with ID: {} in {}ms",
-                                persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis());
-                        return ResponseFactory.responseOk(afterFindById(dto));
+                        log.debug("Processing update for DTO with ID: {}", dto.getId());
+                        return beforeUpdate((I) dto.getId(), dto);
                     })
-                    .orElseGet(() -> {
-                        log.info("No {} found with ID: {} in {}ms",
-                                persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis());
-                        return ResponseFactory.responseNotFound();
-                    });
+                    .map(dto -> {
+                        log.debug("Converting DTO to entity: {}", dto);
+                        return mapper().dtoToEntity(dto);
+                    })
+                    .map(updateFunction)
+                    .map(entity -> {
+                        log.debug("Applying post-update hook to entity: {}", entity);
+                        return afterUpdate(entity);
+                    })
+                    .toList();
 
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find {} with ID: {} after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+            // Convert entities back to DTOs
+            var result = mapper().listEntityToDto(processedDtos);
+            log.debug("Updated {} entities successfully", result.size());
+            return ResponseFactory.responseOk(result);
+        });
     }
 
     /**
-     * Retrieves the count of entities with tenant-aware filtering.
+     * Updates a single entity by ID for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @return ResponseEntity containing the entity count
-     */
-    @Override
-    public final ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
-        var stopWatch = new StopWatch("subGetCount");
-        stopWatch.start();
-
-        log.info("Get count {} request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-        try {
-            var count = isTenantAware(requestContext)
-                    ? crudService().count(requestContext.getSenderTenant())
-                    : crudService().count();
-
-            stopWatch.stop();
-            log.info("Successfully retrieved count {} for {} in {}ms",
-                    count, persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseOk(count);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to get count for {} after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    /**
-     * Updates a single entity by ID with comprehensive validation and performance monitoring.
-     *
-     * @param requestContext the request context containing tenant information
-     * @param id the entity ID to update
-     * @param object the updated entity data
-     * @return ResponseEntity containing the updated entity
+     * @param id the ID of the entity to update
+     * @param object the DTO containing updated data
+     * @return ResponseEntity containing the updated DTO
      */
     @Override
     public final ResponseEntity<F> subUpdate(RequestContextDto requestContext, I id, F object) {
-        var stopWatch = new StopWatch("subUpdateById");
-        stopWatch.start();
+        return executeWithPerformanceMonitoring("subUpdateById", () -> {
+            log.info("Update {} with ID: {} request received for tenant: {}", persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
+            log.debug("Input DTO: {}", object);
 
-        log.info("Update {} with ID: {} request received for tenant: {}",
-                persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
+            // Validate input parameters
+            if (object == null || id == null) {
+                log.warn("Invalid parameters: object={}, id={}", object != null, id);
+                return ResponseFactory.responseBadRequest();
+            }
 
-        if (object == null || id == null) {
-            log.warn("Invalid parameters: object={}, id={}", object != null, id);
-            return ResponseFactory.responseBadRequest();
-        }
-
-        try {
             object.setId(id);
             var updateFunction = buildUpdateFunction(requestContext);
 
-            var updatedObject = Optional.of(object)
-                    .map(o -> beforeUpdate(id, o))
-                    .map(mapper()::dtoToEntity)
+            // Process update pipeline
+            return Optional.of(object)
+                    .map(dto -> {
+                        log.debug("Applying pre-update hook for ID: {}", id);
+                        return beforeUpdate(id, dto);
+                    })
+                    .map(dto -> {
+                        log.debug("Converting DTO to entity: {}", dto);
+                        return mapper().dtoToEntity(dto);
+                    })
                     .map(updateFunction)
-                    .map(this::afterUpdate)
-                    .map(mapper()::entityToDto)
+                    .map(entity -> {
+                        log.debug("Applying post-update hook: {}", entity);
+                        return afterUpdate(entity);
+                    })
+                    .map(entity -> {
+                        log.debug("Converting entity to DTO: {}", entity);
+                        return mapper().entityToDto(entity);
+                    })
+                    .map(dto -> {
+                        log.debug("Final updated DTO: {}", dto);
+                        return ResponseFactory.responseOk(dto);
+                    })
                     .orElseThrow(() -> new BadArgumentException("Object update failed"));
-
-            stopWatch.stop();
-            log.info("Successfully updated {} with ID: {} in {}ms",
-                    persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseOk(updatedObject);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to update {} with ID: {} after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), id, stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+        });
     }
 
     /**
-     * Retrieves entities filtered by criteria with performance optimization.
+     * Deletes a single entity by ID for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param criteria the filter criteria string
-     * @return ResponseEntity containing filtered entities
+     * @param id the ID of the entity to delete
+     * @return ResponseEntity with no content on success
+     */
+    @Override
+    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
+        return executeWithPerformanceMonitoring("subDelete", () -> {
+            log.info("Delete {} with ID: {} request received for tenant: {}", persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
+
+            // Validate ID
+            if (id == null) {
+                log.warn("Null ID received for delete operation");
+                return ResponseFactory.responseBadRequest();
+            }
+
+            // Check pre-delete validation
+            if (!beforeDelete(id)) {
+                log.warn("Pre-delete validation failed for ID: {}", id);
+                return ResponseFactory.responseBadRequest();
+            }
+
+            // Execute deletion
+            var deleteFunction = buildDeleteFunction(requestContext);
+            log.debug("Executing delete operation for ID: {}", id);
+            deleteFunction.apply(id);
+            log.debug("Applying post-delete hook for ID: {}", id);
+            afterDelete(id);
+            return ResponseFactory.responseNoContent();
+        });
+    }
+
+    /**
+     * Deletes multiple entities in bulk for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @param objects the list of DTOs to delete
+     * @return ResponseEntity with success message on completion
+     */
+    @Override
+    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
+        return executeWithPerformanceMonitoring("subDeleteBulk", () -> {
+            log.info("Bulk delete {} entities request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+            log.debug("Number of entities to delete: {}", objects.size());
+
+            // Validate input list
+            if (CollectionUtils.isEmpty(objects)) {
+                log.warn("Empty or null objects list received for bulk delete operation");
+                return ResponseFactory.responseBadRequest();
+            }
+
+            validateBulkSize(objects.size());
+
+            // Check pre-delete validation
+            if (!beforeDelete(objects)) {
+                log.warn("Pre-delete validation failed for bulk delete operation");
+                return ResponseFactory.responseBadRequest();
+            }
+
+            // Execute bulk deletion
+            var deleteBulkFunction = buildDeleteBulkFunction(requestContext);
+            log.debug("Executing bulk delete operation");
+            deleteBulkFunction.apply(mapper().listDtoToEntity(objects));
+            log.debug("Applying post-delete hook for bulk operation");
+            afterDelete(objects);
+            return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+        });
+    }
+
+    /**
+     * Retrieves all entities for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @return ResponseEntity containing the list of minimal DTOs
+    ^H    */
+    @Override
+    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
+        return executeWithPerformanceMonitoring("subFindAll", () -> {
+            log.info("Find all {}s request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+
+            // Execute find all operation
+            var findAllFunction = buildFindAllFunction(requestContext);
+            log.debug("Executing find all operation");
+            var list = Optional.ofNullable(findAllFunction.get())
+                    .map(entities -> {
+                        log.debug("Converting {} entities to minimal DTOs", entities.size());
+                        return minDtoMapper().listEntityToDto(entities);
+                    })
+                    .map(l -> {
+                        log.debug("Applying post-find-all hook");
+                        return afterFindAll(requestContext, l);
+                    })
+                    .orElse(Collections.emptyList());
+
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
+    }
+
+    /**
+     * Retrieves all entities for the default tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @return ResponseEntity containing the list of minimal DTOs
+     */
+    @Override
+    public final ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
+        return executeWithPerformanceMonitoring("subFindAllDefault", () -> {
+            log.info("Find all default {}s request received", persistentClass.getSimpleName());
+
+            // Execute find all default operation
+            var findAllDefaultFunction = buildFindAllDefaultFunction();
+            log.debug("Executing find all default operation");
+            var list = Optional.ofNullable(findAllDefaultFunction.get())
+                    .map(entities -> {
+                        log.debug("Converting {} entities to minimal DTOs", entities.size());
+                        return minDtoMapper().listEntityToDto(entities);
+                    })
+                    .map(l -> {
+                        log.debug("Applying post-find-all hook");
+                        return afterFindAll(requestContext, l);
+                    })
+                    .orElse(Collections.emptyList());
+
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
+    }
+
+    /**
+     * Retrieves paginated entities for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @param page the page number
+     * @param size the page size
+     * @return ResponseEntity containing the list of minimal DTOs
+     */
+    @Override
+    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
+        return executeWithPerformanceMonitoring("subFindAllPaginated", () -> {
+            log.info("Find all {}s by page/size request received {}/{} for tenant: {}", persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
+
+            // Validate and prepare pagination
+            var validatedSize = validateAndAdjustPageSize(size);
+            var pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "createDate"));
+            log.debug("Pagination parameters: page={}, size={}", page, validatedSize);
+
+            // Execute paginated find operation
+            var findAllPaginatedFunction = buildFindAllPaginatedFunction(requestContext, pageRequest);
+            log.debug("Executing paginated find operation");
+            var list = Optional.ofNullable(findAllPaginatedFunction.get())
+                    .map(entities -> {
+                        log.debug("Converting {} entities to minimal DTOs", entities.size());
+                        return minDtoMapper().listEntityToDto(entities);
+                    })
+                    .map(l -> {
+                        log.debug("Applying post-find-all hook");
+                        return afterFindAll(requestContext, l);
+                    })
+                    .orElse(Collections.emptyList());
+
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
+    }
+
+    /**
+     * Retrieves all entities with full details for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @return ResponseEntity containing the list of full DTOs
+     */
+    @Override
+    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
+        return executeWithPerformanceMonitoring("subFindAllFull", () -> {
+            log.info("Find all full {}s request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+
+            // Execute find all operation
+            var findAllFunction = buildFindAllFunction(requestContext);
+            log.debug("Executing find all full operation");
+            var list = Optional.ofNullable(findAllFunction.get())
+                    .map(entities -> {
+                        log.debug("Converting {} entities to full DTOS", entities.size());
+                        return mapper().listEntityToDto(entities);
+                    })
+                    .map(l -> {
+                        log.debug("Applying post-find-all-full hook");
+                        return afterFindAllFull(requestContext, l);
+                    })
+                    .orElse(Collections.emptyList());
+
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
+    }
+
+    /**
+     * Retrieves paginated entities with full details for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @param page the page number
+     * @param size the page size
+     * @return ResponseEntity containing the list of full DTOs
+     */
+    @Override
+    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
+        return executeWithPerformanceMonitoring("subFindAllFullPaginated", () -> {
+            log.info("Find all full {}s by page/size request received {}/{} for tenant: {}", persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
+
+            // Validate pagination parameters
+            if (page == null || size == null) {
+                log.warn("Invalid pagination parameters: page={}, size={}", page, size);
+                return ResponseFactory.responseBadRequest();
+            }
+
+            var validatedSize = validateAndAdjustPageSize(size);
+            var pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "createDate"));
+            log.debug("Pagination parameters: page={}, size={}", page, validatedSize);
+
+            // Execute paginated find operation
+            var findAllPaginatedFunction = buildFindAllPaginatedFunction(requestContext, pageRequest);
+            log.debug("Executing paginated find full operation");
+            var list = Optional.ofNullable(findAllPaginatedFunction.get())
+                    .map(entities -> {
+                        log.debug("Converting {} entities to full DTOs", entities.size());
+                        return mapper().listEntityToDto(entities);
+                    })
+                    .map(l -> {
+                        log.debug("Applying post-find-all-full hook");
+                        return afterFindAllFull(requestContext, l);
+                    })
+                    .orElse(Collections.emptyList());
+
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
+    }
+
+    /**
+     * Retrieves a single entity by ID for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @param id the ID of the entity to retrieve
+     * @return ResponseEntity containing the full DTO or not found response
+     */
+    @Override
+    public final ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
+        return executeWithPerformanceMonitoring("subFindById", () -> {
+            log.info("Find {} by id {} request received for tenant: {}", persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
+
+            // Validate ID
+            if (id == null) {
+                log.warn("Null ID received for find by ID operation");
+                return ResponseFactory.responseBadRequest();
+            }
+
+            // Execute find by ID operation
+            var findByIdFunction = buildFindByIdFunction(requestContext);
+            log.debug("Executing find by ID operation for ID: {}", id);
+            return findByIdFunction.apply(id)
+                    .map(entity -> {
+                        log.debug("Converting entity to DTO: {}", entity);
+                        return mapper().entityToDto(entity);
+                    })
+                    .map(dto -> {
+                        log.debug("Applying post-find-by-id hook");
+                        return afterFindById(dto);
+                    })
+                    .map(dto -> {
+                        log.debug("Final DTO: {}", dto);
+                        return ResponseFactory.responseOk(dto);
+                    })
+                    .orElseGet(() -> {
+                        log.info("No entity found with ID: {}", id);
+                        return ResponseFactory.responseNotFound();
+                    });
+        });
+    }
+
+    /**
+     * Retrieves the count of entities for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @return ResponseEntity containing the count of entities
+     */
+    @Override
+    public final ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
+        return executeWithPerformanceMonitoring("subGetCount", () -> {
+            log.info("Get count {} request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+
+            // Execute count operation
+            var countFunction = buildCountFunction(requestContext);
+            log.debug("Executing count operation");
+            var count = countFunction.get();
+            log.debug("Count result: {}", count);
+            return ResponseFactory.responseOk(count);
+        });
+    }
+
+    /**
+     * Retrieves entities filtered by criteria for the specified tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @param criteria the filter criteria as a string
+     * @return ResponseEntity containing the list of filtered full DTOs
      */
     @Override
     public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
-        var stopWatch = new StopWatch("subFindAllFilteredByCriteria");
-        stopWatch.start();
+        return executeWithPerformanceMonitoring("subFindAllFilteredByCriteria", () -> {
+            log.info("Find all {}s by criteria request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+            log.debug("Filter criteria: {}", criteria);
 
-        log.info("Find all {}s by criteria request received for tenant: {}",
-                persistentClass.getSimpleName(), requestContext.getSenderTenant());
-        log.debug("Filter criteria: {}", criteria);
-
-        try {
+            // Parse criteria and execute filtered find
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
-            var senderTenant = isTenantAware(requestContext) ? requestContext.getSenderTenant() : null;
+            var findByCriteriaFunction = buildFindByCriteriaFunction(requestContext, criteriaList);
+            log.debug("Executing filtered find operation");
+            var list = mapper().listEntityToDto(findByCriteriaFunction.get());
+            log.debug("Found {} entities matching criteria", list.size());
 
-            var entities = crudService().findAllByCriteriaFilter(senderTenant, criteriaList);
-            var list = mapper().listEntityToDto(entities);
-
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No {} entities found matching criteria in {}ms",
-                        persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} filtered entities in {}ms",
-                    list.size(), stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find filtered {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
     }
 
     /**
-     * Retrieves paginated entities filtered by criteria with performance optimization.
+     * Retrieves paginated entities filtered by criteria for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param criteria the filter criteria string
-     * @param page the page number (0-based)
+     * @param criteria the filter criteria as a string
+     * @param page the page number
      * @param size the page size
-     * @return ResponseEntity containing paginated filtered entities
+     * @return ResponseEntity containing the list of filtered full DTOs
      */
     @Override
-    public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext,
-                                                                      String criteria, Integer page, Integer size) {
-        var stopWatch = new StopWatch("subFindAllFilteredByCriteriaPaginated");
-        stopWatch.start();
+    public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
+                                                                      Integer page, Integer size) {
+        return executeWithPerformanceMonitoring("subFindAllFilteredByCriteriaPaginated", () -> {
+            log.info("Find all {}s by criteria with pagination {}/{} request received for tenant: {}", persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
+            log.debug("Filter criteria: {}", criteria);
 
-        log.info("Find all {}s by criteria with pagination {}/{} request received for tenant: {}",
-                persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
-        log.debug("Filter criteria: {}", criteria);
-
-        try {
+            // Validate and prepare pagination
             var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
             var validatedSize = validateAndAdjustPageSize(size);
-            var pageRequest = PageRequest.of(page, validatedSize,
-                    Sort.by(Sort.Direction.DESC, "createDate"));
-            var senderTenant = isTenantAware(requestContext) ? requestContext.getSenderTenant() : null;
+            var pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "createDate"));
+            log.debug("Pagination parameters: page={}, size={}", page, validatedSize);
 
-            var entities = crudService().findAllByCriteriaFilter(senderTenant, criteriaList, pageRequest);
-            var list = mapper().listEntityToDto(entities);
+            // Execute paginated filtered find
+            var findByCriteriaPaginatedFunction = buildFindByCriteriaPaginatedFunction(requestContext, criteriaList, pageRequest);
+            log.debug("Executing paginated filtered find operation");
+            var list = mapper().listEntityToDto(findByCriteriaPaginatedFunction.get());
+            log.debug("Found {} entities matching criteria", list.size());
 
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("No {} entities found matching criteria for page {}/{} in {}ms",
-                        persistentClass.getSimpleName(), page, validatedSize, stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} filtered entities (page {}/{}) in {}ms",
-                    list.size(), page, validatedSize, stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseOk(list);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to find paginated filtered {} entities after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
     }
 
     /**
      * Retrieves available filter criteria for the entity type.
      *
-     * @return ResponseEntity containing the criteria map or no content response
+     * @return ResponseEntity containing the map of filter criteria
      */
     @Override
     public final ResponseEntity<Map<String, String>> subfindAllFilterCriterias() {
-        var stopWatch = new StopWatch("subfindAllFilterCriterias");
-        stopWatch.start();
+        return executeWithPerformanceMonitoring("subfindAllFilterCriterias", () -> {
+            log.info("Get filter criteria for {} request received", persistentClass.getSimpleName());
 
-        log.info("Get filter criteria for {} request received", persistentClass.getSimpleName());
-
-        try {
+            // Retrieve and validate criteria map
             var criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
+            log.debug("Retrieved {} filter criteria", criteriaMap.size());
 
-            stopWatch.stop();
-
-            if (CollectionUtils.isEmpty(criteriaMap)) {
-                log.info("No filter criteria available for {} in {}ms",
-                        persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-                return ResponseFactory.responseNoContent();
-            }
-
-            log.info("Successfully retrieved {} filter criteria for {} in {}ms",
-                    criteriaMap.size(), persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis());
-
-            return ResponseFactory.responseOk(criteriaMap);
-
-        } catch (Exception e) {
-            stopWatch.stop();
-            log.error("Failed to get filter criteria for {} after {}ms. Error: {}",
-                    persistentClass.getSimpleName(), stopWatch.getTotalTimeMillis(), e.getMessage(), e);
-            return getBackExceptionResponse(e);
-        }
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(criteriaMap)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(criteriaMap);
+        });
     }
 
     // ========================================
-    // LIFECYCLE HOOK METHODS (Can be overridden by subclasses)
+    // LIFECYCLE HOOK METHODS
     // ========================================
 
     /**
-     * Hook method called after successful entity creation.
-     * Subclasses can override this method to add custom post-creation logic.
+     * Hook called after creating an entity. Can be overridden by subclasses.
      *
      * @param object the created entity
-     * @return the entity (potentially modified)
+     * @return the processed entity
      */
     @Override
     public T afterCreate(T object) {
@@ -827,12 +643,11 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called before entity update.
-     * Subclasses can override this method to add custom pre-update validation or modification.
+     * Hook called before updating an entity. Can be overridden by subclasses.
      *
-     * @param id the entity ID being updated
-     * @param object the entity DTO to update
-     * @return the entity DTO (potentially modified)
+     * @param id the ID of the entity to update
+     * @param object the DTO with update data
+     * @return the processed DTO
      */
     @Override
     public F beforeUpdate(I id, F object) {
@@ -841,11 +656,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called before entity creation.
-     * Subclasses can override this method to add custom pre-creation validation or modification.
+     * Hook called before creating an entity. Can be overridden by subclasses.
      *
-     * @param object the entity DTO to create
-     * @return the entity DTO (potentially modified)
+     * @param object the DTO to create
+     * @return the processed DTO
      */
     @Override
     public F beforeCreate(F object) {
@@ -854,11 +668,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called after successful entity update.
-     * Subclasses can override this method to add custom post-update logic.
+     * Hook called after updating an entity. Can be overridden by subclasses.
      *
      * @param object the updated entity
-     * @return the entity (potentially modified)
+     * @return the processed entity
      */
     @Override
     public T afterUpdate(T object) {
@@ -867,11 +680,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called before single entity deletion.
-     * Subclasses can override this method to add custom pre-deletion validation.
+     * Hook called before deleting an entity. Can be overridden by subclasses.
      *
-     * @param id the entity ID to delete
-     * @return true if deletion should proceed, false otherwise
+     * @param id the ID of the entity to delete
+     * @return true if deletion is allowed, false otherwise
      */
     @Override
     public boolean beforeDelete(I id) {
@@ -880,11 +692,10 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called after successful single entity deletion.
-     * Subclasses can override this method to add custom post-deletion logic.
+     * Hook called after deleting an entity. Can be overridden by subclasses.
      *
-     * @param id the deleted entity ID
-     * @return true if post-deletion processing was successful
+     * @param id the ID of the deleted entity
+     * @return true if post-deletion processing is successful
      */
     @Override
     public boolean afterDelete(I id) {
@@ -893,39 +704,34 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called before bulk entity deletion.
-     * Subclasses can override this method to add custom pre-deletion validation.
+     * Hook called before bulk deletion. Can be overridden by subclasses.
      *
-     * @param objects the entity DTOs to delete
-     * @return true if deletion should proceed, false otherwise
+     * @param objects the list of DTOs to delete
+     * @return true if deletion is allowed, false otherwise
      */
     @Override
     public boolean beforeDelete(List<F> objects) {
-        log.debug("Pre-delete bulk hook called for {} entities of type {}",
-                objects.size(), persistentClass.getSimpleName());
+        log.debug("Pre-delete bulk hook called for {} entities of type {}", objects.size(), persistentClass.getSimpleName());
         return true;
     }
 
     /**
-     * Hook method called after successful bulk entity deletion.
-     * Subclasses can override this method to add custom post-deletion logic.
+     * Hook called after bulk deletion. Can be overridden by subclasses.
      *
-     * @param objects the deleted entity DTOs
-     * @return true if post-deletion processing was successful
+     * @param objects the list of deleted DTOs
+     * @return true if post-deletion processing is successful
      */
     @Override
     public boolean afterDelete(List<F> objects) {
-        log.debug("Post-delete bulk hook called for {} entities of type {}",
-                objects.size(), persistentClass.getSimpleName());
+        log.debug("Post-delete bulk hook called for {} entities of type {}", objects.size(), persistentClass.getSimpleName());
         return true;
     }
 
     /**
-     * Hook method called after finding an entity by ID.
-     * Subclasses can override this method to add custom post-retrieval processing.
+     * Hook called after finding an entity by ID. Can be overridden by subclasses.
      *
-     * @param object the found entity DTO
-     * @return the entity DTO (potentially modified)
+     * @param object the retrieved DTO
+     * @return the processed DTO
      */
     @Override
     public F afterFindById(F object) {
@@ -934,32 +740,28 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Hook method called after finding all full entities.
-     * Subclasses can override this method to add custom post-retrieval processing.
+     * Hook called after retrieving all full entities. Can be overridden by subclasses.
      *
      * @param requestContext the request context
-     * @param list the found entity DTOs
-     * @return the entity DTOs list (potentially modified)
+     * @param list the list of full DTOs
+     * @return the processed list of DTOs
      */
     @Override
     public List<F> afterFindAllFull(RequestContextDto requestContext, List<F> list) {
-        log.debug("Post-find-all-full hook called for {} entities of type {}",
-                list.size(), persistentClass.getSimpleName());
+        log.debug("Post-find-all-full hook called for {} entities of type {}", list.size(), persistentClass.getSimpleName());
         return list;
     }
 
     /**
-     * Hook method called after finding all minimal entities.
-     * Subclasses can override this method to add custom post-retrieval processing.
+     * Hook called after retrieving all minimal entities. Can be overridden by subclasses.
      *
      * @param requestContext the request context
-     * @param list the found entity DTOs
-     * @return the entity DTOs list (potentially modified)
+     * @param list the list of minimal DTOs
+     * @return the processed list of DTOs
      */
     @Override
     public List<M> afterFindAll(RequestContextDto requestContext, List<M> list) {
-        log.debug("Post-find-all hook called for {} entities of type {}",
-                list.size(), persistentClass.getSimpleName());
+        log.debug("Post-find-all hook called for {} entities of type {}", list.size(), persistentClass.getSimpleName());
         return list;
     }
 
@@ -968,74 +770,197 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     // ========================================
 
     /**
-     * Determines if the current entity type is tenant-aware and the request is not from super tenant.
+     * Checks if the entity is tenant-aware and the request is not from a super tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @return true if tenant filtering should be applied, false otherwise
+     * @param requestContext the request context
+     * @return true if tenant-aware operations should be used
      */
     private boolean isTenantAware(RequestContextDto requestContext) {
-        return ITenantAssignable.class.isAssignableFrom(persistentClass) &&
+        boolean isTenantAware = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
                 !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant());
+        log.debug("Tenant-aware check: {}", isTenantAware);
+        return isTenantAware;
     }
 
     /**
-     * Builds a create function based on tenant awareness.
+     * Builds a function for creating entities with tenant awareness.
      *
-     * @param requestContext the request context containing tenant information
-     * @return the appropriate create function
+     * @param requestContext the request context
+     * @return Function to create an entity
      */
     private Function<T, T> buildCreateFunction(RequestContextDto requestContext) {
-        return obj -> {
-            if (obj instanceof ITenantAssignable) {
-                log.debug("Creating tenant-aware entity for tenant: {}", requestContext.getSenderTenant());
-                return crudService().create(requestContext.getSenderTenant(), obj);
-            } else {
-                log.debug("Creating non-tenant entity");
-                return crudService().create(obj);
-            }
-        };
+        log.debug("Building create function for tenant: {}", requestContext.getSenderTenant());
+        return obj -> isTenantAware(requestContext)
+                ? crudService().create(requestContext.getSenderTenant(), obj)
+                : crudService().create(obj);
     }
 
     /**
-     * Builds an update function based on tenant awareness.
+     * Builds a function for updating entities with tenant awareness.
      *
-     * @param requestContext the request context containing tenant information
-     * @return the appropriate update function
+     * @param requestContext the request context
+     * @return Function to update an entity
      */
     private Function<T, T> buildUpdateFunction(RequestContextDto requestContext) {
-        return obj -> {
-            if (obj instanceof ITenantAssignable) {
-                log.debug("Updating tenant-aware entity for tenant: {}", requestContext.getSenderTenant());
-                return crudService().update(requestContext.getSenderTenant(), obj);
+        log.debug("Building update function for tenant: {}", requestContext.getSenderTenant());
+        return obj -> isTenantAware(requestContext)
+                ? crudService().update(requestContext.getSenderTenant(), obj)
+                : crudService().update(obj);
+    }
+
+    /**
+     * Builds a function for deleting a single entity with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @return Function to delete an entity by ID
+     */
+    private Function<I, Void> buildDeleteFunction(RequestContextDto requestContext) {
+        log.debug("Building delete function for tenant: {}", requestContext.getSenderTenant());
+        return id -> {
+            if (isTenantAware(requestContext)) {
+                crudService().delete(requestContext.getSenderTenant(), id);
             } else {
-                log.debug("Updating non-tenant entity");
-                return crudService().update(obj);
+                crudService().delete(id);
             }
+            return null;
         };
     }
 
     /**
-     * Validates the create request object.
+     * Builds a function for bulk deleting entities with tenant awareness.
      *
-     * @param object the object to validate
-     * @throws BadArgumentException if validation fails
+     * @param requestContext the request context
+     * @return Function to delete a list of entities
+     */
+    private Function<List<T>, Void> buildDeleteBulkFunction(RequestContextDto requestContext) {
+        log.debug("Building bulk delete function for tenant: {}", requestContext.getSenderTenant());
+        return entities -> {
+            if (isTenantAware(requestContext)) {
+                crudService().delete(requestContext.getSenderTenant(), entities);
+            } else {
+                crudService().delete(entities);
+            }
+            return null;
+        };
+    }
+
+    /**
+     * Builds a supplier for retrieving all entities with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @return Supplier for retrieving all entities
+     */
+    private Supplier<List<T>> buildFindAllFunction(RequestContextDto requestContext) {
+        log.debug("Building find all function for tenant: {}", requestContext.getSenderTenant());
+        return () -> isTenantAware(requestContext)
+                ? crudService().findAll(requestContext.getSenderTenant())
+                : crudService().findAll();
+    }
+
+    /**
+     * Builds a supplier for retrieving all entities for the default tenant.
+     *
+     * @return Supplier for retrieving default tenant entities
+     */
+    private Supplier<List<T>> buildFindAllDefaultFunction() {
+        log.debug("Building find all default function");
+        return () -> crudService().findAll(TenantConstants.DEFAULT_TENANT_NAME);
+    }
+
+    /**
+     * Builds a supplier for retrieving paginated entities with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @param pageRequest the pagination parameters
+     * @return Supplier for retrieving paginated entities
+     */
+    private Supplier<List<T>> buildFindAllPaginatedFunction(RequestContextDto requestContext, PageRequest pageRequest) {
+        log.debug("Building paginated find function for tenant: {}", requestContext.getSenderTenant());
+        return () -> isTenantAware(requestContext)
+                ? crudService().findAll(requestContext.getSenderTenant(), pageRequest)
+                : crudService().findAll(pageRequest);
+    }
+
+    /**
+     * Builds a function for retrieving an entity by ID with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @return Function to retrieve an entity by ID
+     */
+    private Function<I, Optional<T>> buildFindByIdFunction(RequestContextDto requestContext) {
+        log.debug("Building find by ID function for tenant: {}", requestContext.getSenderTenant());
+        return id -> isTenantAware(requestContext)
+                ? crudService().findById(requestContext.getSenderTenant(), id)
+                : crudService().findById(id);
+    }
+
+    /**
+     * Builds a supplier for counting entities with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @return Supplier for counting entities
+     */
+    private Supplier<Long> buildCountFunction(RequestContextDto requestContext) {
+        log.debug("Building count function for tenant: {}", requestContext.getSenderTenant());
+        return () -> isTenantAware(requestContext)
+                ? crudService().count(requestContext.getSenderTenant())
+                : crudService().count();
+    }
+
+    /**
+     * Builds a supplier for retrieving entities filtered by criteria with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @param criteriaList the list of criteria
+     * @return Supplier for retrieving filtered entities
+     */
+    private Supplier<List<T>> buildFindByCriteriaFunction(RequestContextDto requestContext, List<QueryCriteria> criteriaList) {
+        log.debug("Building find by criteria function for tenant: {}", requestContext.getSenderTenant());
+        return () -> isTenantAware(requestContext)
+                ? crudService().findAllByCriteriaFilter(requestContext.getSenderTenant(), criteriaList)
+                : crudService().findAllByCriteriaFilter(criteriaList);
+    }
+
+    /**
+     * Builds a supplier for retrieving paginated entities filtered by criteria with tenant awareness.
+     *
+     * @param requestContext the request context
+     * @param criteriaList the list of criteria
+     * @param pageRequest the pagination parameters
+     * @return Supplier for retrieving paginated filtered entities
+     */
+    private Supplier<List<T>> buildFindByCriteriaPaginatedFunction(RequestContextDto requestContext,
+                                                                   List<QueryCriteria> criteriaList,
+                                                                   PageRequest pageRequest) {
+        log.debug("Building paginated find by criteria function for tenant: {}", requestContext.getSenderTenant());
+        return () -> isTenantAware(requestContext)
+                ? crudService().findAllByCriteriaFilter(requestContext.getSenderTenant(), criteriaList, pageRequest)
+                : crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
+    }
+
+    /**
+     * Validates that the create request contains a non-null object.
+     *
+     * @param object the DTO to validate
+     * @throws BadArgumentException if the object is null
      */
     private void validateCreateRequest(F object) {
         if (object == null) {
+            log.error("Null object received for create operation");
             throw new BadArgumentException("Object cannot be null for create operation");
         }
         log.debug("Create request validation passed");
     }
 
     /**
-     * Validates bulk operation size to prevent performance issues.
+     * Validates that the bulk operation size does not exceed the maximum allowed size.
      *
-     * @param size the size of the bulk operation
-     * @throws BadArgumentException if size exceeds limits
+     * @param size the number of entities in the bulk operation
+     * @throws BadArgumentException if the size exceeds the maximum
      */
     private void validateBulkSize(int size) {
         if (size > MAX_PAGE_SIZE) {
-            log.warn("Bulk operation size {} exceeds maximum allowed size {}", size, MAX_PAGE_SIZE);
+            log.error("Bulk operation size {} exceeds maximum allowed size {}", size, MAX_PAGE_SIZE);
             throw new BadArgumentException(
                     String.format("Bulk operation size %d exceeds maximum allowed size %d", size, MAX_PAGE_SIZE));
         }
@@ -1043,62 +968,44 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     }
 
     /**
-     * Validates and adjusts page size to prevent performance issues.
+     * Validates and adjusts the page size for pagination requests.
      *
      * @param size the requested page size
-     * @return the validated and potentially adjusted page size
+     * @return the validated page size
      */
     private int validateAndAdjustPageSize(Integer size) {
         if (size == null || size <= 0) {
             log.debug("Invalid page size {}, using default: {}", size, DEFAULT_PAGE_SIZE);
             return DEFAULT_PAGE_SIZE;
         }
-
         if (size > MAX_PAGE_SIZE) {
             log.warn("Requested page size {} exceeds maximum {}, adjusting to maximum", size, MAX_PAGE_SIZE);
             return MAX_PAGE_SIZE;
         }
-
         return size;
     }
 
     /**
-     * Utility method to execute operations with performance monitoring.
-     * This method can be used for future enhancements requiring consistent performance tracking.
+     * Executes an operation with performance monitoring and error handling.
      *
-     * @param operationName the name of the operation for logging
+     * @param operationName the name of the operation
      * @param operation the operation to execute
-     * @param <R> the return type
-     * @return the result of the operation
+     * @param <R> the response type
+     * @return ResponseEntity containing the operation result
      */
-    private <R> R executeWithPerformanceMonitoring(String operationName, Supplier<R> operation) {
+    private <R> ResponseEntity<R> executeWithPerformanceMonitoring(String operationName, Supplier<ResponseEntity<R>> operation) {
         var stopWatch = new StopWatch(operationName);
         stopWatch.start();
-
+        log.debug("Starting operation: {}", operationName);
         try {
             var result = operation.get();
             stopWatch.stop();
-            log.debug("Operation {} completed in {}ms", operationName, stopWatch.getTotalTimeMillis());
+            log.info("Successfully completed {} in {}ms", operationName, stopWatch.getTotalTimeMillis());
             return result;
         } catch (Exception e) {
             stopWatch.stop();
-            log.error("Operation {} failed after {}ms: {}", operationName, stopWatch.getTotalTimeMillis(), e.getMessage());
-            throw e;
+            log.error("Failed to complete {} after {}ms. Error: {}", operationName, stopWatch.getTotalTimeMillis(), e.getMessage(), e);
+            return getBackExceptionResponse(e);
         }
-    }
-
-    /**
-     * Utility method for async operations that might be useful for future enhancements.
-     *
-     * @param operation the operation to execute asynchronously
-     * @param <R> the return type
-     * @return CompletableFuture containing the result
-     */
-    private <R> CompletableFuture<R> executeAsync(Supplier<R> operation) {
-        return CompletableFuture.supplyAsync(operation)
-                .exceptionally(throwable -> {
-                    log.error("Async operation failed: {}", throwable.getMessage(), throwable);
-                    throw new RuntimeException(throwable);
-                });
     }
 }

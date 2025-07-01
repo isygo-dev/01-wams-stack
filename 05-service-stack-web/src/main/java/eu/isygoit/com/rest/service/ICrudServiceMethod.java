@@ -193,7 +193,7 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @throws ObjectNotFoundException the object not found exception
      * @throws NotSupportedException   the not supported exception
      */
-    Optional<T> findById(String tenant, I id) throws ObjectNotFoundException, NotSupportedException;
+    Optional<T> findById(String tenant, I id) throws ObjectNotFoundException;
 
     /**
      * Save or update t.
