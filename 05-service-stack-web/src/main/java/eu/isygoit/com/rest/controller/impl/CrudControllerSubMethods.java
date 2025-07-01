@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethod;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.IIdentifiableDto;
@@ -46,17 +45,16 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
-    private final Class<T> persistentClass =
-            (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-
     private static final int DEFAULT_PAGE_SIZE = 50;
     private static final int MAX_PAGE_SIZE = 1000;
+    private final Class<T> persistentClass =
+            (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     /**
      * Creates a single entity for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param object the DTO to create
+     * @param object         the DTO to create
      * @return ResponseEntity containing the created DTO
      */
     @Override
@@ -94,7 +92,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Creates multiple entities in bulk for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param objects the list of DTOs to create
+     * @param objects        the list of DTOs to create
      * @return ResponseEntity containing the list of created DTOs
      */
     @Override
@@ -140,7 +138,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Updates multiple entities in bulk for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param objects the list of DTOs to update
+     * @param objects        the list of DTOs to update
      * @return ResponseEntity containing the list of updated DTOs
      */
     @Override
@@ -186,8 +184,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Updates a single entity by ID for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param id the ID of the entity to update
-     * @param object the DTO containing updated data
+     * @param id             the ID of the entity to update
+     * @param object         the DTO containing updated data
      * @return ResponseEntity containing the updated DTO
      */
     @Override
@@ -236,7 +234,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Deletes a single entity by ID for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param id the ID of the entity to delete
+     * @param id             the ID of the entity to delete
      * @return ResponseEntity with no content on success
      */
     @Override
@@ -270,7 +268,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Deletes multiple entities in bulk for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param objects the list of DTOs to delete
+     * @param objects        the list of DTOs to delete
      * @return ResponseEntity with success message on completion
      */
     @Override
@@ -308,7 +306,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      *
      * @param requestContext the request context containing tenant information
      * @return ResponseEntity containing the list of minimal DTOs
-    ^H    */
+     * ^H
+     */
     @Override
     public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
         return executeWithPerformanceMonitoring("subFindAll", () -> {
@@ -371,8 +370,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Retrieves paginated entities for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param page the page number
-     * @param size the page size
+     * @param page           the page number
+     * @param size           the page size
      * @return ResponseEntity containing the list of minimal DTOs
      */
     @Override
@@ -442,8 +441,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Retrieves paginated entities with full details for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param page the page number
-     * @param size the page size
+     * @param page           the page number
+     * @param size           the page size
      * @return ResponseEntity containing the list of full DTOs
      */
     @Override
@@ -486,7 +485,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Retrieves a single entity by ID for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param id the ID of the entity to retrieve
+     * @param id             the ID of the entity to retrieve
      * @return ResponseEntity containing the full DTO or not found response
      */
     @Override
@@ -547,7 +546,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Retrieves entities filtered by criteria for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param criteria the filter criteria as a string
+     * @param criteria       the filter criteria as a string
      * @return ResponseEntity containing the list of filtered full DTOs
      */
     @Override
@@ -574,9 +573,9 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Retrieves paginated entities filtered by criteria for the specified tenant.
      *
      * @param requestContext the request context containing tenant information
-     * @param criteria the filter criteria as a string
-     * @param page the page number
-     * @param size the page size
+     * @param criteria       the filter criteria as a string
+     * @param page           the page number
+     * @param size           the page size
      * @return ResponseEntity containing the list of filtered full DTOs
      */
     @Override
@@ -645,7 +644,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
     /**
      * Hook called before updating an entity. Can be overridden by subclasses.
      *
-     * @param id the ID of the entity to update
+     * @param id     the ID of the entity to update
      * @param object the DTO with update data
      * @return the processed DTO
      */
@@ -743,7 +742,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Hook called after retrieving all full entities. Can be overridden by subclasses.
      *
      * @param requestContext the request context
-     * @param list the list of full DTOs
+     * @param list           the list of full DTOs
      * @return the processed list of DTOs
      */
     @Override
@@ -756,7 +755,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Hook called after retrieving all minimal entities. Can be overridden by subclasses.
      *
      * @param requestContext the request context
-     * @param list the list of minimal DTOs
+     * @param list           the list of minimal DTOs
      * @return the processed list of DTOs
      */
     @Override
@@ -776,8 +775,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * @return true if tenant-aware operations should be used
      */
     private boolean isTenantAware(RequestContextDto requestContext) {
-        boolean isTenantAware = ITenantAssignable.class.isAssignableFrom(persistentClass) &&
-                !TenantConstants.SUPER_TENANT_NAME.equals(requestContext.getSenderTenant());
+        boolean isTenantAware = ITenantAssignable.class.isAssignableFrom(persistentClass);
         log.debug("Tenant-aware check: {}", isTenantAware);
         return isTenantAware;
     }
@@ -871,7 +869,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Builds a supplier for retrieving paginated entities with tenant awareness.
      *
      * @param requestContext the request context
-     * @param pageRequest the pagination parameters
+     * @param pageRequest    the pagination parameters
      * @return Supplier for retrieving paginated entities
      */
     private Supplier<List<T>> buildFindAllPaginatedFunction(RequestContextDto requestContext, PageRequest pageRequest) {
@@ -911,7 +909,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Builds a supplier for retrieving entities filtered by criteria with tenant awareness.
      *
      * @param requestContext the request context
-     * @param criteriaList the list of criteria
+     * @param criteriaList   the list of criteria
      * @return Supplier for retrieving filtered entities
      */
     private Supplier<List<T>> buildFindByCriteriaFunction(RequestContextDto requestContext, List<QueryCriteria> criteriaList) {
@@ -925,8 +923,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Builds a supplier for retrieving paginated entities filtered by criteria with tenant awareness.
      *
      * @param requestContext the request context
-     * @param criteriaList the list of criteria
-     * @param pageRequest the pagination parameters
+     * @param criteriaList   the list of criteria
+     * @param pageRequest    the pagination parameters
      * @return Supplier for retrieving paginated filtered entities
      */
     private Supplier<List<T>> buildFindByCriteriaPaginatedFunction(RequestContextDto requestContext,
@@ -989,8 +987,8 @@ public abstract class CrudControllerSubMethods<I extends Serializable, T extends
      * Executes an operation with performance monitoring and error handling.
      *
      * @param operationName the name of the operation
-     * @param operation the operation to execute
-     * @param <R> the response type
+     * @param operation     the operation to execute
+     * @param <R>           the response type
      * @return ResponseEntity containing the operation result
      */
     private <R> ResponseEntity<R> executeWithPerformanceMonitoring(String operationName, Supplier<ResponseEntity<R>> operation) {

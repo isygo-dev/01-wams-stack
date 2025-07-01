@@ -160,12 +160,6 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
     }
 
-    private void assignCodeIfEmpty(T entity) {
-        if (!StringUtils.hasText(entity.getCode())) {
-            entity.setCode(((ICodeAssignableService) this).getNextCode());
-        }
-    }
-
     private void assignOrPreserveCode(T entity, T existing) {
         if (!StringUtils.hasText(entity.getCode()) && !StringUtils.hasText(existing.getCode())) {
             entity.setCode(((ICodeAssignableService) this).getNextCode());

@@ -50,11 +50,12 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
      * @param object the object
      */
     @SuppressWarnings("unchecked")
-    protected void assignCodeIfEmpty(Object object) {
+    public Object assignCodeIfEmpty(Object object) {
         if (this instanceof ICodeAssignableService codeAssignableService &&
                 object instanceof ICodeAssignable codeAssignable &&
                 !StringUtils.hasText(codeAssignable.getCode())) {
             codeAssignable.setCode(codeAssignableService.getNextCode());
         }
+        return object;
     }
 }

@@ -39,6 +39,7 @@ public interface JpaPagingAndSortingTenantAssignableRepository<T extends ITenant
      */
     Page<T> findByTenantIgnoreCase(String tenant, Pageable pageable);
 
+
     /**
      * Find first by tenant ignore case optional.
      *
@@ -71,4 +72,13 @@ public interface JpaPagingAndSortingTenantAssignableRepository<T extends ITenant
      * @return the long
      */
     Long countByTenantIgnoreCase(String tenant);
+
+    /**
+     * Exists by id and tenant ignore case boolean.
+     *
+     * @param id     the id
+     * @param tenant the tenant
+     * @return the boolean
+     */
+    boolean existsByIdAndTenantIgnoreCase(I id, String tenant);
 }
