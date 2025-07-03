@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,5 +18,5 @@ public @interface CtrlService {
      *
      * @return the class
      */
-    Class<? extends ICrudServiceMethod> value(); // service class
+    Class<? extends ICrudServiceMethods> value(); // service class
 }

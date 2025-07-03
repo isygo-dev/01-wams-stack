@@ -1,7 +1,7 @@
 package eu.isygoit.dto.extendable;
 
 
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,8 +18,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class IdentifiableDto<T extends Serializable> extends AbstractDto
-        implements IIdentifiableDto<T> {
+public abstract class IdAssignableDto<T extends Serializable> extends AbstractDto
+        implements IIdAssignableDto<T> {
 
     private T id;
 }

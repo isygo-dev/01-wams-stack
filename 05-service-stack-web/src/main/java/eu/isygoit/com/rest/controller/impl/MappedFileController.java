@@ -3,10 +3,11 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
 import eu.isygoit.dto.IFileUploadDto;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IFileEntity;
@@ -32,9 +33,9 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable<I> & IFileEntity,
-        M extends IIdentifiableDto & IFileUploadDto,
+        M extends IIdAssignableDto & IFileUploadDto,
         F extends M,
-        S extends IFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
+        S extends IFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 

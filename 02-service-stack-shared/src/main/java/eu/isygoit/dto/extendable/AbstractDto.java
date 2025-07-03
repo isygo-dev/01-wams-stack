@@ -3,7 +3,7 @@ package eu.isygoit.dto.extendable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.isygoit.dto.IDto;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.helper.BeanHelper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,8 +43,8 @@ public abstract class AbstractDto implements IDto {
         for (Field field : this.getClass().getDeclaredFields()) {
             Object fieldValue = BeanHelper.callGetter(this, field.getName(), true);
             if (fieldValue != null) {
-                if (IIdentifiableDto.class.isAssignableFrom(field.getType())) {
-                    if (!((IIdentifiableDto) fieldValue).isEmpty()) {
+                if (IIdAssignableDto.class.isAssignableFrom(field.getType())) {
+                    if (!((IIdAssignableDto) fieldValue).isEmpty()) {
                         return false;
                     }
                 } else if (Collection.class.isAssignableFrom(field.getType())) {

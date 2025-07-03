@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdentifiableDto & IImageUploadDto> {
+public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAssignableDto & IImageUploadDto> {
 
     /**
      * Download image response entity.

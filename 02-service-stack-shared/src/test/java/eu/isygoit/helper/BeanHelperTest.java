@@ -1,6 +1,6 @@
 package eu.isygoit.helper;
 
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.exception.BadFieldNameException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,7 +40,7 @@ public class BeanHelperTest {
     @AllArgsConstructor
     @NoArgsConstructor
     @SuperBuilder
-    public static class SampleBean implements IIdentifiableDto<Long> {
+    public static class SampleBean implements IIdAssignableDto<Long> {
         private Long id;
         private String sectionName;
         private String firstName;

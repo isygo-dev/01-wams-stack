@@ -1,6 +1,9 @@
 # Multi-Tenancy Discriminator Tenant PoC
 
-This repository contains a Proof of Concept (PoC) for a multi-tenant Spring Boot application using a discriminator-based tenant strategy. The application demonstrates tenant-aware CRUD operations for a `Tutorial` entity, leveraging Spring Data JPA, Hibernate, and MapStruct. It supports both H2 and PostgreSQL databases with tenant-specific schema initialization.
+This repository contains a Proof of Concept (PoC) for a multi-tenant Spring Boot application using a discriminator-based
+tenant strategy. The application demonstrates tenant-aware CRUD operations for a `Tutorial` entity, leveraging Spring
+Data JPA, Hibernate, and MapStruct. It supports both H2 and PostgreSQL databases with tenant-specific schema
+initialization.
 
 ## Table of Contents
 
@@ -9,19 +12,23 @@ This repository contains a Proof of Concept (PoC) for a multi-tenant Spring Boot
 - [Project Structure](#project-structure)
 - [Technologies](#technologies)
 - [Setup Instructions](#setup-instructions)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Database Configuration](#database-configuration)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Database Configuration](#database-configuration)
 - [Usage](#usage)
-  - [Running the Application](#running-the-application)
-  - [API Endpoints](#api-endpoints)
+    - [Running the Application](#running-the-application)
+    - [API Endpoints](#api-endpoints)
 - [Tenant Management](#tenant-management)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Overview
 
-The Multi-Tenancy Discriminator Tenant PoC is designed to showcase a scalable, tenant-aware architecture where each tenant's data is isolated using a tenant identifier column (`TENANT_ID`) in the database. The `Tutorial` entity serves as the primary example, with CRUD operations managed through a REST API. The application supports dynamic schema initialization for tenants and integrates with both H2 (for development) and PostgreSQL (for production-like environments).
+The Multi-Tenancy Discriminator Tenant PoC is designed to showcase a scalable, tenant-aware architecture where each
+tenant's data is isolated using a tenant identifier column (`TENANT_ID`) in the database. The `Tutorial` entity serves
+as the primary example, with CRUD operations managed through a REST API. The application supports dynamic schema
+initialization for tenants and integrates with both H2 (for development) and PostgreSQL (for production-like
+environments).
 
 ## Features
 
@@ -79,8 +86,8 @@ multi-tenancy-poc/
 - **Java 17**: Ensure JDK 17 is installed.
 - **Maven**: For building the project.
 - **Database**:
-  - H2 (included for development).
-  - PostgreSQL (optional, for production-like setup).
+    - H2 (included for development).
+    - PostgreSQL (optional, for production-like setup).
 - **IDE**: IntelliJ IDEA, Eclipse, or similar (recommended).
 - **Git**: To clone the repository.
 
@@ -98,34 +105,37 @@ multi-tenancy-poc/
    ```
 
 3. **Configure Application Properties**:
-   - Edit `src/main/resources/application.properties` to set up database configurations:
-     ```properties
-     # For H2 (development)
-     spring.profiles.active=h2
-     spring.datasource.url=jdbc:h2:mem:testdb
-     spring.datasource.driverClassName=org.h2.Driver
-     spring.datasource.username=sa
-     spring.datasource.password=
-     spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-
-     # For PostgreSQL (production)
-     # spring.profiles.active=postgres
-     # spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-     # spring.datasource.username=your-username
-     # spring.datasource.password=your-password
-     # spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-     ```
+    - Edit `src/main/resources/application.properties` to set up database configurations:
+      ```properties
+      # For H2 (development)
+      spring.profiles.active=h2
+      spring.datasource.url=jdbc:h2:mem:testdb
+      spring.datasource.driverClassName=org.h2.Driver
+      spring.datasource.username=sa
+      spring.datasource.password=
+      spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+ 
+      # For PostgreSQL (production)
+      # spring.profiles.active=postgres
+      # spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+      # spring.datasource.username=your-username
+      # spring.datasource.password=your-password
+      # spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+      ```
 
 4. **Database Configuration**:
-   - For **H2**, no additional setup is needed; the in-memory database is created automatically.
-   - For **PostgreSQL**, ensure the database server is running and create a database named `postgres` (or update the URL in `application.properties`).
-   - Tenant schemas are initialized automatically via `H2TenantService` or `PGTenantService` using SQL scripts in `src/main/resources/db/`.
+    - For **H2**, no additional setup is needed; the in-memory database is created automatically.
+    - For **PostgreSQL**, ensure the database server is running and create a database named `postgres` (or update the
+      URL in `application.properties`).
+    - Tenant schemas are initialized automatically via `H2TenantService` or `PGTenantService` using SQL scripts in
+      `src/main/resources/db/`.
 
 ### Database Configuration
 
 - **H2**: Uses `h2_tenant-schema.sql` to initialize tenant schemas. The default schema is `public`.
 - **PostgreSQL**: Uses `pg_tenant-schema.sql` to create tenant-specific schemas (e.g., `tenant1`, `tenant2`).
-- **Tenant Validation**: The `TenantValidator` class defines valid tenants (`tenant1`, `tenant2`, `public`, `super-tenant`). Update the `validTenants` set in `TenantValidator.java` to add more tenants.
+- **Tenant Validation**: The `TenantValidator` class defines valid tenants (`tenant1`, `tenant2`, `public`,
+  `super-tenant`). Update the `validTenants` set in `TenantValidator.java` to add more tenants.
 
 ## Usage
 
@@ -137,8 +147,8 @@ multi-tenancy-poc/
    ```
 
 2. **Access the Application**:
-   - The application runs on `http://localhost:8081` by default.
-   - Swagger UI is available at `http://localhost:8081/swagger-ui.html` for API documentation.
+    - The application runs on `http://localhost:8081` by default.
+    - Swagger UI is available at `http://localhost:8081/swagger-ui.html` for API documentation.
 
 ### API Endpoints
 
@@ -153,6 +163,7 @@ The `TutorialController` exposes REST endpoints under `/api/tutorials`. Key endp
 - **GET /api/tutorials?criteria={criteria}**: Retrieve tutorials filtered by criteria (e.g., `title=example`).
 
 **Example Request** (Create a Tutorial):
+
 ```bash
 curl -X POST http://localhost:8081/api/tutorials \
 -H "Content-Type: application/json" \
@@ -160,13 +171,17 @@ curl -X POST http://localhost:8081/api/tutorials \
 -d '{"title":"Sample Tutorial","description":"A sample tutorial","published":true}'
 ```
 
-**Note**: Include the `X-Tenant-Id` header with a valid tenant ID (e.g., `tenant1`, `tenant2`, `public`, `super-tenant`).
+**Note**: Include the `X-Tenant-Id` header with a valid tenant ID (e.g., `tenant1`, `tenant2`, `public`,
+`super-tenant`).
 
 ## Tenant Management
 
-- **Tenant Initialization**: The `H2TenantService` or `PGTenantService` initializes tenant schemas on demand using SQL scripts. Add new tenants by updating the `validTenants` set in `TenantValidator.java` and ensuring the corresponding schema is initialized.
+- **Tenant Initialization**: The `H2TenantService` or `PGTenantService` initializes tenant schemas on demand using SQL
+  scripts. Add new tenants by updating the `validTenants` set in `TenantValidator.java` and ensuring the corresponding
+  schema is initialized.
 - **Super Tenant**: The `super-tenant` has access to all tenant data and is used for administrative operations.
-- **Schema Strategy**: Uses a discriminator column (`TENANT_ID`) for tenant isolation, with separate schemas for PostgreSQL.
+- **Schema Strategy**: Uses a discriminator column (`TENANT_ID`) for tenant isolation, with separate schemas for
+  PostgreSQL.
 
 ## Contributing
 

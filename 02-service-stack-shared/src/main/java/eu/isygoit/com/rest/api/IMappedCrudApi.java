@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 
 import java.io.Serializable;
 
@@ -11,6 +11,6 @@ import java.io.Serializable;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-public interface IMappedCrudApi<I extends Serializable, M extends IIdentifiableDto, F extends M>
+public interface IMappedCrudApi<I extends Serializable, M extends IIdAssignableDto, F extends M>
         extends IMappedCrudFetchApi<I, M, F>, IMappedCrudPersistApi<I, F>, IMappedCrudDeleteApi<I> {
 }

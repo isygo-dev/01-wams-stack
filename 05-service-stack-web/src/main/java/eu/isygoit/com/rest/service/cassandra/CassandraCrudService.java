@@ -1,7 +1,6 @@
 package eu.isygoit.com.rest.service.cassandra;
 
-import eu.isygoit.com.rest.service.CrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
+import eu.isygoit.com.rest.service.*;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.*;
@@ -37,7 +36,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         T extends IIdAssignable<I>,
         R extends CassandraRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudServiceMethod<I, T> {
+        implements ICrudServiceMethods<I, T>, ICrudTenantAssignableServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];

@@ -2,9 +2,9 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.dto.extendable.IdentifiableDto;
+import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +27,7 @@ import java.util.Map;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifiableDto, F extends M> {
+public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssignableDto, F extends M> {
 
     /**
      * Find all response entity.
@@ -41,7 +41,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "")
     ResponseEntity<List<M>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
@@ -58,7 +58,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/default")
     ResponseEntity<List<M>> findAllDefault(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
@@ -78,7 +78,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/{page}/{size}")
     ResponseEntity<List<M>> findAll(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
@@ -97,7 +97,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/full")
     ResponseEntity<List<F>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext);
@@ -116,7 +116,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/full/{page}/{size}")
     ResponseEntity<List<F>> findAllFull(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
@@ -136,7 +136,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
@@ -172,7 +172,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/filter")
     ResponseEntity<List<F>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
@@ -193,7 +193,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdentifi
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @GetMapping(path = "/filter/{page}/{size}")
     ResponseEntity<List<F>> findAllFilteredByCriteria(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,

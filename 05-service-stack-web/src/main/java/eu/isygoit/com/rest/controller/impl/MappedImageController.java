@@ -3,9 +3,10 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedImageApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -34,9 +35,9 @@ import java.nio.file.Files;
  */
 @Slf4j
 public abstract class MappedImageController<I extends Serializable, T extends IIdAssignable<I> & IImageEntity,
-        M extends IIdentifiableDto & IImageUploadDto,
+        M extends IIdAssignableDto & IImageUploadDto,
         F extends M,
-        S extends IImageServiceMethods<I, T> & ICrudServiceMethod<I, T>>
+        S extends IImageServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedImageApi<I, F> {
 

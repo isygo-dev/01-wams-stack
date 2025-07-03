@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.controller;
 
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.MapperNotDefinedException;
 import eu.isygoit.exception.ServiceNotDefinedException;
@@ -18,7 +18,7 @@ import eu.isygoit.model.IIdAssignable;
  * @param <S> the type parameter
  */
 public interface ICrudControllerUtils<I, T extends IIdAssignable<I>,
-        M extends IIdentifiableDto,
+        M extends IIdAssignableDto,
         F extends M,
         S extends ICrudServiceUtils<I, T>> {
 

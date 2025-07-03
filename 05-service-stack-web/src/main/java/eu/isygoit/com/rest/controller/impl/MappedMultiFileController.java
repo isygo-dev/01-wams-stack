@@ -3,9 +3,10 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedMultiFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.mapper.EntityMapper;
@@ -34,9 +35,9 @@ import java.util.List;
 @Slf4j
 public abstract class MappedMultiFileController<I extends Serializable, T extends IIdAssignable<I> & IMultiFileEntity,
         L extends LinkedFileMinDto,
-        M extends IIdentifiableDto,
+        M extends IIdAssignableDto,
         F extends M,
-        S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethod<I, T>>
+        S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedMultiFileApi<L, I> {
 

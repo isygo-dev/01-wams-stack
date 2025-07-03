@@ -31,6 +31,7 @@
 
     <modules>
         <module>01-multi-tenacy</module>
+        <module>02-jpa-patterns</module>
     </modules>
 
     <build>

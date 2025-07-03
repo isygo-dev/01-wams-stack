@@ -18,7 +18,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractCancelableDto<T extends Serializable> extends IdentifiableDto<T> {
+public abstract class AbstractCancelableDto<T extends Serializable> extends IdAssignableDto<T> {
 
     private Boolean checkCancel = Boolean.FALSE;
     private Date cancelDate;

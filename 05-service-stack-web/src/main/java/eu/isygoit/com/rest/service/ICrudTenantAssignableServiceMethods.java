@@ -17,16 +17,7 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssignable<I>>
-        extends ICrudServiceEvents<I, T>,
-        ICrudServiceUtils<I, T> {
-
-    /**
-     * Count long.
-     *
-     * @return the long
-     */
-    Long count();
+public interface ICrudTenantAssignableServiceMethods<I extends Serializable, T extends IIdAssignable<I>> {
 
     /**
      * Count long.
@@ -36,14 +27,6 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
      * @throws NotSupportedException the not supported exception
      */
     Long count(String tenant);
-
-    /**
-     * Exists by id boolean.
-     *
-     * @param id the id
-     * @return the boolean
-     */
-    boolean existsById(I id);
 
     /**
      * Exists by id boolean.
@@ -58,28 +41,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Create t.
      *
-     * @param object the object
-     * @return the t
-     */
-    T create(T object);
-
-    /**
-     * Create t.
-     *
      * @param tenant the tenant
      * @param object the object
      * @return the t
      * @throws NotSupportedException the not supported exception
      */
     T create(String tenant, T object);
-
-    /**
-     * Create and flush t.
-     *
-     * @param object the object
-     * @return the t
-     */
-    T createAndFlush(T object);
 
     /**
      * Create and flush t.
@@ -94,27 +61,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Create list.
      *
-     * @param objects the objects
-     * @return the list
-     */
-    List<T> create(List<T> objects);
-
-    /**
-     * Create list.
-     *
      * @param tenant  the tenant
      * @param objects the objects
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
     List<T> create(String tenant, List<T> objects);
-
-    /**
-     * Delete.
-     *
-     * @param id the id
-     */
-    void delete(I id);
 
     /**
      * Delete.
@@ -128,25 +80,11 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Delete.
      *
-     * @param objects the objects
-     */
-    void delete(List<T> objects);
-
-    /**
-     * Delete.
-     *
      * @param tenant  the tenant
      * @param objects the objects
      * @throws NotSupportedException the not supported exception
      */
     void delete(String tenant, List<T> objects);
-
-    /**
-     * Find all list.
-     *
-     * @return the list
-     */
-    List<T> findAll();
 
     /**
      * Find all list.
@@ -160,29 +98,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Find all list.
      *
-     * @param pageable the pageable
-     * @return the list
-     */
-    List<T> findAll(Pageable pageable);
-
-    /**
-     * Find all list.
-     *
      * @param tenant   the tenant
      * @param pageable the pageable
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
     List<T> findAll(String tenant, Pageable pageable);
-
-    /**
-     * Find by id optional.
-     *
-     * @param id the id
-     * @return the optional
-     * @throws ObjectNotFoundException the object not found exception
-     */
-    Optional<T> findById(I id) throws ObjectNotFoundException;
 
     /**
      * Find by id optional.
@@ -198,28 +119,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Save or update t.
      *
-     * @param object the object
-     * @return the t
-     */
-    T saveOrUpdate(T object);
-
-    /**
-     * Save or update t.
-     *
      * @param tenant the tenant
      * @param object the object
      * @return the t
      * @throws NotSupportedException the not supported exception
      */
     T saveOrUpdate(String tenant, T object);
-
-    /**
-     * Save or update list.
-     *
-     * @param objects the objects
-     * @return the list
-     */
-    List<T> saveOrUpdate(List<T> objects);
 
     /**
      * Save or update list.
@@ -234,28 +139,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Update t.
      *
-     * @param object the object
-     * @return the t
-     */
-    T update(T object);
-
-    /**
-     * Update t.
-     *
      * @param tenant the tenant
      * @param object the object
      * @return the t
      * @throws NotSupportedException the not supported exception
      */
     T update(String tenant, T object);
-
-    /**
-     * Update and flush t.
-     *
-     * @param object the object
-     * @return the t
-     */
-    T updateAndFlush(T object);
 
     /**
      * Update and flush t.
@@ -270,14 +159,6 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Update list.
      *
-     * @param objects the objects
-     * @return the list
-     */
-    List<T> update(List<T> objects);
-
-    /**
-     * Update list.
-     *
      * @param tenant  the tenant
      * @param objects the objects
      * @return the list
@@ -288,29 +169,12 @@ public interface ICrudServiceMethod<I extends Serializable, T extends IIdAssigna
     /**
      * Find all by criteria filter list.
      *
-     * @param criteria the criteria
-     * @return the list
-     */
-    List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria);
-
-    /**
-     * Find all by criteria filter list.
-     *
      * @param tenant   the tenant
      * @param criteria the criteria
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
     List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria);
-
-    /**
-     * Find all by criteria filter list.
-     *
-     * @param criteria    the criteria
-     * @param pageRequest the page request
-     * @return the list
-     */
-    List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest);
 
     /**
      * Find all by criteria filter list.

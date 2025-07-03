@@ -1,7 +1,9 @@
 package eu.isygoit.com.rest.controller;
 
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,11 @@ import java.util.Map;
  * @param <F> the type parameter
  * @param <S> the type parameter
  */
-public interface ICrudControllerSubMethods<I extends Serializable, T extends IIdAssignable<I>, M extends IIdentifiableDto, F extends M, S extends ICrudServiceMethod<I, T>>
+public interface ICrudControllerSubMethods<I extends Serializable,
+        T extends IIdAssignable<I>,
+        M extends IIdAssignableDto,
+        F extends M,
+        S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends ICrudControllerEvents<I, T, M, F> {
 
     /**

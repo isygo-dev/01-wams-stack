@@ -18,7 +18,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractAuditableDto<T extends Serializable> extends IdentifiableDto<T> {
+public abstract class AbstractAuditableDto<T extends Serializable> extends IdAssignableDto<T> {
 
     private Date createDate;
     private String createdBy;

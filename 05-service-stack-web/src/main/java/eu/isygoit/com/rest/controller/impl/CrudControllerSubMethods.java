@@ -2,9 +2,12 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.service.ICrudServiceMethod;
+import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.ICrudTenantAssignableServiceMethods;
 import eu.isygoit.constants.TenantConstants;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.CriteriaHelper;
@@ -39,9 +42,9 @@ import java.util.function.Supplier;
  */
 @Slf4j
 public abstract class CrudControllerSubMethods<I extends Serializable, T extends IIdAssignable<I>,
-        M extends IIdentifiableDto,
+        M extends IIdAssignableDto,
         F extends M,
-        S extends ICrudServiceMethod<I, T>>
+        S extends ICrudServiceMethods<I, T> & ICrudTenantAssignableServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 

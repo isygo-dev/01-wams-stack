@@ -1,6 +1,6 @@
 package eu.isygoit.com.camel.processor;
 
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -14,7 +14,7 @@ import java.lang.reflect.ParameterizedType;
  * @param <T> the type parameter
  */
 @Slf4j
-public abstract class AbstractCamelProcessor<T extends IIdentifiableDto> implements Processor {
+public abstract class AbstractCamelProcessor<T extends IIdAssignableDto> implements Processor {
 
     /**
      * The constant ERROR_HEADER.

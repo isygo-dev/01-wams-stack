@@ -5,7 +5,7 @@ import eu.isygoit.annotation.CtrlMapper;
 import eu.isygoit.annotation.CtrlService;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.MapperNotDefinedException;
 import eu.isygoit.exception.ServiceNotDefinedException;
@@ -27,7 +27,7 @@ import java.lang.reflect.ParameterizedType;
  */
 @Slf4j
 public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
-        M extends IIdentifiableDto,
+        M extends IIdAssignableDto,
         F extends M,
         S extends ICrudServiceUtils<I, T>>
         extends ControllerExceptionHandler

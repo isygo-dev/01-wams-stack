@@ -41,7 +41,7 @@ public abstract class CrudService<I extends Serializable,
         T extends IIdAssignable<I>,
         R extends JpaPagingAndSortingRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudServiceMethod<I, T> {
+        implements ICrudServiceMethods<I, T>, ICrudTenantAssignableServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     private static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()

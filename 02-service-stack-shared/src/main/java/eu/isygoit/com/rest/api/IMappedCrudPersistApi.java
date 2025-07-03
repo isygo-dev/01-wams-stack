@@ -2,9 +2,9 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.dto.extendable.IdentifiableDto;
+import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,7 +23,7 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdentifiableDto> {
+public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssignableDto> {
 
     /**
      * Create response entity.
@@ -37,7 +37,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdenti
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PostMapping(path = "", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> create(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
@@ -49,7 +49,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdenti
             @ApiResponse(responseCode = "200",
                     description = "Objects created successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PostMapping(path = "/batch", consumes = "application/json", produces = "application/json")
     ResponseEntity<List<D>> createBatch(
@@ -69,7 +69,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdenti
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifiableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> update(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,

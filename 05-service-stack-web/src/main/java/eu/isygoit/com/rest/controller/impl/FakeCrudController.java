@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedCrudApi;
-import eu.isygoit.dto.IIdentifiableDto;
+import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 public abstract class FakeCrudController<I extends Serializable, T extends IIdAssignable<I>,
-        M extends IIdentifiableDto,
+        M extends IIdAssignableDto,
         F extends M>
         implements IMappedCrudApi<I, M, F> {
 

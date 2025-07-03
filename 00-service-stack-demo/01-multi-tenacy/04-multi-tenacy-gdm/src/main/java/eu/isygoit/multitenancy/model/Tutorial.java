@@ -18,8 +18,8 @@ import lombok.experimental.SuperBuilder;
 public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorial_seq")
-    @SequenceGenerator(name = "tutorial_seq", sequenceName = "TUTORIALS_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorial_seq_generator")
+    @SequenceGenerator(name = "tutorial_seq_generator", sequenceName = "tutorial_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
