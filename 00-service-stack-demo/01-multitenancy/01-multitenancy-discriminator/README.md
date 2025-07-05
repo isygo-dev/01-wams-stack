@@ -1,9 +1,9 @@
-# multitenancy Discriminator Tenant PoC
+# multitenancy Discriminator-Based PoC
 
 This repository contains a Proof of Concept (PoC) for a multi-tenant Spring Boot application using a discriminator-based
 tenant strategy. The application demonstrates tenant-aware CRUD operations for a `Tutorial` entity, leveraging Spring
-Data JPA, Hibernate, and MapStruct. It supports both H2 and PostgreSQL databases with tenant-specific schema
-initialization.
+Data JPA, Hibernate, and MapStruct. It supports both H2 (in-memory) and PostgreSQL databases with tenant-specific schema
+initialization and uses Hibernate filters for tenant isolation.
 
 ## Table of Contents
 
@@ -24,19 +24,19 @@ initialization.
 
 ## Overview
 
-The multitenancy Discriminator Tenant PoC is designed to showcase a scalable, tenant-aware architecture where each
-tenant's data is isolated using a tenant identifier column (`TENANT_ID`) in the database. The `Tutorial` entity serves
-as the primary example, with CRUD operations managed through a REST API. The application supports dynamic schema
-initialization for tenants and integrates with both H2 (for development) and PostgreSQL (for production-like
-environments).
+The multitenancy Discriminator-Based PoC showcases a scalable, tenant-aware architecture where tenant data is isolated
+using a `TENANT_ID` column in a single database schema. The `Tutorial` entity is the primary example, with CRUD
+operations exposed through a REST API. The application uses Hibernate's `@Filter` mechanism to enforce tenant isolation
+at the database level, ensuring that each request only accesses data for the authenticated tenant. It supports schema
+initialization for H2 and PostgreSQL databases and integrates Swagger for API documentation.
 
 ## Features
 
-- **multitenancy**: Supports tenant isolation using a discriminator column (`TENANT_ID`).
-- **CRUD Operations**: Full Create, Read, Update, Delete functionality for the `Tutorial` entity.
-- **Database Support**: Configurable for H2 (in-memory) and PostgreSQL databases.
-- **Tenant Schema Initialization**: Automatically creates tenant-specific schemas using SQL scripts.
-- **REST API**: Exposes tenant-aware endpoints for managing tutorials.
+- **multitenancy**: Isolates tenant data using a `TENANT_ID` column with Hibernate filters.
+- **CRUD Operations**: Comprehensive Create, Read, Update, Delete functionality for the `Tutorial` entity.
+- **Database Support**: Configurable for H2 (development) and PostgreSQL (production-like) databases.
+- **Tenant Schema Initialization**: Automatically creates database schemas using SQL scripts.
+- **REST API**: Exposes tenant-aware endpoints for managing tutorials, with tenant validation via `TenantContext`.
 - **Swagger Documentation**: Integrated OpenAPI documentation for API exploration.
 - **Mapper Integration**: Uses MapStruct for entity-DTO mapping.
 - **Validation**: Includes tenant validation and error handling.
@@ -54,8 +54,9 @@ multitenancy-poc/
 │   │   │   │   ├── mapper/           # MapStruct mappers (TutorialMapper)
 │   │   │   │   ├── model/            # JPA entities (Tutorial)
 │   │   │   │   ├── repository/       # Spring Data JPA repositories (TutorialRepository)
-│   │   │   │   ├── service/          # Business logic (TutorialService, TenantValidator)
+│   │   │   │   ├── service/          # Business logic (TenantValidator)
 │   │   │   │   ├── utils/            # Utility classes for tenant schema initialization
+│   │   │   │   ├── common/           # Common utilities (TenantContext, TenantEntityListener)
 │   │   │   │   └── MultiTenancyApplication.java  # Spring Boot application entry point
 │   │   └── resources/
 │   │       ├── db/
@@ -71,7 +72,7 @@ multitenancy-poc/
 - **Java 17**: Core programming language.
 - **Spring Boot 3.x**: Framework for building the application.
 - **Spring Data JPA**: For database operations.
-- **Hibernate**: Multi-tenant support with discriminator strategy.
+- **Hibernate**: Multi-tenant support with discriminator-based strategy using `@Filter`.
 - **H2 Database**: In-memory database for development.
 - **PostgreSQL**: Production-grade database support.
 - **MapStruct**: For entity-DTO mapping.
@@ -109,11 +110,12 @@ multitenancy-poc/
       ```properties
       # For H2 (development)
       spring.profiles.active=h2
-      spring.datasource.url=jdbc:h2:mem:testdb
+      spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
       spring.datasource.driverClassName=org.h2.Driver
       spring.datasource.username=sa
       spring.datasource.password=
       spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+      spring.jpa.hibernate.ddl-auto=none
  
       # For PostgreSQL (production)
       # spring.profiles.active=postgres
@@ -121,6 +123,7 @@ multitenancy-poc/
       # spring.datasource.username=your-username
       # spring.datasource.password=your-password
       # spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+      # spring.jpa.hibernate.ddl-auto=none
       ```
 
 4. **Database Configuration**:
@@ -132,10 +135,12 @@ multitenancy-poc/
 
 ### Database Configuration
 
-- **H2**: Uses `h2_tenant-schema.sql` to initialize tenant schemas. The default schema is `public`.
-- **PostgreSQL**: Uses `pg_tenant-schema.sql` to create tenant-specific schemas (e.g., `tenant1`, `tenant2`).
-- **Tenant Validation**: The `TenantValidator` class defines valid tenants (`tenant1`, `tenant2`, `public`,
-  `super-tenant`). Update the `validTenants` set in `TenantValidator.java` to add more tenants.
+- **H2**: Uses `h2_tenant-schema.sql` to initialize tenant schemas (e.g., `tenant1`, `tenant2`, `public`). The
+  `TENANT_ID` column is used for filtering via Hibernate's `@Filter`.
+- **PostgreSQL**: Uses `pg_tenant-schema.sql` to create tenant-specific schemas, with placeholders replaced by tenant
+  IDs.
+- **Tenant Validation**: The `TenantValidator` class defines valid tenants (`tenant1`, `tenant2`, `public`). Update the
+  `validTenants` set in `TenantValidator.java` to add more tenants.
 
 ## Usage
 
@@ -154,13 +159,14 @@ multitenancy-poc/
 
 The `TutorialController` exposes REST endpoints under `/api/tutorials`. Key endpoints include:
 
-- **GET /api/tutorials**: Retrieve all tutorials for the authenticated tenant.
-- **GET /api/tutorials/{id}**: Retrieve a tutorial by ID.
+- **GET /api/tutorials**: Retrieve all tutorials for the current tenant or filter by title (case-insensitive).
+    - Query Parameter: `title` (optional).
+- **GET /api/tutorials/{id}**: Retrieve a tutorial by ID for the current tenant.
 - **POST /api/tutorials**: Create a new tutorial.
-- **PUT /api/tutorials/{id}**: Update an existing tutorial.
-- **DELETE /api/tutorials/{id}**: Delete a tutorial.
-- **GET /api/tutorials?page={page}&size={size}**: Retrieve paginated tutorials.
-- **GET /api/tutorials?criteria={criteria}**: Retrieve tutorials filtered by criteria (e.g., `title=example`).
+- **PUT /api/tutorials/{id}**: Update an existing tutorial for the current tenant.
+- **DELETE /api/tutorials/{id}**: Delete a tutorial by ID.
+- **DELETE /api/tutorials**: Delete all tutorials.
+- **GET /api/tutorials/published**: Retrieve all published tutorials for the current tenant.
 
 **Example Request** (Create a Tutorial):
 
@@ -168,20 +174,22 @@ The `TutorialController` exposes REST endpoints under `/api/tutorials`. Key endp
 curl -X POST http://localhost:8081/api/tutorials \
 -H "Content-Type: application/json" \
 -H "X-Tenant-Id: tenant1" \
--d '{"title":"Sample Tutorial","description":"A sample tutorial","published":true}'
+-d '{"title":"Sample Tutorial","description":"A sample tutorial","published":true,"tenant":"tenant1"}'
 ```
 
-**Note**: Include the `X-Tenant-Id` header with a valid tenant ID (e.g., `tenant1`, `tenant2`, `public`,
-`super-tenant`).
+**Note**: Include the `X-Tenant-Id` header with a valid tenant ID (e.g., `tenant1`, `tenant2`, `public`). The tenant ID
+is used by `TenantContext` to filter data via Hibernate's `@Filter`.
 
 ## Tenant Management
 
 - **Tenant Initialization**: The `H2TenantService` or `PGTenantService` initializes tenant schemas on demand using SQL
-  scripts. Add new tenants by updating the `validTenants` set in `TenantValidator.java` and ensuring the corresponding
-  schema is initialized.
-- **Super Tenant**: The `super-tenant` has access to all tenant data and is used for administrative operations.
-- **Schema Strategy**: Uses a discriminator column (`TENANT_ID`) for tenant isolation, with separate schemas for
-  PostgreSQL.
+  scripts, replacing the `public` schema with the tenant ID.
+- **Tenant Isolation**: Uses a `TENANT_ID` column with Hibernate's `@Filter(name = "tenantFilter")` to ensure queries
+  only return data for the current tenant, managed via `TenantContext`.
+- **Tenant Validation**: Ensures only valid tenant IDs (`tenant1`, `tenant2`, `public`) are used. Extend the
+  `validTenants` set in `TenantValidator.java` for additional tenants.
+- **Entity Listener**: The `TenantEntityListener` ensures the `TENANT_ID` is set correctly for each entity based on the
+  current tenant context.
 
 ## Contributing
 

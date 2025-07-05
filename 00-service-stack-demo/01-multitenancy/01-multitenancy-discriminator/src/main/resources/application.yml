@@ -11,7 +11,7 @@ spring:
       path: /h2-console #http://localhost:8081/h2-console
 
   datasource:
-    url: jdbc:h2:file:./data/tenants-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_UPPER=false
+    url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -26,10 +26,10 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
 
 multitenancy:
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+  filter: TENANT # TENANT | CONTEXT
+  mode: DISCRIMINATOR
   tenants:
     - id: tenants
-      url: jdbc:h2:file:./data/tenants-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_UPPER=false
+      url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
       username: sa
       password:

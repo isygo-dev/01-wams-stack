@@ -10,11 +10,11 @@
     </organization>
 
     <groupId>eu.isygo-it.services</groupId>
-    <artifactId>poc-json-based-data-pattern</artifactId>
+    <artifactId>poc-multitenancy-gdm</artifactId>
     <version>WC-1.0.250516-T0922</version>
     <packaging>jar</packaging>
-    <name>poc-json-based-data-pattern</name>
-    <description>JSON-Based Data Patterns in SQL</description>
+    <name>poc-multitenancy-custom-gdm</name>
+    <description>Generic Discriminator multitenancy</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

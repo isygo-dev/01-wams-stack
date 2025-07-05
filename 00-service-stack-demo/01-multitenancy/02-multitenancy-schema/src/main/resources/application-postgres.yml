@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: Multi tenancy - discriminator tenant demo
+    name: Multi tenancy - schema per tenant demo
 
   datasource:
     url: jdbc:postgresql://localhost:5432/tenants?currentSchema=public
@@ -21,8 +21,8 @@ spring:
           dialect: org.hibernate.dialect.PostgreSQLDialect
 
 multitenancy:
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+  filter: TENANT # TENANT | CONTEXT
+  mode: SCHEMA  # DATABASE | SCHEMA | DISCRIMINATOR
   tenants:
     - id: tenants
       url: jdbc:postgresql://localhost:5432/tenants

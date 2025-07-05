@@ -10,11 +10,11 @@
     </organization>
 
     <groupId>eu.isygo-it.services</groupId>
-    <artifactId>poc-json-based-data-pattern</artifactId>
+    <artifactId>poc-multitenancy-database</artifactId>
     <version>WC-1.0.250516-T0922</version>
     <packaging>jar</packaging>
-    <name>poc-json-based-data-pattern</name>
-    <description>JSON-Based Data Patterns in SQL</description>
+    <name>poc-multitenancy-database</name>
+    <description>poc-multitenancy-database</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -29,19 +29,7 @@
     <dependencies>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
-            <artifactId>service-stack-web</artifactId>
-            <version>WS-1.0.250516-T0922</version>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
-            <version>WS-1.0.250516-T0922</version>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.isygo-it.services</groupId>
-            <artifactId>service-stack-cassandra</artifactId>
             <version>WS-1.0.250516-T0922</version>
         </dependency>
 

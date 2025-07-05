@@ -9,7 +9,7 @@ server:
 
 spring:
   application:
-    name: Multi-tenancy - discriminator tenant demo
+    name: multitenancy - discriminator tenant demo
 
   h2:
     console:
@@ -31,7 +31,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
-multi-tenancy:
+multitenancy:
   filter: CONTEXT # TENANT | CONTEXT
   mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
   tenants:
