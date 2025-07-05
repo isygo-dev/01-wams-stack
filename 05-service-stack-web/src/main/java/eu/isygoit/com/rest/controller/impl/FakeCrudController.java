@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 public abstract class FakeCrudController<I extends Serializable, T extends IIdAssignable<I>,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M>
         implements IMappedCrudApi<I, M, F> {
 

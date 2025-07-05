@@ -23,27 +23,25 @@ import org.springframework.util.StopWatch;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Abstract base class for CRUD controller sub-methods with tenant-aware operations.
- * Provides implementations for create, read, update, and delete operations using functional interfaces.
+ * Abstract controller providing CRUD operations for tenant-specific entities.
  *
- * @param <I> the type of the identifier (must be Serializable)
- * @param <T> the entity type (must implement IIdAssignable)
- * @param <M> the minimal DTO type (must implement IIdentifiableDto)
- * @param <F> the full DTO type (extends M)
- * @param <S> the service type (must implement ICrudServiceMethod)
+ * @param <I> ID type extending Serializable
+ * @param <T> Entity type implementing IIdAssignable and ITenantAssignable
+ * @param <M> Minimal DTO type extending IIdAssignableDto
+ * @param <F> Full DTO type extending M
+ * @param <S> Service type implementing tenant-specific CRUD operations
  */
 @Slf4j
-public abstract class CrudTenantControllerSubMethods<I extends Serializable,
+public abstract class CrudTenantControllerSubMethods<
+        I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends ICrudTenantServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
@@ -51,218 +49,144 @@ public abstract class CrudTenantControllerSubMethods<I extends Serializable,
 
     private static final int DEFAULT_PAGE_SIZE = 50;
     private static final int MAX_PAGE_SIZE = 1000;
-    private final Class<T> persistentClass =
-            (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private static final String CREATE_DATE_FIELD = "createDate";
+    private final Class<T> entityClass;
+
+    @SuppressWarnings("unchecked")
+    protected CrudTenantControllerSubMethods() {
+        this.entityClass = (Class<T>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[1];
+    }
+
+    // region CRUD Operations
 
     /**
      * Creates a single entity for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param object         the DTO to create
+     * @param context Request context containing tenant information
+     * @param dto     DTO to create the entity from
      * @return ResponseEntity containing the created DTO
+     * @throws BadArgumentException if the DTO is null
      */
     @Override
-    public final ResponseEntity<F> subCreate(RequestContextDto requestContext, F object) {
-        return executeWithPerformanceMonitoring("subCreate", () -> {
-            log.info("Create {} request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
-            log.debug("Input DTO: {}", object);
+    public ResponseEntity<F> subCreate(RequestContextDto context, F dto) {
+        return executeWithMonitoring("subCreate", () -> {
+            log.info("Creating {} for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
+            validateCreateRequest(dto);
 
-            // Validate input and prepare creation function
-            validateCreateRequest(object);
-            var createFunction = buildCreateFunction(requestContext);
+            F processedDto = beforeCreate(dto);
+            T entity = mapper().dtoToEntity(processedDto);
+            T createdEntity = crudService().create(context.getSenderTenant(), entity);
+            T postProcessedEntity = afterCreate(createdEntity);
+            F resultDto = mapper().entityToDto(postProcessedEntity);
 
-            // Process creation pipeline
-            return Optional.of(object)
-                    .map(this::beforeCreate)
-                    .map(dto -> {
-                        log.debug("After pre-create hook: {}", dto);
-                        return mapper().dtoToEntity(dto);
-                    })
-                    .map(createFunction)
-                    .map(this::afterCreate)
-                    .map(entity -> {
-                        log.debug("After post-create hook: {}", entity);
-                        return mapper().entityToDto(entity);
-                    })
-                    .map(dto -> {
-                        log.debug("Final created DTO: {}", dto);
-                        return ResponseFactory.responseCreated(dto);
-                    })
-                    .orElseThrow(() -> new BadArgumentException("Object creation failed"));
+            return ResponseFactory.responseCreated(resultDto);
         });
     }
 
     /**
      * Creates multiple entities in bulk for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param objects        the list of DTOs to create
+     * @param context Request context containing tenant information
+     * @param dtos    List of DTOs to create entities from
      * @return ResponseEntity containing the list of created DTOs
+     * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public final ResponseEntity<List<F>> subCreate(RequestContextDto requestContext, List<F> objects) {
-        return executeWithPerformanceMonitoring("subCreateBulk", () -> {
-            log.info("Bulk create {} entities request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
-            log.debug("Number of entities to create: {}", objects.size());
+    public ResponseEntity<List<F>> subCreate(RequestContextDto context, List<F> dtos) {
+        return executeWithMonitoring("subCreateBulk", () -> {
+            log.info("Bulk creating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
+            validateBulkOperation(dtos);
 
-            // Validate input list
-            if (CollectionUtils.isEmpty(objects)) {
-                log.warn("Empty or null objects list received for bulk create operation");
-                return ResponseFactory.responseBadRequest();
-            }
-
-            validateBulkSize(objects.size());
-            var createFunction = buildCreateFunction(requestContext);
-
-            // Process bulk creation in parallel
-            var processedDtos = objects.parallelStream()
-                    .map(dto -> {
-                        log.debug("Processing creation for DTO: {}", dto);
-                        return beforeCreate(dto);
-                    })
-                    .map(dto -> {
-                        log.debug("Converting DTO to entity: {}", dto);
-                        return mapper().dtoToEntity(dto);
-                    })
-                    .map(createFunction)
-                    .map(entity -> {
-                        log.debug("Applying post-create hook to entity: {}", entity);
-                        return afterCreate(entity);
-                    })
+            List<T> entities = dtos.stream()
+                    .map(this::beforeCreate)
+                    .map(mapper()::dtoToEntity)
                     .toList();
+            List<T> createdEntities = crudService().createBatch(context.getSenderTenant(), entities);
+            List<T> postProcessedEntities = createdEntities.stream()
+                    .map(this::afterCreate)
+                    .toList();
+            List<F> resultDtos = mapper().listEntityToDto(postProcessedEntities);
 
-            // Convert entities back to DTOs
-            var result = mapper().listEntityToDto(processedDtos);
-            log.debug("Created {} entities successfully", result.size());
-            return ResponseFactory.responseOk(result);
+            return ResponseFactory.responseOk(List.copyOf(resultDtos));
         });
     }
 
     /**
      * Updates multiple entities in bulk for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param objects        the list of DTOs to update
+     * @param context Request context containing tenant information
+     * @param dtos    List of DTOs to update entities from
      * @return ResponseEntity containing the list of updated DTOs
+     * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public final ResponseEntity<List<F>> subUpdate(RequestContextDto requestContext, List<F> objects) {
-        return executeWithPerformanceMonitoring("subUpdate", () -> {
-            log.info("Update {} entities request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
-            log.debug("Number of entities to update: {}", objects.size());
+    public ResponseEntity<List<F>> subUpdate(RequestContextDto context, List<F> dtos) {
+        return executeWithMonitoring("subUpdateBulk", () -> {
+            log.info("Bulk updating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
+            validateBulkOperation(dtos);
 
-            // Validate input list
-            if (CollectionUtils.isEmpty(objects)) {
-                log.warn("Empty or null objects list received for update operation");
-                return ResponseFactory.responseBadRequest();
-            }
-
-            validateBulkSize(objects.size());
-            var updateFunction = buildUpdateFunction(requestContext);
-
-            // Process bulk update in parallel
-            var processedDtos = objects.parallelStream()
-                    .map(dto -> {
-                        log.debug("Processing update for DTO with ID: {}", dto.getId());
-                        return beforeUpdate((I) dto.getId(), dto);
-                    })
-                    .map(dto -> {
-                        log.debug("Converting DTO to entity: {}", dto);
-                        return mapper().dtoToEntity(dto);
-                    })
-                    .map(updateFunction)
-                    .map(entity -> {
-                        log.debug("Applying post-update hook to entity: {}", entity);
-                        return afterUpdate(entity);
-                    })
+            List<T> entities = dtos.stream()
+                    .map(dto -> beforeUpdate(dto.getId(), dto))
+                    .map(mapper()::dtoToEntity)
                     .toList();
+            List<T> updatedEntities = crudService().updateBatch(context.getSenderTenant(), entities);
+            List<T> postProcessedEntities = updatedEntities.stream()
+                    .map(this::afterUpdate)
+                    .toList();
+            List<F> resultDtos = mapper().listEntityToDto(postProcessedEntities);
 
-            // Convert entities back to DTOs
-            var result = mapper().listEntityToDto(processedDtos);
-            log.debug("Updated {} entities successfully", result.size());
-            return ResponseFactory.responseOk(result);
+            return ResponseFactory.responseOk(List.copyOf(resultDtos));
         });
     }
 
     /**
      * Updates a single entity by ID for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param id             the ID of the entity to update
-     * @param object         the DTO containing updated data
+     * @param context Request context containing tenant information
+     * @param id      ID of the entity to update
+     * @param dto     DTO containing updated data
      * @return ResponseEntity containing the updated DTO
+     * @throws BadArgumentException if ID or DTO is null
      */
     @Override
-    public final ResponseEntity<F> subUpdate(RequestContextDto requestContext, I id, F object) {
-        return executeWithPerformanceMonitoring("subUpdateById", () -> {
-            log.info("Update {} with ID: {} request received for tenant: {}", persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
-            log.debug("Input DTO: {}", object);
+    public ResponseEntity<F> subUpdate(RequestContextDto context, I id, F dto) {
+        return executeWithMonitoring("subUpdateById", () -> {
+            log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
+            validateNotNull(id, "ID cannot be null");
+            validateNotNull(dto, "DTO cannot be null");
+            dto.setId(id);
 
-            // Validate input parameters
-            if (object == null || id == null) {
-                log.warn("Invalid parameters: object={}, id={}", object != null, id);
-                return ResponseFactory.responseBadRequest();
-            }
+            F processedDto = beforeUpdate(id, dto);
+            T entity = mapper().dtoToEntity(processedDto);
+            T updatedEntity = crudService().update(context.getSenderTenant(), entity);
+            T postProcessedEntity = afterUpdate(updatedEntity);
+            F resultDto = mapper().entityToDto(postProcessedEntity);
 
-            object.setId(id);
-            var updateFunction = buildUpdateFunction(requestContext);
-
-            // Process update pipeline
-            return Optional.of(object)
-                    .map(dto -> {
-                        log.debug("Applying pre-update hook for ID: {}", id);
-                        return beforeUpdate(id, dto);
-                    })
-                    .map(dto -> {
-                        log.debug("Converting DTO to entity: {}", dto);
-                        return mapper().dtoToEntity(dto);
-                    })
-                    .map(updateFunction)
-                    .map(entity -> {
-                        log.debug("Applying post-update hook: {}", entity);
-                        return afterUpdate(entity);
-                    })
-                    .map(entity -> {
-                        log.debug("Converting entity to DTO: {}", entity);
-                        return mapper().entityToDto(entity);
-                    })
-                    .map(dto -> {
-                        log.debug("Final updated DTO: {}", dto);
-                        return ResponseFactory.responseOk(dto);
-                    })
-                    .orElseThrow(() -> new BadArgumentException("Object update failed"));
+            return ResponseFactory.responseOk(resultDto);
         });
     }
 
     /**
      * Deletes a single entity by ID for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param id             the ID of the entity to delete
-     * @return ResponseEntity with no content on success
+     * @param context Request context containing tenant information
+     * @param id      ID of the entity to delete
+     * @return ResponseEntity indicating success or failure
+     * @throws BadArgumentException if ID is null
      */
     @Override
-    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, I id) {
-        return executeWithPerformanceMonitoring("subDelete", () -> {
-            log.info("Delete {} with ID: {} request received for tenant: {}", persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
+    public ResponseEntity<?> subDelete(RequestContextDto context, I id) {
+        return executeWithMonitoring("subDelete", () -> {
+            log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
+            validateNotNull(id, "ID cannot be null");
 
-            // Validate ID
-            if (id == null) {
-                log.warn("Null ID received for delete operation");
-                return ResponseFactory.responseBadRequest();
-            }
-
-            // Check pre-delete validation
             if (!beforeDelete(id)) {
                 log.warn("Pre-delete validation failed for ID: {}", id);
                 return ResponseFactory.responseBadRequest();
             }
 
-            // Execute deletion
-            var deleteFunction = buildDeleteFunction(requestContext);
-            log.debug("Executing delete operation for ID: {}", id);
-            deleteFunction.apply(id);
-            log.debug("Applying post-delete hook for ID: {}", id);
+            crudService().delete(context.getSenderTenant(), id);
             afterDelete(id);
             return ResponseFactory.responseNoContent();
         });
@@ -271,340 +195,234 @@ public abstract class CrudTenantControllerSubMethods<I extends Serializable,
     /**
      * Deletes multiple entities in bulk for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param objects        the list of DTOs to delete
-     * @return ResponseEntity with success message on completion
+     * @param context Request context containing tenant information
+     * @param dtos    List of DTOs to delete
+     * @return ResponseEntity indicating success or failure
+     * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public final ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects) {
-        return executeWithPerformanceMonitoring("subDeleteBulk", () -> {
-            log.info("Bulk delete {} entities request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
-            log.debug("Number of entities to delete: {}", objects.size());
+    public ResponseEntity<?> subDelete(RequestContextDto context, List<F> dtos) {
+        return executeWithMonitoring("subDeleteBulk", () -> {
+            log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
+            validateBulkOperation(dtos);
 
-            // Validate input list
-            if (CollectionUtils.isEmpty(objects)) {
-                log.warn("Empty or null objects list received for bulk delete operation");
+            if (!beforeDelete(dtos)) {
+                log.warn("Pre-delete validation failed for bulk operation");
                 return ResponseFactory.responseBadRequest();
             }
 
-            validateBulkSize(objects.size());
-
-            // Check pre-delete validation
-            if (!beforeDelete(objects)) {
-                log.warn("Pre-delete validation failed for bulk delete operation");
-                return ResponseFactory.responseBadRequest();
-            }
-
-            // Execute bulk deletion
-            var deleteBulkFunction = buildDeleteBulkFunction(requestContext);
-            log.debug("Executing bulk delete operation");
-            deleteBulkFunction.apply(mapper().listDtoToEntity(objects));
-            log.debug("Applying post-delete hook for bulk operation");
-            afterDelete(objects);
+            List<T> entities = mapper().listDtoToEntity(dtos);
+            crudService().deleteBatch(context.getSenderTenant(), entities);
+            afterDelete(dtos);
             return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
         });
     }
 
+    // endregion
+
+    // region Query Operations
+
     /**
      * Retrieves all entities for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
+     * @param context Request context containing tenant information
      * @return ResponseEntity containing the list of minimal DTOs
-     * ^H
      */
     @Override
-    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext) {
-        return executeWithPerformanceMonitoring("subFindAll", () -> {
-            log.info("Find all {}s request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+    public ResponseEntity<List<M>> subFindAll(RequestContextDto context) {
+        return executeWithMonitoring("subFindAll", () -> {
+            log.info("Finding all {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
 
-            // Execute find all operation
-            var findAllFunction = buildFindAllFunction(requestContext);
-            log.debug("Executing find all operation");
-            var list = Optional.ofNullable(findAllFunction.get())
-                    .map(entities -> {
-                        log.debug("Converting {} entities to minimal DTOs", entities.size());
-                        return minDtoMapper().listEntityToDto(entities);
-                    })
-                    .map(l -> {
-                        log.debug("Applying post-find-all hook");
-                        return afterFindAll(requestContext, l);
-                    })
-                    .orElse(Collections.emptyList());
+            List<T> entities = crudService().findAll(context.getSenderTenant());
+            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
+            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
 
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(postProcessedDtos);
         });
     }
 
     /**
-     * Retrieves all entities for the default tenant.
+     * Retrieves all default entities.
      *
-     * @param requestContext the request context containing tenant information
+     * @param context Request context containing tenant information
      * @return ResponseEntity containing the list of minimal DTOs
      */
     @Override
-    public final ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
-        return executeWithPerformanceMonitoring("subFindAllDefault", () -> {
-            log.info("Find all default {}s request received", persistentClass.getSimpleName());
+    public ResponseEntity<List<M>> subFindAllDefault(RequestContextDto context) {
+        return executeWithMonitoring("subFindAllDefault", () -> {
+            log.info("Finding all default {}s", entityClass.getSimpleName());
 
-            // Execute find all default operation
-            var findAllDefaultFunction = buildFindAllDefaultFunction();
-            log.debug("Executing find all default operation");
-            var list = Optional.ofNullable(findAllDefaultFunction.get())
-                    .map(entities -> {
-                        log.debug("Converting {} entities to minimal DTOs", entities.size());
-                        return minDtoMapper().listEntityToDto(entities);
-                    })
-                    .map(l -> {
-                        log.debug("Applying post-find-all hook");
-                        return afterFindAll(requestContext, l);
-                    })
-                    .orElse(Collections.emptyList());
+            List<T> entities = crudService().findAll(TenantConstants.DEFAULT_TENANT_NAME);
+            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
+            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
 
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(postProcessedDtos);
         });
     }
 
     /**
      * Retrieves paginated entities for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param page           the page number
-     * @param size           the page size
+     * @param context Request context containing tenant information
+     * @param page    Page number (0-based)
+     * @param size    Page size
      * @return ResponseEntity containing the list of minimal DTOs
+     * @throws BadArgumentException if page or size is invalid
      */
     @Override
-    public final ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext, Integer page, Integer size) {
-        return executeWithPerformanceMonitoring("subFindAllPaginated", () -> {
-            log.info("Find all {}s by page/size request received {}/{} for tenant: {}", persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
+    public ResponseEntity<List<M>> subFindAll(RequestContextDto context, Integer page, Integer size) {
+        return executeWithMonitoring("subFindAllPaginated", () -> {
+            log.info("Finding paginated {}s (page: {}, size: {}) for tenant: {}",
+                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
+            validateNotNull(page, "Page cannot be null");
+            validateNotNull(size, "Size cannot be null");
 
-            // Validate and prepare pagination
-            var validatedSize = validateAndAdjustPageSize(size);
-            var pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "createDate"));
-            log.debug("Pagination parameters: page={}, size={}", page, validatedSize);
+            int validatedSize = validatePageSize(size);
+            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
-            // Execute paginated find operation
-            var findAllPaginatedFunction = buildFindAllPaginatedFunction(requestContext, pageRequest);
-            log.debug("Executing paginated find operation");
-            var list = Optional.ofNullable(findAllPaginatedFunction.get())
-                    .map(entities -> {
-                        log.debug("Converting {} entities to minimal DTOs", entities.size());
-                        return minDtoMapper().listEntityToDto(entities);
-                    })
-                    .map(l -> {
-                        log.debug("Applying post-find-all hook");
-                        return afterFindAll(requestContext, l);
-                    })
-                    .orElse(Collections.emptyList());
+            List<T> entities = crudService().findAll(context.getSenderTenant(), pageRequest);
+            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
+            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
 
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(postProcessedDtos);
         });
     }
 
     /**
-     * Retrieves all entities with full details for the specified tenant.
+     * Retrieves all full entities for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
+     * @param context Request context containing tenant information
      * @return ResponseEntity containing the list of full DTOs
      */
     @Override
-    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext) {
-        return executeWithPerformanceMonitoring("subFindAllFull", () -> {
-            log.info("Find all full {}s request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto context) {
+        return executeWithMonitoring("subFindAllFull", () -> {
+            log.info("Finding all full {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
 
-            // Execute find all operation
-            var findAllFunction = buildFindAllFunction(requestContext);
-            log.debug("Executing find all full operation");
-            var list = Optional.ofNullable(findAllFunction.get())
-                    .map(entities -> {
-                        log.debug("Converting {} entities to full DTOS", entities.size());
-                        return mapper().listEntityToDto(entities);
-                    })
-                    .map(l -> {
-                        log.debug("Applying post-find-all-full hook");
-                        return afterFindAllFull(requestContext, l);
-                    })
-                    .orElse(Collections.emptyList());
+            List<T> entities = crudService().findAll(context.getSenderTenant());
+            List<F> resultDtos = mapper().listEntityToDto(entities);
+            List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(postProcessedDtos);
         });
     }
 
     /**
-     * Retrieves paginated entities with full details for the specified tenant.
+     * Retrieves paginated full entities for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param page           the page number
-     * @param size           the page size
+     * @param context Request context containing tenant information
+     * @param page    Page number (0-based)
+     * @param size    Page size
      * @return ResponseEntity containing the list of full DTOs
+     * @throws BadArgumentException if page or size is invalid
      */
     @Override
-    public final ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size) {
-        return executeWithPerformanceMonitoring("subFindAllFullPaginated", () -> {
-            log.info("Find all full {}s by page/size request received {}/{} for tenant: {}", persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto context, Integer page, Integer size) {
+        return executeWithMonitoring("subFindAllFullPaginated", () -> {
+            log.info("Finding paginated full {}s (page: {}, size: {}) for tenant: {}",
+                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
+            validateNotNull(page, "Page cannot be null");
+            validateNotNull(size, "Size cannot be null");
 
-            // Validate pagination parameters
-            if (page == null || size == null) {
-                log.warn("Invalid pagination parameters: page={}, size={}", page, size);
-                return ResponseFactory.responseBadRequest();
-            }
+            int validatedSize = validatePageSize(size);
+            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
-            var validatedSize = validateAndAdjustPageSize(size);
-            var pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "createDate"));
-            log.debug("Pagination parameters: page={}, size={}", page, validatedSize);
+            List<T> entities = crudService().findAll(context.getSenderTenant(), pageRequest);
+            List<F> resultDtos = mapper().listEntityToDto(entities);
+            List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
-            // Execute paginated find operation
-            var findAllPaginatedFunction = buildFindAllPaginatedFunction(requestContext, pageRequest);
-            log.debug("Executing paginated find full operation");
-            var list = Optional.ofNullable(findAllPaginatedFunction.get())
-                    .map(entities -> {
-                        log.debug("Converting {} entities to full DTOs", entities.size());
-                        return mapper().listEntityToDto(entities);
-                    })
-                    .map(l -> {
-                        log.debug("Applying post-find-all-full hook");
-                        return afterFindAllFull(requestContext, l);
-                    })
-                    .orElse(Collections.emptyList());
-
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(postProcessedDtos);
         });
     }
 
     /**
      * Retrieves a single entity by ID for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param id             the ID of the entity to retrieve
-     * @return ResponseEntity containing the full DTO or not found response
+     * @param context Request context containing tenant information
+     * @param id      ID of the entity to retrieve
+     * @return ResponseEntity containing the DTO or not found response
+     * @throws BadArgumentException if ID is null
      */
     @Override
-    public final ResponseEntity<F> subFindById(RequestContextDto requestContext, I id) {
-        return executeWithPerformanceMonitoring("subFindById", () -> {
-            log.info("Find {} by id {} request received for tenant: {}", persistentClass.getSimpleName(), id, requestContext.getSenderTenant());
+    public
 
-            // Validate ID
-            if (id == null) {
-                log.warn("Null ID received for find by ID operation");
-                return ResponseFactory.responseBadRequest();
-            }
+    ResponseEntity<F> subFindById(RequestContextDto context, I id) {
+        return executeWithMonitoring("subFindById", () -> {
+            log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
+            validateNotNull(id, "ID cannot be null");
 
-            // Execute find by ID operation
-            var findByIdFunction = buildFindByIdFunction(requestContext);
-            log.debug("Executing find by ID operation for ID: {}", id);
-            return findByIdFunction.apply(id)
-                    .map(entity -> {
-                        log.debug("Converting entity to DTO: {}", entity);
-                        return mapper().entityToDto(entity);
-                    })
-                    .map(dto -> {
-                        log.debug("Applying post-find-by-id hook");
-                        return afterFindById(dto);
-                    })
-                    .map(dto -> {
-                        log.debug("Final DTO: {}", dto);
-                        return ResponseFactory.responseOk(dto);
-                    })
-                    .orElseGet(() -> {
-                        log.info("No entity found with ID: {}", id);
-                        return ResponseFactory.responseNotFound();
-                    });
+            Optional<T> entity = crudService().findById(context.getSenderTenant(), id);
+            return entity
+                    .map(mapper()::entityToDto)
+                    .map(this::afterFindById)
+                    .map(ResponseFactory::responseOk)
+                    .orElseGet(() -> ResponseFactory.responseNotFound());
         });
     }
 
     /**
      * Retrieves the count of entities for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @return ResponseEntity containing the count of entities
+     * @param context Request context containing tenant information
+     * @return ResponseEntity containing the count
      */
     @Override
-    public final ResponseEntity<Long> subGetCount(RequestContextDto requestContext) {
-        return executeWithPerformanceMonitoring("subGetCount", () -> {
-            log.info("Get count {} request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
-
-            // Execute count operation
-            var countFunction = buildCountFunction(requestContext);
-            log.debug("Executing count operation");
-            var count = countFunction.get();
-            log.debug("Count result: {}", count);
+    public ResponseEntity<Long> subGetCount(RequestContextDto context) {
+        return executeWithMonitoring("subGetCount", () -> {
+            log.info("Counting {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
+            Long count = crudService().count(context.getSenderTenant());
             return ResponseFactory.responseOk(count);
         });
     }
 
     /**
-     * Retrieves entities filtered by criteria for the specified tenant.
+     * Retrieves filtered entities based on criteria for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param criteria       the filter criteria as a string
-     * @return ResponseEntity containing the list of filtered full DTOs
+     * @param context  Request context containing tenant information
+     * @param criteria Filter criteria as a string
+     * @return ResponseEntity containing the list of filtered DTOs
      */
     @Override
-    public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
-        return executeWithPerformanceMonitoring("subFindAllFilteredByCriteria", () -> {
-            log.info("Find all {}s by criteria request received for tenant: {}", persistentClass.getSimpleName(), requestContext.getSenderTenant());
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto context, String criteria) {
+        return executeWithMonitoring("subFindAllFilteredByCriteria", () -> {
+            log.info("Finding filtered {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             log.debug("Filter criteria: {}", criteria);
 
-            // Parse criteria and execute filtered find
-            var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
-            var findByCriteriaFunction = buildFindByCriteriaFunction(requestContext, criteriaList);
-            log.debug("Executing filtered find operation");
-            var list = mapper().listEntityToDto(findByCriteriaFunction.get());
-            log.debug("Found {} entities matching criteria", list.size());
+            List<QueryCriteria> criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
+            List<T> entities = crudService().findAllByCriteriaFilter(context.getSenderTenant(), criteriaList);
+            List<F> resultDtos = mapper().listEntityToDto(entities);
 
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(resultDtos);
         });
     }
 
     /**
-     * Retrieves paginated entities filtered by criteria for the specified tenant.
+     * Retrieves paginated filtered entities based on criteria for the specified tenant.
      *
-     * @param requestContext the request context containing tenant information
-     * @param criteria       the filter criteria as a string
-     * @param page           the page number
-     * @param size           the page size
-     * @return ResponseEntity containing the list of filtered full DTOs
+     * @param context  Request context containing tenant information
+     * @param criteria Filter criteria as a string
+     * @param page     Page number (0-based)
+     * @param size     Page size
+     * @return ResponseEntity containing the list of filtered DTOs
+     * @throws BadArgumentException if page or size is invalid
      */
     @Override
-    public final ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria,
-                                                                      Integer page, Integer size) {
-        return executeWithPerformanceMonitoring("subFindAllFilteredByCriteriaPaginated", () -> {
-            log.info("Find all {}s by criteria with pagination {}/{} request received for tenant: {}", persistentClass.getSimpleName(), page, size, requestContext.getSenderTenant());
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto context, String criteria, Integer page, Integer size) {
+        return executeWithMonitoring("subFindAllFilteredByCriteriaPaginated", () -> {
+            log.info("Finding paginated filtered {}s (page: {}, size: {}) for tenant: {}",
+                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
             log.debug("Filter criteria: {}", criteria);
+            validateNotNull(page, "Page cannot be null");
+            validateNotNull(size, "Size cannot be null");
 
-            // Validate and prepare pagination
-            var criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
-            var validatedSize = validateAndAdjustPageSize(size);
-            var pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "createDate"));
-            log.debug("Pagination parameters: page={}, size={}", page, validatedSize);
+            List<QueryCriteria> criteriaList = CriteriaHelper.convertStringToCriteria(criteria, ",");
+            int validatedSize = validatePageSize(size);
+            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
-            // Execute paginated filtered find
-            var findByCriteriaPaginatedFunction = buildFindByCriteriaPaginatedFunction(requestContext, criteriaList, pageRequest);
-            log.debug("Executing paginated filtered find operation");
-            var list = mapper().listEntityToDto(findByCriteriaPaginatedFunction.get());
-            log.debug("Found {} entities matching criteria", list.size());
+            List<T> entities = crudService().findAllByCriteriaFilter(context.getSenderTenant(), criteriaList, pageRequest);
+            List<F> resultDtos = mapper().listEntityToDto(entities);
 
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
+            return createListResponse(resultDtos);
         });
     }
 
@@ -614,332 +432,190 @@ public abstract class CrudTenantControllerSubMethods<I extends Serializable,
      * @return ResponseEntity containing the map of filter criteria
      */
     @Override
-    public final ResponseEntity<Map<String, String>> subfindAllFilterCriterias() {
-        return executeWithPerformanceMonitoring("subfindAllFilterCriterias", () -> {
-            log.info("Get filter criteria for {} request received", persistentClass.getSimpleName());
-
-            // Retrieve and validate criteria map
-            var criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
-            log.debug("Retrieved {} filter criteria", criteriaMap.size());
-
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(criteriaMap)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(criteriaMap);
+    public ResponseEntity<Map<String, String>> subfindAllFilterCriterias() {
+        return executeWithMonitoring("subfindAllFilterCriterias", () -> {
+            log.info("Retrieving filter criteria for {}", entityClass.getSimpleName());
+            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(entityClass);
+            return createMapResponse(criteriaMap);
         });
     }
 
-    // ========================================
-    // LIFECYCLE HOOK METHODS
-    // ========================================
+    // endregion
+
+    // region Lifecycle Hooks
 
     /**
-     * Hook called after creating an entity. Can be overridden by subclasses.
+     * Hook called after entity creation.
      *
-     * @param object the created entity
-     * @return the processed entity
+     * @param entity Created entity
+     * @return Processed entity
      */
     @Override
-    public T afterCreate(T object) {
-        log.debug("Post-create hook called for {}", persistentClass.getSimpleName());
-        return object;
+    public T afterCreate(T entity) {
+        log.debug("Post-create hook for {}", entityClass.getSimpleName());
+        return entity;
     }
 
     /**
-     * Hook called before updating an entity. Can be overridden by subclasses.
+     * Hook called before entity update.
      *
-     * @param id     the ID of the entity to update
-     * @param object the DTO with update data
-     * @return the processed DTO
+     * @param id   ID of the entity to update
+     * @param dto  DTO containing update data
+     * @return Processed DTO
      */
     @Override
-    public F beforeUpdate(I id, F object) {
-        log.debug("Pre-update hook called for {} with ID: {}", persistentClass.getSimpleName(), id);
-        return object;
+    public F beforeUpdate(I id, F dto) {
+        log.debug("Pre-update hook for {} with ID: {}", entityClass.getSimpleName(), id);
+        return dto;
     }
 
     /**
-     * Hook called before creating an entity. Can be overridden by subclasses.
+     * Hook called before entity creation.
      *
-     * @param object the DTO to create
-     * @return the processed DTO
+     * @param dto DTO to create
+     * @return Processed DTO
      */
     @Override
-    public F beforeCreate(F object) {
-        log.debug("Pre-create hook called for {}", persistentClass.getSimpleName());
-        return object;
+    public F beforeCreate(F dto) {
+        log.debug("Pre-create hook for {}", entityClass.getSimpleName());
+        return dto;
     }
 
     /**
-     * Hook called after updating an entity. Can be overridden by subclasses.
+     * Hook called after entity update.
      *
-     * @param object the updated entity
-     * @return the processed entity
+     * @param entity Updated entity
+     * @return Processed entity
      */
     @Override
-    public T afterUpdate(T object) {
-        log.debug("Post-update hook called for {}", persistentClass.getSimpleName());
-        return object;
+    public T afterUpdate(T entity) {
+        log.debug("Post-update hook for {}", entityClass.getSimpleName());
+        return entity;
     }
 
     /**
-     * Hook called before deleting an entity. Can be overridden by subclasses.
+     * Hook called before deleting an entity.
      *
-     * @param id the ID of the entity to delete
+     * @param id ID of the entity to delete
      * @return true if deletion is allowed, false otherwise
      */
     @Override
     public boolean beforeDelete(I id) {
-        log.debug("Pre-delete hook called for {} with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Pre-delete hook for {} with ID: {}", entityClass.getSimpleName(), id);
         return true;
     }
 
     /**
-     * Hook called after deleting an entity. Can be overridden by subclasses.
+     * Hook called after deleting an entity.
      *
-     * @param id the ID of the deleted entity
-     * @return true if post-deletion processing is successful
+     * @param id ID of the deleted entity
+     * @return true if post-processing is successful
      */
     @Override
     public boolean afterDelete(I id) {
-        log.debug("Post-delete hook called for {} with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Post-delete hook for {} with ID: {}", entityClass.getSimpleName(), id);
         return true;
     }
 
     /**
-     * Hook called before bulk deletion. Can be overridden by subclasses.
+     * Hook called before bulk deletion.
      *
-     * @param objects the list of DTOs to delete
+     * @param dtos List of DTOs to delete
      * @return true if deletion is allowed, false otherwise
      */
     @Override
-    public boolean beforeDelete(List<F> objects) {
-        log.debug("Pre-delete bulk hook called for {} entities of type {}", objects.size(), persistentClass.getSimpleName());
+    public boolean beforeDelete(List<F> dtos) {
+        log.debug("Pre-delete bulk hook for {} entities", dtos.size());
         return true;
     }
 
     /**
-     * Hook called after bulk deletion. Can be overridden by subclasses.
+     * Hook called after bulk deletion.
      *
-     * @param objects the list of deleted DTOs
-     * @return true if post-deletion processing is successful
+     * @param dtos List of deleted DTOs
+     * @return true if post-processing is successful
      */
     @Override
-    public boolean afterDelete(List<F> objects) {
-        log.debug("Post-delete bulk hook called for {} entities of type {}", objects.size(), persistentClass.getSimpleName());
+    public boolean afterDelete(List<F> dtos) {
+        log.debug("Post-delete bulk hook for {} entities", dtos.size());
         return true;
     }
 
     /**
-     * Hook called after finding an entity by ID. Can be overridden by subclasses.
+     * Hook called after finding an entity by ID.
      *
-     * @param object the retrieved DTO
-     * @return the processed DTO
+     * @param dto Retrieved DTO
+     * @return Processed DTO
      */
     @Override
-    public F afterFindById(F object) {
-        log.debug("Post-find-by-id hook called for {}", persistentClass.getSimpleName());
-        return object;
+    public F afterFindById(F dto) {
+        log.debug("Post-find-by-id hook for {}", entityClass.getSimpleName());
+        return dto;
     }
 
     /**
-     * Hook called after retrieving all full entities. Can be overridden by subclasses.
+     * Hook called after retrieving all full DTOs.
      *
-     * @param requestContext the request context
-     * @param list           the list of full DTOs
-     * @return the processed list of DTOs
+     -@param context Request context containing tenant information
+     * @param dtos    List of retrieved DTOs
+     * @return Processed list of DTOs
      */
     @Override
-    public List<F> afterFindAllFull(RequestContextDto requestContext, List<F> list) {
-        log.debug("Post-find-all-full hook called for {} entities of type {}", list.size(), persistentClass.getSimpleName());
-        return list;
+    public List<F> afterFindAllFull(RequestContextDto context, List<F> dtos) {
+        log.debug("Post-find-all-full hook for {} entities", dtos.size());
+        return dtos;
     }
 
     /**
-     * Hook called after retrieving all minimal entities. Can be overridden by subclasses.
+     * Hook called after retrieving all minimal DTOs.
      *
-     * @param requestContext the request context
-     * @param list           the list of minimal DTOs
-     * @return the processed list of DTOs
+     * @param context Request context containing tenant information
+     * @param dtos    List of retrieved DTOs
+     * @return Processed list of DTOs
      */
     @Override
-    public List<M> afterFindAll(RequestContextDto requestContext, List<M> list) {
-        log.debug("Post-find-all hook called for {} entities of type {}", list.size(), persistentClass.getSimpleName());
-        return list;
+    public List<M> afterFindAll(RequestContextDto context, List<M> dtos) {
+        log.debug("Post-find-all hook for {} entities", dtos.size());
+        return dtos;
     }
 
-    // ========================================
-    // PRIVATE UTILITY METHODS
-    // ========================================
+    // endregion
+
+    // region Validation and Utility Methods
 
     /**
-     * Builds a function for creating entities with tenant awareness.
+     * Validates a create request DTO.
      *
-     * @param requestContext the request context
-     * @return Function to create an entity
+     * @param dto DTO to validate
+     * @throws BadArgumentException if DTO is null
      */
-    private Function<T, T> buildCreateFunction(RequestContextDto requestContext) {
-        log.debug("Building create function for tenant: {}", requestContext.getSenderTenant());
-        return obj -> crudService().create(requestContext.getSenderTenant(), obj);
-    }
-
-    /**
-     * Builds a function for updating entities with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @return Function to update an entity
-     */
-    private Function<T, T> buildUpdateFunction(RequestContextDto requestContext) {
-        log.debug("Building update function for tenant: {}", requestContext.getSenderTenant());
-        return obj -> crudService().update(requestContext.getSenderTenant(), obj);
+    private void validateCreateRequest(F dto) {
+        validateNotNull(dto, "Create request DTO cannot be null");
     }
 
     /**
-     * Builds a function for deleting a single entity with tenant awareness.
+     * Validates a bulk operation list.
      *
-     * @param requestContext the request context
-     * @return Function to delete an entity by ID
+     * @param items List to validate
+     * @throws BadArgumentException if list is empty or exceeds max size
      */
-    private Function<I, Void> buildDeleteFunction(RequestContextDto requestContext) {
-        log.debug("Building delete function for tenant: {}", requestContext.getSenderTenant());
-        return id -> {
-            crudService().delete(requestContext.getSenderTenant(), id);
-            return null;
-        };
-    }
-
-    /**
-     * Builds a function for bulk deleting entities with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @return Function to delete a list of entities
-     */
-    private Function<List<T>, Void> buildDeleteBulkFunction(RequestContextDto requestContext) {
-        log.debug("Building bulk delete function for tenant: {}", requestContext.getSenderTenant());
-        return entities -> {
-            crudService().delete(requestContext.getSenderTenant(), entities);
-            return null;
-        };
-    }
-
-    /**
-     * Builds a supplier for retrieving all entities with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @return Supplier for retrieving all entities
-     */
-    private Supplier<List<T>> buildFindAllFunction(RequestContextDto requestContext) {
-        log.debug("Building find all function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAll(requestContext.getSenderTenant());
-    }
-
-    /**
-     * Builds a supplier for retrieving all entities for the default tenant.
-     *
-     * @return Supplier for retrieving default tenant entities
-     */
-    private Supplier<List<T>> buildFindAllDefaultFunction() {
-        log.debug("Building find all default function");
-        return () -> crudService().findAll(TenantConstants.DEFAULT_TENANT_NAME);
-    }
-
-    /**
-     * Builds a supplier for retrieving paginated entities with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @param pageRequest    the pagination parameters
-     * @return Supplier for retrieving paginated entities
-     */
-    private Supplier<List<T>> buildFindAllPaginatedFunction(RequestContextDto requestContext, PageRequest pageRequest) {
-        log.debug("Building paginated find function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAll(requestContext.getSenderTenant(), pageRequest);
-    }
-
-    /**
-     * Builds a function for retrieving an entity by ID with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @return Function to retrieve an entity by ID
-     */
-    private Function<I, Optional<T>> buildFindByIdFunction(RequestContextDto requestContext) {
-        log.debug("Building find by ID function for tenant: {}", requestContext.getSenderTenant());
-        return id -> crudService().findById(requestContext.getSenderTenant(), id);
-    }
-
-    /**
-     * Builds a supplier for counting entities with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @return Supplier for counting entities
-     */
-    private Supplier<Long> buildCountFunction(RequestContextDto requestContext) {
-        log.debug("Building count function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().count(requestContext.getSenderTenant());
-    }
-
-    /**
-     * Builds a supplier for retrieving entities filtered by criteria with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @param criteriaList   the list of criteria
-     * @return Supplier for retrieving filtered entities
-     */
-    private Supplier<List<T>> buildFindByCriteriaFunction(RequestContextDto requestContext, List<QueryCriteria> criteriaList) {
-        log.debug("Building find by criteria function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAllByCriteriaFilter(requestContext.getSenderTenant(), criteriaList);
-    }
-
-    /**
-     * Builds a supplier for retrieving paginated entities filtered by criteria with tenant awareness.
-     *
-     * @param requestContext the request context
-     * @param criteriaList   the list of criteria
-     * @param pageRequest    the pagination parameters
-     * @return Supplier for retrieving paginated filtered entities
-     */
-    private Supplier<List<T>> buildFindByCriteriaPaginatedFunction(RequestContextDto requestContext,
-                                                                   List<QueryCriteria> criteriaList,
-                                                                   PageRequest pageRequest) {
-        log.debug("Building paginated find by criteria function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAllByCriteriaFilter(requestContext.getSenderTenant(), criteriaList, pageRequest);
-    }
-
-    /**
-     * Validates that the create request contains a non-null object.
-     *
-     * @param object the DTO to validate
-     * @throws BadArgumentException if the object is null
-     */
-    private void validateCreateRequest(F object) {
-        if (object == null) {
-            log.error("Null object received for create operation");
-            throw new BadArgumentException("Object cannot be null for create operation");
+    private void validateBulkOperation(List<?> items) {
+        if (CollectionUtils.isEmpty(items)) {
+            throw new BadArgumentException("Bulk operation list cannot be empty or null");
         }
-        log.debug("Create request validation passed");
-    }
-
-    /**
-     * Validates that the bulk operation size does not exceed the maximum allowed size.
-     *
-     * @param size the number of entities in the bulk operation
-     * @throws BadArgumentException if the size exceeds the maximum
-     */
-    private void validateBulkSize(int size) {
-        if (size > MAX_PAGE_SIZE) {
-            log.error("Bulk operation size {} exceeds maximum allowed size {}", size, MAX_PAGE_SIZE);
+        if (items.size() > MAX_PAGE_SIZE) {
             throw new BadArgumentException(
-                    String.format("Bulk operation size %d exceeds maximum allowed size %d", size, MAX_PAGE_SIZE));
+                    String.format("Bulk operation size %d exceeds maximum %d", items.size(), MAX_PAGE_SIZE));
         }
-        log.debug("Bulk operation size validation passed: {}", size);
     }
 
     /**
-     * Validates and adjusts the page size for pagination requests.
+     * Validates and adjusts page size.
      *
-     * @param size the requested page size
-     * @return the validated page size
+     * @param size Requested page size
+     * @return Validated page size
      */
-    private int validateAndAdjustPageSize(Integer size) {
+    private int validatePageSize(Integer size) {
         if (size == null || size <= 0) {
             log.debug("Invalid page size {}, using default: {}", size, DEFAULT_PAGE_SIZE);
             return DEFAULT_PAGE_SIZE;
@@ -952,26 +628,63 @@ public abstract class CrudTenantControllerSubMethods<I extends Serializable,
     }
 
     /**
-     * Executes an operation with performance monitoring and error handling.
+     * Validates that an object is not null.
      *
-     * @param operationName the name of the operation
-     * @param operation     the operation to execute
-     * @param <R>           the response type
-     * @return ResponseEntity containing the operation result
+     * @param obj     Object to validate
+     * @param message Error message if null
+     * @throws BadArgumentException if object is null
      */
-    private <R> ResponseEntity<R> executeWithPerformanceMonitoring(String operationName, Supplier<ResponseEntity<R>> operation) {
-        var stopWatch = new StopWatch(operationName);
+    private void validateNotNull(Object obj, String message) {
+        if (obj == null) {
+            throw new BadArgumentException(message);
+        }
+    }
+
+    /**
+     * Creates a response for a list result.
+     *
+     * @param results List of results
+     * @return ResponseEntity with results or no content
+     */
+    private <R> ResponseEntity<List<R>> createListResponse(List<R> results) {
+        return CollectionUtils.isEmpty(results) ?
+                ResponseFactory.responseNoContent() :
+                ResponseFactory.responseOk(List.copyOf(results));
+    }
+
+    /**
+     * Creates a response for a map result.
+     *
+     * @param results Map of results
+     * @return ResponseEntity with results or no content
+     */
+    private ResponseEntity<Map<String, String>> createMapResponse(Map<String, String> results) {
+        return CollectionUtils.isEmpty(results) ?
+                ResponseFactory.responseNoContent() :
+                ResponseFactory.responseOk(results);
+    }
+
+    /**
+     * Executes an operation with performance monitoring.
+     *
+     * @param operation Operation name
+     * @param supplier  Operation to execute
+     * @return ResponseEntity with operation result
+     */
+    private <R> ResponseEntity<R> executeWithMonitoring(String operation, Supplier<ResponseEntity<R>> supplier) {
+        StopWatch stopWatch = new StopWatch(operation);
         stopWatch.start();
-        log.debug("Starting operation: {}", operationName);
         try {
-            var result = operation.get();
+            ResponseEntity<R> result = supplier.get();
             stopWatch.stop();
-            log.info("Successfully completed {} in {}ms", operationName, stopWatch.getTotalTimeMillis());
+            log.info("Completed {} in {}ms", operation, stopWatch.getTotalTimeMillis());
             return result;
         } catch (Exception e) {
             stopWatch.stop();
-            log.error("Failed to complete {} after {}ms. Error: {}", operationName, stopWatch.getTotalTimeMillis(), e.getMessage(), e);
+            log.error("Failed {} after {}ms: {}", operation, stopWatch.getTotalTimeMillis(), e.getMessage(), e);
             return getBackExceptionResponse(e);
         }
     }
+
+    // endregion
 }

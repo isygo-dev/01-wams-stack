@@ -27,7 +27,7 @@ import java.util.Map;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssignableDto, F extends M> {
+public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssignableDto<I>, F extends M> {
 
     /**
      * Find all response entity.

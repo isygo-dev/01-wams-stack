@@ -95,7 +95,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> create(List<T> objects) {
+    public List<T> createBatch(List<T> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
@@ -132,7 +132,7 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public List<T> update(List<T> objects) {
+    public List<T> updateBatch(List<T> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
@@ -146,7 +146,7 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void delete(String senderTenant, List<T> objects) {
+    public void deleteBatch(String senderTenant, List<T> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
         }
@@ -198,7 +198,7 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void delete(List<T> objects) {
+    public void deleteBatch(List<T> objects) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
         }

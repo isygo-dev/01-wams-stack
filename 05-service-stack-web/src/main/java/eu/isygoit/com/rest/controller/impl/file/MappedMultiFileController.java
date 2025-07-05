@@ -36,7 +36,7 @@ import java.util.List;
 @Slf4j
 public abstract class MappedMultiFileController<I extends Serializable, T extends IIdAssignable<I> & IMultiFileEntity,
         L extends LinkedFileMinDto,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>

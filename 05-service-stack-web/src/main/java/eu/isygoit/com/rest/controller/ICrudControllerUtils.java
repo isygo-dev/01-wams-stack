@@ -18,7 +18,7 @@ import eu.isygoit.model.IIdAssignable;
  * @param <S> the type parameter
  */
 public interface ICrudControllerUtils<I, T extends IIdAssignable<I>,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends ICrudServiceUtils<I, T>> {
 

@@ -27,7 +27,7 @@ import java.lang.reflect.ParameterizedType;
  */
 @Slf4j
 public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends ICrudServiceUtils<I, T>>
         extends ControllerExceptionHandler

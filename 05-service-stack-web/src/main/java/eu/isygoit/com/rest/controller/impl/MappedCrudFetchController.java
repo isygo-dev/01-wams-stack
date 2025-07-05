@@ -26,7 +26,7 @@ import java.util.Map;
  */
 @Slf4j
 public abstract class MappedCrudFetchController<I extends Serializable, T extends IIdAssignable<I>,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends ICrudServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerSubMethods<I, T, M, F, S>

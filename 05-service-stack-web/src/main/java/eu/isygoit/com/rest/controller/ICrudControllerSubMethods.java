@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public interface ICrudControllerSubMethods<I extends Serializable,
         T extends IIdAssignable<I>,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends ICrudControllerEvents<I, T, M, F> {

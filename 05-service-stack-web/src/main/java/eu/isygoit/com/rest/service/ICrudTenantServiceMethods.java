@@ -67,7 +67,7 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> create(String tenant, List<T> objects);
+    List<T> createBatch(String tenant, List<T> objects);
 
     /**
      * Delete.
@@ -85,7 +85,7 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
      * @param objects the objects
      * @throws NotSupportedException the not supported exception
      */
-    void delete(String tenant, List<T> objects);
+    void deleteBatch(String tenant, List<T> objects);
 
     /**
      * Find all list.
@@ -165,7 +165,7 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> update(String tenant, List<T> objects);
+    List<T> updateBatch(String tenant, List<T> objects);
 
     /**
      * Find all by criteria filter list.

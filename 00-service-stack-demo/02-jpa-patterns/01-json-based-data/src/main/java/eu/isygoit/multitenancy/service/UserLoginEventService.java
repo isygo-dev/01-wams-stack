@@ -73,7 +73,7 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
     }
 
     @Override
-    public List<UserLoginEntity> create(List<UserLoginEntity> objects) {
+    public List<UserLoginEntity> createBatch(List<UserLoginEntity> objects) {
         objects.forEach(obj -> {
             if (obj.getId() == null) {
                 obj.setId(UUID.randomUUID());
@@ -102,7 +102,7 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
     }
 
     @Override
-    public void delete(List<UserLoginEntity> objects) {
+    public void deleteBatch(List<UserLoginEntity> objects) {
         beforeDelete(objects);
         List<String> ids = objects.stream().map(e -> e.getId().toString()).toList();
         eventRepository.deleteByElementTypeAndJsonIdIn(USER_LOGIN_TYPE, ids);
@@ -172,7 +172,7 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
     }
 
     @Override
-    public List<UserLoginEntity> update(List<UserLoginEntity> objects) {
+    public List<UserLoginEntity> updateBatch(List<UserLoginEntity> objects) {
         return objects.stream()
                 .map(this::beforeUpdate)
                 .map(this::update)

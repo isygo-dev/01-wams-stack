@@ -27,7 +27,7 @@ import java.util.Map;
 @Slf4j
 public abstract class MappedCrudTenantController<I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
-        M extends IIdAssignableDto,
+        M extends IIdAssignableDto<I>,
         F extends M,
         S extends ICrudTenantServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudTenantControllerSubMethods<I, T, M, F, S>

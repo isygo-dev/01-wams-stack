@@ -77,7 +77,7 @@ public class UserLoginEventTenantService implements
     }
 
     @Override
-    public List<UserLoginEntity> create(String tenant, List<UserLoginEntity> objects) {
+    public List<UserLoginEntity> createBatch(String tenant, List<UserLoginEntity> objects) {
         objects.forEach(obj -> {
             if (obj.getId() == null) {
                 obj.setId(UUID.randomUUID());
@@ -106,7 +106,7 @@ public class UserLoginEventTenantService implements
     }
 
     @Override
-    public void delete(String tenant, List<UserLoginEntity> objects) {
+    public void deleteBatch(String tenant, List<UserLoginEntity> objects) {
         beforeDelete(objects);
         List<String> ids = objects.stream().map(e -> e.getId().toString()).toList();
         eventRepository.deleteByElementTypeAndJsonIdInAndTenant(USER_LOGIN_TYPE, ids, tenant);
@@ -176,7 +176,7 @@ public class UserLoginEventTenantService implements
     }
 
     @Override
-    public List<UserLoginEntity> update(String tenant, List<UserLoginEntity> objects) {
+    public List<UserLoginEntity> updateBatch(String tenant, List<UserLoginEntity> objects) {
         return objects.stream()
                 .map(this::beforeUpdate)
                 .map(obj -> update(tenant, obj))

@@ -55,7 +55,7 @@ public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssign
      * @param objects the objects
      * @return the list
      */
-    List<T> create(List<T> objects);
+    List<T> createBatch(List<T> objects);
 
     /**
      * Delete.
@@ -69,7 +69,7 @@ public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssign
      *
      * @param objects the objects
      */
-    void delete(List<T> objects);
+    void deleteBatch(List<T> objects);
 
     /**
      * Find all list.
@@ -133,7 +133,7 @@ public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssign
      * @param objects the objects
      * @return the list
      */
-    List<T> update(List<T> objects);
+    List<T> updateBatch(List<T> objects);
 
     /**
      * Find all by criteria filter list.

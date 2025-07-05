@@ -253,7 +253,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional
-    public List<T> create(List<T> objects) {
+    public List<T> createBatch(List<T> objects) {
         validateNotTenantSpecific("create ");
         validateListNotEmpty(objects);
         log.info("Creating {} {} entities", objects.size(), persistentClass.getSimpleName());
@@ -281,7 +281,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional
-    public List<T> create(String tenant, List<T> objects) {
+    public List<T> createBatch(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
         validateListNotEmpty(objects);
         log.info("Creating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
@@ -421,7 +421,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional
-    public List<T> update(List<T> objects) {
+    public List<T> updateBatch(List<T> objects) {
         validateNotTenantSpecific("update ");
         validateListNotEmpty(objects);
         log.info("Updating {} {} entities", objects.size(), persistentClass.getSimpleName());
@@ -450,7 +450,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional
-    public List<T> update(String tenant, List<T> objects) {
+    public List<T> updateBatch(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
         validateListNotEmpty(objects);
         log.info("Updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
@@ -570,7 +570,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional
-    public void delete(String tenant, List<T> objects) {
+    public void deleteBatch(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
         validateListNotEmpty(objects);
         log.info("Deleting {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
@@ -592,7 +592,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional
-    public void delete(List<T> objects) {
+    public void deleteBatch(List<T> objects) {
         validateNotTenantSpecific("delete ");
         validateListNotEmpty(objects);
         log.info("Deleting {} {} entities", objects.size(), persistentClass.getSimpleName());
