@@ -4,7 +4,7 @@ import eu.isygoit.com.rest.api.IMappedCrudDeleteApi;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudTenantAssignableServiceMethods;
+import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
@@ -26,7 +26,7 @@ import java.io.Serializable;
 public abstract class MappedCrudDeleteController<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdAssignableDto,
         F extends M,
-        S extends ICrudServiceMethods<I, T> & ICrudTenantAssignableServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerSubMethods<I, T, M, F, S>
         implements IMappedCrudDeleteApi<I> {
 

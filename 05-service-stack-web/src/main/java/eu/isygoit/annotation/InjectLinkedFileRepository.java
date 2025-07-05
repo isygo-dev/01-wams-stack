@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.exception.handler.IExceptionHandler;
+import org.springframework.data.repository.Repository;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,15 +8,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Ctrl handler.
+ * The interface Srv repo.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface CtrlHandler {
+public @interface InjectLinkedFileRepository {
     /**
      * Value class.
      *
      * @return the class
      */
-    Class<? extends IExceptionHandler> value(); // Data Exception Handler class
+    Class<? extends Repository> value();
 }

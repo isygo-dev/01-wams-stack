@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.multitenancy.common.UserLoginEntity;
 import eu.isygoit.multitenancy.model.EventEntity;
 import eu.isygoit.multitenancy.repository.EventRepository;
+import eu.isygoit.multitenancy.repository.EventTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -28,52 +29,55 @@ import java.util.UUID;
 @Transactional
 @Slf4j
 @InjectRepository(value = EventRepository.class)
-public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLoginEntity>,
+public class UserLoginEventTenantService implements
+        ICrudTenantServiceMethods<UUID, UserLoginEntity>,
         ICrudServiceEvents<UUID, UserLoginEntity>,
         ICrudServiceUtils<UUID, UserLoginEntity> {
 
     private static final String USER_LOGIN_TYPE = "UserLogin";
+
     @Autowired
-    private EventRepository eventRepository;
+    private EventTenantAssignableRepository eventRepository;
     @Autowired
     private ObjectMapper objectMapper;
 
+    // Tenant-aware methods implementation
     @Override
-    public Long count() {
-        return eventRepository.countByElementType(USER_LOGIN_TYPE);
+    public Long count(String tenant) {
+        return eventRepository.countByElementTypeAndTenant(USER_LOGIN_TYPE, tenant);
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return eventRepository.existsByElementTypeAndJsonId(USER_LOGIN_TYPE, id.toString());
+    public boolean existsById(String tenant, UUID id) {
+        return eventRepository.existsByElementTypeAndJsonIdAndTenant(USER_LOGIN_TYPE, id.toString(), tenant);
     }
 
     @Override
-    public UserLoginEntity create(UserLoginEntity object) {
+    public UserLoginEntity create(String tenant, UserLoginEntity object) {
         if (object.getId() == null) {
             object.setId(UUID.randomUUID());
         }
         UserLoginEntity beforeCreateResult = beforeCreate(object);
-        EventEntity entity = toEventEntity(beforeCreateResult, "tenant1");
+        EventEntity entity = toEventEntity(beforeCreateResult, tenant);
         EventEntity saved = eventRepository.save(entity);
         UserLoginEntity result = toUserLoginEntity(saved);
         return afterCreate(result);
     }
 
     @Override
-    public UserLoginEntity createAndFlush(UserLoginEntity object) {
+    public UserLoginEntity createAndFlush(String tenant, UserLoginEntity object) {
         if (object.getId() == null) {
             object.setId(UUID.randomUUID());
         }
         UserLoginEntity beforeCreateResult = beforeCreate(object);
-        EventEntity entity = toEventEntity(beforeCreateResult, "tenant1");
+        EventEntity entity = toEventEntity(beforeCreateResult, tenant);
         EventEntity saved = eventRepository.saveAndFlush(entity);
         UserLoginEntity result = toUserLoginEntity(saved);
         return afterCreate(result);
     }
 
     @Override
-    public List<UserLoginEntity> create(List<UserLoginEntity> objects) {
+    public List<UserLoginEntity> create(String tenant, List<UserLoginEntity> objects) {
         objects.forEach(obj -> {
             if (obj.getId() == null) {
                 obj.setId(UUID.randomUUID());
@@ -83,7 +87,7 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
                 .map(this::beforeCreate)
                 .toList();
         List<EventEntity> entities = beforeCreateResults.stream()
-                .map(obj -> toEventEntity(obj, "tenant1"))
+                .map(obj -> toEventEntity(obj, tenant))
                 .toList();
         List<UserLoginEntity> results = eventRepository.saveAll(entities)
                 .stream()
@@ -95,61 +99,61 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(String tenant, UUID id) {
         beforeDelete(id);
-        eventRepository.deleteByElementTypeAndJsonId(USER_LOGIN_TYPE, id.toString());
+        eventRepository.deleteByElementTypeAndJsonIdAndTenant(USER_LOGIN_TYPE, id.toString(), tenant);
         afterDelete(id);
     }
 
     @Override
-    public void delete(List<UserLoginEntity> objects) {
+    public void delete(String tenant, List<UserLoginEntity> objects) {
         beforeDelete(objects);
         List<String> ids = objects.stream().map(e -> e.getId().toString()).toList();
-        eventRepository.deleteByElementTypeAndJsonIdIn(USER_LOGIN_TYPE, ids);
+        eventRepository.deleteByElementTypeAndJsonIdInAndTenant(USER_LOGIN_TYPE, ids, tenant);
         afterDelete(objects);
     }
 
     @Override
-    public List<UserLoginEntity> findAll() {
-        List<UserLoginEntity> results = eventRepository.findAllByElementType(USER_LOGIN_TYPE)
+    public List<UserLoginEntity> findAll(String tenant) {
+        List<UserLoginEntity> results = eventRepository.findAllByElementTypeAndTenant(USER_LOGIN_TYPE, tenant)
                 .stream().map(this::toUserLoginEntity).toList();
         return afterFindAll(results);
     }
 
     @Override
-    public List<UserLoginEntity> findAll(Pageable pageable) {
-        List<UserLoginEntity> results = eventRepository.findAllByElementType(USER_LOGIN_TYPE, pageable)
+    public List<UserLoginEntity> findAll(String tenant, Pageable pageable) {
+        List<UserLoginEntity> results = eventRepository.findAllByElementTypeAndTenant(USER_LOGIN_TYPE, tenant, pageable)
                 .stream().map(this::toUserLoginEntity).toList();
         return afterFindAll(results);
     }
 
     @Override
-    public Optional<UserLoginEntity> findById(UUID id) throws ObjectNotFoundException {
-        Optional<UserLoginEntity> result = eventRepository.findByElementTypeAndJsonId(USER_LOGIN_TYPE, id.toString())
+    public Optional<UserLoginEntity> findById(String tenant, UUID id) throws ObjectNotFoundException {
+        Optional<UserLoginEntity> result = eventRepository.findByElementTypeAndJsonIdAndTenant(USER_LOGIN_TYPE, id.toString(), tenant)
                 .map(this::toUserLoginEntity);
         return result.map(this::afterFindById);
     }
 
     @Override
-    public UserLoginEntity saveOrUpdate(UserLoginEntity object) {
+    public UserLoginEntity saveOrUpdate(String tenant, UserLoginEntity object) {
         if (object.getId() == null) {
-            return create(object);
+            return create(tenant, object);
         }
-        return update(object);
+        return update(tenant, object);
     }
 
     @Override
-    public List<UserLoginEntity> saveOrUpdate(List<UserLoginEntity> objects) {
-        return objects.stream().map(this::saveOrUpdate).toList();
+    public List<UserLoginEntity> saveOrUpdate(String tenant, List<UserLoginEntity> objects) {
+        return objects.stream().map(obj -> saveOrUpdate(tenant, obj)).toList();
     }
 
     @Override
-    public UserLoginEntity update(UserLoginEntity object) {
+    public UserLoginEntity update(String tenant, UserLoginEntity object) {
         UserLoginEntity beforeUpdateResult = beforeUpdate(object);
         Optional<EventEntity> optionalEntity =
-                eventRepository.findByElementTypeAndJsonId(USER_LOGIN_TYPE, beforeUpdateResult.getId().toString());
+                eventRepository.findByElementTypeAndJsonIdAndTenant(USER_LOGIN_TYPE, beforeUpdateResult.getId().toString(), tenant);
         if (optionalEntity.isEmpty()) {
-            throw new ObjectNotFoundException("UserLogin not found for id: " + beforeUpdateResult.getId());
+            throw new ObjectNotFoundException("UserLogin not found for id: " + beforeUpdateResult.getId() + " and tenant: " + tenant);
         }
         EventEntity entity = optionalEntity.get();
         entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
@@ -158,12 +162,12 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
     }
 
     @Override
-    public UserLoginEntity updateAndFlush(UserLoginEntity object) {
+    public UserLoginEntity updateAndFlush(String tenant, UserLoginEntity object) {
         UserLoginEntity beforeUpdateResult = beforeUpdate(object);
         Optional<EventEntity> optionalEntity =
-                eventRepository.findByElementTypeAndJsonId(USER_LOGIN_TYPE, beforeUpdateResult.getId().toString());
+                eventRepository.findByElementTypeAndJsonIdAndTenant(USER_LOGIN_TYPE, beforeUpdateResult.getId().toString(), tenant);
         if (optionalEntity.isEmpty()) {
-            throw new ObjectNotFoundException("UserLogin not found for id: " + beforeUpdateResult.getId());
+            throw new ObjectNotFoundException("UserLogin not found for id: " + beforeUpdateResult.getId() + " and tenant: " + tenant);
         }
         EventEntity entity = optionalEntity.get();
         entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
@@ -172,23 +176,23 @@ public class UserLoginEventService implements ICrudServiceMethods<UUID, UserLogi
     }
 
     @Override
-    public List<UserLoginEntity> update(List<UserLoginEntity> objects) {
+    public List<UserLoginEntity> update(String tenant, List<UserLoginEntity> objects) {
         return objects.stream()
                 .map(this::beforeUpdate)
-                .map(this::update)
+                .map(obj -> update(tenant, obj))
                 .toList();
     }
 
     @Override
-    public List<UserLoginEntity> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
-        // TODO: Implement dynamic filtering using JSON criteria
-        return findAll();
+    public List<UserLoginEntity> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
+        // TODO: Implement dynamic filtering using JSON criteria with tenant
+        return findAll(tenant);
     }
 
     @Override
-    public List<UserLoginEntity> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
-        // TODO: Implement dynamic filtering using JSON criteria + pagination
-        return findAll(pageRequest);
+    public List<UserLoginEntity> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+        // TODO: Implement dynamic filtering using JSON criteria + pagination with tenant
+        return findAll(tenant, pageRequest);
     }
 
     // Event lifecycle methods

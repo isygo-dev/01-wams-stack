@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.annotation.ServRepo;
+import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
@@ -31,7 +31,7 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
     @Override
     public final R repository() throws JpaRepositoryNotDefinedException {
         if (this.repository == null) {
-            ServRepo controllerDefinition = this.getClass().getAnnotation(ServRepo.class);
+            InjectRepository controllerDefinition = this.getClass().getAnnotation(InjectRepository.class);
             if (controllerDefinition != null) {
                 this.repository = (R) applicationContextService.getBean(controllerDefinition.value())
                         .orElseThrow(() -> new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found"));

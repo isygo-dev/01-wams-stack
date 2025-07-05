@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.annotation.CtrlDef;
-import eu.isygoit.annotation.CtrlHandler;
+import eu.isygoit.annotation.InjectExceptionHandler;
+import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.controller.IControllerExceptionHandler;
 import eu.isygoit.com.rest.controller.ResponseFactory;
@@ -32,8 +32,8 @@ public abstract class ControllerExceptionHandler implements IControllerException
         if (this.exceptionHandler == null) {
             // Récupération de la classe du handler via les annotations
             var handlerClass = Stream.of(
-                            Optional.ofNullable(this.getClass().getAnnotation(CtrlHandler.class)).map(CtrlHandler::value),
-                            Optional.ofNullable(this.getClass().getAnnotation(CtrlDef.class)).map(CtrlDef::handler)
+                            Optional.ofNullable(this.getClass().getAnnotation(InjectExceptionHandler.class)).map(InjectExceptionHandler::value),
+                            Optional.ofNullable(this.getClass().getAnnotation(InjectMapperAndService.class)).map(InjectMapperAndService::handler)
                     ).flatMap(Optional::stream)
                     .findFirst()
                     .orElseThrow(() -> new ExceptionHandlerNotDefinedException(this.getClass().getSimpleName()));

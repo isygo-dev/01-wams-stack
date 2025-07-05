@@ -1,6 +1,6 @@
 package eu.isygoit.annotation;
 
-import eu.isygoit.service.nextCode.ICodeGeneratorService;
+import org.springframework.data.repository.Repository;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,16 +8,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Code gen local.
+ * The interface Srv repo.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface CodeGenLocal {
-
+public @interface InjectRepository {
     /**
      * Value class.
      *
      * @return the class
      */
-    Class<? extends ICodeGeneratorService> value();
+    Class<? extends Repository> value();
 }

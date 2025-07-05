@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.annotation.CodeGenKms;
-import eu.isygoit.annotation.CodeGenLocal;
+import eu.isygoit.annotation.InjectCodeGen;
+import eu.isygoit.annotation.InjectCodeGenKms;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -36,7 +36,7 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodeAssignableService<I extends Serializable,
+public abstract class CodeService<I extends Serializable,
         T extends IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
         extends CrudService<I, T, R> implements ICodeAssignableService<I, T> {
@@ -149,7 +149,7 @@ public abstract class CodeAssignableService<I extends Serializable,
     @Override
     public final IRemoteNextCodeService remoteNextCodeService() throws RemoteNextCodeServiceNotDefinedException {
         if (this.remoteNextCodeService == null) {
-            CodeGenKms annotation = this.getClass().getAnnotation(CodeGenKms.class);
+            InjectCodeGenKms annotation = this.getClass().getAnnotation(InjectCodeGenKms.class);
             if (annotation != null) {
                 this.remoteNextCodeService = applicationContextService.getBean(annotation.value())
                         .orElseThrow(() ->
@@ -164,7 +164,7 @@ public abstract class CodeAssignableService<I extends Serializable,
     @Override
     public final ICodeGeneratorService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException {
         if (this.nextCodeService == null) {
-            CodeGenLocal annotation = this.getClass().getAnnotation(CodeGenLocal.class);
+            InjectCodeGen annotation = this.getClass().getAnnotation(InjectCodeGen.class);
             if (annotation != null) {
                 this.nextCodeService = applicationContextService.getBean(annotation.value())
                         .orElseThrow(() ->

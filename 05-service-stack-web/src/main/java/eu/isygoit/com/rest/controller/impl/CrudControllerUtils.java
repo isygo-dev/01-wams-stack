@@ -1,8 +1,8 @@
 package eu.isygoit.com.rest.controller.impl;
 
-import eu.isygoit.annotation.CtrlDef;
-import eu.isygoit.annotation.CtrlMapper;
-import eu.isygoit.annotation.CtrlService;
+import eu.isygoit.annotation.InjectMapper;
+import eu.isygoit.annotation.InjectMapperAndService;
+import eu.isygoit.annotation.InjectService;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -52,14 +52,14 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     @Override
     public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
         if (this.crudService == null) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
-                this.crudService = getApplicationContextService().getBean((Class<S>) ctrlDef.service())
+            InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
+            if (injectMapperAndService != null) {
+                this.crudService = getApplicationContextService().getBean((Class<S>) injectMapperAndService.service())
                         .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
             } else {
-                CtrlService ctrlService = this.getClass().getAnnotation(CtrlService.class);
-                if (ctrlService != null) {
-                    this.crudService = getApplicationContextService().getBean((Class<S>) ctrlService.value())
+                InjectService injectService = this.getClass().getAnnotation(InjectService.class);
+                if (injectService != null) {
+                    this.crudService = getApplicationContextService().getBean((Class<S>) injectService.value())
                             .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
                 }
             }
@@ -71,14 +71,14 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     @Override
     public final EntityMapper<T, F> mapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.fullEntityMapper == null) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlDef.mapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
+            InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
+            if (injectMapperAndService != null) {
+                this.fullEntityMapper = getApplicationContextService().getBean(injectMapperAndService.mapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
             } else {
-                CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.fullEntityMapper = getApplicationContextService().getBean(ctrlMapper.mapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
+                InjectMapper injectMapper = this.getClass().getAnnotation(InjectMapper.class);
+                this.fullEntityMapper = getApplicationContextService().getBean(injectMapper.mapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
             }
         }
 
@@ -88,14 +88,14 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     @Override
     public final EntityMapper<T, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
         if (this.minEntityMapper == null) {
-            CtrlDef ctrlDef = this.getClass().getAnnotation(CtrlDef.class);
-            if (ctrlDef != null) {
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlDef.minMapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
+            InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
+            if (injectMapperAndService != null) {
+                this.minEntityMapper = getApplicationContextService().getBean(injectMapperAndService.minMapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
             } else {
-                CtrlMapper ctrlMapper = this.getClass().getAnnotation(CtrlMapper.class);
-                this.minEntityMapper = getApplicationContextService().getBean(ctrlMapper.minMapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + ctrlDef.mapper().getSimpleName()));
+                InjectMapper injectMapper = this.getClass().getAnnotation(InjectMapper.class);
+                this.minEntityMapper = getApplicationContextService().getBean(injectMapper.minMapper())
+                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
             }
         }
 

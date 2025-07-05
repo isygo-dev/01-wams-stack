@@ -46,16 +46,14 @@ class JsonBasedSqlPostgresTests {
     private static final String SUPER_TENANT = TenantConstants.SUPER_TENANT_NAME;
 
     private static final String BASE_URL = "/api/userlogin";
-
-    private static UUID tenant1_userLoginId;
-    private static UserLoginEventDto tenant1_userLogin;
-
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("postgres") // initial database
             .withUsername("postgres")
             .withPassword("root")
             .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
+    private static UUID tenant1_userLoginId;
+    private static UserLoginEventDto tenant1_userLogin;
     private static Long tenant1TutorialId;
     @Autowired
     private MockMvc mockMvc;

@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.annotation.DmsLinkFileService;
+import eu.isygoit.annotation.InjectDmsLinkedFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
@@ -26,7 +26,7 @@ import java.io.Serializable;
 public abstract class FileServiceSubMethods<I extends Serializable,
         T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CodeAssignableService<I, T, R> {
+        extends CodeService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;
@@ -50,7 +50,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
 
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
         if (linkedFileApi == null) {
-            DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
+            InjectDmsLinkedFileService annotation = this.getClass().getAnnotation(InjectDmsLinkedFileService.class);
             if (annotation != null) {
                 linkedFileApi = applicationContextService.getBean(annotation.value())
                         .orElseThrow(() -> {

@@ -1,16 +1,19 @@
-package eu.isygoit.com.rest.controller.impl;
+package eu.isygoit.com.rest.controller.impl.tenancy;
 
 import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
+import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -38,11 +41,11 @@ import java.util.function.Supplier;
  * @param <S> the service type (must implement ICrudServiceMethod)
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<I extends Serializable,
-        T extends IIdAssignable<I>,
+public abstract class CrudTenantControllerSubMethods<I extends Serializable,
+        T extends IIdAssignable<I> & ITenantAssignable,
         M extends IIdAssignableDto,
         F extends M,
-        S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudTenantServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
@@ -50,38 +53,6 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
     private static final int MAX_PAGE_SIZE = 1000;
     private final Class<T> persistentClass =
             (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-
-    /**
-     * Retrieves all entities for the default tenant.
-     *
-     * @param requestContext the request context containing tenant information
-     * @return ResponseEntity containing the list of minimal DTOs
-     */
-    @Override
-    public final ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
-        return executeWithPerformanceMonitoring("subFindAllDefault", () -> {
-            log.info("Find all default {}s request received", persistentClass.getSimpleName());
-
-            // Execute find all default operation
-            var findAllDefaultFunction = buildFindAllFunction(requestContext);
-            log.debug("Executing find all default operation");
-            var list = Optional.ofNullable(findAllDefaultFunction.get())
-                    .map(entities -> {
-                        log.debug("Converting {} entities to minimal DTOs", entities.size());
-                        return minDtoMapper().listEntityToDto(entities);
-                    })
-                    .map(l -> {
-                        log.debug("Applying post-find-all hook");
-                        return afterFindAll(requestContext, l);
-                    })
-                    .orElse(Collections.emptyList());
-
-            // Return appropriate response based on result
-            return CollectionUtils.isEmpty(list)
-                    ? ResponseFactory.responseNoContent()
-                    : ResponseFactory.responseOk(list);
-        });
-    }
 
     /**
      * Creates a single entity for the specified tenant.
@@ -350,6 +321,38 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
             var findAllFunction = buildFindAllFunction(requestContext);
             log.debug("Executing find all operation");
             var list = Optional.ofNullable(findAllFunction.get())
+                    .map(entities -> {
+                        log.debug("Converting {} entities to minimal DTOs", entities.size());
+                        return minDtoMapper().listEntityToDto(entities);
+                    })
+                    .map(l -> {
+                        log.debug("Applying post-find-all hook");
+                        return afterFindAll(requestContext, l);
+                    })
+                    .orElse(Collections.emptyList());
+
+            // Return appropriate response based on result
+            return CollectionUtils.isEmpty(list)
+                    ? ResponseFactory.responseNoContent()
+                    : ResponseFactory.responseOk(list);
+        });
+    }
+
+    /**
+     * Retrieves all entities for the default tenant.
+     *
+     * @param requestContext the request context containing tenant information
+     * @return ResponseEntity containing the list of minimal DTOs
+     */
+    @Override
+    public final ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext) {
+        return executeWithPerformanceMonitoring("subFindAllDefault", () -> {
+            log.info("Find all default {}s request received", persistentClass.getSimpleName());
+
+            // Execute find all default operation
+            var findAllDefaultFunction = buildFindAllDefaultFunction();
+            log.debug("Executing find all default operation");
+            var list = Optional.ofNullable(findAllDefaultFunction.get())
                     .map(entities -> {
                         log.debug("Converting {} entities to minimal DTOs", entities.size());
                         return minDtoMapper().listEntityToDto(entities);
@@ -777,7 +780,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Function<T, T> buildCreateFunction(RequestContextDto requestContext) {
         log.debug("Building create function for tenant: {}", requestContext.getSenderTenant());
-        return obj -> crudService().create(obj);
+        return obj -> crudService().create(requestContext.getSenderTenant(), obj);
     }
 
     /**
@@ -788,7 +791,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Function<T, T> buildUpdateFunction(RequestContextDto requestContext) {
         log.debug("Building update function for tenant: {}", requestContext.getSenderTenant());
-        return obj -> crudService().update(obj);
+        return obj -> crudService().update(requestContext.getSenderTenant(), obj);
     }
 
     /**
@@ -800,7 +803,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
     private Function<I, Void> buildDeleteFunction(RequestContextDto requestContext) {
         log.debug("Building delete function for tenant: {}", requestContext.getSenderTenant());
         return id -> {
-            crudService().delete(id);
+            crudService().delete(requestContext.getSenderTenant(), id);
             return null;
         };
     }
@@ -814,7 +817,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
     private Function<List<T>, Void> buildDeleteBulkFunction(RequestContextDto requestContext) {
         log.debug("Building bulk delete function for tenant: {}", requestContext.getSenderTenant());
         return entities -> {
-            crudService().delete(entities);
+            crudService().delete(requestContext.getSenderTenant(), entities);
             return null;
         };
     }
@@ -827,7 +830,17 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Supplier<List<T>> buildFindAllFunction(RequestContextDto requestContext) {
         log.debug("Building find all function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAll();
+        return () -> crudService().findAll(requestContext.getSenderTenant());
+    }
+
+    /**
+     * Builds a supplier for retrieving all entities for the default tenant.
+     *
+     * @return Supplier for retrieving default tenant entities
+     */
+    private Supplier<List<T>> buildFindAllDefaultFunction() {
+        log.debug("Building find all default function");
+        return () -> crudService().findAll(TenantConstants.DEFAULT_TENANT_NAME);
     }
 
     /**
@@ -839,7 +852,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Supplier<List<T>> buildFindAllPaginatedFunction(RequestContextDto requestContext, PageRequest pageRequest) {
         log.debug("Building paginated find function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAll(pageRequest);
+        return () -> crudService().findAll(requestContext.getSenderTenant(), pageRequest);
     }
 
     /**
@@ -850,7 +863,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Function<I, Optional<T>> buildFindByIdFunction(RequestContextDto requestContext) {
         log.debug("Building find by ID function for tenant: {}", requestContext.getSenderTenant());
-        return id -> crudService().findById(id);
+        return id -> crudService().findById(requestContext.getSenderTenant(), id);
     }
 
     /**
@@ -861,7 +874,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Supplier<Long> buildCountFunction(RequestContextDto requestContext) {
         log.debug("Building count function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().count();
+        return () -> crudService().count(requestContext.getSenderTenant());
     }
 
     /**
@@ -873,7 +886,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
      */
     private Supplier<List<T>> buildFindByCriteriaFunction(RequestContextDto requestContext, List<QueryCriteria> criteriaList) {
         log.debug("Building find by criteria function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAllByCriteriaFilter(criteriaList);
+        return () -> crudService().findAllByCriteriaFilter(requestContext.getSenderTenant(), criteriaList);
     }
 
     /**
@@ -888,7 +901,7 @@ public abstract class CrudControllerSubMethods<I extends Serializable,
                                                                    List<QueryCriteria> criteriaList,
                                                                    PageRequest pageRequest) {
         log.debug("Building paginated find by criteria function for tenant: {}", requestContext.getSenderTenant());
-        return () -> crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
+        return () -> crudService().findAllByCriteriaFilter(requestContext.getSenderTenant(), criteriaList, pageRequest);
     }
 
     /**

@@ -1,22 +1,20 @@
 package eu.isygoit.annotation;
 
-import org.springframework.data.repository.Repository;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Srv repo.
+ * The interface Ctrl service.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface ServLinkFileRepo {
+public @interface InjectService {
     /**
      * Value class.
      *
      * @return the class
      */
-    Class<? extends Repository> value();
+    Class<?> value(); // service class
 }

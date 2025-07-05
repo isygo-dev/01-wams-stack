@@ -1,7 +1,6 @@
 package eu.isygoit.com.rest.controller;
 
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -25,8 +24,16 @@ public interface ICrudControllerSubMethods<I extends Serializable,
         T extends IIdAssignable<I>,
         M extends IIdAssignableDto,
         F extends M,
-        S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends ICrudControllerEvents<I, T, M, F> {
+
+    /**
+     * Sub find all default response entity.
+     *
+     * @param requestContext the request context
+     * @return the response entity
+     */
+    ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext);
 
     /**
      * Sub create response entity.
@@ -108,14 +115,6 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @return the response entity
      */
     ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext);
-
-    /**
-     * Sub find all default response entity.
-     *
-     * @param requestContext the request context
-     * @return the response entity
-     */
-    ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext);
 
     /**
      * Sub find all response entity.

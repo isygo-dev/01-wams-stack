@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.annotation.DmsLinkFileService;
-import eu.isygoit.annotation.ServLinkFileRepo;
+import eu.isygoit.annotation.InjectDmsLinkedFileService;
+import eu.isygoit.annotation.InjectLinkedFileRepository;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
@@ -34,7 +34,7 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>>
-        extends CodeAssignableService<I, T, R> {
+        extends CodeService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;
@@ -51,7 +51,7 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
      */
     public final RL linkFileRepository() throws JpaRepositoryNotDefinedException {
         if (this.linkFileRepository == null) {
-            ServLinkFileRepo controllerDefinition = this.getClass().getAnnotation(ServLinkFileRepo.class);
+            InjectLinkedFileRepository controllerDefinition = this.getClass().getAnnotation(InjectLinkedFileRepository.class);
             if (controllerDefinition != null) {
                 this.linkFileRepository = (RL) applicationContextService.getBean(controllerDefinition.value())
                         .orElseThrow(() -> new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found"));
@@ -66,7 +66,7 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
 
     private ILinkedFileApi linkedFileService() throws LinkedFileServiceNotDefinedException {
         if (this.linkedFileApi == null) {
-            DmsLinkFileService annotation = this.getClass().getAnnotation(DmsLinkFileService.class);
+            InjectDmsLinkedFileService annotation = this.getClass().getAnnotation(InjectDmsLinkedFileService.class);
             if (annotation != null) {
                 this.linkedFileApi = applicationContextService.getBean((Class<ILinkedFileApi>) annotation.value())
                         .orElseThrow(() -> new LinkedFileServiceNotDefinedException("Bean not found " + annotation.value().getSimpleName() + " not found"));

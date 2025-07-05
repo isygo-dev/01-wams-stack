@@ -1,8 +1,8 @@
 package eu.isygoit.multitenancy.mapper;
 
+import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.multitenancy.common.UserLoginEntity;
 import eu.isygoit.multitenancy.dto.UserLoginEventDto;
-import eu.isygoit.mapper.EntityMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
 

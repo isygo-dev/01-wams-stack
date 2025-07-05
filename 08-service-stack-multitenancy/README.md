@@ -75,11 +75,11 @@ multitenancy:
 
 ### Tenant Configuration Options
 
-| Mode            | Description                         | Database Support | Isolation Level |
-|-----------------|-------------------------------------|------------------|-----------------|
-| `DATABASE`      | Separate database per tenant        | PostgreSQL, H2   | Complete        |
-| `SCHEMA`        | Separate schema per tenant          | PostgreSQL, H2   | Schema-level    |
-| `DISCRIMINATOR` | Shared schema with filters          | PostgreSQL, H2   | Row-level       |
+| Mode            | Description                        | Database Support | Isolation Level |
+|-----------------|------------------------------------|------------------|-----------------|
+| `DATABASE`      | Separate database per tenant       | PostgreSQL, H2   | Complete        |
+| `SCHEMA`        | Separate schema per tenant         | PostgreSQL, H2   | Schema-level    |
+| `DISCRIMINATOR` | Shared schema with filters         | PostgreSQL, H2   | Row-level       |
 | `GDM`           | Generic Discriminator multitenancy | PostgreSQL, H2   | Row-level       |
 
 ### Filter Configuration Options
@@ -330,7 +330,7 @@ When switching from TENANT to CONTEXT filter:
 
 | Filter Type | Overhead | Features                     | Use Case                |
 |-------------|----------|------------------------------|-------------------------|
-| TENANT      | Minimal  | Basic tenant extraction      | Simple multitenancy    |
+| TENANT      | Minimal  | Basic tenant extraction      | Simple multitenancy     |
 | CONTEXT     | Low      | Full context + audit support | Enterprise applications |
 
 ## Advanced Configuration
