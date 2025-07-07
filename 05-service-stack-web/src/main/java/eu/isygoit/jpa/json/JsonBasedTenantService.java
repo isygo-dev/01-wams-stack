@@ -273,57 +273,57 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     // Event lifecycle methods with improved logging
     @Override
     public T beforeUpdate(T object) {
-        log.debug("Before update {} [{}]: {}", elementType, "tenant", object.getId());
+        log.debug("Before update {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
     public T afterUpdate(T object) {
-        log.debug("After update {} [{}]: {}", elementType, "tenant", object.getId());
+        log.debug("After update {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
     public void beforeDelete(UUID id) {
-        log.debug("Before delete {} [{}]: {}", elementType, "tenant", id);
+        log.debug("Before delete {} [{}]: {}", elementType, "id", id);
     }
 
     @Override
     public void afterDelete(UUID id) {
-        log.debug("After delete {} [{}]: {}", elementType, "tenant", id);
+        log.debug("After delete {} [{}]: {}", elementType, "id", id);
     }
 
     @Override
     public void beforeDelete(List<T> objects) {
-        log.debug("Before delete {} batch [{}]: {} items", elementType, "tenant", objects.size());
+        log.debug("Before delete {} batch [{}]: {} items", elementType, "size", objects.size());
     }
 
     @Override
     public void afterDelete(List<T> objects) {
-        log.debug("After delete {} batch [{}]: {} items", elementType, "tenant", objects.size());
+        log.debug("After delete {} batch [{}]: {} items", elementType, "size", objects.size());
     }
 
     @Override
     public T beforeCreate(T object) {
-        log.debug("Before create {} [{}]: {}", elementType, "tenant", object.getId());
+        log.debug("Before create {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
     public List<T> afterFindAll(List<T> list) {
-        log.debug("After find all {} [{}]: {} items", elementType, "tenant", list.size());
+        log.debug("After find all {} [{}]: {} items", elementType, "size", list.size());
         return list;
     }
 
     @Override
     public T afterFindById(T object) {
-        log.debug("After find by id {} [{}]: {}", elementType, "tenant", object.getId());
+        log.debug("After find by id {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
     public T afterCreate(T object) {
-        log.debug("After create {} [{}]: {}", elementType, "tenant", object.getId());
+        log.debug("After create {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 

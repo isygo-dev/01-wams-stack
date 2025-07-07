@@ -18,7 +18,7 @@ import java.util.UUID;
 @JsonEntity(EventEntity.class)
 public class UserLoginEntity implements JsonElement<UUID>, ITenantAssignable {
 
-    private UUID Id;
+    private UUID id;
     private String userId;
     private String ip;
     private String device;

@@ -18,7 +18,7 @@ import java.util.UUID;
 @JsonEntity(EventEntity.class)
 public class OrderPlacedEntity implements JsonElement<UUID>, ITenantAssignable {
 
-    private UUID Id;
+    private UUID id;
     private String orderId;
     private String customerId;
     private BigDecimal amount;
