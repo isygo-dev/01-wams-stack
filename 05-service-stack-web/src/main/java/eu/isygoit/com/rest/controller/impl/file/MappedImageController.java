@@ -36,7 +36,7 @@ import java.nio.file.Files;
  */
 @Slf4j
 public abstract class MappedImageController<I extends Serializable, T extends IIdAssignable<I> & IImageEntity,
-        M extends IIdAssignableDto & IImageUploadDto,
+        M extends IIdAssignableDto<I> & IImageUploadDto,
         F extends M,
         S extends IImageServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>

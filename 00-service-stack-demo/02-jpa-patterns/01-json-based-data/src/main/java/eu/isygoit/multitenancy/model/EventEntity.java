@@ -1,7 +1,7 @@
 package eu.isygoit.multitenancy.model;
 
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.multitenancy.common.JsonBasedEntity;
+import eu.isygoit.model.json.JsonBasedEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

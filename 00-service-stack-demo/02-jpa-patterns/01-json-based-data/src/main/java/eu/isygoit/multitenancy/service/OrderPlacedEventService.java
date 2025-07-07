@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.jpa.json.JsonBasedService;
 import eu.isygoit.multitenancy.model.EventEntity;
-import eu.isygoit.multitenancy.model.UserLoginEntity;
+import eu.isygoit.multitenancy.model.OrderPlacedEntity;
 import eu.isygoit.multitenancy.repository.EventRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,14 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @InjectRepository(value = EventRepository.class)
-public class UserLoginEventService extends JsonBasedService<UserLoginEntity, Long, EventEntity, EventRepository> {
+public class OrderPlacedEventService extends JsonBasedService<OrderPlacedEntity, Long, EventEntity, EventRepository> {
     /**
      * Constructor that initializes class types and element type.
      * Using constructor injection for better testability.
      *
      * @param objectMapper
      */
-    public UserLoginEventService(ObjectMapper objectMapper) {
+    public OrderPlacedEventService(ObjectMapper objectMapper) {
         super(objectMapper);
     }
 }

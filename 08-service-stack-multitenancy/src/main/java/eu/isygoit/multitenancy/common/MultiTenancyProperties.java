@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * The type Multi tenancy properties.
+ * The type Multi json properties.
  */
 @ConfigurationProperties(prefix = "multitenancy")
 @Component

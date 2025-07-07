@@ -3,6 +3,7 @@ package eu.isygoit.repository;
 import eu.isygoit.annotation.IgnoreRepository;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;

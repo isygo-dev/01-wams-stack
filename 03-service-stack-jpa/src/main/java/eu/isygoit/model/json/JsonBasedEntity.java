@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.common;
+package eu.isygoit.model.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.isygoit.model.IIdAssignable;

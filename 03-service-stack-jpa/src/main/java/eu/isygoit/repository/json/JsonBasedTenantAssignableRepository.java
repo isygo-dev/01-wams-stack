@@ -1,17 +1,21 @@
-package eu.isygoit.multitenancy.repository;
+package eu.isygoit.repository.json;
 
-import eu.isygoit.multitenancy.model.EventEntity;
-import eu.isygoit.repository.json.JsonBasedTenantAssignableRepository;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
-public interface EventTenantAssignableRepository extends JsonBasedTenantAssignableRepository<EventEntity, Long> {
+public interface JsonBasedTenantAssignableRepository<T extends ITenantAssignable & IIdAssignable<I>,
+        I extends Serializable>
+        extends JpaPagingAndSortingTenantAssignableRepository<T, I> {
 
     @Query(value = """
             SELECT COUNT(*) FROM events e 
@@ -36,11 +40,11 @@ public interface EventTenantAssignableRepository extends JsonBasedTenantAssignab
               AND e.attributes ->> 'id' = :id
               AND e.tenant_id = :tenant
             """, nativeQuery = true)
-    Optional<EventEntity> findByElementTypeAndJsonIdAndTenant(@Param("elementType") String elementType, @Param("id") String id, @Param("tenant") String tenant);
+    Optional<T> findByElementTypeAndJsonIdAndTenant(@Param("elementType") String elementType, @Param("id") String id, @Param("tenant") String tenant);
 
-    List<EventEntity> findAllByElementTypeAndTenant(String elementType, String tenant);
+    List<T> findAllByElementTypeAndTenant(String elementType, String tenant);
 
-    Page<EventEntity> findAllByElementTypeAndTenant(String elementType, String tenant, Pageable pageable);
+    Page<T> findAllByElementTypeAndTenant(String elementType, String tenant, Pageable pageable);
 
     @Modifying
     @Query(value = """

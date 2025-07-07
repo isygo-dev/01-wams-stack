@@ -34,7 +34,7 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable<I> & IFileEntity,
-        M extends IIdAssignableDto & IFileUploadDto,
+        M extends IIdAssignableDto<I> & IFileUploadDto,
         F extends M,
         S extends IFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>

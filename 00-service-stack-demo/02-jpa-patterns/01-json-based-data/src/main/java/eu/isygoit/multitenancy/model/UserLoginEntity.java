@@ -1,7 +1,9 @@
-package eu.isygoit.multitenancy.common;
+package eu.isygoit.multitenancy.model;
 
 
 import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.json.JsonElement;
+import eu.isygoit.model.json.JsonEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +15,7 @@ import java.util.UUID;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonEntity(EventEntity.class)
+@JsonEntity(EventEntity.class)
 public class UserLoginEntity implements JsonElement<UUID>, ITenantAssignable {
 
     private UUID Id;

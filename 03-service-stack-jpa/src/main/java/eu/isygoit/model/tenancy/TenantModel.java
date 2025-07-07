@@ -1,4 +1,4 @@
-package eu.isygoit.model.extendable;
+package eu.isygoit.model.tenancy;
 
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;

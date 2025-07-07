@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.common;
+package eu.isygoit.model.json;
 
 import eu.isygoit.model.IIdAssignable;
 

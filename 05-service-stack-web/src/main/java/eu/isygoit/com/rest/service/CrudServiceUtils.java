@@ -7,6 +7,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.util.StringUtils;
 
@@ -20,7 +21,7 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssignable<I>, R extends Repository<T, I>>
+public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssignable<I>, R extends Repository>
         implements ICrudServiceUtils<I, T> {
 
     @Autowired

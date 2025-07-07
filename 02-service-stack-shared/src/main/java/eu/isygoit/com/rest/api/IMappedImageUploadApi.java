@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @param <I> the type parameter
  * @param <D> the type parameter
  */
-public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssignableDto & IImageUploadDto> {
+public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssignableDto<I> & IImageUploadDto> {
 
     /**
      * Create with image response entity.

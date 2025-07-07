@@ -1,5 +1,6 @@
-package eu.isygoit.multitenancy.common;
+package eu.isygoit.multitenancy.dto;
 
+import eu.isygoit.dto.extendable.IdAssignableDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,12 +11,10 @@ import java.util.UUID;
 
 @Data
 @SuperBuilder
-@NoArgsConstructor
 @AllArgsConstructor
-//@JsonEntity(EventEntity.class)
-public class OrderPlacedEntity implements JsonElement<UUID> {
+@NoArgsConstructor
+public class OrderPlacedEventDto extends IdAssignableDto<UUID> {
 
-    private UUID Id;
     private String orderId;
     private String customerId;
     private BigDecimal amount;
