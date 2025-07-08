@@ -5,8 +5,6 @@ import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
-import eu.isygoit.enums.IEnumCriteriaCombiner;
-import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.InvalidTenantException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.WrongCriteriaFilterException;
@@ -25,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Optional;
@@ -262,12 +259,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         }
 
         // Validate criteria names against jsonElementClass fields
-        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
-        for (QueryCriteria criterion : criteria) {
-            if (!validFields.containsKey(criterion.getName())) {
-                throw new WrongCriteriaFilterException("with name: " + criterion.getName());
-            }
-        }
+        validateCriteriaAgainstJsonElement(criteria);
 
         log.debug("Filtering {} entities for tenant: {} with {} criteria", elementType, tenant, criteria.size());
 
@@ -279,11 +271,20 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         // Apply in-memory filtering
         List<T> filtered = entities.stream()
-                .filter(entity -> evaluateCriteria(entity, criteria))
+                .filter(entity -> JsonBasedCriteriaHelper.evaluateCriteria(entity, criteria))
                 .collect(Collectors.toList());
 
         log.debug("Found {} {} entities for tenant: {}", filtered.size(), elementType, tenant);
         return afterFindAll(filtered);
+    }
+
+    private void validateCriteriaAgainstJsonElement(List<QueryCriteria> criteria) {
+        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
+        for (QueryCriteria criterion : criteria) {
+            if (!validFields.containsKey(criterion.getName())) {
+                throw new WrongCriteriaFilterException("with name: " + criterion.getName());
+            }
+        }
     }
 
     @Override
@@ -295,12 +296,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         }
 
         // Validate criteria names against jsonElementClass fields
-        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
-        for (QueryCriteria criterion : criteria) {
-            if (!validFields.containsKey(criterion.getName())) {
-                throw new WrongCriteriaFilterException("with name: " + criterion.getName());
-            }
-        }
+        validateCriteriaAgainstJsonElement(criteria);
 
         log.debug("Filtering {} entities for tenant: {} with {} criteria and pagination", elementType, tenant, criteria.size());
 
@@ -312,7 +308,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         // Apply in-memory filtering
         List<T> filtered = entities.stream()
-                .filter(entity -> evaluateCriteria(entity, criteria))
+                .filter(entity -> JsonBasedCriteriaHelper.evaluateCriteria(entity, criteria))
                 .collect(Collectors.toList());
 
         // Apply pagination
@@ -322,105 +318,6 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         log.debug("Found {} {} entities for tenant: {} with pagination", paginated.size(), elementType, tenant);
         return afterFindAll(paginated);
-    }
-
-    private boolean evaluateCriteria(T entity, List<QueryCriteria> criteria) {
-        boolean result = true; // Default for first criterion
-        for (int i = 0; i < criteria.size(); i++) {
-            QueryCriteria criterion = criteria.get(i);
-            boolean criterionResult = evaluateSingleCriterion(entity, criterion);
-            IEnumCriteriaCombiner.Types combiner = criterion.getCombiner();
-
-            if (i == 0) {
-                result = criterionResult;
-            } else {
-                if (combiner == IEnumCriteriaCombiner.Types.AND) {
-                    result = result && criterionResult;
-                } else { // OR
-                    result = result || criterionResult;
-                }
-            }
-        }
-        return result;
-    }
-
-    private boolean evaluateSingleCriterion(T entity, QueryCriteria criterion) {
-        try {
-            // Access the field value using reflection
-            Field field = jsonElementClass.getDeclaredField(criterion.getName());
-            field.setAccessible(true);
-            Object fieldValue = field.get(entity);
-            String value = fieldValue != null ? fieldValue.toString() : null;
-            String criterionValue = criterion.getValue();
-
-            // Handle null cases
-            if (value == null && criterion.getOperator() != IEnumOperator.Types.EQ && criterion.getOperator() != IEnumOperator.Types.NE) {
-                return false;
-            }
-
-            switch (criterion.getOperator()) {
-                case EQ:
-                    return criterionValue.equals(value);
-                case NE:
-                    return value == null ? !criterionValue.equals("null") : !criterionValue.equals(value);
-                case LI:
-                    return value != null && value.contains(criterionValue);
-                case NL:
-                    return value == null || !value.contains(criterionValue);
-                case GT:
-                    try {
-                        double doubleValue = Double.parseDouble(value);
-                        double criterionDouble = Double.parseDouble(criterionValue);
-                        return doubleValue > criterionDouble;
-                    } catch (NumberFormatException e) {
-                        return value != null && value.compareTo(criterionValue) > 0;
-                    }
-                case GE:
-                    try {
-                        double doubleValue = Double.parseDouble(value);
-                        double criterionDouble = Double.parseDouble(criterionValue);
-                        return doubleValue >= criterionDouble;
-                    } catch (NumberFormatException e) {
-                        return value != null && value.compareTo(criterionValue) >= 0;
-                    }
-                case LT:
-                    try {
-                        double doubleValue = Double.parseDouble(value);
-                        double criterionDouble = Double.parseDouble(criterionValue);
-                        return doubleValue < criterionDouble;
-                    } catch (NumberFormatException e) {
-                        return value != null && value.compareTo(criterionValue) < 0;
-                    }
-                case LE:
-                    try {
-                        double doubleValue = Double.parseDouble(value);
-                        double criterionDouble = Double.parseDouble(criterionValue);
-                        return doubleValue <= criterionDouble;
-                    } catch (NumberFormatException e) {
-                        return value != null && value.compareTo(criterionValue) <= 0;
-                    }
-                case BW:
-                    if (!criterionValue.contains(":")) {
-                        throw new WrongCriteriaFilterException("BETWEEN operator requires value in format 'min:max', got: " + criterionValue);
-                    }
-                    String[] range = criterionValue.split(":", 2);
-                    if (range.length != 2 || !StringUtils.hasText(range[0]) || !StringUtils.hasText(range[1])) {
-                        throw new WrongCriteriaFilterException("Invalid BETWEEN value format: " + criterionValue);
-                    }
-                    try {
-                        double doubleValue = Double.parseDouble(value);
-                        double min = Double.parseDouble(range[0]);
-                        double max = Double.parseDouble(range[1]);
-                        return doubleValue >= min && doubleValue <= max;
-                    } catch (NumberFormatException e) {
-                        return value != null && value.compareTo(range[0]) >= 0 && value.compareTo(range[1]) <= 0;
-                    }
-                default:
-                    throw new WrongCriteriaFilterException("Unsupported operator: " + criterion.getOperator());
-            }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new WrongCriteriaFilterException("Error accessing field: " + criterion.getName());
-        }
     }
 
     // Event lifecycle methods with improved logging
