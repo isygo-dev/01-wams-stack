@@ -196,7 +196,7 @@ class MultiTenancyDiscriminatorPostgresTests {
     void shouldRejectUnknownTenant() throws Exception {
         mockMvc.perform(get(BASE_URL)
                         .header("X-Tenant-ID", INVALID_TENANT))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

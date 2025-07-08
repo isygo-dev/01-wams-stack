@@ -192,6 +192,6 @@ class MultiTenancyDiscriminatorH2Tests {
     void shouldRejectUnknownTenant() throws Exception {
         mockMvc.perform(get(BASE_URL)
                         .header("X-Tenant-ID", INVALID_TENANT))
-                .andExpect(status().isInternalServerError()); // Or 403 if your logic throws custom exception
+                .andExpect(status().isBadRequest()); // Or 403 if your logic throws custom exception
     }
 }
