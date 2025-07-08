@@ -385,7 +385,7 @@ public abstract class CrudTenantControllerSubMethods<
             log.info("Finding filtered {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             log.debug("Filter criteria: {}", criteria);
 
-            List<QueryCriteria> criteriaList = CriteriaHelper.convertsqlWhereToCriteria(criteria);
+            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
             List<T> entities = crudService().findAllByCriteriaFilter(context.getSenderTenant(), criteriaList);
             List<F> resultDtos = mapper().listEntityToDto(entities);
 
@@ -412,7 +412,7 @@ public abstract class CrudTenantControllerSubMethods<
             validateNotNull(page, "Page cannot be null");
             validateNotNull(size, "Size cannot be null");
 
-            List<QueryCriteria> criteriaList = CriteriaHelper.convertsqlWhereToCriteria(criteria);
+            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
             int validatedSize = validatePageSize(size);
             PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 

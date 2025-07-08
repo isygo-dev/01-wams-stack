@@ -17,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class CriteriaHelperTest {
 
     @Test
-    void testConvertSqlWhereToCriteria_SimpleConditions() {
+    void testconvertSqlWhereToCriteria_SimpleConditions() {
         String sqlWhere = "name = 'John' & age > 25 | status != 'INACTIVE'";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(3, criteria.size());
 
@@ -43,9 +43,9 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_WithDifferentOperators() {
+    void testconvertSqlWhereToCriteria_WithDifferentOperators() {
         String sqlWhere = "score >= 80 & name ~ 'Smith' | age <= 30";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(3, criteria.size());
 
@@ -55,9 +55,9 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_WithBooleanValues() {
+    void testconvertSqlWhereToCriteria_WithBooleanValues() {
         String sqlWhere = "active = true & verified != false";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(2, criteria.size());
         assertEquals("true", criteria.get(0).getValue());
@@ -65,28 +65,32 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_WithWhereKeyword() {
+    void testconvertSqlWhereToCriteria_WithWhereKeyword() {
         String sqlWhere = "WHERE name = 'Test'";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(1, criteria.size());
         assertEquals("name", criteria.get(0).getName());
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_EmptyInput() {
+    void testconvertSqlWhereToCriteria_EmptyInput() {
         String sqlWhere = "";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertTrue(criteria.isEmpty());
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_InvalidCondition() {
+    void testconvertSqlWhereToCriteria_InvalidCondition() {
         String sqlWhere = "name =";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
 
-        assertTrue(criteria.isEmpty());
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> CriteriaHelper.convertSqlWhereToCriteria(sqlWhere)
+        );
+
+        assertEquals("Invalid WHERE clause: name =", exception.getMessage());
     }
 
     // Test class for annotation testing
@@ -247,9 +251,9 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_WithParentheses() {
+    void testconvertSqlWhereToCriteria_WithParentheses() {
         String sqlWhere = "(name = 'John' & age > 25) | status = 'ACTIVE'";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(3, criteria.size());
 
@@ -273,9 +277,9 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_NestedParentheses() {
+    void testconvertSqlWhereToCriteria_NestedParentheses() {
         String sqlWhere = "department = 'IT' & (name = 'John' | (age > 30 & status = 'SENIOR'))";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(4, criteria.size());
 
@@ -297,9 +301,9 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_ComplexWithParentheses() {
+    void testconvertSqlWhereToCriteria_ComplexWithParentheses() {
         String sqlWhere = "(name = 'John' | age > 25) & (department = 'IT' | status = 'ACTIVE')";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(4, criteria.size());
 
@@ -311,9 +315,9 @@ class CriteriaHelperTest {
     }
 
     @Test
-    void testConvertSqlWhereToCriteria_SingleConditionInParentheses() {
+    void testconvertSqlWhereToCriteria_SingleConditionInParentheses() {
         String sqlWhere = "(name = 'John')";
-        List<QueryCriteria> criteria = CriteriaHelper.convertsqlWhereToCriteria(sqlWhere);
+        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
         assertEquals(1, criteria.size());
         assertEquals("name", criteria.get(0).getName());
