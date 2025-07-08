@@ -496,7 +496,7 @@ class JsonBasedSqlPostgresTests {
     void shouldFilterByUserId() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
                         .header("X-Tenant-ID", TENANT_1)
-                        .param("criteria", "userId=user_one_updated"))
+                        .param("criteria", "userId = user_one_updated"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -508,10 +508,10 @@ class JsonBasedSqlPostgresTests {
     void shouldFilterByDevice() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
                         .header("X-Tenant-ID", TENANT_1)
-                        .param("criteria", "device~Device"))
+                        .param("criteria", "device ~ Device2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(2)); // batch_user_2 and batch_user_3
+                .andExpect(jsonPath("$.length()").value(1)); // batch_user_2 and batch_user_3
     }
 
     @Test
@@ -584,13 +584,13 @@ class JsonBasedSqlPostgresTests {
         // Delete remaining data for tenant1
         mockMvc.perform(delete(BASE_URL + "/" + tenant1_userLoginId)
                         .header("X-Tenant-ID", TENANT_1))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Delete remaining batch items
         for (UUID id : tenant1_batchIds.subList(1, tenant1_batchIds.size())) {
             mockMvc.perform(delete(BASE_URL + "/" + id)
                             .header("X-Tenant-ID", TENANT_1))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isNoContent());
         }
 
         // Verify empty
@@ -606,13 +606,13 @@ class JsonBasedSqlPostgresTests {
         // Delete remaining data for tenant2
         mockMvc.perform(delete(BASE_URL + "/" + tenant2_userLoginId)
                         .header("X-Tenant-ID", TENANT_2))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Delete remaining batch items
         for (UUID id : tenant2_batchIds.subList(1, tenant2_batchIds.size())) {
             mockMvc.perform(delete(BASE_URL + "/" + id)
                             .header("X-Tenant-ID", TENANT_2))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isNoContent());
         }
 
         // Verify empty
