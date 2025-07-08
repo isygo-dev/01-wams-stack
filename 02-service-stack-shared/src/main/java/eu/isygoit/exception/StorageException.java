@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Storage exception.
  */
-@MsgLocale("storage.exception")
+@MsgLocale(value = "storage.exception")
 public class StorageException extends ManagedException {
 
     /**

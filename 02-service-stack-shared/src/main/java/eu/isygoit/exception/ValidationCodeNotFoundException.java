@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Validation code not found exception.
  */
-@MsgLocale("validation.code.not.found.exception")
+@MsgLocale(value = "validation.code.not.found.exception")
 public class ValidationCodeNotFoundException extends ManagedException {
 
     /**

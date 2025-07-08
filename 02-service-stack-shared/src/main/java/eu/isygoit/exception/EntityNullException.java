@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Linked file service not defined exception.
  */
-@MsgLocale("entity.null.exception")
+@MsgLocale(value = "entity.null.exception")
 public class EntityNullException extends ManagedException {
 
     /**

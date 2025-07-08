@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Authentification exception.
  */
-@MsgLocale("authentification.exception")
+@MsgLocale(value = "authentification.exception")
 public class AuthentificationException extends ManagedException {
 
     /**

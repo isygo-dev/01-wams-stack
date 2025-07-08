@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Validation code expired exception.
  */
-@MsgLocale("validation.code.expired.exception")
+@MsgLocale(value = "validation.code.expired.exception")
 public class ValidationCodeExpiredException extends ManagedException {
 
     /**

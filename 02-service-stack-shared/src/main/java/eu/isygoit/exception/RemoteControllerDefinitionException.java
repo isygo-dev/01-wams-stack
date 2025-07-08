@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Remote controller definition exception.
  */
-@MsgLocale("remote.controller.not.defined")
+@MsgLocale(value = "remote.controller.not.defined")
 public class RemoteControllerDefinitionException extends ManagedException {
 
     /**

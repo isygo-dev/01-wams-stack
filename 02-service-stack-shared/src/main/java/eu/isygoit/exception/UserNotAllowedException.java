@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type User not allowed exception.
  */
-@MsgLocale("user.not.allowed")
+@MsgLocale(value = "user.not.allowed")
 public class UserNotAllowedException extends ManagedException {
 
     /**

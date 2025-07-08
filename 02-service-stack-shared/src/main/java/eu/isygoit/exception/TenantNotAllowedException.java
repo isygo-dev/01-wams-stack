@@ -1,13 +1,12 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
-import org.apache.hc.core5.http.HttpStatus;
 
 
 /**
  * The type Operation not allowed exception.
  */
-@MsgLocale("tenant.not.allowed.exception")
+@MsgLocale(value = "tenant.not.allowed.exception")
 public class TenantNotAllowedException extends ManagedException {
 
     /**
@@ -36,10 +35,5 @@ public class TenantNotAllowedException extends ManagedException {
      */
     public TenantNotAllowedException(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    @Override
-    public int getHttpStatus() {
-        return HttpStatus.SC_UNAUTHORIZED;
     }
 }

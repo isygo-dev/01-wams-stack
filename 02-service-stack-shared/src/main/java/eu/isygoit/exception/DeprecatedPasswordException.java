@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Deprecated password exception.
  */
-@MsgLocale("deprecated.password.exception")
+@MsgLocale(value = "deprecated.password.exception")
 public class DeprecatedPasswordException extends ManagedException {
 
     /**

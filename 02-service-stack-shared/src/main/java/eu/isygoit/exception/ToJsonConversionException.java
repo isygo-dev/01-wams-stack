@@ -9,7 +9,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type To json conversion exception.
  */
-@MsgLocale("to.json.conversion.exception")
+@MsgLocale(value = "to.json.conversion.exception")
 public class ToJsonConversionException extends ManagedException {
 
     /**

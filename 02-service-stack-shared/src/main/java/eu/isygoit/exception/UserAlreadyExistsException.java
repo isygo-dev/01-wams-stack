@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type User already exists exception.
  */
-@MsgLocale("user.already.exists.exception")
+@MsgLocale(value = "user.already.exists.exception")
 public class UserAlreadyExistsException extends ManagedException {
 
     /**

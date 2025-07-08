@@ -8,7 +8,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Invalid field exception.
  */
-@MsgLocale("invalid.field.exception")
+@MsgLocale(value = "invalid.field.exception")
 public class InvalidFieldException extends ManagedException {
 
     /**

@@ -1,12 +1,13 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 
 /**
  * The type Empty path exception.
  */
-@MsgLocale("empty.path.found.exception")
+@MsgLocale(httpStatus = HttpStatus.BAD_REQUEST, value = "empty.path.found.exception")
 public class EmptyPathException extends ManagedException {
 
     /**

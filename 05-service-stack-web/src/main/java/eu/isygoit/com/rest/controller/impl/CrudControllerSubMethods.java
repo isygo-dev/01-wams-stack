@@ -23,7 +23,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -46,9 +45,6 @@ public abstract class CrudControllerSubMethods<
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
-    private static final int DEFAULT_PAGE_SIZE = 50;
-    private static final int MAX_PAGE_SIZE = 1000;
-    private static final String CREATE_DATE_FIELD = "createDate";
     private final Class<T> entityClass;
 
     @SuppressWarnings("unchecked")
@@ -590,22 +586,6 @@ public abstract class CrudControllerSubMethods<
      */
     private void validateCreateRequest(F dto) {
         validateNotNull(dto, "Create request DTO cannot be null");
-    }
-
-    /**
-     * Validates a bulk operation list.
-     *
-     * @param items List to validate
-     * @throws BadArgumentException if list is empty or exceeds max size
-     */
-    private void validateBulkOperation(List<?> items) {
-        if (CollectionUtils.isEmpty(items)) {
-            throw new BadArgumentException("Bulk operation list cannot be empty or null");
-        }
-        if (items.size() > MAX_PAGE_SIZE) {
-            throw new BadArgumentException(
-                    String.format("Bulk operation size %d exceeds maximum %d", items.size(), MAX_PAGE_SIZE));
-        }
     }
 
     /**

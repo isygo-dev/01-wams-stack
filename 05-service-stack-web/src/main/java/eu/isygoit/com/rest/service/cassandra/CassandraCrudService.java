@@ -3,7 +3,10 @@ package eu.isygoit.com.rest.service.cassandra;
 import eu.isygoit.com.rest.service.*;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
-import eu.isygoit.exception.*;
+import eu.isygoit.exception.BadArgumentException;
+import eu.isygoit.exception.ObjectNotFoundException;
+import eu.isygoit.exception.OperationNotAllowedException;
+import eu.isygoit.exception.OperationNotSupportedException;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -96,9 +99,7 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     public List<T> createBatch(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
+        validateListNotEmpty(objects);
 
         List<T> createdObjects = new ArrayList<>();
         objects.forEach(object -> {
@@ -133,9 +134,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional
     public List<T> updateBatch(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
+        validateListNotEmpty(objects);
         List<T> updatedObjects = new ArrayList<>();
         objects.forEach(object -> {
             updatedObjects.add(this.update(object));
@@ -147,9 +146,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional
     public void deleteBatch(String senderTenant, List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
+        validateListNotEmpty(objects);
 
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
                 && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
@@ -203,9 +200,7 @@ public abstract class CassandraCrudService<I extends Serializable,
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
         }
 
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
+        validateListNotEmpty(objects);
         this.beforeDelete(objects);
         repository().deleteAll(objects);
         this.afterDelete(objects);
@@ -344,9 +339,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Override
     @Transactional
     public List<T> saveOrUpdate(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
+        validateListNotEmpty(objects);
 
         List<T> updatedObjects = new ArrayList<>();
         objects.forEach(object -> {

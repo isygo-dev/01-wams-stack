@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Incremental config not found exception.
  */
-@MsgLocale("incremental.config.not.found.exception")
+@MsgLocale(value = "incremental.config.not.found.exception")
 public class IncrementalConfigNotFoundException extends ManagedException {
 
     /**

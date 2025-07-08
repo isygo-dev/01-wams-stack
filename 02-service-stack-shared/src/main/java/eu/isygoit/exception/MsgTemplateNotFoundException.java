@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Msg template not found exception.
  */
-@MsgLocale("message.template.not.found.exception")
+@MsgLocale(value = "message.template.not.found.exception")
 public class MsgTemplateNotFoundException extends ManagedException {
 
     /**

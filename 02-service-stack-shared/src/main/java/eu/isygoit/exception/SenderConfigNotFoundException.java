@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Sender config not found exception.
  */
-@MsgLocale("sender.config.not.found.exception")
+@MsgLocale(value = "sender.config.not.found.exception")
 public class SenderConfigNotFoundException extends ManagedException {
 
     /**

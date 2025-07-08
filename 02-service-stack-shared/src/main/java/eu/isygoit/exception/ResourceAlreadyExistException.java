@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * The type Resource already exist exception.
  */
 @ResponseStatus(HttpStatus.CONFLICT)
-@MsgLocale("ressource.already.exist.exception")
+@MsgLocale(value = "ressource.already.exist.exception")
 public class ResourceAlreadyExistException extends ManagedException {
 
     /**

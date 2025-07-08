@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Password not matches exception.
  */
-@MsgLocale("invalid.password.exception")
+@MsgLocale(value = "invalid.password.exception")
 public class PasswordNotMatchesException extends ManagedException {
 
     /**

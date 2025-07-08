@@ -28,7 +28,8 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     /**
      * Create response entity.
      *
-     * @param object the object
+     * @param requestContext the request context
+     * @param object         the object
      * @return the response entity
      */
     @Operation(summary = "Create a new object",
@@ -43,6 +44,13 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     ResponseEntity<D> create(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                              @Valid @RequestBody D object);
 
+    /**
+     * Create batch response entity.
+     *
+     * @param requestContext the request context
+     * @param objects        the objects
+     * @return the response entity
+     */
     @Operation(summary = "Create multiple objects",
             description = "Create multiple objects in a single request")
     @ApiResponses(value = {
@@ -59,8 +67,9 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     /**
      * Update response entity.
      *
-     * @param id     the id
-     * @param object the object
+     * @param requestContext the request context
+     * @param id             the id
+     * @param object         the object
      * @return the response entity
      */
     @Operation(summary = "Update an existing object",

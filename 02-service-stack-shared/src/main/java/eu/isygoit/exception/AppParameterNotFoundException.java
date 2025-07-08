@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type App parameter not found exception.
  */
-@MsgLocale("app.parameter.not.found.exception")
+@MsgLocale(value = "app.parameter.not.found.exception")
 public class AppParameterNotFoundException extends ManagedException {
 
     /**

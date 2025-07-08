@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type App parameter not found exception.
  */
-@MsgLocale("bad.fiels.name.exception")
+@MsgLocale(value = "bad.field.name.exception")
 public class BadFieldNameException extends ManagedException {
 
     /**

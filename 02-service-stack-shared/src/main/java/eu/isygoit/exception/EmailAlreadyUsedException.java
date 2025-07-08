@@ -5,14 +5,11 @@ package eu.isygoit.exception;
 
 
 import eu.isygoit.annotation.MsgLocale;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * The type Email already used exception.
  */
-@ResponseStatus(HttpStatus.CONFLICT)
-@MsgLocale("email.already.used.exception")
+@MsgLocale(value = "email.already.used.exception")
 public class EmailAlreadyUsedException extends ManagedException {
 
     /**

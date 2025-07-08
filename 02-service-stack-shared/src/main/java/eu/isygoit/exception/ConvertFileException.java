@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Convert file exception.
  */
-@MsgLocale("convert.file.exception")
+@MsgLocale(value = "convert.file.exception")
 public class ConvertFileException extends ManagedException {
 
     /**

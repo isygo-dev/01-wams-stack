@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Bad argument exception.
  */
-@MsgLocale("null.identifier.exception")
+@MsgLocale(value = "null.identifier.exception")
 public class NullIdentifierException extends ManagedException {
 
     /**

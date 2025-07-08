@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type File already exists exception.
  */
-@MsgLocale("file.already.exists.exception")
+@MsgLocale(value = "file.already.exists.exception")
 public class FileAlreadyExistsException extends ManagedException {
 
     /**

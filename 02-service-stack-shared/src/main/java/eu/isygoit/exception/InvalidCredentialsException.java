@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Invalid credentials exception.
  */
-@MsgLocale("invalid.credentials.exception")
+@MsgLocale(value = "invalid.credentials.exception")
 public class InvalidCredentialsException extends ManagedException {
 
     /**

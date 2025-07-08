@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Invalid password exception.
  */
-@MsgLocale("invalid.password.exception")
+@MsgLocale(value = "invalid.password.exception")
 public class InvalidPasswordException extends ManagedException {
     /**
      * Instantiates a new Invalid password exception.

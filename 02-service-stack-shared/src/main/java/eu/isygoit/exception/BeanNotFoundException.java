@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Bean not found exception.
  */
-@MsgLocale("bean.not.found.exception")
+@MsgLocale(value = "bean.not.found.exception")
 public class BeanNotFoundException extends ManagedException {
 
     /**

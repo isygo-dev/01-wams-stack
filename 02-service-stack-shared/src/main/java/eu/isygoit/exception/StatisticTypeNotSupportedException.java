@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Statistic type not supported exception.
  */
-@MsgLocale("statistic.type.not.supported.exception")
+@MsgLocale(value = "statistic.type.not.supported.exception")
 public class StatisticTypeNotSupportedException extends ManagedException {
 
     /**

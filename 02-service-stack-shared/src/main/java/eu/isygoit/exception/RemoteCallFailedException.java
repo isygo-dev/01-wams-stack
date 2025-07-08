@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Remote call failed exception.
  */
-@MsgLocale("remote.call.failed.exception")
+@MsgLocale(value = "remote.call.failed.exception")
 public class RemoteCallFailedException extends ManagedException {
 
     /**

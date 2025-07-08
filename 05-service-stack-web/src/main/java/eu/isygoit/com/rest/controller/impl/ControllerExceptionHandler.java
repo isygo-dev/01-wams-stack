@@ -7,6 +7,7 @@ import eu.isygoit.com.rest.controller.IControllerExceptionHandler;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.exception.BeanNotFoundException;
 import eu.isygoit.exception.ExceptionHandlerNotDefinedException;
+import eu.isygoit.exception.ManagedException;
 import eu.isygoit.exception.handler.IExceptionHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +59,13 @@ public abstract class ControllerExceptionHandler implements IControllerException
     public ResponseEntity getBackExceptionResponse(Throwable e) {
         log.error("<Error>: Exception {}", e);
         try {
-            return ResponseFactory.responseInternalServerError(exceptionHandler().handleError(e));
+            if (e instanceof ManagedException managedException) {
+                return new ResponseEntity<>(e.getLocalizedMessage(), managedException.getHttpStatus());
+            } else {
+                return ResponseFactory.responseInternalServerError(exceptionHandler().handleError(e));
+            }
         } catch (ExceptionHandlerNotDefinedException ex) {
-            return ResponseFactory.responseInternalServerError(e.getMessage());
+            return ResponseFactory.responseInternalServerError(e.getLocalizedMessage());
         }
     }
 }

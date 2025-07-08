@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Lock user exception.
  */
-@MsgLocale("user.account.deactivation.denied")
+@MsgLocale(value = "user.account.deactivation.denied")
 public class LockUserException extends ManagedException {
 
     /**

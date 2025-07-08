@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Unknown exception.
  */
-@MsgLocale("unknown.exception")
+@MsgLocale(value = "unknown.exception")
 public class UnknownException extends ManagedException {
 
     /**

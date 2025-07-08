@@ -50,7 +50,7 @@ public class TenantToContextFilter extends OncePerRequestFilter {
 
         // Check if tenant is valid
         if (!tenantValidator.isValid(tenantId)) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Invalid tenant: " + tenantId);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid tenant: " + tenantId);
             return;
         }
 

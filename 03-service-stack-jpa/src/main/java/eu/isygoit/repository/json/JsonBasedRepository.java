@@ -1,10 +1,11 @@
 package eu.isygoit.repository.json;
 
+import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
-import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface JsonBasedRepository<T extends IIdAssignable<I>,
         I extends Serializable>
@@ -46,7 +48,7 @@ public interface JsonBasedRepository<T extends IIdAssignable<I>,
             WHERE e.element_type = :elementType 
               AND e.attributes ->> 'id' = :id
             """, nativeQuery = true)
-    void deleteByElementTypeAndJsonId(@Param("elementType") String elementType, @Param("id") String id);
+    int deleteByElementTypeAndJsonId(@Param("elementType") String elementType, @Param("id") String id);
 
     @Modifying
     @Query(value = """
@@ -54,5 +56,5 @@ public interface JsonBasedRepository<T extends IIdAssignable<I>,
             WHERE e.element_type = :elementType 
               AND e.attributes ->> 'id' IN (:ids)
             """, nativeQuery = true)
-    void deleteByElementTypeAndJsonIdIn(@Param("elementType") String elementType, @Param("ids") List<String> ids);
+    int deleteByElementTypeAndJsonIdIn(@Param("elementType") String elementType, @Param("ids") List<String> ids);
 }

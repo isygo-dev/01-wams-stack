@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Invalid activation code exception.
  */
-@MsgLocale("invalid.activation.code.exception")
+@MsgLocale(value = "invalid.activation.code.exception")
 public class InvalidActivationCodeException extends ManagedException {
     /**
      * Instantiates a new Invalid activation code exception.

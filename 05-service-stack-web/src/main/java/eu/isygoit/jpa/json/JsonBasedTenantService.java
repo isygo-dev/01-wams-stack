@@ -1,11 +1,11 @@
 package eu.isygoit.jpa.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
+import eu.isygoit.exception.InvalidTenantException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
@@ -15,10 +15,10 @@ import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -114,9 +114,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public List<T> createBatch(String tenant, List<T> objects) {
         validateTenant(tenant);
 
-        if (CollectionUtils.isEmpty(objects)) {
-            return List.of();
-        }
+        validateListNotEmpty(objects);
 
         // Assign IDs to objects that don't have them
         objects.forEach(this::assignIdIfNull);
@@ -140,7 +138,9 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public void delete(String tenant, UUID id) {
         validateTenant(tenant);
         beforeDelete(id);
-        repository().deleteByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant);
+        if (repository().deleteByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant) == 0) {
+            throw new ObjectNotFoundException("with id " + id + " and tenant " + tenant);
+        }
         afterDelete(id);
     }
 
@@ -148,9 +148,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public void deleteBatch(String tenant, List<T> objects) {
         validateTenant(tenant);
 
-        if (CollectionUtils.isEmpty(objects)) {
-            return;
-        }
+        validateListNotEmpty(objects);
 
         beforeDelete(objects);
 
@@ -205,9 +203,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
         validateTenant(tenant);
 
-        if (CollectionUtils.isEmpty(objects)) {
-            return List.of();
-        }
+        validateListNotEmpty(objects);
 
         return objects.stream()
                 .map(obj -> saveOrUpdate(tenant, obj))
@@ -244,9 +240,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public List<T> updateBatch(String tenant, List<T> objects) {
         validateTenant(tenant);
 
-        if (CollectionUtils.isEmpty(objects)) {
-            return List.of();
-        }
+        validateListNotEmpty(objects);
 
         return objects.stream()
                 .map(this::beforeUpdate)
@@ -259,7 +253,9 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateTenant(tenant);
         // TODO: Implement dynamic filtering using JSON criteria with tenant
         log.warn("Tenant-aware criteria filtering not yet implemented, falling back to findAll()");
-        return findAll(tenant);
+        List<E> list = repository().findAllByElementTypeAndTenant(elementType, tenant);
+
+        return null; // return filtered list
     }
 
     @Override
@@ -267,7 +263,9 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateTenant(tenant);
         // TODO: Implement dynamic filtering using JSON criteria + pagination with tenant
         log.warn("Tenant-aware criteria filtering with pagination not yet implemented, falling back to findAll()");
-        return findAll(tenant, pageRequest);
+        Page<E> list = repository().findAllByElementTypeAndTenant(elementType, tenant, pageRequest);
+
+        return null; // return filtered list
     }
 
     // Event lifecycle methods with improved logging
@@ -330,7 +328,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     // Helper methods
     private void validateTenant(String tenant) {
         if (!StringUtils.hasText(tenant)) {
-            throw new IllegalArgumentException("Tenant cannot be null or empty");
+            throw new InvalidTenantException("Tenant cannot be null or empty");
         }
     }
 

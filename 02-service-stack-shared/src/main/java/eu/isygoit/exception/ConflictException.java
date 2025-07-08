@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Conflict exception.
  */
-@MsgLocale("conflict.exception")
+@MsgLocale(value = "conflict.exception")
 public class ConflictException extends ManagedException {
 
     /**

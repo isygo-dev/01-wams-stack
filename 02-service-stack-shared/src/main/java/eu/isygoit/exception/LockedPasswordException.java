@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Locked password exception.
  */
-@MsgLocale("locked.password.exception")
+@MsgLocale(value = "locked.password.exception")
 public class LockedPasswordException extends ManagedException {
 
     /**

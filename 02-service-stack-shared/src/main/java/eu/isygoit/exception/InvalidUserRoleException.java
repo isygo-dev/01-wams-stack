@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Invalid user role exception.
  */
-@MsgLocale("invalid.user.role.exception")
+@MsgLocale(value = "invalid.user.role.exception")
 public class InvalidUserRoleException extends ManagedException {
 
     /**

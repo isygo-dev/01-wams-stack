@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-multitenancy</artifactId>
-    <version>WS-1.0.250516-T0922</version>
+    <version>WS-1.0.250707-T0839</version>
 
     <name>service-stack-multitenancy</name>
     <description>service-stack-multitenancy</description>
@@ -21,7 +21,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250516-T0922</version>
+        <version>WS-1.0.250707-T0839</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -29,12 +29,12 @@
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>WS-1.0.250516-T0922</version>
+            <version>WS-1.0.250707-T0839</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-jpa</artifactId>
-            <version>WS-1.0.250516-T0922</version>
+            <version>WS-1.0.250707-T0839</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>

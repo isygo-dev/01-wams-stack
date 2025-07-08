@@ -6,15 +6,15 @@ import eu.isygoit.annotation.InjectService;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.exception.BeanNotFoundException;
-import eu.isygoit.exception.MapperNotDefinedException;
-import eu.isygoit.exception.ServiceNotDefinedException;
+import eu.isygoit.exception.*;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 /**
  * The type Crud controller utils.
@@ -32,6 +32,10 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         S extends ICrudServiceUtils<I, T>>
         extends ControllerExceptionHandler
         implements ICrudControllerUtils<I, T, M, F, S> {
+
+    protected static final int DEFAULT_PAGE_SIZE = 50;
+    protected static final int MAX_PAGE_SIZE = 1000;
+    protected static final String CREATE_DATE_FIELD = "createDate";
 
     /**
      * The constant ERROR_BEAN_NOT_FOUND.
@@ -100,5 +104,21 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         }
 
         return this.minEntityMapper;
+    }
+
+    /**
+     * Validates a bulk operation list.
+     *
+     * @param objects List to validate
+     * @throws BadArgumentException if list is empty or exceeds max size
+     */
+    protected static void validateBulkOperation(List objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            throw new EmptyListException("Bulk operation list cannot be empty or null");
+        }
+        if (objects.size() > MAX_PAGE_SIZE) {
+            throw new BadArgumentException(
+                    String.format("Bulk operation size %d exceeds maximum %d", objects.size(), MAX_PAGE_SIZE));
+        }
     }
 }

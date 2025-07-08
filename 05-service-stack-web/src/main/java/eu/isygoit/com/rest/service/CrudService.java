@@ -75,19 +75,6 @@ public abstract class CrudService<I extends Serializable,
     }
 
     /**
-     * Validates that a list is not empty.
-     *
-     * @param objects the list to validate
-     * @throws EmptyListException if the list is empty
-     */
-    private static <I extends Serializable, T extends IIdAssignable<I>> void validateListNotEmpty(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            log.error("Empty or null list provided for operation");
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
-    }
-
-    /**
      * Retrieves the tenant-aware repository, throwing an exception if not applicable.
      *
      * @return the tenant-aware repository

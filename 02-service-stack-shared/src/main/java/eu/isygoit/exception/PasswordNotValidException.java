@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Password not valid exception.
  */
-@MsgLocale("password.reset.token.exception")
+@MsgLocale(value = "password.reset.token.exception")
 public class PasswordNotValidException extends ManagedException {
 
     /**

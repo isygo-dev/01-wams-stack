@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Unauthorized exception.
  */
-@MsgLocale("unauthorized.exception")
+@MsgLocale(value = "unauthorized.exception")
 public class UnauthorizedException extends ManagedException {
 
     /**

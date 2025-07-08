@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Bad argument exception.
  */
-@MsgLocale("bad.argument.exception")
+@MsgLocale(value = "bad.argument.exception")
 public class BadArgumentException extends ManagedException {
 
     /**

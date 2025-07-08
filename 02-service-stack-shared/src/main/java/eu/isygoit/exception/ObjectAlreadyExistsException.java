@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Bad argument exception.
  */
-@MsgLocale("object.already.exists.exception")
+@MsgLocale(value = "object.already.exists.exception")
 public class ObjectAlreadyExistsException extends ManagedException {
 
     /**

@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Login already used exception.
  */
-@MsgLocale("login.already.used.exception")
+@MsgLocale(value = "login.already.used.exception")
 public class LoginAlreadyUsedException extends ManagedException {
 
     /**

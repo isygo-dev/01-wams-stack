@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Next code service not defined exception.
  */
-@MsgLocale("next.code.gen.method.not.defined.exception")
+@MsgLocale(value = "next.code.gen.method.not.defined.exception")
 public class NextCodeGenMethodNotDefinedException extends ManagedException {
 
     /**

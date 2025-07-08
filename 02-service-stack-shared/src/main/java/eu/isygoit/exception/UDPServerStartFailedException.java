@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Udp server start failed exception.
  */
-@MsgLocale("udp.server.start.failed")
+@MsgLocale(value = "udp.server.start.failed")
 public class UDPServerStartFailedException extends ManagedException {
 
     /**

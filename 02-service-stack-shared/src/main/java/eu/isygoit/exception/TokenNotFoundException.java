@@ -7,7 +7,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Token not found exception.
  */
-@MsgLocale("token.not.found.exception")
+@MsgLocale(value = "token.not.found.exception")
 public class TokenNotFoundException extends ManagedException {
 
     /**

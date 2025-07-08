@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Menu not defined exception.
  */
-@MsgLocale("menu.not.defined.exception")
+@MsgLocale(value = "menu.not.defined.exception")
 public class MenuNotDefinedException extends ManagedException {
 
     /**

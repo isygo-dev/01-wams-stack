@@ -1,12 +1,13 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 
 /**
  * The type Bad request exception.
  */
-@MsgLocale("bad.request.exception")
+@MsgLocale(httpStatus = HttpStatus.BAD_REQUEST, value = "bad.request.exception")
 public class BadRequestException extends ManagedException {
 
     /**

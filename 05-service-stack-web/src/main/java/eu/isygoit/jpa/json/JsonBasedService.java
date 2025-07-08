@@ -1,6 +1,5 @@
 package eu.isygoit.jpa.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
@@ -14,10 +13,10 @@ import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -105,9 +104,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public List<T> createBatch(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            return List.of();
-        }
+        validateListNotEmpty(objects);
 
         // Assign IDs to objects that don't have them
         objects.forEach(this::assignIdIfNull);
@@ -130,15 +127,15 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public void delete(UUID id) {
         beforeDelete(id);
-        repository().deleteByElementTypeAndJsonId(elementType, id.toString());
+        if (repository().deleteByElementTypeAndJsonId(elementType, id.toString()) == 0) {
+            throw new ObjectNotFoundException("with id " + id);
+        }
         afterDelete(id);
     }
 
     @Override
     public void deleteBatch(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            return;
-        }
+        validateListNotEmpty(objects);
 
         beforeDelete(objects);
 
@@ -184,9 +181,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public List<T> saveOrUpdate(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            return List.of();
-        }
+        validateListNotEmpty(objects);
 
         return objects.stream()
                 .map(this::saveOrUpdate)
@@ -217,9 +212,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public List<T> updateBatch(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            return List.of();
-        }
+        validateListNotEmpty(objects);
 
         return objects.stream()
                 .map(this::beforeUpdate)
@@ -231,14 +224,18 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
         // TODO: Implement dynamic filtering using JSON criteria
         log.warn("Criteria filtering not yet implemented, falling back to findAll()");
-        return findAll();
+        List<E> list = repository().findAllByElementType(elementType);
+
+        return null; // return filtered list
     }
 
     @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         // TODO: Implement dynamic filtering using JSON criteria + pagination
         log.warn("Criteria filtering with pagination not yet implemented, falling back to findAll()");
-        return findAll(pageRequest);
+        Page<E> list = repository().findAllByElementType(elementType, pageRequest);
+
+        return null; // return filtered list
     }
 
     // Event lifecycle methods with improved logging

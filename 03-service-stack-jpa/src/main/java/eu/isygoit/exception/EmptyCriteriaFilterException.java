@@ -1,11 +1,12 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 /**
  * The type Empty criteria filter exception.
  */
-@MsgLocale("empty.criteria.filter.exception")
+@MsgLocale(httpStatus = HttpStatus.BAD_REQUEST, value = "empty.criteria.filter.exception")
 public class EmptyCriteriaFilterException extends ManagedException {
 
     /**

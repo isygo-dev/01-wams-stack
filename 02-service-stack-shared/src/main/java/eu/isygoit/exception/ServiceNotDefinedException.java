@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Service not defined exception.
  */
-@MsgLocale("service.not.defined.exception")
+@MsgLocale(value = "service.not.defined.exception")
 public class ServiceNotDefinedException extends ManagedException {
 
     /**

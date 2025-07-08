@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type User password not found exception.
  */
-@MsgLocale("user.password.not.found.exception")
+@MsgLocale(value = "user.password.not.found.exception")
 public class UserPasswordNotFoundException extends ManagedException {
 
     /**

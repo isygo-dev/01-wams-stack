@@ -2,16 +2,19 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.app.ApplicationContextService;
+import eu.isygoit.constants.LogConstants;
+import eu.isygoit.exception.EmptyListException;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The type Crud service utils.
@@ -58,5 +61,18 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
             codeAssignable.setCode(codeAssignableService.getNextCode());
         }
         return object;
+    }
+
+    /**
+     * Validates that a list is not empty.
+     *
+     * @param objects the list to validate
+     * @throws EmptyListException if the list is empty
+     */
+    protected static <I extends Serializable, T extends IIdAssignable<I>> void validateListNotEmpty(List<T> objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            log.error("Empty or null list provided for operation");
+            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
+        }
     }
 }

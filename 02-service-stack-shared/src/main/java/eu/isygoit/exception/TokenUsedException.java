@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Token used exception.
  */
-@MsgLocale("token.expired.exception")
+@MsgLocale(value = "token.expired.exception")
 public class TokenUsedException extends ManagedException {
 
     /**

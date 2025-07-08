@@ -7,7 +7,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Param not found exception.
  */
-@MsgLocale("param.not.found.exception")
+@MsgLocale(value = "param.not.found.exception")
 public class ParamNotFoundException extends ManagedException {
 
     /**

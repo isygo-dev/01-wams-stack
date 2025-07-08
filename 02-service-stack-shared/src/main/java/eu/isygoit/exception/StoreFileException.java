@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Store file exception.
  */
-@MsgLocale("store.file.exception")
+@MsgLocale(value = "store.file.exception")
 public class StoreFileException extends ManagedException {
 
     /**

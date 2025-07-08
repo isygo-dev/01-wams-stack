@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type File not found exception.
  */
-@MsgLocale("file.not.found.exception")
+@MsgLocale(value = "file.not.found.exception")
 public class FileNotFoundException extends ManagedException {
 
     /**

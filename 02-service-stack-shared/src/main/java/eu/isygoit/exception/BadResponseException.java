@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Bad response exception.
  */
-@MsgLocale("bad.response.exception")
+@MsgLocale(value = "bad.response.exception")
 public class BadResponseException extends ManagedException {
 
     /**

@@ -1,12 +1,13 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 
 /**
  * The type Object not found exception.
  */
-@MsgLocale("object.not.found.exception")
+@MsgLocale(httpStatus = HttpStatus.NOT_FOUND, value = "object.not.found.exception")
 public class ObjectNotFoundException extends ManagedException {
 
     /**

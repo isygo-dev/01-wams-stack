@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type User temporarly locked exception.
  */
-@MsgLocale("user.temporarly.locked.exception")
+@MsgLocale(value = "user.temporarly.locked.exception")
 public class UserTemporarlyLockedException extends ManagedException {
 
     /**

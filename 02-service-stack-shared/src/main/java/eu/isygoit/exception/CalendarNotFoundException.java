@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Calendar not found exception.
  */
-@MsgLocale("calendar.not.found.exception")
+@MsgLocale(value = "calendar.not.found.exception")
 public class CalendarNotFoundException extends ManagedException {
 
     /**

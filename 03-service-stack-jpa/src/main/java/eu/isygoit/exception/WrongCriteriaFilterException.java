@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Wrong criteria filter exception.
  */
-@MsgLocale("wrong.criteria.filter.exception")
+@MsgLocale(value = "wrong.criteria.filter.exception")
 public class WrongCriteriaFilterException extends ManagedException {
 
     /**

@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Tcp server start failed exception.
  */
-@MsgLocale("tcp.server.start.failed")
+@MsgLocale(value = "tcp.server.start.failed")
 public class TCPServerStartFailedException extends ManagedException {
 
     /**

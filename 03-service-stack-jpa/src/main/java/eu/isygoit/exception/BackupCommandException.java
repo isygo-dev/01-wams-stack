@@ -5,7 +5,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Backup command exception.
  */
-@MsgLocale("pm.demo.buckup.command.exception")
+@MsgLocale(value = "pm.demo.buckup.command.exception")
 public class BackupCommandException extends ManagedException {
 
     /**

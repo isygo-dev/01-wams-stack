@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Unsupported file type exception.
  */
-@MsgLocale("unsupported.file.type.exception")
+@MsgLocale(value = "unsupported.file.type.exception")
 public class UnsupportedFileTypeException extends ManagedException {
 
     /**

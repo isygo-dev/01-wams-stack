@@ -10,7 +10,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-parent</artifactId>
-    <version>WS-1.0.250516-T0922</version>
+    <version>WS-1.0.250707-T0839</version>
 
     <name>service-stack-parent</name>
     <description>service-stack-parent</description>

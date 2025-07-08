@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Password expired exception.
  */
-@MsgLocale("password.expired.exception")
+@MsgLocale(value = "password.expired.exception")
 public class PasswordExpiredException extends ManagedException {
 
     /**

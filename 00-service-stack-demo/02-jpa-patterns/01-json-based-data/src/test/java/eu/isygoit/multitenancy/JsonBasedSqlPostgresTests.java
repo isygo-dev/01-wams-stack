@@ -386,7 +386,7 @@ class JsonBasedSqlPostgresTests {
 
         mockMvc.perform(delete(BASE_URL + "/" + toDelete)
                         .header("X-Tenant-ID", TENANT_1))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify it's deleted
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
@@ -422,7 +422,7 @@ class JsonBasedSqlPostgresTests {
 
         mockMvc.perform(delete(BASE_URL + "/" + toDelete)
                         .header("X-Tenant-ID", TENANT_2))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify it's deleted
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
@@ -486,9 +486,7 @@ class JsonBasedSqlPostgresTests {
                         .header("X-Tenant-ID", TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[]"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(status().isBadRequest());
     }
 
     // === FILTERING TESTS ===

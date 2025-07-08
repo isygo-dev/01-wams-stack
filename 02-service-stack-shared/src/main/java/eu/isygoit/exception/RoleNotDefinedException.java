@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Role not defined exception.
  */
-@MsgLocale("role.not.defined.exception")
+@MsgLocale(value = "role.not.defined.exception")
 public class RoleNotDefinedException extends ManagedException {
 
     /**

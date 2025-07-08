@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Random key not found exception.
  */
-@MsgLocale("random.key.not.found.exception")
+@MsgLocale(value = "random.key.not.found.exception")
 public class RandomKeyNotFoundException extends ManagedException {
 
     /**

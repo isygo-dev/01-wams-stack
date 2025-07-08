@@ -1,20 +1,21 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 
 /**
  * The type Operation not allowed exception.
  */
-@MsgLocale(value = "operation.not.allowed.exception")
-public class OperationNotAllowedException extends ManagedException {
+@MsgLocale(httpStatus = HttpStatus.BAD_REQUEST, value = "invalid.tenant.exception")
+public class InvalidTenantException extends ManagedException {
 
     /**
      * Instantiates a new Operation not allowed exception.
      *
      * @param message the message
      */
-    public OperationNotAllowedException(String message) {
+    public InvalidTenantException(String message) {
         super(message);
     }
 
@@ -23,7 +24,7 @@ public class OperationNotAllowedException extends ManagedException {
      *
      * @param throwable the throwable
      */
-    public OperationNotAllowedException(Throwable throwable) {
+    public InvalidTenantException(Throwable throwable) {
         super(throwable);
     }
 
@@ -33,7 +34,7 @@ public class OperationNotAllowedException extends ManagedException {
      * @param message the message
      * @param cause   the cause
      */
-    public OperationNotAllowedException(String message, Throwable cause) {
+    public InvalidTenantException(String message, Throwable cause) {
         super(message, cause);
     }
 }

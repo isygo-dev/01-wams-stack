@@ -9,7 +9,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Backend service exception.
  */
-@MsgLocale("backend.service.exception")
+@MsgLocale(value = "backend.service.exception")
 public class BackendServiceException extends ManagedException {
 
     /**

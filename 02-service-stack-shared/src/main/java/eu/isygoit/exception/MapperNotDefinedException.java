@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Mapper not defined exception.
  */
-@MsgLocale("mapper.not.defined.exception")
+@MsgLocale(value = "mapper.not.defined.exception")
 public class MapperNotDefinedException extends ManagedException {
 
     /**

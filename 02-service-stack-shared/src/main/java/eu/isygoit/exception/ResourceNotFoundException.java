@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Resource not found exception.
  */
-@MsgLocale("resource.not.found.exception")
+@MsgLocale(value = "resource.not.found.exception")
 public class ResourceNotFoundException extends ManagedException {
 
     /**

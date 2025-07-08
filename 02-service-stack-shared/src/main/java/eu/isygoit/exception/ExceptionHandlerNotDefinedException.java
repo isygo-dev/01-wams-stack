@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Exception handler not defined exception.
  */
-@MsgLocale("exception.handler.not.defined.exception")
+@MsgLocale(value = "exception.handler.not.defined.exception")
 public class ExceptionHandlerNotDefinedException extends ManagedException {
 
     /**

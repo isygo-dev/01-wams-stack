@@ -1,11 +1,12 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 /**
  * The type Empty list exception.
  */
-@MsgLocale("empty.list.exception")
+@MsgLocale(httpStatus = HttpStatus.BAD_REQUEST, value = "empty.list.exception")
 public class EmptyListException extends ManagedException {
 
     /**

@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Unsuported auth type exception.
  */
-@MsgLocale("unsupported.auth.type.exception")
+@MsgLocale(value = "unsupported.auth.type.exception")
 public class UnsuportedAuthTypeException extends ManagedException {
 
     /**

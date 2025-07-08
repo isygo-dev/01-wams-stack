@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Jpa repository not defined exception.
  */
-@MsgLocale("dao.not.defined.exception")
+@MsgLocale(value = "dao.not.defined.exception")
 public class JpaRepositoryNotDefinedException extends ManagedException {
 
     /**

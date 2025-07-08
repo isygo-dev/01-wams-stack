@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type User not found exception.
  */
-@MsgLocale("user.not.found.exception")
+@MsgLocale(value = "user.not.found.exception")
 public class UserNotFoundException extends ManagedException {
 
     /**

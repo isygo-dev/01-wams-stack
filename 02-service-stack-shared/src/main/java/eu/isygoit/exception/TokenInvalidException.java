@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Token invalid exception.
  */
-@MsgLocale("invalid.token.exception")
+@MsgLocale(value = "invalid.token.exception")
 public class TokenInvalidException extends ManagedException {
 
     /**

@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Create file exception.
  */
-@MsgLocale("create.file.exception")
+@MsgLocale(value = "create.file.exception")
 public class CreateFileException extends ManagedException {
 
     /**

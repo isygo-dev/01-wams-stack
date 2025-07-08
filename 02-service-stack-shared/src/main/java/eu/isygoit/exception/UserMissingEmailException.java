@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * The type User missing email exception.
  */
 @ResponseStatus(HttpStatus.CONFLICT)
-@MsgLocale("user.missing.email.exception")
+@MsgLocale(value = "user.missing.email.exception")
 public class UserMissingEmailException extends ManagedException {
 
     /**

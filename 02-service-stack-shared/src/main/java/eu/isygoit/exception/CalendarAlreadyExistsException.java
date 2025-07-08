@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Calendar already exists exception.
  */
-@MsgLocale("calendar.already.exists.exception")
+@MsgLocale(value = "calendar.already.exists.exception")
 public class CalendarAlreadyExistsException extends ManagedException {
 
     /**

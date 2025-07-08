@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Database access exception.
  */
-@MsgLocale("database.access.exception")
+@MsgLocale(value = "database.access.exception")
 public class DatabaseAccessException extends ManagedException {
 
     /**

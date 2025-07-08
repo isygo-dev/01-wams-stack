@@ -2,7 +2,7 @@ package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.core5.http.HttpStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
@@ -79,7 +79,19 @@ public abstract class ManagedException extends RuntimeException {
                 });
     }
 
-    public int getHttpStatus() {
-        return HttpStatus.SC_OK;
+    /**
+     * Gets http status.
+     *
+     * @return the http status
+     */
+    public HttpStatus getHttpStatus() {
+        var msgLocale = this.getClass().getAnnotation(MsgLocale.class);
+
+        return Optional.ofNullable(msgLocale)
+                .map(MsgLocale::httpStatus)
+                .orElseGet(() -> {
+                    log.error("<Error>: msgLocale annotation not defined for class type {}", this.getClass().getSimpleName());
+                    return HttpStatus.INTERNAL_SERVER_ERROR;
+                });
     }
 }
