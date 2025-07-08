@@ -12,6 +12,8 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The type Criteria helper.
@@ -26,56 +28,121 @@ public class CriteriaHelper {
      * @param sqlWhere the criteria
      * @return the list
      */
+    private static final Pattern CONDITION_PATTERN = Pattern.compile(
+            "([\\w.]+)\\s*([=<>!~]+)\\s*('[^']*'|\"[^\"]*\"|\\S+)"
+    );
+    private static final Pattern LOGICAL_OP_PATTERN = Pattern.compile(
+            "\\s*([&|])\\s*"
+    );
+
     public static List<QueryCriteria> convertsqlWhereToCriteria(String sqlWhere) {
-        /*
-            example
-            sqlWhere = "ip = '152.2.3.236' & device = 'DEV' | (broken = true & canceled = false)"
-         */
         List<QueryCriteria> criteriaList = new ArrayList<>();
-        IEnumCriteriaCombiner.Types currentCombiner = IEnumCriteriaCombiner.Types.OR; // Default combiner
+        if (sqlWhere == null || sqlWhere.trim().isEmpty()) {
+            return criteriaList;
+        }
 
         // Remove WHERE keyword if present and trim
         sqlWhere = sqlWhere.replaceAll("(?i)^\\s*WHERE\\s*", "").trim();
 
-        // Split on combiners (both & and | symbols)
-        String[] conditionGroups = sqlWhere.split("\\s*([&|])\\s*");
-        String[] combiners = sqlWhere.split("[^&|]+"); // Extract just the combiner symbols
+        // Split into tokens while handling parentheses and logical operators
+        List<String> tokens = new ArrayList<>();
+        int start = 0;
+        int parenLevel = 0;
 
-        for (int i =  0; i < conditionGroups.length; i++) {
-            String condition = conditionGroups[i].trim();
-            if (i > 0 && combiners.length > i) {
-                // Set combiner from the symbol (skip first element which is empty)
-                currentCombiner = IEnumCriteriaCombiner.Types.valueOf(
-                        combiners[i].trim().equals("&") ? "AND" : "OR"
-                );
+        for (int i = 0; i < sqlWhere.length(); i++) {
+            char c = sqlWhere.charAt(i);
+            if (c == '(') {
+                if (parenLevel == 0 && i > start) {
+                    tokens.add(sqlWhere.substring(start, i).trim());
+                    start = i;
+                }
+                parenLevel++;
+            } else if (c == ')') {
+                parenLevel--;
+                if (parenLevel == 0) {
+                    tokens.add(sqlWhere.substring(start, i + 1).trim());
+                    start = i + 1;
+                }
+            } else if (parenLevel == 0 && (c == '&' || c == '|')) {
+                if (i > start) {
+                    tokens.add(sqlWhere.substring(start, i).trim());
+                }
+                tokens.add(String.valueOf(c));
+                start = i + 1;
+            }
+        }
+
+        if (start < sqlWhere.length()) {
+            tokens.add(sqlWhere.substring(start).trim());
+        }
+
+        IEnumCriteriaCombiner.Types currentCombiner = IEnumCriteriaCombiner.Types.OR;
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+
+            if (token.equals("&")) {
+                currentCombiner = IEnumCriteriaCombiner.Types.AND;
+                continue;
+            } else if (token.equals("|")) {
+                currentCombiner = IEnumCriteriaCombiner.Types.OR;
+                continue;
             }
 
-            // Process each condition
-            for (IEnumOperator.Types operator : IEnumOperator.Types.values()) {
-                if (condition.contains(operator.symbol().trim())) {
-                    String[] parts = condition.split(operator.symbol().trim(), 2);
-                    if (parts.length == 2) {
-                        String field = parts[0].trim();
-                        String value = parts[1].trim();
-
-                        // Remove surrounding quotes
-                        if ((value.startsWith("'") && value.endsWith("'"))) {
-                            value = value.substring(1, value.length() - 1);
-                        }
-
-                        criteriaList.add(QueryCriteria.builder()
-                                .combiner(currentCombiner)
-                                .name(field)
-                                .operator(operator)
-                                .value(value)
-                                .build());
-                    }
-                    break;
+            if (token.startsWith("(") && token.endsWith(")")) {
+                String nested = token.substring(1, token.length() - 1).trim();
+                List<QueryCriteria> nestedCriteria = convertsqlWhereToCriteria(nested);
+                if (!nestedCriteria.isEmpty()) {
+                    // Set the combiner for the first nested condition
+                    nestedCriteria.get(0).setCombiner(currentCombiner);
+                    criteriaList.addAll(nestedCriteria);
+                    // Reset combiner to OR after processing nested group
+                    currentCombiner = IEnumCriteriaCombiner.Types.OR;
                 }
+                continue;
+            }
+
+            Matcher matcher = CONDITION_PATTERN.matcher(token);
+            if (matcher.find()) {
+                String field = matcher.group(1).trim();
+                String operator = matcher.group(2).trim();
+                String value = matcher.group(3).trim();
+
+                // Remove surrounding quotes if present
+                if ((value.startsWith("'") && value.endsWith("'"))) {
+                    value = value.substring(1, value.length() - 1);
+                } else if (value.startsWith("\"") && value.endsWith("\"")) {
+                    value = value.substring(1, value.length() - 1);
+                }
+
+                IEnumOperator.Types operatorType = parseOperator(operator);
+                criteriaList.add(QueryCriteria.builder()
+                        .combiner(currentCombiner)
+                        .name(field)
+                        .operator(operatorType)
+                        .value(value)
+                        .build());
+
+                // Reset combiner to OR after each condition unless overridden
+                currentCombiner = IEnumCriteriaCombiner.Types.OR;
             }
         }
 
         return criteriaList;
+    }
+
+    private static IEnumOperator.Types parseOperator(String operator) {
+        switch (operator) {
+            case "=": return IEnumOperator.Types.EQ;
+            case "!=": return IEnumOperator.Types.NE;
+            case "~": return IEnumOperator.Types.LI;
+            case "!~": return IEnumOperator.Types.NL;
+            case "<": return IEnumOperator.Types.LT;
+            case "<=": return IEnumOperator.Types.LE;
+            case ">": return IEnumOperator.Types.GT;
+            case ">=": return IEnumOperator.Types.GE;
+            default: return IEnumOperator.Types.EQ;
+        }
     }
 
     /**
