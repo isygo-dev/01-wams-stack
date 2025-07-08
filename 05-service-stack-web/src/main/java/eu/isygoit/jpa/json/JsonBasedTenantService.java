@@ -271,7 +271,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         // Apply in-memory filtering
         List<T> filtered = entities.stream()
-                .filter(entity -> JsonBasedCriteriaHelper.evaluateCriteria(entity, criteria))
+                .filter(entity -> JsonBasedEntityHelper.evaluateCriteria(entity, criteria))
                 .collect(Collectors.toList());
 
         log.debug("Found {} {} entities for tenant: {}", filtered.size(), elementType, tenant);
@@ -308,7 +308,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         // Apply in-memory filtering
         List<T> filtered = entities.stream()
-                .filter(entity -> JsonBasedCriteriaHelper.evaluateCriteria(entity, criteria))
+                .filter(entity -> JsonBasedEntityHelper.evaluateCriteria(entity, criteria))
                 .collect(Collectors.toList());
 
         // Apply pagination

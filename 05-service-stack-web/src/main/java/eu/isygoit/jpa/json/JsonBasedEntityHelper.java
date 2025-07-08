@@ -4,19 +4,12 @@ import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.jwt.filter.QueryCriteria;
-import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.model.json.JsonBasedEntity;
-import eu.isygoit.model.json.JsonElement;
-import eu.isygoit.repository.json.JsonBasedTenantAssignableRepository;
 import org.springframework.util.StringUtils;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.UUID;
 
-public class JsonBasedCriteriaHelper {
+public class JsonBasedEntityHelper {
 
     public static <T> boolean evaluateCriteria(T entity, List<QueryCriteria> criteria) {
         boolean result = true; // Default for first criterion

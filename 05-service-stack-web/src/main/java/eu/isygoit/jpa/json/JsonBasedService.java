@@ -6,6 +6,8 @@ import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.exception.ObjectNotFoundException;
+import eu.isygoit.exception.WrongCriteriaFilterException;
+import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
@@ -13,7 +15,6 @@ import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Generic JSON-based service implementation with CRUD operations.
@@ -222,20 +224,70 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
-        // TODO: Implement dynamic filtering using JSON criteria
-        log.warn("Criteria filtering not yet implemented, falling back to findAll()");
-        List<E> list = repository().findAllByElementType(elementType);
+        if (criteria == null || criteria.isEmpty()) {
+            log.warn("No criteria provided, falling back to findAll");
+            return findAll();
+        }
 
-        return null; // return filtered list
+        // Validate criteria names against jsonElementClass fields
+        validateCriteriaAgainstJsonElement(criteria);
+
+        log.debug("Filtering {} entities with {} criteria", elementType, criteria.size());
+
+        // Fetch all entities and convert to JsonElement
+        List<T> entities = repository().findAllByElementType(elementType)
+                .stream()
+                .map(this::toJsonElement)
+                .collect(Collectors.toList());
+
+        // Apply in-memory filtering
+        List<T> filtered = entities.stream()
+                .filter(entity -> JsonBasedEntityHelper.evaluateCriteria(entity, criteria))
+                .collect(Collectors.toList());
+
+        log.debug("Found {} {} entities", filtered.size(), elementType);
+        return afterFindAll(filtered);
+    }
+
+    private void validateCriteriaAgainstJsonElement(List<QueryCriteria> criteria) {
+        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
+        for (QueryCriteria criterion : criteria) {
+            if (!validFields.containsKey(criterion.getName())) {
+                throw new WrongCriteriaFilterException("with name: " + criterion.getName());
+            }
+        }
     }
 
     @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
-        // TODO: Implement dynamic filtering using JSON criteria + pagination
-        log.warn("Criteria filtering with pagination not yet implemented, falling back to findAll()");
-        Page<E> list = repository().findAllByElementType(elementType, pageRequest);
+        if (criteria == null || criteria.isEmpty()) {
+            log.warn("No criteria provided, falling back to findAll with pagination");
+            return findAll(pageRequest);
+        }
 
-        return null; // return filtered list
+        // Validate criteria names against jsonElementClass fields
+        validateCriteriaAgainstJsonElement(criteria);
+
+        log.debug("Filtering {} entities with {} criteria and pagination", elementType, criteria.size());
+
+        // Fetch all entities and convert to JsonElement
+        List<T> entities = repository().findAllByElementType(elementType)
+                .stream()
+                .map(this::toJsonElement)
+                .collect(Collectors.toList());
+
+        // Apply in-memory filtering
+        List<T> filtered = entities.stream()
+                .filter(entity -> JsonBasedEntityHelper.evaluateCriteria(entity, criteria))
+                .collect(Collectors.toList());
+
+        // Apply pagination
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min(start + pageRequest.getPageSize(), filtered.size());
+        List<T> paginated = start < filtered.size() ? filtered.subList(start, end) : List.of();
+
+        log.debug("Found {} {} entities with pagination", paginated.size(), elementType);
+        return afterFindAll(paginated);
     }
 
     // Event lifecycle methods with improved logging
