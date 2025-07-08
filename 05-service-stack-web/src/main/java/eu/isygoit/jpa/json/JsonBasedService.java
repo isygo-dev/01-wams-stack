@@ -7,7 +7,6 @@ import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.WrongCriteriaFilterException;
-import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
@@ -46,25 +45,16 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         ICrudServiceEvents<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 
-    // Cache the class types for better performance
     private final Class<T> jsonElementClass;
     private final Class<E> jsonEntityClass;
     private final String elementType;
-
     private final ObjectMapper objectMapper;
 
-    /**
-     * Constructor that initializes class types and element type.
-     * Using constructor injection for better testability.
-     */
     @Autowired
     public JsonBasedService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-
-        // Extract generic type arguments with better error handling
         var genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         var typeArguments = genericSuperclass.getActualTypeArguments();
-
         this.jsonElementClass = (Class<T>) typeArguments[0];
         this.jsonEntityClass = (Class<E>) typeArguments[2];
         this.elementType = jsonElementClass.getSimpleName().toUpperCase();
@@ -82,46 +72,37 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public T create(T object) {
-        assignIdIfNull(object);
-
+        JsonBasedEntityHelper.assignIdIfNull(object);
         var beforeCreateResult = beforeCreate(object);
-        var entity = toJsonEntity(beforeCreateResult);
+        var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
         var saved = repository().save(entity);
-        var result = toJsonElement(saved);
-
+        var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
         return afterCreate(result);
     }
 
     @Override
     public T createAndFlush(T object) {
-        assignIdIfNull(object);
-
+        JsonBasedEntityHelper.assignIdIfNull(object);
         var beforeCreateResult = beforeCreate(object);
-        var entity = toJsonEntity(beforeCreateResult);
+        var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
         var saved = repository().saveAndFlush(entity);
-        var result = toJsonElement(saved);
-
+        var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
         return afterCreate(result);
     }
 
     @Override
     public List<T> createBatch(List<T> objects) {
         validateListNotEmpty(objects);
-
-        // Assign IDs to objects that don't have them
-        objects.forEach(this::assignIdIfNull);
-
+        objects.forEach(JsonBasedEntityHelper::assignIdIfNull);
         var beforeCreateResults = objects.stream()
                 .map(this::beforeCreate)
                 .toList();
-
         var entities = beforeCreateResults.stream()
-                .map(this::toJsonEntity)
+                .map(obj -> JsonBasedEntityHelper.toJsonEntity(obj, elementType, jsonEntityClass, objectMapper))
                 .toList();
-
         return repository().saveAll(entities)
                 .stream()
-                .map(this::toJsonElement)
+                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .map(this::afterCreate)
                 .toList();
     }
@@ -138,13 +119,10 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public void deleteBatch(List<T> objects) {
         validateListNotEmpty(objects);
-
         beforeDelete(objects);
-
         var ids = objects.stream()
                 .map(entity -> entity.getId().toString())
                 .toList();
-
         repository().deleteByElementTypeAndJsonIdIn(elementType, ids);
         afterDelete(objects);
     }
@@ -153,9 +131,8 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public List<T> findAll() {
         var results = repository().findAllByElementType(elementType)
                 .stream()
-                .map(this::toJsonElement)
+                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .toList();
-
         return afterFindAll(results);
     }
 
@@ -163,16 +140,15 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public List<T> findAll(Pageable pageable) {
         var results = repository().findAllByElementType(elementType, pageable)
                 .stream()
-                .map(this::toJsonElement)
+                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .toList();
-
         return afterFindAll(results);
     }
 
     @Override
     public Optional<T> findById(UUID id) throws ObjectNotFoundException {
         return repository().findByElementTypeAndJsonId(elementType, id.toString())
-                .map(this::toJsonElement)
+                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .map(this::afterFindById);
     }
 
@@ -184,7 +160,6 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public List<T> saveOrUpdate(List<T> objects) {
         validateListNotEmpty(objects);
-
         return objects.stream()
                 .map(this::saveOrUpdate)
                 .toList();
@@ -194,10 +169,8 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public T update(T object) {
         var beforeUpdateResult = beforeUpdate(object);
         var entity = findEntityById(beforeUpdateResult.getId());
-
         entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-        var result = toJsonElement(repository().save(entity));
-
+        var result = JsonBasedEntityHelper.toJsonElement(repository().save(entity), jsonElementClass, objectMapper);
         return afterUpdate(result);
     }
 
@@ -205,17 +178,14 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public T updateAndFlush(T object) {
         var beforeUpdateResult = beforeUpdate(object);
         var entity = findEntityById(beforeUpdateResult.getId());
-
         entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-        var result = toJsonElement(repository().saveAndFlush(entity));
-
+        var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
         return afterUpdate(result);
     }
 
     @Override
     public List<T> updateBatch(List<T> objects) {
         validateListNotEmpty(objects);
-
         return objects.stream()
                 .map(this::beforeUpdate)
                 .map(this::update)
@@ -229,68 +199,33 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
             return findAll();
         }
 
-        // Validate criteria names against jsonElementClass fields
-        validateCriteriaAgainstJsonElement(criteria);
-
-        log.debug("Filtering {} entities with {} criteria", elementType, criteria.size());
-
-        // Fetch all entities and convert to JsonElement
+        JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
         List<T> entities = repository().findAllByElementType(elementType)
                 .stream()
-                .map(this::toJsonElement)
+                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
-
-        // Apply in-memory filtering
-        List<T> filtered = entities.stream()
-                .filter(entity -> JsonBasedEntityHelper.evaluateCriteria(entity, criteria))
-                .collect(Collectors.toList());
-
-        log.debug("Found {} {} entities", filtered.size(), elementType);
+        List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
         return afterFindAll(filtered);
-    }
-
-    private void validateCriteriaAgainstJsonElement(List<QueryCriteria> criteria) {
-        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
-        for (QueryCriteria criterion : criteria) {
-            if (!validFields.containsKey(criterion.getName())) {
-                throw new WrongCriteriaFilterException("with name: " + criterion.getName());
-            }
-        }
     }
 
     @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         if (criteria == null || criteria.isEmpty()) {
-            log.warn("No criteria provided, falling back to findAll with pagination");
+            log.warn("No criteria provided, falling back to findAll");
             return findAll(pageRequest);
         }
 
-        // Validate criteria names against jsonElementClass fields
-        validateCriteriaAgainstJsonElement(criteria);
-
-        log.debug("Filtering {} entities with {} criteria and pagination", elementType, criteria.size());
-
-        // Fetch all entities and convert to JsonElement
+        JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
         List<T> entities = repository().findAllByElementType(elementType)
                 .stream()
-                .map(this::toJsonElement)
+                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
-
-        // Apply in-memory filtering
-        List<T> filtered = entities.stream()
-                .filter(entity -> JsonBasedEntityHelper.evaluateCriteria(entity, criteria))
-                .collect(Collectors.toList());
-
-        // Apply pagination
-        int start = (int) pageRequest.getOffset();
-        int end = Math.min(start + pageRequest.getPageSize(), filtered.size());
-        List<T> paginated = start < filtered.size() ? filtered.subList(start, end) : List.of();
-
-        log.debug("Found {} {} entities with pagination", paginated.size(), elementType);
+        List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
+        List<T> paginated = JsonBasedEntityHelper.applyPagination(filtered, pageRequest);
         return afterFindAll(paginated);
     }
 
-    // Event lifecycle methods with improved logging
+    // Event lifecycle methods
     @Override
     public T beforeUpdate(T object) {
         log.debug("Before update {}: {}", elementType, object.getId());
@@ -347,32 +282,9 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         return object;
     }
 
-    // Helper methods
-    private void assignIdIfNull(T object) {
-        if (object.getId() == null) {
-            object.setId(UUID.randomUUID());
-        }
-    }
-
     private E findEntityById(UUID id) {
         return repository().findByElementTypeAndJsonId(elementType, id.toString())
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "Entity not found for type: %s and id: %s".formatted(elementType, id)));
-    }
-
-    private E toJsonEntity(T element) {
-        var json = objectMapper.valueToTree(element);
-        try {
-            var jsonEntity = jsonEntityClass.getDeclaredConstructor().newInstance();
-            jsonEntity.setElementType(elementType);
-            jsonEntity.setAttributes(json);
-            return jsonEntity;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create %s instance".formatted(elementType), e);
-        }
-    }
-
-    private T toJsonElement(E jsonEntity) {
-        return objectMapper.convertValue(jsonEntity.getAttributes(), jsonElementClass);
     }
 }

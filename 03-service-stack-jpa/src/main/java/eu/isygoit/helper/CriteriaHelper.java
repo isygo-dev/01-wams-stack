@@ -23,44 +23,59 @@ public class CriteriaHelper {
     /**
      * Convert string to criteria list.
      *
-     * @param criteria the criteria
-     * @param delim    the delim
+     * @param sqlWhere the criteria
      * @return the list
      */
-    public static List<QueryCriteria> convertStringToCriteria(String criteria, String delim) {
-        List<QueryCriteria> list = new ArrayList<>();
-        StringTokenizer tokenizer = new StringTokenizer(criteria, delim);
+    public static List<QueryCriteria> convertsqlWhereToCriteria(String sqlWhere) {
+        /*
+            example
+            sqlWhere = "ip = '152.2.3.236' & device = 'DEV' | (broken = true & canceled = false)"
+         */
+        List<QueryCriteria> criteriaList = new ArrayList<>();
+        IEnumCriteriaCombiner.Types currentCombiner = IEnumCriteriaCombiner.Types.OR; // Default combiner
 
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken().trim();
+        // Remove WHERE keyword if present and trim
+        sqlWhere = sqlWhere.replaceAll("(?i)^\\s*WHERE\\s*", "").trim();
 
-            // Get combiner if exists
-            String[] combinerKeyValue = token.split("->", 2); // Limit split to avoid unnecessary split on the value side
-            IEnumCriteriaCombiner.Types combiner = IEnumCriteriaCombiner.Types.OR;
+        // Split on combiners (both & and | symbols)
+        String[] conditionGroups = sqlWhere.split("\\s*([&|])\\s*");
+        String[] combiners = sqlWhere.split("[^&|]+"); // Extract just the combiner symbols
 
-            if (combinerKeyValue.length == 2) {
-                combiner = IEnumCriteriaCombiner.Types.valueOf(combinerKeyValue[0].trim());
-                token = combinerKeyValue[1].trim();
+        for (int i =  0; i < conditionGroups.length; i++) {
+            String condition = conditionGroups[i].trim();
+            if (i > 0 && combiners.length > i) {
+                // Set combiner from the symbol (skip first element which is empty)
+                currentCombiner = IEnumCriteriaCombiner.Types.valueOf(
+                        combiners[i].trim().equals("&") ? "AND" : "OR"
+                );
             }
 
-            // Loop through operators and process the token
+            // Process each condition
             for (IEnumOperator.Types operator : IEnumOperator.Types.values()) {
-                if (token.contains(operator.symbol())) {
-                    String[] keyValue = token.split(operator.symbol(), 2); // Split only once
-                    if (keyValue.length == 2) {
-                        list.add(QueryCriteria.builder()
-                                .combiner(combiner)
-                                .name(keyValue[0].trim())
+                if (condition.contains(operator.symbol().trim())) {
+                    String[] parts = condition.split(operator.symbol().trim(), 2);
+                    if (parts.length == 2) {
+                        String field = parts[0].trim();
+                        String value = parts[1].trim();
+
+                        // Remove surrounding quotes
+                        if ((value.startsWith("'") && value.endsWith("'"))) {
+                            value = value.substring(1, value.length() - 1);
+                        }
+
+                        criteriaList.add(QueryCriteria.builder()
+                                .combiner(currentCombiner)
+                                .name(field)
                                 .operator(operator)
-                                .value(keyValue[1].trim())
+                                .value(value)
                                 .build());
                     }
-                    break; // No need to continue once a valid operator is found
+                    break;
                 }
             }
         }
 
-        return list;
+        return criteriaList;
     }
 
     /**

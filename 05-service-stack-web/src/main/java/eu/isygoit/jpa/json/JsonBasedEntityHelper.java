@@ -1,16 +1,29 @@
 package eu.isygoit.jpa.json;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
+import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.json.JsonBasedEntity;
+import eu.isygoit.model.json.JsonElement;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Slf4j
 public class JsonBasedEntityHelper {
 
+    /**
+     * Evaluates a list of criteria against an entity.
+     */
     public static <T> boolean evaluateCriteria(T entity, List<QueryCriteria> criteria) {
         boolean result = true; // Default for first criterion
         for (int i = 0; i < criteria.size(); i++) {
@@ -31,16 +44,17 @@ public class JsonBasedEntityHelper {
         return result;
     }
 
+    /**
+     * Evaluates a single criterion against an entity.
+     */
     public static <T> boolean evaluateSingleCriterion(T entity, QueryCriteria criterion) {
         try {
-            // Access the field value using reflection
             Field field = entity.getClass().getDeclaredField(criterion.getName());
             field.setAccessible(true);
             Object fieldValue = field.get(entity);
             String value = fieldValue != null ? fieldValue.toString() : null;
             String criterionValue = criterion.getValue();
 
-            // Handle null cases
             if (value == null && criterion.getOperator() != IEnumOperator.Types.EQ && criterion.getOperator() != IEnumOperator.Types.NE) {
                 return false;
             }
@@ -108,5 +122,74 @@ public class JsonBasedEntityHelper {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new WrongCriteriaFilterException("Error accessing field: " + criterion.getName());
         }
+    }
+
+    /**
+     * Validates criteria against the fields of a given JSON element class.
+     */
+    public static <T> void validateCriteriaAgainstJsonElement(Class<T> jsonElementClass, List<QueryCriteria> criteria) {
+        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
+        for (QueryCriteria criterion : criteria) {
+            if (!validFields.containsKey(criterion.getName())) {
+                throw new WrongCriteriaFilterException("with name: " + criterion.getName());
+            }
+        }
+    }
+
+    /**
+     * Assigns a random UUID to the object if its ID is null.
+     */
+    public static <T extends IIdAssignable<UUID>> void assignIdIfNull(T object) {
+        if (object.getId() == null) {
+            object.setId(UUID.randomUUID());
+        }
+    }
+
+    /**
+     * Converts a JSON element to a JSON entity.
+     */
+    public static <T extends IIdAssignable<UUID> & JsonElement<UUID>, E extends JsonBasedEntity<?> & IIdAssignable<?>>
+    E toJsonEntity(T element, String elementType, Class<E> jsonEntityClass, ObjectMapper objectMapper) {
+        var json = objectMapper.valueToTree(element);
+        try {
+            var jsonEntity = jsonEntityClass.getDeclaredConstructor().newInstance();
+            jsonEntity.setElementType(elementType);
+            jsonEntity.setAttributes(json);
+            return jsonEntity;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create %s instance".formatted(elementType), e);
+        }
+    }
+
+    /**
+     * Converts a JSON entity to a JSON element.
+     */
+    public static <T extends IIdAssignable<UUID> & JsonElement<UUID>, E extends JsonBasedEntity<?>>
+    T toJsonElement(E jsonEntity, Class<T> jsonElementClass, ObjectMapper objectMapper) {
+        return objectMapper.convertValue(jsonEntity.getAttributes(), jsonElementClass);
+    }
+
+    /**
+     * Applies pagination to a list of entities.
+     */
+    public static <T> List<T> applyPagination(List<T> entities, PageRequest pageRequest) {
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min(start + pageRequest.getPageSize(), entities.size());
+        return start < entities.size() ? entities.subList(start, end) : List.of();
+    }
+
+    /**
+     * Applies criteria filtering to a list of entities.
+     */
+    public static <T> List<T> applyCriteriaFilter(List<T> entities, List<QueryCriteria> criteria, String elementType) {
+        if (criteria == null || criteria.isEmpty()) {
+            log.warn("No criteria provided, returning all entities");
+            return entities;
+        }
+        List<T> filtered = entities.stream()
+                .filter(entity -> evaluateCriteria(entity, criteria))
+                .collect(Collectors.toList());
+        log.debug("Found {} {} entities", filtered.size(), elementType);
+        return filtered;
     }
 }

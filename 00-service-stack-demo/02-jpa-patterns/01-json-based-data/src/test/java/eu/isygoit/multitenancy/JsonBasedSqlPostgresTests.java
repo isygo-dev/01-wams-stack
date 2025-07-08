@@ -496,11 +496,12 @@ class JsonBasedSqlPostgresTests {
     void shouldFilterByUserId() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
                         .header("X-Tenant-ID", TENANT_1)
-                        .param("criteria", "userId = user_one_updated"))
+                        .param("criteria", "userId = 'user_one_updated' & ip = '192.168.1.100'"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].userId").value("user_one_updated"));
+                .andExpect(jsonPath("$[0].userId").value("user_one_updated"))
+                .andExpect(jsonPath("$[0].ip").value("192.168.1.100"));
     }
 
     @Test
@@ -508,10 +509,10 @@ class JsonBasedSqlPostgresTests {
     void shouldFilterByDevice() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
                         .header("X-Tenant-ID", TENANT_1)
-                        .param("criteria", "device ~ Device2"))
+                        .param("criteria", "device ~ Device"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1)); // batch_user_2 and batch_user_3
+                .andExpect(jsonPath("$.length()").value(3)); // batch_user_2 and batch_user_3
     }
 
     @Test

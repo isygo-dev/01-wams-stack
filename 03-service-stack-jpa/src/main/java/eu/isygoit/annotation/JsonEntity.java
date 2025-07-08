@@ -1,4 +1,6 @@
-package eu.isygoit.model.json;
+package eu.isygoit.annotation;
+
+import eu.isygoit.model.json.JsonBasedEntity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
