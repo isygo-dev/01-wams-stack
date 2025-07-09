@@ -27,8 +27,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Integration tests for DISCRIMINATOR multitenancy strategy.
- * Verifies tenant isolation via tenant ID filtering on a shared table.
+ * Integration tests for validating JSON-embedded UserLoginEventDto entity operations.
+ * Tests focus on CRUD operations and data integrity of the JSON entity in a multitenant environment.
  */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=update",
@@ -49,12 +49,12 @@ class JsonBasedSqlPostgresTests {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-            .withDatabaseName("postgres") // initial database
+            .withDatabaseName("postgres")
             .withUsername("postgres")
             .withPassword("root")
-            .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
+            .withInitScript("db/pg_init-multi-db.sql");
 
-    // Test data storage
+    // Test data storage for JSON entities
     private static UUID tenant1_userLoginId;
     private static UUID tenant2_userLoginId;
     private static UserLoginEventDto tenant1_userLogin;
@@ -73,14 +73,12 @@ class JsonBasedSqlPostgresTests {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
+        // Configure database connection properties for PostgreSQL
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
-
         String tenants = baseUrl.replace("/postgres", "/tenants");
-
         registry.add("multitenancy.tenants[0].id", () -> "tenants");
         registry.add("multitenancy.tenants[0].url", () -> tenants);
         registry.add("multitenancy.tenants[0].username", postgres::getUsername);
@@ -88,13 +86,19 @@ class JsonBasedSqlPostgresTests {
     }
 
     /**
-     * Initialize database schema for tenant1 and tenant2 before all tests.
+     * Sets up the database schema for testing JSON entity operations.
      */
     @BeforeAll
     static void initSharedSchema(@Autowired ITenantService tenantService) {
         tenantService.initializeTenantSchema("public");
     }
 
+    /**
+     * Builds a UserLoginEventDto with default values for testing.
+     *
+     * @param userId The user ID for the JSON entity.
+     * @return Configured UserLoginEventDto.
+     */
     private UserLoginEventDto buildDto(String userId) {
         return UserLoginEventDto.builder()
                 .userId(userId)
@@ -103,6 +107,13 @@ class JsonBasedSqlPostgresTests {
                 .build();
     }
 
+    /**
+     * Builds a UserLoginEventDto with specified values for testing.
+     * @param userId The user ID for the JSON entity.
+     * @param ip The IP address for the JSON entity.
+     * @param device The device name for the JSON entity.
+     * @return Configured UserLoginEventDto.
+     */
     private UserLoginEventDto buildDto(String userId, String ip, String device) {
         return UserLoginEventDto.builder()
                 .userId(userId)
@@ -113,6 +124,9 @@ class JsonBasedSqlPostgresTests {
 
     // === CONFIGURATION TESTS ===
 
+    /**
+     * Verifies the multitenancy mode is set to GDM for JSON entity tests.
+     */
     @Test
     @Order(0)
     void shouldValidateDiscriminatorMode() {
@@ -121,6 +135,10 @@ class JsonBasedSqlPostgresTests {
 
     // === CREATE TESTS ===
 
+    /**
+     * Tests creation of a single UserLoginEventDto JSON entity for tenant1.
+     * Validates that the entity is correctly serialized and stored.
+     */
     @Test
     @Order(1)
     void shouldCreateLoginEventForTenant1() throws Exception {
@@ -141,6 +159,10 @@ class JsonBasedSqlPostgresTests {
         Assertions.assertNotNull(tenant1_userLoginId);
     }
 
+    /**
+     * Tests creation of a single UserLoginEventDto JSON entity for tenant2.
+     * Ensures unique ID generation and correct JSON serialization.
+     */
     @Test
     @Order(2)
     void shouldCreateLoginEventForTenant2() throws Exception {
@@ -162,6 +184,10 @@ class JsonBasedSqlPostgresTests {
         Assertions.assertNotEquals(tenant1_userLoginId, tenant2_userLoginId);
     }
 
+    /**
+     * Tests batch creation of multiple UserLoginEventDto JSON entities for tenant1.
+     * Verifies correct serialization and storage of multiple entities.
+     */
     @Test
     @Order(3)
     void shouldCreateBatchLoginEventsForTenant1() throws Exception {
@@ -192,6 +218,10 @@ class JsonBasedSqlPostgresTests {
         tenant1_batchIds.forEach(Assertions::assertNotNull);
     }
 
+    /**
+     * Tests batch creation of multiple UserLoginEventDto JSON entities for tenant2.
+     * Ensures correct JSON serialization and unique ID assignment.
+     */
     @Test
     @Order(4)
     void shouldCreateBatchLoginEventsForTenant2() throws Exception {
@@ -222,6 +252,10 @@ class JsonBasedSqlPostgresTests {
 
     // === READ TESTS ===
 
+    /**
+     * Tests retrieval of a single UserLoginEventDto JSON entity for tenant1.
+     * Verifies accurate deserialization of JSON data.
+     */
     @Test
     @Order(5)
     void shouldRetrieveOwnDataForTenant1() throws Exception {
@@ -234,6 +268,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$.device").value(tenant1_userLogin.getDevice()));
     }
 
+    /**
+     * Tests retrieval of a single UserLoginEventDto JSON entity for tenant2.
+     * Ensures correct JSON deserialization and data integrity.
+     */
     @Test
     @Order(6)
     void shouldRetrieveOwnDataForTenant2() throws Exception {
@@ -246,6 +284,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$.device").value(tenant2_userLogin.getDevice()));
     }
 
+    /**
+     * Tests that tenant2 cannot access tenant1's UserLoginEventDto JSON entity.
+     * Validates data isolation in JSON entity retrieval.
+     */
     @Test
     @Order(7)
     void shouldNotRetrieveTenant1DataFromTenant2() throws Exception {
@@ -254,6 +296,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Tests that tenant1 cannot access tenant2's UserLoginEventDto JSON entity.
+     * Ensures JSON entity isolation across tenants.
+     */
     @Test
     @Order(8)
     void shouldNotRetrieveTenant2DataFromTenant1() throws Exception {
@@ -262,6 +308,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Tests retrieval of all UserLoginEventDto JSON entities for tenant1.
+     * Verifies correct deserialization and count of JSON entities.
+     */
     @Test
     @Order(9)
     void shouldFindAllForTenant1() throws Exception {
@@ -276,6 +326,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$[?(@.userId == 'batch_user_3')]").exists());
     }
 
+    /**
+     * Tests retrieval of all UserLoginEventDto JSON entities for tenant2.
+     * Confirms accurate JSON deserialization and entity count.
+     */
     @Test
     @Order(10)
     void shouldFindAllForTenant2() throws Exception {
@@ -289,6 +343,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$[?(@.userId == 'batch_user_b')]").exists());
     }
 
+    /**
+     * Tests paginated retrieval of UserLoginEventDto JSON entities for tenant1.
+     * Validates correct JSON deserialization and pagination logic.
+     */
     @Test
     @Order(11)
     void shouldFindAllWithPagination() throws Exception {
@@ -299,6 +357,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
+    /**
+     * Tests counting UserLoginEventDto JSON entities for tenant1.
+     * Ensures accurate count of stored JSON entities.
+     */
     @Test
     @Order(12)
     void shouldGetCountForTenant1() throws Exception {
@@ -308,6 +370,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(content().string("4"));
     }
 
+    /**
+     * Tests counting UserLoginEventDto JSON entities for tenant2.
+     * Verifies correct count of JSON entities.
+     */
     @Test
     @Order(13)
     void shouldGetCountForTenant2() throws Exception {
@@ -317,6 +383,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(content().string("3"));
     }
 
+    /**
+     * Tests retrieval of all UserLoginEventDto JSON entities with full details for tenant1.
+     * Confirms complete JSON data deserialization.
+     */
     @Test
     @Order(14)
     void shouldFindAllFullData() throws Exception {
@@ -329,6 +399,10 @@ class JsonBasedSqlPostgresTests {
 
     // === UPDATE TESTS ===
 
+    /**
+     * Tests updating a UserLoginEventDto JSON entity for tenant1.
+     * Validates correct JSON serialization and data update.
+     */
     @Test
     @Order(15)
     void shouldUpdateLoginEventForTenant1() throws Exception {
@@ -346,6 +420,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$.device").value("Updated Device"));
     }
 
+    /**
+     * Tests that tenant2 cannot update tenant1's UserLoginEventDto JSON entity.
+     * Ensures JSON entity isolation during updates.
+     */
     @Test
     @Order(16)
     void shouldNotUpdateTenant1DataFromTenant2() throws Exception {
@@ -359,6 +437,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Tests updating a UserLoginEventDto JSON entity for tenant2.
+     * Verifies JSON serialization and successful update.
+     */
     @Test
     @Order(17)
     void shouldUpdateLoginEventForTenant2() throws Exception {
@@ -378,28 +460,33 @@ class JsonBasedSqlPostgresTests {
 
     // === DELETE TESTS ===
 
+    /**
+     * Tests deletion of a UserLoginEventDto JSON entity for tenant1.
+     * Verifies successful deletion and updated entity count.
+     */
     @Test
     @Order(18)
     void shouldDeleteLoginEventForTenant1() throws Exception {
-        // Delete one of the batch items
         UUID toDelete = tenant1_batchIds.get(0);
 
         mockMvc.perform(delete(BASE_URL + "/" + toDelete)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isNoContent());
 
-        // Verify it's deleted
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isNotFound());
 
-        // Verify count is reduced
         mockMvc.perform(get(BASE_URL + "/count")
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
 
+    /**
+     * Tests that tenant2 cannot delete tenant1's UserLoginEventDto JSON entity.
+     * Ensures JSON entity isolation during deletion.
+     */
     @Test
     @Order(19)
     void shouldNotDeleteTenant1DataFromTenant2() throws Exception {
@@ -409,12 +496,15 @@ class JsonBasedSqlPostgresTests {
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isNotFound());
 
-        // Verify it still exists in tenant1
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk());
     }
 
+    /**
+     * Tests deletion of a UserLoginEventDto JSON entity for tenant2.
+     * Confirms successful deletion and updated entity count.
+     */
     @Test
     @Order(20)
     void shouldDeleteLoginEventForTenant2() throws Exception {
@@ -424,12 +514,10 @@ class JsonBasedSqlPostgresTests {
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isNoContent());
 
-        // Verify it's deleted
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isNotFound());
 
-        // Verify count is reduced
         mockMvc.perform(get(BASE_URL + "/count")
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isOk())
@@ -438,6 +526,10 @@ class JsonBasedSqlPostgresTests {
 
     // === ERROR HANDLING TESTS ===
 
+    /**
+     * Tests rejection of a UserLoginEventDto creation request without a tenant header.
+     * Validates JSON entity creation error handling.
+     */
     @Test
     @Order(21)
     void shouldRejectRequestWithoutTenantHeader() throws Exception {
@@ -449,6 +541,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Tests rejection of a UserLoginEventDto creation with an invalid tenant ID.
+     * Ensures proper JSON entity validation.
+     */
     @Test
     @Order(22)
     void shouldRejectRequestWithInvalidTenant() throws Exception {
@@ -461,6 +557,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Tests retrieval of a non-existent UserLoginEventDto JSON entity.
+     * Verifies handling of missing JSON entities.
+     */
     @Test
     @Order(23)
     void shouldHandleNonExistentId() throws Exception {
@@ -471,6 +571,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Tests handling of an invalid ID format for UserLoginEventDto retrieval.
+     * Ensures robust JSON entity ID validation.
+     */
     @Test
     @Order(24)
     void shouldHandleInvalidIdFormat() throws Exception {
@@ -479,6 +583,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Tests rejection of an empty batch creation request for UserLoginEventDto.
+     * Validates JSON entity batch creation error handling.
+     */
     @Test
     @Order(25)
     void shouldHandleEmptyBatchCreation() throws Exception {
@@ -491,6 +599,10 @@ class JsonBasedSqlPostgresTests {
 
     // === FILTERING TESTS ===
 
+    /**
+     * Tests filtering UserLoginEventDto JSON entities by userId and ip for tenant1.
+     * Verifies accurate JSON entity filtering.
+     */
     @Test
     @Order(26)
     void shouldFilterByUserId() throws Exception {
@@ -504,6 +616,10 @@ class JsonBasedSqlPostgresTests {
                 .andExpect(jsonPath("$[0].ip").value("192.168.1.100"));
     }
 
+    /**
+     * Tests filtering UserLoginEventDto JSON entities by device for tenant1.
+     * Confirms correct JSON entity filtering and count.
+     */
     @Test
     @Order(27)
     void shouldFilterByDevice() throws Exception {
@@ -512,9 +628,13 @@ class JsonBasedSqlPostgresTests {
                         .param("criteria", "device ~ Device"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(3)); // batch_user_2 and batch_user_3
+                .andExpect(jsonPath("$.length()").value(3));
     }
 
+    /**
+     * Tests retrieval of available filter criteria for UserLoginEventDto JSON entities.
+     * Ensures JSON entity metadata is correctly returned.
+     */
     @Test
     @Order(28)
     void shouldGetFilterCriteria() throws Exception {
@@ -526,10 +646,13 @@ class JsonBasedSqlPostgresTests {
 
     // === CROSS-TENANT VALIDATION TESTS ===
 
+    /**
+     * Tests complete isolation of UserLoginEventDto JSON entities between tenants.
+     * Verifies no overlap in JSON entity IDs across tenants.
+     */
     @Test
     @Order(29)
     void shouldEnsureCompleteDataIsolation() throws Exception {
-        // Get all data from tenant1
         MvcResult tenant1Result = mockMvc.perform(get(BASE_URL)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk())
@@ -538,7 +661,6 @@ class JsonBasedSqlPostgresTests {
         UserLoginEventDto[] tenant1Data = objectMapper.readValue(
                 tenant1Result.getResponse().getContentAsString(), UserLoginEventDto[].class);
 
-        // Get all data from tenant2
         MvcResult tenant2Result = mockMvc.perform(get(BASE_URL)
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isOk())
@@ -547,7 +669,6 @@ class JsonBasedSqlPostgresTests {
         UserLoginEventDto[] tenant2Data = objectMapper.readValue(
                 tenant2Result.getResponse().getContentAsString(), UserLoginEventDto[].class);
 
-        // Verify no data overlap
         List<UUID> tenant1Ids = Arrays.stream(tenant1Data)
                 .map(UserLoginEventDto::getId)
                 .toList();
@@ -555,68 +676,72 @@ class JsonBasedSqlPostgresTests {
                 .map(UserLoginEventDto::getId)
                 .toList();
 
-        // Assert no common IDs between tenants
         Assertions.assertTrue(tenant1Ids.stream().noneMatch(tenant2Ids::contains),
-                "Tenant data should be completely isolated");
+                "JSON entity data should be completely isolated");
         Assertions.assertTrue(tenant2Ids.stream().noneMatch(tenant1Ids::contains),
-                "Tenant data should be completely isolated");
+                "JSON entity data should be completely isolated");
     }
 
+    /**
+     * Tests final count integrity of UserLoginEventDto JSON entities for both tenants.
+     * Verifies accurate JSON entity counts after operations.
+     */
     @Test
     @Order(30)
     void shouldValidateTotalDataIntegrity() throws Exception {
-        // Verify final counts
         mockMvc.perform(get(BASE_URL + "/count")
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(content().string("3")); // 1 updated + 2 remaining batch
+                .andExpect(content().string("3"));
 
         mockMvc.perform(get(BASE_URL + "/count")
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isOk())
-                .andExpect(content().string("2")); // 1 updated + 1 remaining batch
+                .andExpect(content().string("2"));
     }
 
     // === CLEANUP TESTS ===
 
+    /**
+     * Tests cleanup of all UserLoginEventDto JSON entities for tenant1.
+     * Ensures all JSON entities are deleted and count is zero.
+     */
     @Test
     @Order(31)
     void shouldCleanupTenant1Data() throws Exception {
-        // Delete remaining data for tenant1
         mockMvc.perform(delete(BASE_URL + "/" + tenant1_userLoginId)
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isNoContent());
 
-        // Delete remaining batch items
         for (UUID id : tenant1_batchIds.subList(1, tenant1_batchIds.size())) {
             mockMvc.perform(delete(BASE_URL + "/" + id)
                             .header("X-Tenant-ID", TENANT_1))
                     .andExpect(status().isNoContent());
         }
 
-        // Verify empty
         mockMvc.perform(get(BASE_URL + "/count")
                         .header("X-Tenant-ID", TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(content().string("0"));
     }
 
+    /**
+     * Tests cleanup of all UserLoginEventDto JSON entities for tenant2.
+     * Verifies all JSON entities are deleted and count is zero.
+     */
     @Test
     @Order(32)
     void shouldCleanupTenant2Data() throws Exception {
-        // Delete remaining data for tenant2
         mockMvc.perform(delete(BASE_URL + "/" + tenant2_userLoginId)
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isNoContent());
 
-        // Delete remaining batch items
         for (UUID id : tenant2_batchIds.subList(1, tenant2_batchIds.size())) {
             mockMvc.perform(delete(BASE_URL + "/" + id)
                             .header("X-Tenant-ID", TENANT_2))
                     .andExpect(status().isNoContent());
         }
 
-        // Verify empty
         mockMvc.perform(get(BASE_URL + "/count")
                         .header("X-Tenant-ID", TENANT_2))
                 .andExpect(status().isOk())
