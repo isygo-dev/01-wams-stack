@@ -1,5 +1,8 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
+import eu.isygoit.com.rest.service.CrudServiceUtils;
+import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.*;
@@ -15,8 +18,6 @@ import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableReposito
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -37,11 +38,11 @@ import java.util.function.BiConsumer;
  * @param <R> the repository type (must extend JpaPagingAndSortingRepository)
  */
 @Slf4j
-public abstract class CrudService<I extends Serializable,
+public abstract class CrudTenantService<I extends Serializable,
         T extends IIdAssignable<I>,
         R extends JpaPagingAndSortingRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudTenantServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     private static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
@@ -102,380 +103,454 @@ public abstract class CrudService<I extends Serializable,
     }
 
     /**
-     * Counts all entities (non-tenant-specific).
+     * Counts entities for a specific tenant.
      *
-     * @return the total number of entities
+     * @param tenant the tenant identifier
+     * @return the number of entities for the tenant
      */
     @Override
     @Transactional(readOnly = true)
-    public Long count() {
-        validateNotTenantSpecific("count ");
-        log.info("Counting all {} entities", persistentClass.getSimpleName());
-        var count = repository().count();
-        log.debug("Count result: {}", count);
+    public Long count(String tenant) {
+        var jpaRepo = getTenantAssignableRepository();
+        log.info("Counting {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
+        var count = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.count()
+                : jpaRepo.countByTenantIgnoreCase(tenant);
+
+        log.debug("Count result for tenant {}: {}", tenant, count);
         return count;
     }
 
     /**
-     * Checks if an entity exists by ID (non-tenant-specific).
+     * Checks if an entity exists by ID for a specific tenant.
      *
-     * @param id the entity ID
-     * @return true if the entity exists
+     * @param tenant the tenant identifier
+     * @param id     the entity ID
+     * @return true if the entity exists for the tenant
      */
     @Override
     @Transactional(readOnly = true)
-    public boolean existsById(I id) {
-        validateNotTenantSpecific("existsById ");
-        log.info("Checking existence of {} with ID: {}", persistentClass.getSimpleName(), id);
-        var exists = repository().existsById(id);
-        log.debug("Existence check result for ID {}: {}", id, exists);
+    public boolean existsById(String tenant, I id) {
+        var jpaRepo = getTenantAssignableRepository();
+        log.info("Checking existence of {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
+        var exists = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.existsById(id)
+                : jpaRepo.existsByIdAndTenantIgnoreCase(id, tenant);
+
+        log.debug("Existence check result for ID {} and tenant {}: {}", id, tenant, exists);
         return exists;
     }
 
     /**
-     * Creates a single entity (non-tenant-specific).
+     * Creates a single entity for a specific tenant.
      *
+     * @param tenant the tenant identifier
      * @param object the entity to create
      * @return the created entity
      */
     @Override
     @Transactional
-    public T create(T object) {
-        validateNotTenantSpecific("create ");
+    public T create(String tenant, T object) {
+        var jpaRepo = getTenantAssignableRepository();
         validateObjectNotNull(object);
-        log.info("Creating {} entity", persistentClass.getSimpleName());
+        log.info("Creating {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Input entity: {}", object);
 
-        // Prepare entity
+        // Set tenant and prepare entity
+        ((ITenantAssignable) object).setTenant(tenant);
         assignCodeIfEmpty(object);
         var preparedObject = beforeCreate(object);
         log.debug("After pre-create hook: {}", preparedObject);
 
         // Save entity
-        var savedObject = repository().save(preparedObject);
+        var savedObject = jpaRepo.save(preparedObject);
         log.debug("Saved entity: {}", savedObject);
 
         // Post-create processing
-        var result = afterCreate(savedObject);
-        log.info("Successfully created {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+        var result = afterCreate((T) savedObject);
+        log.info("Successfully created {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
     }
 
     /**
-     * Creates multiple entities in bulk (non-tenant-specific).
+     * Creates multiple entities in bulk for a specific tenant.
      *
+     * @param tenant  the tenant identifier
      * @param objects the list of entities to create
      * @return the list of created entities
      */
     @Override
     @Transactional
-    public List<T> createBatch(List<T> objects) {
-        validateNotTenantSpecific("create ");
+    public List<T> createBatch(String tenant, List<T> objects) {
+        var jpaRepo = getTenantAssignableRepository();
         validateListNotEmpty(objects);
-        log.info("Creating {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Creating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
         // Process bulk creation in batch
-        var result = repository().saveAll(objects.stream()
-                .peek(obj -> log.debug("Preparing entity for creation: {}", obj))
+        var result = jpaRepo.saveAll(objects.stream()
+                .peek(obj -> {
+                    log.debug("Preparing entity for creation: {}", obj);
+                    ((ITenantAssignable) obj).setTenant(tenant);
+                })
                 .map(this::assignCodeIfEmpty)
                 .map(o -> beforeCreate((T) o))
                 .toList());
 
         var finalResult = result.stream()
-                .map(this::afterCreate)
+                .map(o -> afterCreate((T) o))
                 .toList();
-        log.info("Successfully created {} {} entities", finalResult.size(), persistentClass.getSimpleName());
+        log.info("Successfully created {} {} entities for tenant: {}",
+                finalResult.size(), persistentClass.getSimpleName(), tenant);
         return finalResult;
     }
 
     /**
-     * Creates and flushes a single entity (non-tenant-specific).
+     * Creates and flushes a single entity for a specific tenant.
      *
+     * @param tenant the tenant identifier
      * @param object the entity to create
      * @return the created entity
      */
     @Override
     @Transactional
-    public T createAndFlush(T object) {
-        validateNotTenantSpecific("createAndFlush ");
+    public T createAndFlush(String tenant, T object) {
+        var jpaRepo = getTenantAssignableRepository();
         validateObjectNotNull(object);
-        log.info("Creating and flushing {} entity", persistentClass.getSimpleName());
+        log.info("Creating and flushing {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Input entity: {}", object);
 
         // Prepare and save entity
+        ((ITenantAssignable) object).setTenant(tenant);
         assignCodeIfEmpty(object);
         var preparedObject = beforeCreate(object);
-        var savedObject = repository().saveAndFlush(preparedObject);
-        var result = afterCreate(savedObject);
-        log.info("Successfully created and flushed {} entity with ID: {}",
-                persistentClass.getSimpleName(), result.getId());
+        var savedObject = jpaRepo.saveAndFlush(preparedObject);
+        var result = afterCreate((T) savedObject);
+        log.info("Successfully created and flushed {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
     }
 
     /**
-     * Updates a single entity (non-tenant-specific).
+     * Updates a single entity for a specific tenant.
      *
+     * @param tenant the tenant identifier
      * @param object the entity to update
      * @return the updated entity
      */
     @Override
     @Transactional
-    public T update(T object) {
-        validateNotTenantSpecific("update ");
+    public T update(String tenant, T object) {
+        var jpaRepo = getTenantAssignableRepository();
         validateObjectNotNull(object);
         validateObjectIdNotNull(object);
-        log.info("Updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
 
-        // Preserve existing attributes and prepare update
+        // Validate tenant access
+        validateTenantAccess(tenant, object.getId());
+
+        // Preserve attributes and prepare update
         keepOriginalAttributes(object);
         assignCodeIfEmpty(object);
         var preparedObject = beforeUpdate(object);
         log.debug("After pre-update hook: {}", preparedObject);
 
         // Save updated entity
-        var updatedObject = repository().save(preparedObject);
-        var result = afterUpdate(updatedObject);
-        log.info("Successfully updated {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+        var updatedObject = jpaRepo.save(preparedObject);
+        var result = afterUpdate((T) updatedObject);
+        log.info("Successfully updated {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
     }
 
     /**
-     * Updates multiple entities in bulk (non-tenant-specific).
+     * Updates multiple entities in bulk for a specific tenant.
      *
+     * @param tenant  the tenant identifier
      * @param objects the list of entities to update
      * @return the list of updated entities
      */
     @Override
     @Transactional
-    public List<T> updateBatch(List<T> objects) {
-        validateNotTenantSpecific("update ");
+    public List<T> updateBatch(String tenant, List<T> objects) {
+        var jpaRepo = getTenantAssignableRepository();
         validateListNotEmpty(objects);
-        log.info("Updating {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
         // Process bulk update in batch
-        var result = repository().saveAll(objects.stream()
-                .peek(obj -> log.debug("Preparing entity for update: {}", obj))
+        var result = jpaRepo.saveAll(objects.stream()
+                .peek(obj -> {
+                    log.debug("Preparing entity for update: {}", obj);
+                    validateTenantAccess(tenant, obj.getId());
+                })
                 .map(this::keepOriginalAttributes)
                 .map(this::assignCodeIfEmpty)
                 .map(o -> beforeUpdate((T) o))
                 .toList());
 
         var finalResult = result.stream()
-                .map(this::afterUpdate)
+                .map(o -> afterUpdate((T) o))
                 .toList();
-        log.info("Successfully updated {} {} entities", finalResult.size(), persistentClass.getSimpleName());
+        log.info("Successfully updated {} {} entities for tenant: {}",
+                finalResult.size(), persistentClass.getSimpleName(), tenant);
         return finalResult;
     }
 
     /**
-     * Updates and flushes a single entity (non-tenant-specific).
+     * Updates and flushes a single entity for a specific tenant.
      *
+     * @param tenant the tenant identifier
      * @param object the entity to update
      * @return the updated entity
      */
     @Override
     @Transactional
-    public T updateAndFlush(T object) {
-        validateNotTenantSpecific("updateAndFlush ");
+    public T updateAndFlush(String tenant, T object) {
+        var jpaRepo = getTenantAssignableRepository();
         validateObjectNotNull(object);
         validateObjectIdNotNull(object);
-        log.info("Updating and flushing {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.info("Updating and flushing {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), object.getId(), tenant);
+
+        // Validate tenant access and entity existence
+        if (!jpaRepo.existsById(object.getId())) {
+            log.error("Entity with ID: {} not found for tenant: {}", object.getId(), tenant);
+            throw new ObjectNotFoundException(" with id: " + object.getId() + " for tenant: " + tenant);
+        }
+        validateTenantAccess(tenant, object.getId());
 
         // Prepare and save entity
         keepOriginalAttributes(object);
         assignCodeIfEmpty(object);
         var preparedObject = beforeUpdate(object);
-        var updatedObject = repository().saveAndFlush(preparedObject);
-        var result = afterUpdate(updatedObject);
-        log.info("Successfully updated and flushed {} entity with ID: {}",
-                persistentClass.getSimpleName(), result.getId());
+        var updatedObject = jpaRepo.saveAndFlush(preparedObject);
+        var result = afterUpdate((T) updatedObject);
+        log.info("Successfully updated and flushed {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
     }
 
     /**
-     * Deletes multiple entities in bulk (non-tenant-specific).
+     * Deletes a single entity by ID for a specific tenant.
      *
-     * @param objects the list of entities to delete
+     * @param tenant the tenant identifier
+     * @param id     the entity ID
      */
     @Override
     @Transactional
-    public void deleteBatch(List<T> objects) {
-        validateNotTenantSpecific("delete ");
-        validateListNotEmpty(objects);
-        log.info("Deleting {} {} entities", objects.size(), persistentClass.getSimpleName());
-
-        // Process deletion in batch
-        beforeDelete(objects);
-        objects.forEach(this::handleEntityDeletion);
-        repository().deleteAllInBatch(objects);
-        afterDelete(objects);
-        log.info("Successfully deleted {} {} entities", objects.size(), persistentClass.getSimpleName());
-    }
-
-    /**
-     * Deletes a single entity by ID (non-tenant-specific).
-     *
-     * @param id the entity ID
-     */
-    @Override
-    @Transactional
-    public void delete(I id) {
-        validateNotTenantSpecific("delete ");
+    public void delete(String tenant, I id) {
+        var jpaRepo = getTenantAssignableRepository();
         if (id == null) {
             log.error("Null ID provided for delete operation");
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
+            throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
         }
-        log.info("Deleting {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.info("Deleting {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
 
         // Process deletion
-        repository().findById(id).ifPresentOrElse(object -> {
+        validateTenantAccess(tenant, id).ifPresentOrElse(object -> {
             beforeDelete(id);
-            handleEntityDeletion(object);
+            handleEntityDeletion((T) object);
             afterDelete(id);
-            log.info("Successfully deleted {} entity with ID: {}", persistentClass.getSimpleName(), id);
+            log.info("Successfully deleted {} entity with ID: {} for tenant: {}",
+                    persistentClass.getSimpleName(), id, tenant);
         }, () -> {
-            log.error("Entity with ID: {} not found", id);
+            log.error("Entity with ID: {} not found for tenant: {}", id, tenant);
             throw new ObjectNotFoundException(" with id: " + id);
         });
     }
 
     /**
-     * Retrieves all entities (non-tenant-specific).
+     * Deletes multiple entities in bulk for a specific tenant.
      *
+     * @param tenant  the tenant identifier
+     * @param objects the list of entities to delete
+     */
+    @Override
+    @Transactional
+    public void deleteBatch(String tenant, List<T> objects) {
+        var jpaRepo = getTenantAssignableRepository();
+        validateListNotEmpty(objects);
+        log.info("Deleting {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
+
+        // Validate tenant access and process deletion in batch
+        beforeDelete(objects);
+        objects.forEach(obj -> validateTenantAccess(tenant, obj.getId()));
+        objects.forEach(this::handleEntityDeletion);
+        jpaRepo.deleteAllInBatch(objects);
+        afterDelete(objects);
+        log.info("Successfully deleted {} {} entities for tenant: {}",
+                objects.size(), persistentClass.getSimpleName(), tenant);
+    }
+
+    /**
+     * Retrieves all entities for a specific tenant.
+     *
+     * @param tenant the tenant identifier
      * @return the list of entities
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll() {
-        validateNotTenantSpecific("findAll ");
-        log.info("Retrieving all {} entities", persistentClass.getSimpleName());
-        var list = repository().findAll();
+    public List<T> findAll(String tenant) {
+        var jpaRepo = getTenantAssignableRepository();
+        log.info("Retrieving all {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
+        var list = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.findAll()
+                : jpaRepo.findByTenantIgnoreCase(tenant);
         var result = CollectionUtils.isEmpty(list) ? List.<T>of() : afterFindAll(list);
-        log.debug("Retrieved {} {} entities", result.size(), persistentClass.getSimpleName());
+        log.debug("Retrieved {} {} entities for tenant: {}", result.size(), persistentClass.getSimpleName(), tenant);
         return result;
     }
 
     /**
-     * Retrieves paginated entities (non-tenant-specific).
+     * Retrieves paginated entities for a specific tenant.
      *
+     * @param tenant   the tenant identifier
      * @param pageable the pagination parameters
      * @return the list of entities
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(Pageable pageable) {
-        validateNotTenantSpecific("findAll ");
-        log.info("Retrieving paginated {} entities", persistentClass.getSimpleName());
+    public List<T> findAll(String tenant, Pageable pageable) {
+        var jpaRepo = getTenantAssignableRepository();
+        log.info("Retrieving paginated {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Pageable: {}", pageable);
-        var content = repository().findAll(pageable).getContent();
-        var result = content.isEmpty() ? List.<T>of() : afterFindAll(content);
-        log.debug("Retrieved {} paginated {} entities", result.size(), persistentClass.getSimpleName());
+        var page = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.findAll(pageable)
+                : jpaRepo.findByTenantIgnoreCase(tenant, pageable);
+
+        var result = page.isEmpty() ? List.<T>of() : afterFindAll(page.getContent());
+        log.debug("Retrieved {} paginated {} entities for tenant: {}",
+                result.size(), persistentClass.getSimpleName(), tenant);
         return result;
     }
 
     /**
-     * Retrieves an entity by ID (non-tenant-specific).
+     * Retrieves an entity by ID for a specific tenant.
      *
-     * @param id the entity ID
+     * @param tenant the tenant identifier
+     * @param id     the entity ID
      * @return an Optional containing the entity if found
      * @throws BadArgumentException if ID is null
      */
     @Override
     @Transactional(readOnly = true)
-    public Optional<T> findById(I id) {
-        validateNotTenantSpecific("findById ");
+    public Optional<T> findById(String tenant, I id) {
+        var jpaRepo = getTenantAssignableRepository();
         if (id == null) {
             log.error("Null ID provided for findById operation");
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
-        log.info("Retrieving {} entity with ID: {}", persistentClass.getSimpleName(), id);
-        var result = repository().findById(id)
-                .map(this::afterFindById);
-        log.debug("Find by ID result for ID {}: {}", id, result.isPresent() ? "found" : "not found");
+        log.info("Retrieving {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
+        var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.findById(id)
+                .map(o -> afterFindById((T) o))
+                : jpaRepo.findById(id)
+                .filter(t -> ((ITenantAssignable) t).getTenant().equals(tenant))
+                .map(o -> afterFindById((T) o));
+
+        log.debug("Find by ID result for ID {} and tenant {}: {}", id, tenant, result.isPresent() ? "found" : "not found");
         return result;
     }
 
     /**
-     * Saves or updates an entity (non-tenant-specific).
+     * Saves or updates an entity for a specific tenant.
      *
+     * @param tenant the tenant identifier
      * @param object the entity to save or update
      * @return the saved or updated entity
      */
     @Override
     @Transactional
-    public T saveOrUpdate(T object) {
-        validateNotTenantSpecific("saveOrUpdate ");
+    public T saveOrUpdate(String tenant, T object) {
+        var jpaRepo = getTenantAssignableRepository();
         validateObjectNotNull(object);
-        log.info("Saving or updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
-        var result = object.getId() == null ? create(object) : update(object);
-        log.info("Successfully saved or updated {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+        log.info("Saving or updating {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), object.getId(), tenant);
+        ((ITenantAssignable) object).setTenant(tenant);
+        var result = object.getId() == null ? create(tenant, object) : update(tenant, object);
+        log.info("Successfully saved or updated {} entity with ID: {} for tenant: {}",
+                persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
     }
 
     /**
-     * Saves or updates multiple entities in bulk (non-tenant-specific).
+     * Saves or updates multiple entities in bulk for a specific tenant.
      *
+     * @param tenant  the tenant identifier
      * @param objects the list of entities to save or update
      * @return the list of saved or updated entities
      */
     @Override
     @Transactional
-    public List<T> saveOrUpdate(List<T> objects) {
-        validateNotTenantSpecific("saveOrUpdate ");
+    public List<T> saveOrUpdate(String tenant, List<T> objects) {
+        var jpaRepo = getTenantAssignableRepository();
         validateListNotEmpty(objects);
-        log.info("Saving or updating {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Saving or updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
         // Process save or update in batch
-        var result = repository().saveAll(objects.stream()
-                .peek(obj -> log.debug("Processing save or update for entity: {}", obj))
-                .map(obj -> obj.getId() == null ? create(obj) : update(obj))
+        var result = jpaRepo.saveAll(objects.stream()
+                .peek(obj -> {
+                    log.debug("Processing save or update for entity: {}", obj);
+                    ((ITenantAssignable) obj).setTenant(tenant);
+                })
+                .map(obj -> obj.getId() == null ? create(tenant, obj) : update(tenant, obj))
                 .toList());
-        log.info("Successfully saved or updated {} {} entities", result.size(), persistentClass.getSimpleName());
+        log.info("Successfully saved or updated {} {} entities for tenant: {}",
+                result.size(), persistentClass.getSimpleName(), tenant);
         return result;
     }
 
     /**
-     * Retrieves entities filtered by criteria (non-tenant-specific).
+     * Retrieves entities filtered by criteria for a specific tenant.
      *
+     * @param tenant   the tenant identifier
      * @param criteria the list of filter criteria
      * @return the list of filtered entities
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
-        validateNotTenantSpecific("findAllByCriteriaFilter ");
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
+        var jpaRepo = getTenantAssignableRepository();
         if (CollectionUtils.isEmpty(criteria)) {
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
             throw new EmptyCriteriaFilterException("Criteria filter list is null or empty");
         }
-        log.info("Retrieving {} entities by criteria", persistentClass.getSimpleName());
+        log.info("Retrieving {} entities by criteria for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Criteria: {}", criteria);
-        var specification = CriteriaHelper.buildSpecification(null, criteria, persistentClass);
-        var result = repository().findAll((Sort) specification);
-        log.debug("Retrieved {} filtered {} entities", result.size(), persistentClass.getSimpleName());
+        var specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
+        var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.findAll(specification)
+                : jpaRepo.findAll(specification);
+
+        log.debug("Retrieved {} filtered {} entities for tenant: {}", result.size(), persistentClass.getSimpleName(), tenant);
         return result;
     }
 
     /**
-     * Retrieves paginated entities filtered by criteria (non-tenant-specific).
+     * Retrieves paginated entities filtered by criteria for a specific tenant.
      *
+     * @param tenant      the tenant identifier
      * @param criteria    the list of filter criteria
      * @param pageRequest the pagination parameters
      * @return the list of filtered entities
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
-        validateNotTenantSpecific("findAllByCriteriaFilter ");
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+        var jpaRepo = getTenantAssignableRepository();
         if (CollectionUtils.isEmpty(criteria)) {
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
             throw new EmptyCriteriaFilterException("Criteria filter list is null or empty");
         }
-        log.info("Retrieving paginated {} entities by criteria", persistentClass.getSimpleName());
+        log.info("Retrieving paginated {} entities by criteria for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Criteria: {}, PageRequest: {}", criteria, pageRequest);
-        Specification<T> specification = CriteriaHelper.buildSpecification(null, criteria, persistentClass);
-        var result = repository().findAll(specification, pageRequest).getContent();
-        log.debug("Retrieved {} filtered paginated {} entities", result, persistentClass.getSimpleName());
+        var specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
+        var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? jpaRepo.findAll(specification, pageRequest).getContent()
+                : jpaRepo.findAll(specification, pageRequest).getContent();
+
+        log.debug("Retrieved {} filtered paginated {} entities for tenant: {}",
+                result.size(), persistentClass.getSimpleName(), tenant);
         return result;
     }
 

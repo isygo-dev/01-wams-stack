@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.exception.InvalidTenantException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.JsonBasedEntityHelper;

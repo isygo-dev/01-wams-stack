@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.InjectCodeGen;
 import eu.isygoit.annotation.InjectCodeGenKms;
 import eu.isygoit.app.ApplicationContextService;
+import eu.isygoit.com.rest.service.tenancy.CrudTenantService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
@@ -36,10 +37,10 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodeService<I extends Serializable,
+public abstract class CodeAssignableService<I extends Serializable,
         T extends IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CrudService<I, T, R> implements ICodeAssignableService<I, T> {
+        extends CrudTenantService<I, T, R> implements ICodeAssignableService<I, T> {
 
     private static final Map<String, NextCodeModel> inMemoryNextCodes = new HashMap<>();
 

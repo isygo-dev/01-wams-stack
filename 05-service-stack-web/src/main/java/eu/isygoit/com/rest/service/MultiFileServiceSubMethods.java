@@ -34,7 +34,7 @@ public abstract class MultiFileServiceSubMethods<I extends Serializable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>>
-        extends CodeService<I, T, R> {
+        extends CodeAssignableService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;

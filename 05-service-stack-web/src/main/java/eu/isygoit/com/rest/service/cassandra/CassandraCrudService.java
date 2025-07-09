@@ -1,6 +1,7 @@
 package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.*;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.BadArgumentException;
@@ -25,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -39,7 +41,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         T extends IIdAssignable<I>,
         R extends CassandraRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudServiceMethods<I, T>, ICrudTenantServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
@@ -48,16 +50,6 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Transactional(readOnly = true)
     public Long count() {
         return repository().count();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long count(String tenant) {
-        if (repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
-            return jpaPagingAndSortingTenantAssignableRepository.countByTenantIgnoreCase(tenant);
-        } else {
-            throw new UnsupportedOperationException("this is not a SAS entity/repository: " + repository().getClass().getSimpleName());
-        }
     }
 
     @Override
@@ -145,56 +137,6 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional
-    public void deleteBatch(String senderTenant, List<T> objects) {
-        validateListNotEmpty(objects);
-
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
-            objects.forEach(object -> {
-                if (!senderTenant.equals(((ITenantAssignable) object).getTenant())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
-                }
-            });
-        }
-
-        this.beforeDelete(objects);
-        repository().deleteAll(objects);
-        this.afterDelete(objects);
-    }
-
-    @Override
-    @Transactional
-    public void delete(String senderTenant, I id) {
-        if (Objects.isNull(id)) {
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
-        }
-
-        Optional<T> optional = this.findById(id);
-        if (optional.isPresent()) {
-            T object = optional.get();
-            if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                    && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
-                if (!senderTenant.equals(((ITenantAssignable) object).getTenant())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
-                }
-            }
-
-            this.beforeDelete(id);
-            if (object instanceof CancelableEntity cancelable) {
-                cancelable.setCheckCancel(true);
-                cancelable.setCancelDate(new Date());
-                this.update(object);
-            } else {
-                repository().deleteById(id);
-            }
-            this.afterDelete(id);
-        } else {
-            throw new ObjectNotFoundException(" with id: " + id);
-        }
-    }
-
-    @Override
-    @Transactional
     public void deleteBatch(List<T> objects) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
             throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
@@ -221,13 +163,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         if (optional.isPresent()) {
             T object = optional.get();
             this.beforeDelete(id);
-            if (object instanceof CancelableEntity cancellable) {
-                cancellable.setCheckCancel(true);
-                cancellable.setCancelDate(new Date());
-                this.update(object);
-            } else {
-                repository().deleteById(id);
-            }
+            handleEntityDeletion(object);
             this.afterDelete(id);
         } else {
             throw new ObjectNotFoundException("with id " + id);
@@ -280,34 +216,6 @@ public abstract class CassandraCrudService<I extends Serializable,
         }
 
         return this.afterFindAll(page.getContent());
-    }
-
-    @Override
-    public List<T> findAll(String tenant) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
-            List<T> list = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant);
-            if (CollectionUtils.isEmpty(list)) {
-                return Collections.EMPTY_LIST;
-            }
-            return this.afterFindAll(list);
-        } else {
-            throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
-        }
-    }
-
-    @Override
-    public List<T> findAll(String tenant, Pageable pageable) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
-            Page<T> page = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant, pageable);
-            if (page.isEmpty()) {
-                return Collections.EMPTY_LIST;
-            }
-            return this.afterFindAll(page.getContent());
-        } else {
-            throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
-        }
     }
 
     @Override
@@ -370,12 +278,29 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
+    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
         return null;
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         return null;
+    }
+
+
+    /**
+     * Handles entity deletion, supporting soft deletion for CancelableEntity.
+     *
+     * @param object the entity to delete
+     */
+    private void handleEntityDeletion(T object) {
+        log.debug("Handling deletion for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
+            cancelable.setCheckCancel(true);
+            cancelable.setCancelDate(Date.from(Instant.now()));
+            repository().save(object);
+        } else {
+            repository().delete(object);
+        }
     }
 }

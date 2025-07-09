@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.controller.impl.tenancy;
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;

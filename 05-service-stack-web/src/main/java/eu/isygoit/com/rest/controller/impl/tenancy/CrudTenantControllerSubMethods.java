@@ -5,7 +5,7 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;

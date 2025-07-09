@@ -26,7 +26,7 @@ import java.io.Serializable;
 public abstract class FileServiceSubMethods<I extends Serializable,
         T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CodeService<I, T, R> {
+        extends CodeAssignableService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;

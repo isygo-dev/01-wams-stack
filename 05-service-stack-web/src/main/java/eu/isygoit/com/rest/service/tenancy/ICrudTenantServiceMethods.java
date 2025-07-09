@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.jwt.filter.QueryCriteria;

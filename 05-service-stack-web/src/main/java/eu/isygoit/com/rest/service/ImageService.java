@@ -35,7 +35,7 @@ import java.nio.file.StandardOpenOption;
 @Slf4j
 public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CodeService<I, T, R>
+        extends CodeAssignableService<I, T, R>
         implements IImageServiceMethods<I, T> {
 
     // Persistent class derived via reflection for exception messages etc.
