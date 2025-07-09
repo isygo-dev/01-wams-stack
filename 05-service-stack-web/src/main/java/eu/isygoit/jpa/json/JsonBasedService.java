@@ -6,7 +6,7 @@ import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.exception.WrongCriteriaFilterException;
+import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;

@@ -1,10 +1,9 @@
-package eu.isygoit.jpa.json;
+package eu.isygoit.helper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
-import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;

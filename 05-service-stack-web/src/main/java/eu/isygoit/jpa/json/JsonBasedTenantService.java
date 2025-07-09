@@ -7,6 +7,7 @@ import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudTenantServiceMethods;
 import eu.isygoit.exception.InvalidTenantException;
 import eu.isygoit.exception.ObjectNotFoundException;
+import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
