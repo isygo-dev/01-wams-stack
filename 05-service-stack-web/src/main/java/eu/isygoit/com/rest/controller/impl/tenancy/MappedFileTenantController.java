@@ -1,18 +1,19 @@
-package eu.isygoit.com.rest.controller.impl.file;
+package eu.isygoit.com.rest.controller.impl.tenancy;
 
 import eu.isygoit.com.rest.api.IMappedFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.IFileServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.IFileTenantServiceMethods;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -33,10 +34,11 @@ import java.io.Serializable;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable<I> & IFileEntity,
+public abstract class MappedFileTenantController<I extends Serializable,
+        T extends IIdAssignable<I> & IFileEntity & ITenantAssignable,
         M extends IIdAssignableDto<I> & IFileUploadDto,
         F extends M,
-        S extends IFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
+        S extends IFileTenantServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 
@@ -58,7 +60,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
                                                  Long version) {
         log.info("Download file request received");
         try {
-            Resource resource = crudService().downloadFile(id, version);
+            Resource resource = crudService().downloadFile(requestContext.getSenderTenant(), id, version);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, "multipart/form-data")
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")

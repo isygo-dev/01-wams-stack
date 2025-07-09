@@ -16,8 +16,7 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICodeAssignableService<I extends Serializable, T extends IIdAssignable<I>>
-        extends ICrudServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+public interface ICodeAssignableService<I extends Serializable, T extends IIdAssignable<I>> {
 
     /**
      * Init code generator next code model.

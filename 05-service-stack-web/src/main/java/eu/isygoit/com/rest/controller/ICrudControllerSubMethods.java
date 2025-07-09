@@ -24,7 +24,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
         T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I>,
         F extends M,
-        S extends ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudServiceUtils<I, T>>
         extends ICrudControllerEvents<I, T, M, F> {
 
     /**

@@ -1,9 +1,8 @@
-package eu.isygoit.com.rest.controller.impl.file;
+package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedImageApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
-import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
@@ -48,7 +47,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                                          MultipartFile file) {
         log.info("Upload image request received");
         try {
-            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderTenant(), id, file)));
+            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -82,7 +81,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
             }
             dto = this.beforeCreate(dto);
             return ResponseFactory.responseOk(mapper().entityToDto(
-                    this.afterCreate(crudService().createWithImage(requestContext.getSenderTenant(), mapper().dtoToEntity(dto), file))));
+                    this.afterCreate(crudService().createWithImage(mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: create with image : {} ", e);
             return getBackExceptionResponse(e);
@@ -98,7 +97,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
         try {
             dto = this.beforeUpdate(dto);
             return ResponseFactory.responseOk(mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithImage(requestContext.getSenderTenant(), mapper().dtoToEntity(dto), file))));
+                    this.afterUpdate(crudService().updateWithImage(mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: update wth image : {} ", e);
             return getBackExceptionResponse(e);

@@ -47,6 +47,9 @@ public abstract class CrudControllerSubMethods<
 
     private final Class<T> entityClass;
 
+    /**
+     * Instantiates a new Crud controller sub methods.
+     */
     @SuppressWarnings("unchecked")
     protected CrudControllerSubMethods() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass()

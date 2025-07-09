@@ -33,8 +33,17 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         extends ControllerExceptionHandler
         implements ICrudControllerUtils<I, T, M, F, S> {
 
+    /**
+     * The constant DEFAULT_PAGE_SIZE.
+     */
     protected static final int DEFAULT_PAGE_SIZE = 50;
+    /**
+     * The constant MAX_PAGE_SIZE.
+     */
     protected static final int MAX_PAGE_SIZE = 1000;
+    /**
+     * The constant CREATE_DATE_FIELD.
+     */
     protected static final String CREATE_DATE_FIELD = "createDate";
 
     /**

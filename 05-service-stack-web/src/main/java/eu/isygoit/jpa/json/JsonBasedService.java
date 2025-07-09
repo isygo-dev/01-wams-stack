@@ -50,6 +50,11 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     private final String elementType;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Json based service.
+     *
+     * @param objectMapper the object mapper
+     */
     @Autowired
     public JsonBasedService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;

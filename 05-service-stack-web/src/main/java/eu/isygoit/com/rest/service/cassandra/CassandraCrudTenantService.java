@@ -1,9 +1,8 @@
 package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
@@ -16,14 +15,11 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -41,10 +37,10 @@ import java.util.*;
  */
 @Slf4j
 public abstract class CassandraCrudTenantService<I extends Serializable,
-        T extends IIdAssignable<I>,
+        T extends IIdAssignable<I> & ITenantAssignable,
         R extends CassandraRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudTenantServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudTenantServiceMethods<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
@@ -60,12 +56,12 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     }
 
     @Override
-    public T beforeCreate(T object) {
+    public T beforeCreate(String tenant, T object) {
         return object;
     }
 
     @Override
-    public T afterCreate(T object) {
+    public T afterCreate(String tenant, T object) {
         return object;
     }
 
@@ -83,9 +79,9 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
             });
         }
 
-        this.beforeDelete(objects);
+        this.beforeDelete(tenant, objects);
         repository().deleteAll(objects);
-        this.afterDelete(objects);
+        this.afterDelete(tenant, objects);
     }
 
     @Override
@@ -105,9 +101,9 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
                 }
             }
 
-            this.beforeDelete(id);
+            this.beforeDelete(tenant, id);
             handleEntityDeletion(object);
-            this.afterDelete(id);
+            this.afterDelete(tenant, id);
         } else {
             throw new ObjectNotFoundException(" with id: " + id);
         }
@@ -164,19 +160,19 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     }
 
     @Override
-    public void beforeDelete(I id) {
+    public void beforeDelete(String tenant, I id) {
     }
 
     @Override
-    public void afterDelete(I id) {
+    public void afterDelete(String tenant, I id) {
     }
 
     @Override
-    public void beforeDelete(List<T> objects) {
+    public void beforeDelete(String tenant, List<T> objects) {
     }
 
     @Override
-    public void afterDelete(List<T> objects) {
+    public void afterDelete(String tenant, List<T> objects) {
     }
     
 
@@ -188,7 +184,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
             }
-            return this.afterFindAll(list);
+            return this.afterFindAll(tenant, list);
         } else {
             throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
@@ -202,29 +198,29 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
             if (page.isEmpty()) {
                 return Collections.EMPTY_LIST;
             }
-            return this.afterFindAll(page.getContent());
+            return this.afterFindAll(tenant, page.getContent());
         } else {
             throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
     }
 
     @Override
-    public T beforeUpdate(T object) {
+    public T beforeUpdate(String tenant, T object) {
         return object;
     }
 
     @Override
-    public T afterUpdate(T object) {
+    public T afterUpdate(String tenant, T object) {
         return object;
     }
 
     @Override
-    public List<T> afterFindAll(List<T> list) {
+    public List<T> afterFindAll(String tenant, List<T> list) {
         return list;
     }
 
     @Override
-    public T afterFindById(T object) {
+    public T afterFindById(String tenant, T object) {
         return object;
     }
 

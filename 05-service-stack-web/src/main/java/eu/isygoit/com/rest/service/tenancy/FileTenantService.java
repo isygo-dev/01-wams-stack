@@ -1,12 +1,13 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
+import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
@@ -27,10 +28,11 @@ import java.nio.file.Path;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends FileServiceSubMethods<I, T, R>
-        implements IFileServiceMethods<I, T> {
+public abstract class FileTenantService<I extends Serializable,
+        T extends IFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
+        R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
+        extends FileTenantServiceSubMethods<I, T, R>
+        implements IFileTenantServiceMethods<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
@@ -68,38 +70,64 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         return entity;
     }
 
+    /**
+     * Before create t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T beforeCreate(T object) {
         return object;
     }
 
+    /**
+     * After create t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T afterCreate(T object) {
         return object;
     }
 
+    /**
+     * Before update t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T beforeUpdate(T object) {
         return object;
     }
 
+    /**
+     * After update t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T afterUpdate(T object) {
         return object;
     }
 
     @Transactional
     @Override
-    public T createWithFile(T entity, MultipartFile file) throws IOException {
+    public T createWithFile(String tenant, T entity, MultipartFile file) throws IOException {
+        setTenantIfApplicable(tenant, entity);
+
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
-            setFileAttributes(entity, file);
+            setFileAttributes(tenant, entity, file);
         } else {
             log.warn("CreateWithFile ({}): File is null or empty", persistentClass.getSimpleName());
         }
 
         entity = beforeCreate(entity);
-        entity = createAndFlush(entity);
+        entity = createAndFlush(tenant, entity);
         entity = afterCreate(entity);
 
         if (file != null && !file.isEmpty()) {
-            return handleFileUpload(entity, file);
+            return handleFileUpload(tenant, entity, file);
         }
 
         return entity;
@@ -107,24 +135,26 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     @Transactional
     @Override
-    public T updateWithFile(I id, T entity, MultipartFile file) throws IOException {
+    public T updateWithFile(String tenant, I id, T entity, MultipartFile file) throws IOException {
+        setTenantIfApplicable(tenant, entity);
+
         T existing = repository().findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
         entity.setId(id);
 
         if (file != null && !file.isEmpty()) {
             assignOrPreserveCode(entity, existing);
-            setFileAttributes(entity, file);
+            setFileAttributes(tenant, entity, file);
         } else {
             log.warn("UpdateWithFile ({}): File is null or empty", persistentClass.getSimpleName());
         }
 
         entity = beforeUpdate(entity);
-        entity = updateAndFlush(entity);
+        entity = updateAndFlush(tenant, entity);
         entity = afterUpdate(entity);
 
         if (file != null && !file.isEmpty()) {
-            return handleFileUpload(entity, file);
+            return handleFileUpload(tenant, entity, file);
         }
 
         return entity;
@@ -132,16 +162,16 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     @Transactional
     @Override
-    public T uploadFile(I id, MultipartFile file) throws IOException {
-        T entity = findById(id)
+    public T uploadFile(String tenant, I id, MultipartFile file) throws IOException {
+        T entity = findById(tenant, id)
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
-            setFileAttributes(entity, file);
-            entity = updateAndFlush(entity);
+            setFileAttributes(tenant, entity, file);
+            entity = updateAndFlush(tenant, entity);
 
-            return handleFileUpload(entity, file);
+            return handleFileUpload(tenant, entity, file);
         } else {
             log.warn("UploadFile ({}): File is null or empty", persistentClass.getSimpleName());
         }
@@ -150,8 +180,8 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     }
 
     @Override
-    public Resource downloadFile(I id, Long version) throws IOException {
-        return findById(id)
+    public Resource downloadFile(String tenant, I id, Long version) throws IOException {
+        return findById(tenant, id)
                 .map(entity -> subDownloadFile(entity, version))
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
     }
@@ -164,20 +194,14 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
     }
 
-    private void setFileAttributes(T entity, MultipartFile file) {
+    private void setFileAttributes(String tenant, T entity, MultipartFile file) {
         Path path = Path.of(getUploadDirectory())
-                .resolve(getEntityTenantOrDefault(entity))
+                .resolve(tenant)
                 .resolve(persistentClass.getSimpleName().toLowerCase());
 
         entity.setPath(path.toString());
         entity.setOriginalFileName(file.getOriginalFilename());
         entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-    }
-
-    private String getEntityTenantOrDefault(T entity) {
-        return entity instanceof ITenantAssignable assignable
-                ? assignable.getTenant()
-                : TenantConstants.DEFAULT_TENANT_NAME;
     }
 
     private void setTenantIfApplicable(String tenant, T entity) {
@@ -187,8 +211,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
     }
 
-    private T handleFileUpload(T entity, MultipartFile file) throws IOException {
-        String tenant = getEntityTenantOrDefault(entity);
+    private T handleFileUpload(String tenant, T entity, MultipartFile file) throws IOException {
         entity = beforeUpload(tenant, entity, file);
         subUploadFile(file, entity);
         return afterUpload(tenant, entity, file);

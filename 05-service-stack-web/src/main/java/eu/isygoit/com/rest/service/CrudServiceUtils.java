@@ -49,9 +49,25 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
     }
 
     /**
+     * Validates that a list is not empty.
+     *
+     * @param <I>     the type parameter
+     * @param <T>     the type parameter
+     * @param objects the list to validate
+     * @throws EmptyListException if the list is empty
+     */
+    protected static <I extends Serializable, T extends IIdAssignable<I>> void validateListNotEmpty(List<T> objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            log.error("Empty or null list provided for operation");
+            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
+        }
+    }
+
+    /**
      * Assign code if empty.
      *
      * @param object the object
+     * @return the object
      */
     @SuppressWarnings("unchecked")
     public Object assignCodeIfEmpty(Object object) {
@@ -61,18 +77,5 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
             codeAssignable.setCode(codeAssignableService.getNextCode());
         }
         return object;
-    }
-
-    /**
-     * Validates that a list is not empty.
-     *
-     * @param objects the list to validate
-     * @throws EmptyListException if the list is empty
-     */
-    protected static <I extends Serializable, T extends IIdAssignable<I>> void validateListNotEmpty(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            log.error("Empty or null list provided for operation");
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
     }
 }

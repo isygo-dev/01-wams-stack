@@ -5,6 +5,7 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -43,12 +44,15 @@ public abstract class CrudTenantControllerSubMethods<
         T extends IIdAssignable<I> & ITenantAssignable,
         M extends IIdAssignableDto<I>,
         F extends M,
-        S extends ICrudTenantServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudTenantServiceMethods<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
     private final Class<T> entityClass;
 
+    /**
+     * Instantiates a new Crud tenant controller sub methods.
+     */
     @SuppressWarnings("unchecked")
     protected CrudTenantControllerSubMethods() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass()

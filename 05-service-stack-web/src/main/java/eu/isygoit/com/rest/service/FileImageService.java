@@ -43,7 +43,7 @@ public abstract class FileImageService<I extends Serializable,
 
     @Override
     @Transactional
-    public T uploadImage(String senderTenant, I id, MultipartFile file) throws IOException {
+    public T uploadImage(I id, MultipartFile file) throws IOException {
         validateFile(file);
 
         T entity = findEntityByIdOrThrow(id);
@@ -78,8 +78,7 @@ public abstract class FileImageService<I extends Serializable,
 
     @Override
     @Transactional
-    public T createWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
-        assignTenantIfApplicable(senderTenant, entity);
+    public T createWithImage(T entity, MultipartFile file) throws IOException {
         assignCodeIfEmpty(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -100,9 +99,7 @@ public abstract class FileImageService<I extends Serializable,
 
     @Override
     @Transactional
-    public T updateWithImage(String senderTenant, T entity, MultipartFile file) throws IOException {
-        assignTenantIfApplicable(senderTenant, entity);
-
+    public T updateWithImage(T entity, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
             String filename = file.getOriginalFilename() + "_" + entity.getCode();
             Path path = resolveTargetPath().apply(entity);
@@ -130,10 +127,10 @@ public abstract class FileImageService<I extends Serializable,
                 new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
     }
 
-    private void assignTenantIfApplicable(String senderTenant, T entity) {
+    private void assignTenantIfApplicable(String tenant, T entity) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(senderTenant)) {
-            ((ITenantAssignable) entity).setTenant(senderTenant);
+                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+            ((ITenantAssignable) entity).setTenant(tenant);
         }
     }
 

@@ -1,7 +1,6 @@
 package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
@@ -39,10 +38,10 @@ import java.util.function.BiConsumer;
  */
 @Slf4j
 public abstract class CrudTenantService<I extends Serializable,
-        T extends IIdAssignable<I>,
+        T extends IIdAssignable<I> & ITenantAssignable,
         R extends JpaPagingAndSortingRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudTenantServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudTenantServiceMethods<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     private static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
@@ -159,7 +158,7 @@ public abstract class CrudTenantService<I extends Serializable,
         // Set tenant and prepare entity
         ((ITenantAssignable) object).setTenant(tenant);
         assignCodeIfEmpty(object);
-        var preparedObject = beforeCreate(object);
+        var preparedObject = beforeCreate(tenant, object);
         log.debug("After pre-create hook: {}", preparedObject);
 
         // Save entity
@@ -167,7 +166,7 @@ public abstract class CrudTenantService<I extends Serializable,
         log.debug("Saved entity: {}", savedObject);
 
         // Post-create processing
-        var result = afterCreate((T) savedObject);
+        var result = afterCreate(tenant, (T) savedObject);
         log.info("Successfully created {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
@@ -191,14 +190,14 @@ public abstract class CrudTenantService<I extends Serializable,
         var result = jpaRepo.saveAll(objects.stream()
                 .peek(obj -> {
                     log.debug("Preparing entity for creation: {}", obj);
-                    ((ITenantAssignable) obj).setTenant(tenant);
+                    obj.setTenant(tenant);
                 })
                 .map(this::assignCodeIfEmpty)
-                .map(o -> beforeCreate((T) o))
+                .map(o -> beforeCreate(tenant, (T) o))
                 .toList());
 
         var finalResult = result.stream()
-                .map(o -> afterCreate((T) o))
+                .map(o -> afterCreate(tenant, (T) o))
                 .toList();
         log.info("Successfully created {} {} entities for tenant: {}",
                 finalResult.size(), persistentClass.getSimpleName(), tenant);
@@ -223,9 +222,9 @@ public abstract class CrudTenantService<I extends Serializable,
         // Prepare and save entity
         ((ITenantAssignable) object).setTenant(tenant);
         assignCodeIfEmpty(object);
-        var preparedObject = beforeCreate(object);
+        var preparedObject = beforeCreate(tenant, object);
         var savedObject = jpaRepo.saveAndFlush(preparedObject);
-        var result = afterCreate((T) savedObject);
+        var result = afterCreate(tenant, (T) savedObject);
         log.info("Successfully created and flushed {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
@@ -252,12 +251,12 @@ public abstract class CrudTenantService<I extends Serializable,
         // Preserve attributes and prepare update
         keepOriginalAttributes(object);
         assignCodeIfEmpty(object);
-        var preparedObject = beforeUpdate(object);
+        var preparedObject = beforeUpdate(tenant, object);
         log.debug("After pre-update hook: {}", preparedObject);
 
         // Save updated entity
         var updatedObject = jpaRepo.save(preparedObject);
-        var result = afterUpdate((T) updatedObject);
+        var result = afterUpdate(tenant, (T) updatedObject);
         log.info("Successfully updated {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
@@ -285,11 +284,11 @@ public abstract class CrudTenantService<I extends Serializable,
                 })
                 .map(this::keepOriginalAttributes)
                 .map(this::assignCodeIfEmpty)
-                .map(o -> beforeUpdate((T) o))
+                .map(o -> beforeUpdate(tenant, (T) o))
                 .toList());
 
         var finalResult = result.stream()
-                .map(o -> afterUpdate((T) o))
+                .map(o -> afterUpdate(tenant, (T) o))
                 .toList();
         log.info("Successfully updated {} {} entities for tenant: {}",
                 finalResult.size(), persistentClass.getSimpleName(), tenant);
@@ -322,9 +321,9 @@ public abstract class CrudTenantService<I extends Serializable,
         // Prepare and save entity
         keepOriginalAttributes(object);
         assignCodeIfEmpty(object);
-        var preparedObject = beforeUpdate(object);
+        var preparedObject = beforeUpdate(tenant, object);
         var updatedObject = jpaRepo.saveAndFlush(preparedObject);
-        var result = afterUpdate((T) updatedObject);
+        var result = afterUpdate(tenant, (T) updatedObject);
         log.info("Successfully updated and flushed {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), result.getId(), tenant);
         return result;
@@ -348,9 +347,9 @@ public abstract class CrudTenantService<I extends Serializable,
 
         // Process deletion
         validateTenantAccess(tenant, id).ifPresentOrElse(object -> {
-            beforeDelete(id);
+            beforeDelete(tenant, id);
             handleEntityDeletion((T) object);
-            afterDelete(id);
+            afterDelete(tenant, id);
             log.info("Successfully deleted {} entity with ID: {} for tenant: {}",
                     persistentClass.getSimpleName(), id, tenant);
         }, () -> {
@@ -373,11 +372,11 @@ public abstract class CrudTenantService<I extends Serializable,
         log.info("Deleting {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
         // Validate tenant access and process deletion in batch
-        beforeDelete(objects);
+        beforeDelete(tenant, objects);
         objects.forEach(obj -> validateTenantAccess(tenant, obj.getId()));
         objects.forEach(this::handleEntityDeletion);
         jpaRepo.deleteAllInBatch(objects);
-        afterDelete(objects);
+        afterDelete(tenant, objects);
         log.info("Successfully deleted {} {} entities for tenant: {}",
                 objects.size(), persistentClass.getSimpleName(), tenant);
     }
@@ -396,7 +395,7 @@ public abstract class CrudTenantService<I extends Serializable,
         var list = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findAll()
                 : jpaRepo.findByTenantIgnoreCase(tenant);
-        var result = CollectionUtils.isEmpty(list) ? List.<T>of() : afterFindAll(list);
+        var result = CollectionUtils.isEmpty(list) ? List.<T>of() : afterFindAll(tenant, list);
         log.debug("Retrieved {} {} entities for tenant: {}", result.size(), persistentClass.getSimpleName(), tenant);
         return result;
     }
@@ -418,7 +417,7 @@ public abstract class CrudTenantService<I extends Serializable,
                 ? jpaRepo.findAll(pageable)
                 : jpaRepo.findByTenantIgnoreCase(tenant, pageable);
 
-        var result = page.isEmpty() ? List.<T>of() : afterFindAll(page.getContent());
+        var result = page.isEmpty() ? List.<T>of() : afterFindAll(tenant, page.getContent());
         log.debug("Retrieved {} paginated {} entities for tenant: {}",
                 result.size(), persistentClass.getSimpleName(), tenant);
         return result;
@@ -443,10 +442,10 @@ public abstract class CrudTenantService<I extends Serializable,
         log.info("Retrieving {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
         var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findById(id)
-                .map(o -> afterFindById((T) o))
+                .map(o -> afterFindById(tenant, (T) o))
                 : jpaRepo.findById(id)
                 .filter(t -> ((ITenantAssignable) t).getTenant().equals(tenant))
-                .map(o -> afterFindById((T) o));
+                .map(o -> afterFindById(tenant, (T) o));
 
         log.debug("Find by ID result for ID {} and tenant {}: {}", id, tenant, result.isPresent() ? "found" : "not found");
         return result;
@@ -466,7 +465,7 @@ public abstract class CrudTenantService<I extends Serializable,
         validateObjectNotNull(object);
         log.info("Saving or updating {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), object.getId(), tenant);
-        ((ITenantAssignable) object).setTenant(tenant);
+        object.setTenant(tenant);
         var result = object.getId() == null ? create(tenant, object) : update(tenant, object);
         log.info("Successfully saved or updated {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), result.getId(), tenant);
@@ -491,7 +490,7 @@ public abstract class CrudTenantService<I extends Serializable,
         var result = jpaRepo.saveAll(objects.stream()
                 .peek(obj -> {
                     log.debug("Processing save or update for entity: {}", obj);
-                    ((ITenantAssignable) obj).setTenant(tenant);
+                    obj.setTenant(tenant);
                 })
                 .map(obj -> obj.getId() == null ? create(tenant, obj) : update(tenant, obj))
                 .toList());
@@ -561,7 +560,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return the processed entity
      */
     @Override
-    public T beforeCreate(T object) {
+    public T beforeCreate(String tenant, T object) {
         log.debug("Pre-create hook called for {} entity", persistentClass.getSimpleName());
         return object;
     }
@@ -573,7 +572,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return the processed entity
      */
     @Override
-    public T afterCreate(T object) {
+    public T afterCreate(String tenant, T object) {
         log.debug("Post-create hook called for {} entity", persistentClass.getSimpleName());
         return object;
     }
@@ -584,7 +583,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @param id the ID of the entity to delete
      */
     @Override
-    public void beforeDelete(I id) {
+    public void beforeDelete(String tenant, I id) {
         log.debug("Pre-delete hook called for {} entity with ID: {}", persistentClass.getSimpleName(), id);
     }
 
@@ -594,7 +593,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @param id the ID of the deleted entity
      */
     @Override
-    public void afterDelete(I id) {
+    public void afterDelete(String tenant, I id) {
         log.debug("Post-delete hook called for {} entity with ID: {}", persistentClass.getSimpleName(), id);
     }
 
@@ -604,7 +603,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @param objects the list of entities to delete
      */
     @Override
-    public void beforeDelete(List<T> objects) {
+    public void beforeDelete(String tenant, List<T> objects) {
         log.debug("Pre-delete hook called for {} {} entities", objects.size(), persistentClass.getSimpleName());
     }
 
@@ -614,7 +613,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @param objects the list of deleted entities
      */
     @Override
-    public void afterDelete(List<T> objects) {
+    public void afterDelete(String tenant, List<T> objects) {
         log.debug("Post-delete hook called for {} {} entities", objects.size(), persistentClass.getSimpleName());
     }
 
@@ -625,7 +624,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return the processed entity
      */
     @Override
-    public T beforeUpdate(T object) {
+    public T beforeUpdate(String tenant, T object) {
         log.debug("Pre-update hook called for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
         return object;
     }
@@ -637,7 +636,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return the processed entity
      */
     @Override
-    public T afterUpdate(T object) {
+    public T afterUpdate(String tenant, T object) {
         log.debug("Post-update hook called for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
         return object;
     }
@@ -649,7 +648,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return the processed list of entities
      */
     @Override
-    public List<T> afterFindAll(List<T> list) {
+    public List<T> afterFindAll(String tenant, List<T> list) {
         log.debug("Post-find-all hook called for {} {} entities", list.size(), persistentClass.getSimpleName());
         return list;
     }
@@ -661,7 +660,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return the processed entity
      */
     @Override
-    public T afterFindById(T object) {
+    public T afterFindById(String tenant, T object) {
         log.debug("Post-find-by-id hook called for {} entity with ID: {}",
                 persistentClass.getSimpleName(), object.getId());
         return object;

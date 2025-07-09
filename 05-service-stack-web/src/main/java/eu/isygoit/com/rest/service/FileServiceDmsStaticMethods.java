@@ -33,7 +33,7 @@ public final class FileServiceDmsStaticMethods {
      * @return the linked file response dto
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdAssignable & ICodeAssignable> LinkedFileResponseDto upload(
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> LinkedFileResponseDto upload(
             MultipartFile file,
             T entity,
             ILinkedFileApi linkedFileService) throws IOException {
@@ -89,7 +89,7 @@ public final class FileServiceDmsStaticMethods {
      * @return the resource
      * @throws IOException the io exception
      */
-    static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(
             T entity,
             Long version,
             ILinkedFileApi linkedFileService) throws IOException {

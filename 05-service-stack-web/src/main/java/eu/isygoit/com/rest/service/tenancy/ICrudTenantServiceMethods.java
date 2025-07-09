@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service.tenancy;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import jakarta.transaction.NotSupportedException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ import java.util.Optional;
  * @param <T> the type parameter
  */
 public interface ICrudTenantServiceMethods<I extends Serializable,
-        T extends IIdAssignable<I>> {
+        T extends IIdAssignable<I> & ITenantAssignable> {
 
     /**
      * Count long.
@@ -113,7 +114,6 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
      * @param id     the id
      * @return the optional
      * @throws ObjectNotFoundException the object not found exception
-     * @throws NotSupportedException   the not supported exception
      */
     Optional<T> findById(String tenant, I id) throws ObjectNotFoundException;
 

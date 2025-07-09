@@ -2,8 +2,8 @@ package eu.isygoit.jpa.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.exception.InvalidTenantException;
 import eu.isygoit.exception.ObjectNotFoundException;
@@ -39,13 +39,13 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Transactional
-public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
+public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<UUID> & ITenantAssignable,
         IE extends Serializable,
         E extends JsonBasedEntity<IE> & IIdAssignable<IE> & ITenantAssignable,
         R extends JsonBasedTenantAssignableRepository<E, IE>>
         extends CrudServiceUtils<UUID, T, R>
         implements ICrudTenantServiceMethods<UUID, T>,
-        ICrudServiceEvents<UUID, T>,
+        ICrudTenantServiceEvents<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 
     private final Class<T> jsonElementClass;
@@ -53,6 +53,11 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     private final String elementType;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Json based tenant service.
+     *
+     * @param objectMapper the object mapper
+     */
     @Autowired
     public JsonBasedTenantService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -79,24 +84,24 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public T create(String tenant, T object) {
         validateTenant(tenant);
         JsonBasedEntityHelper.assignIdIfNull(object);
-        var beforeCreateResult = beforeCreate(object);
+        var beforeCreateResult = beforeCreate(tenant, object);
         var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
         entity.setTenant(tenant);
         var saved = repository().save(entity);
         var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
-        return afterCreate(result);
+        return afterCreate(tenant, result);
     }
 
     @Override
     public T createAndFlush(String tenant, T object) {
         validateTenant(tenant);
         JsonBasedEntityHelper.assignIdIfNull(object);
-        var beforeCreateResult = beforeCreate(object);
+        var beforeCreateResult = beforeCreate(tenant, object);
         var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
         entity.setTenant(tenant);
         var saved = repository().saveAndFlush(entity);
         var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
-        return afterCreate(result);
+        return afterCreate(tenant, result);
     }
 
     @Override
@@ -105,7 +110,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateListNotEmpty(objects);
         objects.forEach(JsonBasedEntityHelper::assignIdIfNull);
         var beforeCreateResults = objects.stream()
-                .map(this::beforeCreate)
+                .map(t -> beforeCreate(tenant, t))
                 .toList();
         var entities = beforeCreateResults.stream()
                 .map(obj -> {
@@ -117,30 +122,30 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         return repository().saveAll(entities)
                 .stream()
                 .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
-                .map(this::afterCreate)
+                .map(t -> afterCreate(tenant, t))
                 .toList();
     }
 
     @Override
     public void delete(String tenant, UUID id) {
         validateTenant(tenant);
-        beforeDelete(id);
+        beforeDelete(tenant, id);
         if (repository().deleteByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant) == 0) {
             throw new ObjectNotFoundException("with id " + id + " and tenant " + tenant);
         }
-        afterDelete(id);
+        afterDelete(tenant, id);
     }
 
     @Override
     public void deleteBatch(String tenant, List<T> objects) {
         validateTenant(tenant);
         validateListNotEmpty(objects);
-        beforeDelete(objects);
+        beforeDelete(tenant, objects);
         var ids = objects.stream()
                 .map(entity -> entity.getId().toString())
                 .toList();
         repository().deleteByElementTypeAndJsonIdInAndTenant(elementType, ids, tenant);
-        afterDelete(objects);
+        afterDelete(tenant, objects);
     }
 
     @Override
@@ -150,7 +155,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
                 .stream()
                 .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .toList();
-        return afterFindAll(results);
+        return afterFindAll(tenant, results);
     }
 
     @Override
@@ -160,7 +165,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
                 .stream()
                 .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .toList();
-        return afterFindAll(results);
+        return afterFindAll(tenant, results);
     }
 
     @Override
@@ -168,7 +173,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateTenant(tenant);
         return repository().findByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant)
                 .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
-                .map(this::afterFindById);
+                .map(t -> afterFindById(tenant, t));
     }
 
     @Override
@@ -189,21 +194,21 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     @Override
     public T update(String tenant, T object) {
         validateTenant(tenant);
-        var beforeUpdateResult = beforeUpdate(object);
+        var beforeUpdateResult = beforeUpdate(tenant, object);
         var entity = findEntityById(tenant, beforeUpdateResult.getId());
         entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
         var result = JsonBasedEntityHelper.toJsonElement(repository().save(entity), jsonElementClass, objectMapper);
-        return afterUpdate(result);
+        return afterUpdate(tenant, result);
     }
 
     @Override
     public T updateAndFlush(String tenant, T object) {
         validateTenant(tenant);
-        var beforeUpdateResult = beforeUpdate(object);
+        var beforeUpdateResult = beforeUpdate(tenant, object);
         var entity = findEntityById(tenant, beforeUpdateResult.getId());
         entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
         var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
-        return afterUpdate(result);
+        return afterUpdate(tenant, result);
     }
 
     @Override
@@ -211,7 +216,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateTenant(tenant);
         validateListNotEmpty(objects);
         return objects.stream()
-                .map(this::beforeUpdate)
+                .map(t -> beforeUpdate(tenant, t))
                 .map(obj -> update(tenant, obj))
                 .toList();
     }
@@ -231,7 +236,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
                 .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
         List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
-        return afterFindAll(filtered);
+        return afterFindAll(tenant, filtered);
     }
 
     @Override
@@ -250,62 +255,62 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
                 .collect(Collectors.toList());
         List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
         List<T> paginated = JsonBasedEntityHelper.applyPagination(filtered, pageRequest);
-        return afterFindAll(paginated);
+        return afterFindAll(tenant, paginated);
     }
 
     // Event lifecycle methods
     @Override
-    public T beforeUpdate(T object) {
+    public T beforeUpdate(String tenant, T object) {
         log.debug("Before update {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
-    public T afterUpdate(T object) {
+    public T afterUpdate(String tenant, T object) {
         log.debug("After update {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
-    public void beforeDelete(UUID id) {
+    public void beforeDelete(String tenant, UUID id) {
         log.debug("Before delete {} [{}]: {}", elementType, "id", id);
     }
 
     @Override
-    public void afterDelete(UUID id) {
+    public void afterDelete(String tenant, UUID id) {
         log.debug("After delete {} [{}]: {}", elementType, "id", id);
     }
 
     @Override
-    public void beforeDelete(List<T> objects) {
+    public void beforeDelete(String tenant, List<T> objects) {
         log.debug("Before delete {} batch [{}]: {} items", elementType, "size", objects.size());
     }
 
     @Override
-    public void afterDelete(List<T> objects) {
+    public void afterDelete(String tenant, List<T> objects) {
         log.debug("After delete {} batch [{}]: {} items", elementType, "size", objects.size());
     }
 
     @Override
-    public T beforeCreate(T object) {
+    public T beforeCreate(String tenant, T object) {
         log.debug("Before create {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
-    public List<T> afterFindAll(List<T> list) {
+    public List<T> afterFindAll(String tenant, List<T> list) {
         log.debug("After find all {} [{}]: {} items", elementType, "size", list.size());
         return list;
     }
 
     @Override
-    public T afterFindById(T object) {
+    public T afterFindById(String tenant, T object) {
         log.debug("After find by id {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }
 
     @Override
-    public T afterCreate(T object) {
+    public T afterCreate(String tenant, T object) {
         log.debug("After create {} [{}]: {}", elementType, "id", object.getId());
         return object;
     }

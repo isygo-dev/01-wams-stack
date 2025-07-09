@@ -1,5 +1,6 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
+import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceMethods;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.BadArgumentException;
@@ -11,7 +12,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -33,10 +34,11 @@ import java.nio.file.StandardOpenOption;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CodeAssignableService<I, T, R>
-        implements IImageServiceMethods<I, T> {
+public abstract class ImageTenantService<I extends Serializable,
+        T extends IImageEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
+        R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
+        extends CodeAssignableTenantService<I, T, R>
+        implements IImageTenantServiceMethods<I, T> {
 
     // Persistent class derived via reflection for exception messages etc.
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
@@ -45,8 +47,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
     private String saveImageFile(T entity, MultipartFile file) throws IOException {
         // Determine target directory based on entity tenant and class name
         Path target = Path.of(getUploadDirectory())
-                .resolve(entity instanceof ITenantAssignable tenantAssignable
-                        ? tenantAssignable.getTenant() : TenantConstants.DEFAULT_TENANT_NAME)
+                .resolve(entity.getTenant())
                 .resolve(entity.getClass().getSimpleName().toLowerCase())
                 .resolve("image");
 
@@ -63,7 +64,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     @Transactional
-    public T uploadImage(I id, MultipartFile file) throws IOException {
+    public T uploadImage(String tenant, I id, MultipartFile file) throws IOException {
         // Validate input file
         if (file == null || file.isEmpty()) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
@@ -71,18 +72,18 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
         }
 
         // Retrieve entity by id or throw exception
-        T entity = findById(id).orElseThrow(() ->
+        T entity = findById(tenant, id).orElseThrow(() ->
                 new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
 
         // Save image and update entity path
         entity.setImagePath(saveImageFile(entity, file));
-        return update(entity);
+        return update(tenant, entity);
     }
 
     @Override
-    public Resource downloadImage(I id) throws IOException {
+    public Resource downloadImage(String tenant, I id) throws IOException {
         // Retrieve entity or throw exception if not found
-        T entity = findById(id).orElseThrow(() ->
+        T entity = findById(tenant, id).orElseThrow(() ->
                 new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
 
         // Validate image path
@@ -101,7 +102,13 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     @Transactional
-    public T createWithImage(T entity, MultipartFile file) throws IOException {
+    public T createWithImage(String tenant, T entity, MultipartFile file) throws IOException {
+        // Enforce tenant if applicable and not super tenant
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+            ((ITenantAssignable) entity).setTenant(tenant);
+        }
+
         // Assign code if empty
         assignCodeIfEmpty(entity);
 
@@ -111,24 +118,30 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
         } else {
             log.warn("File is null or empty");
         }
-        return create(entity);
+        return create(tenant, entity);
     }
 
     @Override
     @Transactional
-    public T updateWithImage(T entity, MultipartFile file) throws IOException {
+    public T updateWithImage(String tenant, T entity, MultipartFile file) throws IOException {
+        // Enforce tenant if applicable and not super tenant
+        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
+                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+            ((ITenantAssignable) entity).setTenant(tenant);
+        }
+
         if (file != null && !file.isEmpty()) {
             // Save new image and update path
             entity.setImagePath(saveImageFile(entity, file));
         } else {
             // Keep existing image path if no new file provided
-            String existingPath = findById(entity.getId())
+            String existingPath = findById(tenant, entity.getId())
                     .map(T::getImagePath)
                     .orElse(null);
             entity.setImagePath(existingPath);
             log.warn("File is null or empty");
         }
-        return update(entity);
+        return update(tenant, entity);
     }
 
     /**
@@ -140,18 +153,42 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     // Lifecycle hooks for subclasses to override if needed
 
+    /**
+     * Before update t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T beforeUpdate(T object) {
         return object;
     }
 
+    /**
+     * After update t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T afterUpdate(T object) {
         return object;
     }
 
+    /**
+     * Before create t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T beforeCreate(T object) {
         return object;
     }
 
+    /**
+     * After create t.
+     *
+     * @param object the object
+     * @return the t
+     */
     public T afterCreate(T object) {
         return object;
     }

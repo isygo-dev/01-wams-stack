@@ -1,8 +1,9 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.annotation.InjectCodeGen;
 import eu.isygoit.annotation.InjectCodeGenKms;
 import eu.isygoit.app.ApplicationContextService;
+import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
@@ -11,8 +12,9 @@ import eu.isygoit.exception.NextCodeServiceNotDefinedException;
 import eu.isygoit.exception.RemoteNextCodeServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.extendable.NextCodeModel;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import eu.isygoit.service.IRemoteNextCodeService;
 import eu.isygoit.service.nextCode.ICodeGeneratorService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +38,10 @@ import java.util.Optional;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class CodeAssignableService<I extends Serializable,
-        T extends IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CrudService<I, T, R> implements ICodeAssignableService<I, T> {
+public abstract class CodeAssignableTenantService<I extends Serializable,
+        T extends IIdAssignable<I> & ITenantAssignable & ICodeAssignable,
+        R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
+        extends CrudTenantService<I, T, R> implements ICodeAssignableService<I, T> {
 
     private static final Map<String, NextCodeModel> inMemoryNextCodes = new HashMap<>();
 

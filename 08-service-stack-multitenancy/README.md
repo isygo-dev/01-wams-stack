@@ -223,7 +223,7 @@ The `RequestContextDto` provides comprehensive context information:
 
 ```java
 public class RequestContextDto extends AbstractDto {
-    private String senderTenant;    // Tenant identifier
+    private String tenant;    // Tenant identifier
     private String senderUser;      // User identifier
     private Boolean isAdmin;        // Admin status
     private String logApp;          // Application identifier
