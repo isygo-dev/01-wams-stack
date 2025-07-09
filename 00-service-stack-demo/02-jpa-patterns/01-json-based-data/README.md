@@ -1,200 +1,146 @@
-# multitenancy Discriminator Tenant PoC
+# JSON-Embedded Entity Demo
 
-This repository contains a Proof of Concept (PoC) for a multi-tenant Spring Boot application using a discriminator-based
-tenant strategy. The application demonstrates tenant-aware CRUD operations for a `Tutorial` entity, leveraging Spring
-Data JPA, Hibernate, and MapStruct. It supports both H2 and PostgreSQL databases with tenant-specific schema
-initialization.
+This repository demonstrates the **JSON-Embedded Entity Pattern**, a design for managing tenant-specific data in a Spring Boot application using JSON storage within a relational database. The demo focuses on managing user login events in a multitenant environment, showcasing flexible, scalable, and tenant-isolated data handling.
 
 ## Table of Contents
-
 - [Overview](#overview)
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Technologies](#technologies)
-- [Setup Instructions](#setup-instructions)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-    - [Database Configuration](#database-configuration)
+- [JSON-Embedded Entity Pattern](#json-embedded-multitenancy-pattern)
+- [Demo Scope](#demo-scope)
+- [Architecture](#architecture)
+- [Key Components](#key-components)
+- [Setup and Installation](#setup-and-installation)
 - [Usage](#usage)
-    - [Running the Application](#running-the-application)
-    - [API Endpoints](#api-endpoints)
-- [Tenant Management](#tenant-management)
+- [API Endpoints](#api-endpoints)
+- [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Overview
+This demo illustrates how to store and manage user login events using a JSON-based approach in a multitenant system. Each tenant's data is isolated using a `tenant_id`, and event details are stored as JSON in a single database table. The solution supports CRUD operations, tenant-specific queries, and criteria-based filtering, making it ideal for applications requiring flexible data structures and tenant isolation.
 
-The multitenancy Discriminator Tenant PoC is designed to showcase a scalable, tenant-aware architecture where each
-tenant's data is isolated using a tenant identifier column (`TENANT_ID`) in the database. The `Tutorial` entity serves
-as the primary example, with CRUD operations managed through a REST API. The application supports dynamic schema
-initialization for tenants and integrates with both H2 (for development) and PostgreSQL (for production-like
-environments).
+## JSON-Embedded Entity Pattern
+The **JSON-Embedded Entity Pattern** combines the structure of relational databases with the flexibility of JSON data storage. Key features include:
 
-## Features
+- **Single Table Storage**: Stores all tenant data in one table (`EVENTS`) with a `tenant_id` for isolation.
+- **JSON Attributes**: Entity attributes are serialized as JSON in an `attributes` column, allowing schema flexibility without database changes.
+- **Generic Service Layer**: A reusable `JsonBasedTenantService` handles tenant-aware CRUD operations, minimizing boilerplate code.
+- **Extensibility**: Supports new entity types via DTOs and entities without altering the database schema.
+- **Tenant Isolation**: Ensures data access is restricted to the authenticated tenant.
 
-- **multitenancy**: Supports tenant isolation using a discriminator column (`TENANT_ID`).
-- **CRUD Operations**: Full Create, Read, Update, Delete functionality for the `Tutorial` entity.
-- **Database Support**: Configurable for H2 (in-memory) and PostgreSQL databases.
-- **Tenant Schema Initialization**: Automatically creates tenant-specific schemas using SQL scripts.
-- **REST API**: Exposes tenant-aware endpoints for managing tutorials.
-- **Swagger Documentation**: Integrated OpenAPI documentation for API exploration.
-- **Mapper Integration**: Uses MapStruct for entity-DTO mapping.
-- **Validation**: Includes tenant validation and error handling.
+This pattern is well-suited for applications needing to manage diverse, tenant-specific data in a single database.
 
-## Project Structure
+## Demo Scope
+The demo focuses on managing **user login events**, capturing details such as user ID, IP address, and device. It demonstrates:
+- Creating, retrieving, updating, and deleting user login events.
+- Tenant-specific data isolation.
+- JSON serialization/deserialization for flexible data storage.
+- RESTful API integration with Spring Boot.
 
-```
-multitenancy-poc/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   ├── eu.isygoit.multitenancy/
-│   │   │   │   ├── controller/        # REST controllers (TutorialController)
-│   │   │   │   ├── dto/              # Data Transfer Objects (TutorialDto)
-│   │   │   │   ├── mapper/           # MapStruct mappers (TutorialMapper)
-│   │   │   │   ├── model/            # JPA entities (Tutorial)
-│   │   │   │   ├── repository/       # Spring Data JPA repositories (TutorialRepository)
-│   │   │   │   ├── service/          # Business logic (TutorialService, TenantValidator)
-│   │   │   │   ├── utils/            # Utility classes for tenant schema initialization
-│   │   │   │   └── MultiTenancyApplication.java  # Spring Boot application entry point
-│   │   └── resources/
-│   │       ├── db/
-│   │       │   ├── h2_tenant-schema.sql  # H2 schema initialization script
-│   │       │   └── pg_tenant-schema.sql  # PostgreSQL schema initialization script
-│   │       └── application.properties    # Application configuration
-├── pom.xml                               # Maven build file
-└── README.md                             # This file
-```
+## Architecture
+The application follows a layered architecture:
+- **Controller Layer**: Exposes REST endpoints for user login event management.
+- **Service Layer**: Handles business logic, tenant validation, and JSON processing.
+- **Repository Layer**: Uses Spring Data JPA with native SQL queries for JSON data access.
+- **Model/DTO Layer**: Defines entities (`EventEntity`, `UserLoginEntity`) and DTOs (`UserLoginEventDto`).
+- **Mapper Layer**: Uses MapStruct for entity-DTO conversions.
 
-## Technologies
+The `EventEntity` stores tenant-specific data with a JSON `attributes` column containing serialized `UserLoginEntity` data. The `UserLoginEventTenantService` orchestrates tenant-aware operations using the generic `JsonBasedTenantService`.
 
-- **Java 17**: Core programming language.
-- **Spring Boot 3.x**: Framework for building the application.
-- **Spring Data JPA**: For database operations.
-- **Hibernate**: Multi-tenant support with discriminator strategy.
-- **H2 Database**: In-memory database for development.
-- **PostgreSQL**: Production-grade database support.
-- **MapStruct**: For entity-DTO mapping.
-- **Lombok**: Reduces boilerplate code.
-- **Swagger/OpenAPI**: API documentation.
-- **Maven**: Build tool.
+## Key Components
+- **EventEntity**: Core entity in the `EVENTS` table with `id`, `tenant_id`, `element_type`, and `attributes` (JSON) columns.
+- **UserLoginEntity**: Represents a user login event, stored as JSON in `EventEntity.attributes`.
+- **UserLoginEventDto**: DTO for transferring user login event data.
+- **UserLoginEventMapper**: MapStruct mapper for entity-DTO conversions.
+- **UserLoginEventTenantService**: Tenant-aware service for CRUD operations.
+- **EventTenantAssignableRepository**: JPA repository with tenant-specific JSON queries.
+- **UserLoginEventController**: REST controller for API endpoints.
 
-## Setup Instructions
+## Setup and Installation
+1. **Prerequisites**:
+    - Java 17 or higher
+    - Maven
+    - PostgreSQL (or another database with JSON support)
+    - Spring Boot 3.x
 
-### Prerequisites
-
-- **Java 17**: Ensure JDK 17 is installed.
-- **Maven**: For building the project.
-- **Database**:
-    - H2 (included for development).
-    - PostgreSQL (optional, for production-like setup).
-- **IDE**: IntelliJ IDEA, Eclipse, or similar (recommended).
-- **Git**: To clone the repository.
-
-### Installation
-
-1. **Clone the Repository**:
+2. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/multitenancy-poc.git
-   cd multitenancy-poc
+   git clone https://github.com/your-repo/json-embedded-entity-demo.git
+   cd json-embedded-entity-demo
    ```
 
-2. **Build the Project**:
-   ```bash
-   mvn clean install
-   ```
-
-3. **Configure Application Properties**:
-    - Edit `src/main/resources/application.properties` to set up database configurations:
+3. **Configure Database**:
+    - Update `application.properties` with your database details:
       ```properties
-      # For H2 (development)
-      spring.profiles.active=h2
-      spring.datasource.url=jdbc:h2:mem:testdb
-      spring.datasource.driverClassName=org.h2.Driver
-      spring.datasource.username=sa
-      spring.datasource.password=
-      spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
- 
-      # For PostgreSQL (production)
-      # spring.profiles.active=postgres
-      # spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-      # spring.datasource.username=your-username
-      # spring.datasource.password=your-password
-      # spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+      spring.datasource.url=jdbc:postgresql://localhost:5432/demo_db
+      spring.datasource.username=your_username
+      spring.datasource.password=your_password
+      spring.jpa.hibernate.ddl-auto=update
       ```
 
-4. **Database Configuration**:
-    - For **H2**, no additional setup is needed; the in-memory database is created automatically.
-    - For **PostgreSQL**, ensure the database server is running and create a database named `postgres` (or update the
-      URL in `application.properties`).
-    - Tenant schemas are initialized automatically via `H2TenantService` or `PGTenantService` using SQL scripts in
-      `src/main/resources/db/`.
-
-### Database Configuration
-
-- **H2**: Uses `h2_tenant-schema.sql` to initialize tenant schemas. The default schema is `public`.
-- **PostgreSQL**: Uses `pg_tenant-schema.sql` to create tenant-specific schemas (e.g., `tenant1`, `tenant2`).
-- **Tenant Validation**: The `TenantValidator` class defines valid tenants (`tenant1`, `tenant2`, `public`,
-  `super-tenant`). Update the `validTenants` set in `TenantValidator.java` to add more tenants.
-
-## Usage
-
-### Running the Application
-
-1. **Run with Maven**:
+4. **Build and Run**:
    ```bash
+   mvn clean install
    mvn spring-boot:run
    ```
 
-2. **Access the Application**:
-    - The application runs on `http://localhost:8081` by default.
-    - Swagger UI is available at `http://localhost:8081/swagger-ui.html` for API documentation.
+5. **Access the API**:
+    - The API is available at `_http://localhost:8080/api/userlogin_`.
+    - Cross-origin requests are allowed from `_http://localhost:8081_`.
 
-### API Endpoints
+## Usage
+The demo provides a REST API to manage user login events. Each request must include a tenant identifier (e.g., via `X-Tenant-ID` header) for data isolation.
 
-The `TutorialController` exposes REST endpoints under `/api/tutorials`. Key endpoints include:
-
-- **GET /api/tutorials**: Retrieve all tutorials for the authenticated tenant.
-- **GET /api/tutorials/{id}**: Retrieve a tutorial by ID.
-- **POST /api/tutorials**: Create a new tutorial.
-- **PUT /api/tutorials/{id}**: Update an existing tutorial.
-- **DELETE /api/tutorials/{id}**: Delete a tutorial.
-- **GET /api/tutorials?page={page}&size={size}**: Retrieve paginated tutorials.
-- **GET /api/tutorials?criteria={criteria}**: Retrieve tutorials filtered by criteria (e.g., `title=example`).
-
-**Example Request** (Create a Tutorial):
-
+### Example Request
+**Create a User Login Event**:
 ```bash
-curl -X POST http://localhost:8081/api/tutorials \
+curl -X POST http://localhost:8080/api/userlogin \
 -H "Content-Type: application/json" \
--H "X-Tenant-Id: tenant1" \
--d '{"title":"Sample Tutorial","description":"A sample tutorial","published":true}'
+-H "X-Tenant-ID: tenant1" \
+-d '{
+  "userId": "user123",
+  "ip": "192.168.1.1",
+  "device": "Chrome/120.0"
+}'
 ```
 
-**Note**: Include the `X-Tenant-Id` header with a valid tenant ID (e.g., `tenant1`, `tenant2`, `public`,
-`super-tenant`).
+**Response**:
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "user123",
+  "ip": "192.168.1.1",
+  "device": "Chrome/120.0"
+}
+```
 
-## Tenant Management
+## API Endpoints
+- **POST /api/userlogin**: Create a new user login event (for a tenant).
+- **GET /api/userlogin/{id}**: Retrieve a user login event by ID (for a tenant).
+- **GET /api/userlogin** : Retrieve all user login events (for a tenant).
 
-- **Tenant Initialization**: The `H2TenantService` or `PGTenantService` initializes tenant schemas on demand using SQL
-  scripts. Add new tenants by updating the `validTenants` set in `TenantValidator.java` and ensuring the corresponding
-  schema is initialized.
-- **Super Tenant**: The `super-tenant` has access to all tenant data and is used for administrative operations.
-- **Schema Strategy**: Uses a discriminator column (`TENANT_ID`) for tenant isolation, with separate schemas for
-  PostgreSQL.
+**: List all user login events (for a tenant) (supports pagination).
+- **PUT /api/userlogin**: Update an existing user login event (for a tenant).
+- **DELETE /api/userlogin/{id}**: Delete a user login event by ID (for a tenant).
+- **POST /api/userlogin/batch**: Create or update multiple user login events.
+- **DELETE /api/userlogin/batch**: Delete multiple user login events.
+
+**For multitenancy mode, All endpoints require a tenant identifier via the `X-Tenant-ID` header.**
+
+## Technologies Used
+- **Spring Boot**: For building the REST API.
+- **Spring Data JPA**: For database operations and repository management.
+- **MapStruct**: For entity-DTO mapping.
+- **Jackson**: For JSON serialization/deserialization.
+- **PostgreSQL**: Database with JSONB support for storing event attributes.
+- **Lombok**: To reduce boilerplate code.
 
 ## Contributing
-
 Contributions are welcome! To contribute:
-
 1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -m "Add your feature"`).
+2. Create a new branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m 'Add your feature'`).
 4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a Pull Request.
-
-Please ensure code follows the existing style, includes tests, and updates documentation as needed.
+5. Open a pull request.
 
 ## License
-
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

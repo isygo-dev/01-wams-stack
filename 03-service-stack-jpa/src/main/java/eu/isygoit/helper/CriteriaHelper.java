@@ -74,10 +74,21 @@ public final class CriteriaHelper {
         return sqlWhere.replaceAll("(?i)^\\s*WHERE\\s*", "").trim();
     }
 
+    public static boolean hasBalancedParentheses(String whereClause) {
+        long openCount = whereClause.chars().filter(c -> c == '(').count();
+        long closeCount = whereClause.chars().filter(c -> c == ')').count();
+        return openCount == closeCount;
+    }
+
     /**
      * Parses the normalized WHERE clause into tokens and converts them to QueryCriteria.
      */
     private static List<QueryCriteria> parseWhereClause(String whereClause) {
+        // Validate parentheses balance
+        if (!hasBalancedParentheses(whereClause)) {
+            throw new IllegalArgumentException("Unbalanced parentheses in WHERE clause: " + whereClause);
+        }
+
         var tokens = tokenizeWhereClause(whereClause);
         var criteriaList = new ArrayList<QueryCriteria>();
         var currentCombiner = IEnumCriteriaCombiner.Types.OR;

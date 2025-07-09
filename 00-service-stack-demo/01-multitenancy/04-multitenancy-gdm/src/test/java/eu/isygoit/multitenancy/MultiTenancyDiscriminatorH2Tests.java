@@ -189,7 +189,7 @@ class MultiTenancyDiscriminatorH2Tests {
     @Order(11)
     void shouldSupportFilteringByCriteria() throws Exception {
         //cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5
-        String criteria = "title = Bulk 1";
+        String criteria = "title = 'Bulk 1'";
 
         mockMvc.perform(get(BASE_URL + "/filter?criteria=" + criteria)
                         .header("X-Tenant-ID", TENANT_1))

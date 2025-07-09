@@ -3,354 +3,669 @@ package eu.isygoit.helper;
 import eu.isygoit.annotation.Criteria;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
+import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import lombok.Data;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@DisplayName("CriteriaHelper Test Suite")
 class CriteriaHelperTest {
 
-    @Test
-    void testconvertSqlWhereToCriteria_SimpleConditions() {
-        String sqlWhere = "name = 'John' & age > 25 | status != 'INACTIVE'";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
-
-        assertEquals(3, criteria.size());
-
-        // First condition
-        assertEquals("name", criteria.get(0).getName());
-        assertEquals(IEnumOperator.Types.EQ, criteria.get(0).getOperator());
-        assertEquals("John", criteria.get(0).getValue());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
-
-        // Second condition (AND combiner)
-        assertEquals("age", criteria.get(1).getName());
-        assertEquals(IEnumOperator.Types.GT, criteria.get(1).getOperator());
-        assertEquals("25", criteria.get(1).getValue());
-        assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
-
-        // Third condition (OR combiner)
-        assertEquals("status", criteria.get(2).getName());
-        assertEquals(IEnumOperator.Types.NE, criteria.get(2).getOperator());
-        assertEquals("INACTIVE", criteria.get(2).getValue());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(2).getCombiner());
+    @BeforeEach
+    void setUp() {
+        // Clear cache before each test to ensure isolation
+        CriteriaHelper.clearCache();
     }
 
-    @Test
-    void testconvertSqlWhereToCriteria_WithDifferentOperators() {
-        String sqlWhere = "score >= 80 & name ~ 'Smith' | age <= 30";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
-
-        assertEquals(3, criteria.size());
-
-        assertEquals(IEnumOperator.Types.GE, criteria.get(0).getOperator());
-        assertEquals(IEnumOperator.Types.LI, criteria.get(1).getOperator());
-        assertEquals(IEnumOperator.Types.LE, criteria.get(2).getOperator());
+    @AfterEach
+    void tearDown() {
+        // Clean up after each test
+        CriteriaHelper.clearCache();
     }
 
-    @Test
-    void testconvertSqlWhereToCriteria_WithBooleanValues() {
-        String sqlWhere = "active = true & verified != false";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+    @Nested
+    @DisplayName("SQL WHERE Clause Conversion Tests")
+    class SqlWhereConversionTests {
 
-        assertEquals(2, criteria.size());
-        assertEquals("true", criteria.get(0).getValue());
-        assertEquals("false", criteria.get(1).getValue());
-    }
+        @Test
+        @DisplayName("Should convert simple conditions with different operators")
+        void testConvertSqlWhereToCriteria_SimpleConditions() {
+            String sqlWhere = "name = 'John' & age > 25 | status != 'INACTIVE'";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-    @Test
-    void testconvertSqlWhereToCriteria_WithWhereKeyword() {
-        String sqlWhere = "WHERE name = 'Test'";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+            assertEquals(3, criteria.size());
 
-        assertEquals(1, criteria.size());
-        assertEquals("name", criteria.get(0).getName());
-    }
+            // First condition
+            assertEquals("name", criteria.get(0).getName());
+            assertEquals(IEnumOperator.Types.EQ, criteria.get(0).getOperator());
+            assertEquals("John", criteria.get(0).getValue());
+            assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
 
-    @Test
-    void testconvertSqlWhereToCriteria_EmptyInput() {
-        String sqlWhere = "";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+            // Second condition (AND combiner)
+            assertEquals("age", criteria.get(1).getName());
+            assertEquals(IEnumOperator.Types.GT, criteria.get(1).getOperator());
+            assertEquals("25", criteria.get(1).getValue());
+            assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
 
-        assertTrue(criteria.isEmpty());
-    }
+            // Third condition (OR combiner)
+            assertEquals("status", criteria.get(2).getName());
+            assertEquals(IEnumOperator.Types.NE, criteria.get(2).getOperator());
+            assertEquals("INACTIVE", criteria.get(2).getValue());
+            assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(2).getCombiner());
+        }
 
-    @Test
-    void testconvertSqlWhereToCriteria_InvalidCondition() {
-        String sqlWhere = "name =";
+        @ParameterizedTest
+        @DisplayName("Should handle all supported operators")
+        @CsvSource({
+                "name = 'John', EQ, John",
+                "age != 25, NE, 25",
+                "name ~ 'Smith', LI, Smith",
+                "email !~ 'test', NL, test",
+                "score < 80, LT, 80",
+                "score <= 80, LE, 80",
+                "age > 18, GT, 18",
+                "age >= 21, GE, 21"
+        })
+        void testConvertSqlWhereToCriteria_AllOperators(String condition, String expectedOperator, String expectedValue) {
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(condition);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> CriteriaHelper.convertSqlWhereToCriteria(sqlWhere)
-        );
+            assertEquals(1, criteria.size());
+            assertEquals(IEnumOperator.Types.valueOf(expectedOperator), criteria.get(0).getOperator());
+            assertEquals(expectedValue, criteria.get(0).getValue());
+        }
 
-        assertEquals("Invalid WHERE clause: name =", exception.getMessage());
-    }
+        @Test
+        @DisplayName("Should handle quoted values correctly")
+        void testConvertSqlWhereToCriteria_QuotedValues() {
+            String sqlWhere = "name = 'John Doe' & description = \"Test Description\" | id = 123";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-    // Test class for annotation testing
-    @Data
-    static class TestEntity implements IIdAssignable<Long>{
+            assertEquals(3, criteria.size());
+            assertEquals("John Doe", criteria.get(0).getValue());
+            assertEquals("Test Description", criteria.get(1).getValue());
+            assertEquals("123", criteria.get(2).getValue());
+        }
 
-        private Long id;
-        @Criteria
-        private String name;
-        @Criteria
-        private int age;
-        @Criteria
-        private String status;
+        @Test
+        @DisplayName("Should handle boolean values")
+        void testConvertSqlWhereToCriteria_BooleanValues() {
+            String sqlWhere = "active = true & verified != false";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-        private String nonCriteriaField;
-    }
+            assertEquals(2, criteria.size());
+            assertEquals("true", criteria.get(0).getValue());
+            assertEquals("false", criteria.get(1).getValue());
+        }
 
-    @Test
-    void testGetCriteriaData() {
-        Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
+        @Test
+        @DisplayName("Should handle WHERE keyword")
+        void testConvertSqlWhereToCriteria_WithWhereKeyword() {
+            String sqlWhere = "WHERE name = 'Test' & age > 18";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-        assertEquals(3, criteriaData.size());
-        assertEquals("String", criteriaData.get("name"));
-        assertEquals("int", criteriaData.get("age"));
-        assertEquals("String", criteriaData.get("status"));
-        assertNull(criteriaData.get("nonCriteriaField"));
-    }
+            assertEquals(2, criteria.size());
+            assertEquals("name", criteria.get(0).getName());
+            assertEquals("age", criteria.get(1).getName());
+        }
 
-    @Test
-    void testBuildSpecification_WithCombiner() {
-        QueryCriteria criteria1 = QueryCriteria.builder()
-                .name("name")
-                .operator(IEnumOperator.Types.EQ)
-                .value("John")
-                .combiner(IEnumCriteriaCombiner.Types.OR)
-                .build();
+        @Test
+        @DisplayName("Should handle complex parentheses grouping")
+        void testConvertSqlWhereToCriteria_ComplexParentheses() {
+            String sqlWhere = "(name = 'John' & age > 25) | (department = 'IT' & status = 'ACTIVE')";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-        QueryCriteria criteria2 = QueryCriteria.builder()
-                .name("age")
-                .operator(IEnumOperator.Types.GT)
-                .value("25")
-                .combiner(IEnumCriteriaCombiner.Types.AND)
-                .build();
+            assertEquals(4, criteria.size());
 
-        Specification<IIdAssignable> spec = CriteriaHelper.buildSpecification(
-                "tenant1", List.of(criteria1, criteria2), TestEntity.class);
+            // First group
+            assertEquals("name", criteria.get(0).getName());
+            assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
 
-        assertNotNull(spec);
-    }
+            assertEquals("age", criteria.get(1).getName());
+            assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
 
-    @Test
-    void testBuildSpecification_WithTenant() {
-        QueryCriteria criteria = QueryCriteria.builder()
-                .name("name")
-                .operator(IEnumOperator.Types.EQ)
-                .value("John")
-                .build();
+            // Second group
+            assertEquals("department", criteria.get(2).getName());
+            assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(2).getCombiner());
 
-        Specification<IIdAssignable> spec = CriteriaHelper.buildSpecification(
-                "tenant1", List.of(criteria), TestEntity.class);
+            assertEquals("status", criteria.get(3).getName());
+            assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(3).getCombiner());
+        }
 
-        assertNotNull(spec);
-    }
+        @Test
+        @DisplayName("Should handle nested parentheses")
+        void testConvertSqlWhereToCriteria_NestedParentheses() {
+            String sqlWhere = "department = 'IT' & (name = 'John' | (age > 30 & status = 'SENIOR'))";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-    @Test
-    void testBuildSpecification_WithoutTenant() {
-        QueryCriteria criteria = QueryCriteria.builder()
-                .name("name")
-                .operator(IEnumOperator.Types.EQ)
-                .value("John")
-                .build();
+            assertEquals(4, criteria.size());
+            assertEquals("department", criteria.get(0).getName());
+            assertEquals("name", criteria.get(1).getName());
+            assertEquals("age", criteria.get(2).getName());
+            assertEquals("status", criteria.get(3).getName());
+        }
 
-        Specification<IIdAssignable> spec = CriteriaHelper.buildSpecification(
-                null, List.of(criteria), TestEntity.class);
+        @Test
+        @DisplayName("Should handle single condition in parentheses")
+        void testConvertSqlWhereToCriteria_SingleConditionInParentheses() {
+            String sqlWhere = "(name = 'John')";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-        assertNotNull(spec);
-    }
+            assertEquals(1, criteria.size());
+            assertEquals("name", criteria.get(0).getName());
+            assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
+        }
 
-    @Test
-    void testBuildSpecification_InvalidCriteria() {
-        QueryCriteria criteria = QueryCriteria.builder()
-                .name("invalidField")
-                .operator(IEnumOperator.Types.EQ)
-                .value("value")
-                .build();
+        @Test
+        @DisplayName("Should handle whitespace correctly")
+        void testConvertSqlWhereToCriteria_WithWhitespace() {
+            String sqlWhere = "  name   =   'John'   &   age   >   25  ";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-        assertThrows(RuntimeException.class, () ->
-                CriteriaHelper.buildSpecification(null, List.of(criteria), TestEntity.class));
-    }
+            assertEquals(2, criteria.size());
+            assertEquals("name", criteria.get(0).getName());
+            assertEquals("John", criteria.get(0).getValue());
+            assertEquals("age", criteria.get(1).getName());
+            assertEquals("25", criteria.get(1).getValue());
+        }
 
-    @Test
-    void testEqualSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.equal("name", "John");
-        assertNotNull(spec);
-    }
+        @ParameterizedTest
+        @DisplayName("Should return empty list for null or empty input")
+        @ValueSource(strings = {"", "   ", "\t", "\n"})
+        void testConvertSqlWhereToCriteria_EmptyInput(String input) {
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(input);
+            assertTrue(criteria.isEmpty());
+        }
 
-    @Test
-    void testNotEqualSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.notEqual("name", "John");
-        assertNotNull(spec);
-    }
+        @Test
+        @DisplayName("Should return empty list for null input")
+        void testConvertSqlWhereToCriteria_NullInput() {
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(null);
+            assertTrue(criteria.isEmpty());
+        }
 
-    @Test
-    void testLikeSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.like("name", "John");
-        assertNotNull(spec);
-    }
+        @Test
+        @DisplayName("Should throw exception for invalid condition format")
+        void testConvertSqlWhereToCriteria_InvalidCondition() {
+            String sqlWhere = "name =";
 
-    @Test
-    void testNotLikeSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.notLike("name", "John");
-        assertNotNull(spec);
-    }
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> CriteriaHelper.convertSqlWhereToCriteria(sqlWhere)
+            );
 
-    @Test
-    void testLessThanSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.lessThan("age", "30");
-        assertNotNull(spec);
-    }
+            assertEquals("Invalid WHERE clause: name =", exception.getMessage());
+        }
 
-    @Test
-    void testLessThanOrEqualToSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.lessThanOrEqualTo("age", "30");
-        assertNotNull(spec);
-    }
+        @Test
+        @DisplayName("Should throw exception for unsupported operator")
+        void testConvertSqlWhereToCriteria_UnsupportedOperator() {
+            String sqlWhere = "name === 'John'";
 
-    @Test
-    void testGreaterThanSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.greaterThan("age", "30");
-        assertNotNull(spec);
-    }
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> CriteriaHelper.convertSqlWhereToCriteria(sqlWhere)
+            );
 
-    @Test
-    void testGreaterThanOrEqualToSpecification() {
-        Specification<IIdAssignable> spec = CriteriaHelper.greaterThanOrEqualTo("age", "30");
-        assertNotNull(spec);
-    }
+            assertEquals("Invalid WHERE clause: name === 'John'", exception.getMessage());
+        }
 
-    @Test
-    void testAllOperatorTypesInBuildSpecification() {
-        for (IEnumOperator.Types operator : IEnumOperator.Types.values()) {
-            QueryCriteria criteria = QueryCriteria.builder()
-                    .name("name")
-                    .operator(operator)
-                    .value("value")
-                    .build();
+        @Test
+        @DisplayName("Should throw exception for malformed parentheses")
+        void testConvertSqlWhereToCriteria_MalformedParentheses() {
+            String sqlWhere = "name = 'John' & (age > 25";
 
-            if (operator == IEnumOperator.Types.BW) {
-                // BETWEEN operator needs special handling
-                assertThrows(RuntimeException.class, () ->
-                        CriteriaHelper.buildSpecification(null, List.of(criteria), TestEntity.class));
-            } else {
-                Specification<IIdAssignable> spec = CriteriaHelper.buildSpecification(
-                        null, List.of(criteria), TestEntity.class);
-                assertNotNull(spec);
-            }
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> CriteriaHelper.convertSqlWhereToCriteria(sqlWhere)
+            );
+
+            assertEquals("Invalid WHERE clause: name = 'John' & (age > 25", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Should handle field names with dots")
+        void testConvertSqlWhereToCriteria_FieldNamesWithDots() {
+            String sqlWhere = "user.name = 'John' & profile.age > 25";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+
+            assertEquals(2, criteria.size());
+            assertEquals("user.name", criteria.get(0).getName());
+            assertEquals("profile.age", criteria.get(1).getName());
         }
     }
 
-    @Test
-    void testconvertSqlWhereToCriteria_WithParentheses() {
-        String sqlWhere = "(name = 'John' & age > 25) | status = 'ACTIVE'";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+    @Nested
+    @DisplayName("Criteria Data Extraction Tests")
+    class CriteriaDataTests {
 
-        assertEquals(3, criteria.size());
+        @Test
+        @DisplayName("Should extract criteria fields correctly")
+        void testGetCriteriaData() {
+            Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
 
-        // First condition (inside parentheses)
-        assertEquals("name", criteria.get(0).getName());
-        assertEquals(IEnumOperator.Types.EQ, criteria.get(0).getOperator());
-        assertEquals("John", criteria.get(0).getValue());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner()); // Inherited from initial OR
+            assertEquals(8, criteriaData.size());
+            assertEquals("String", criteriaData.get("name"));
+            assertEquals("Integer", criteriaData.get("age"));
+            assertEquals("String", criteriaData.get("status"));
+            assertEquals("Boolean", criteriaData.get("active"));
+            assertEquals("String", criteriaData.get("department"));
+            assertEquals("Double", criteriaData.get("salary"));
+            assertEquals("Long", criteriaData.get("score"));
+            assertNull(criteriaData.get("nonCriteriaField"));
+        }
 
-        // Second condition (AND combiner inside parentheses)
-        assertEquals("age", criteria.get(1).getName());
-        assertEquals(IEnumOperator.Types.GT, criteria.get(1).getOperator());
-        assertEquals("25", criteria.get(1).getValue());
-        assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
+        @Test
+        @DisplayName("Should handle empty class")
+        void testGetCriteriaData_EmptyClass() {
+            Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(EmptyTestEntity.class);
+            assertTrue(criteriaData.isEmpty());
+        }
 
-        // Third condition (after parentheses)
-        assertEquals("status", criteria.get(2).getName());
-        assertEquals(IEnumOperator.Types.EQ, criteria.get(2).getOperator());
-        assertEquals("ACTIVE", criteria.get(2).getValue());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(2).getCombiner());
+        @Test
+        @DisplayName("Should cache criteria data")
+        void testGetCriteriaData_Caching() {
+            // First call
+            Map<String, String> firstCall = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertEquals(1, CriteriaHelper.getCacheSize()); // Cache is populated after first call
+
+            // Second call should use cache
+            Map<String, String> secondCall = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertEquals(1, CriteriaHelper.getCacheSize()); // Cache is not populated after second call
+
+            assertEquals(firstCall, secondCall);
+            assertTrue(CriteriaHelper.getCacheSize() > 0);
+        }
+
+        @Test
+        @DisplayName("Should clear cache correctly")
+        void testClearCache() {
+            CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertTrue(CriteriaHelper.getCacheSize() > 0);
+
+            CriteriaHelper.clearCache();
+            assertEquals(0, CriteriaHelper.getCacheSize());
+        }
     }
 
-    @Test
-    void testconvertSqlWhereToCriteria_NestedParentheses() {
-        String sqlWhere = "department = 'IT' & (name = 'John' | (age > 30 & status = 'SENIOR'))";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+    @Nested
+    @DisplayName("Specification Building Tests")
+    class SpecificationBuildingTests {
 
-        assertEquals(4, criteria.size());
+        @Test
+        @DisplayName("Should build specification with OR combiner")
+        void testBuildSpecification_WithOrCombiner() {
+            QueryCriteria criteria1 = QueryCriteria.builder()
+                    .name("name")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("John")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
 
-        // First condition
-        assertEquals("department", criteria.get(0).getName());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
+            QueryCriteria criteria2 = QueryCriteria.builder()
+                    .name("age")
+                    .operator(IEnumOperator.Types.GT)
+                    .value("25")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
 
-        // Second condition (inside first parentheses)
-        assertEquals("name", criteria.get(1).getName());
-        assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    null, List.of(criteria1, criteria2), TestEntity.class);
 
-        // Third condition (inside nested parentheses)
-        assertEquals("age", criteria.get(2).getName());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(2).getCombiner());
+            assertNotNull(spec);
+        }
 
-        // Fourth condition (inside nested parentheses)
-        assertEquals("status", criteria.get(3).getName());
-        assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(3).getCombiner());
+        @Test
+        @DisplayName("Should build specification with AND combiner")
+        void testBuildSpecification_WithAndCombiner() {
+            QueryCriteria criteria1 = QueryCriteria.builder()
+                    .name("name")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("John")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            QueryCriteria criteria2 = QueryCriteria.builder()
+                    .name("age")
+                    .operator(IEnumOperator.Types.GT)
+                    .value("25")
+                    .combiner(IEnumCriteriaCombiner.Types.AND)
+                    .build();
+
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    null, List.of(criteria1, criteria2), TestEntity.class);
+
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should build specification with tenant")
+        void testBuildSpecification_WithTenant() {
+            QueryCriteria criteria = QueryCriteria.builder()
+                    .name("name")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("John")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    "tenant1", List.of(criteria), TestEntity.class);
+
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should build specification without tenant")
+        void testBuildSpecification_WithoutTenant() {
+            QueryCriteria criteria = QueryCriteria.builder()
+                    .name("name")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("John")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    null, List.of(criteria), TestEntity.class);
+
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should build specification with empty tenant")
+        void testBuildSpecification_WithEmptyTenant() {
+            QueryCriteria criteria = QueryCriteria.builder()
+                    .name("name")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("John")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    "", List.of(criteria), TestEntity.class);
+
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid field name")
+        void testBuildSpecification_InvalidFieldName() {
+            QueryCriteria criteria = QueryCriteria.builder()
+                    .name("invalidField")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("value")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            WrongCriteriaFilterException exception = assertThrows(
+                    WrongCriteriaFilterException.class,
+                    () -> CriteriaHelper.buildSpecification(null, List.of(criteria), TestEntity.class)
+            );
+
+            assertTrue(exception.getMessage().contains("Invalid field name: invalidField"));
+        }
+
+        @Test
+        @DisplayName("Should handle all operator types")
+        void testBuildSpecification_AllOperators() {
+            IEnumOperator.Types[] operators = {
+                    IEnumOperator.Types.EQ, IEnumOperator.Types.NE, IEnumOperator.Types.LI,
+                    IEnumOperator.Types.NL, IEnumOperator.Types.LT, IEnumOperator.Types.LE,
+                    IEnumOperator.Types.GT, IEnumOperator.Types.GE
+            };
+
+            for (IEnumOperator.Types operator : operators) {
+                QueryCriteria criteria = QueryCriteria.builder()
+                        .name("name")
+                        .operator(operator)
+                        .value("value")
+                        .combiner(IEnumCriteriaCombiner.Types.OR)
+                        .build();
+
+                Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                        null, List.of(criteria), TestEntity.class);
+                assertNotNull(spec, "Failed for operator: " + operator);
+            }
+        }
+
+        @Test
+        @DisplayName("Should handle type conversion for different field types")
+        void testBuildSpecification_TypeConversion() {
+            // Test Integer conversion
+            QueryCriteria intCriteria = QueryCriteria.builder()
+                    .name("age")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("25")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            // Test Boolean conversion
+            QueryCriteria boolCriteria = QueryCriteria.builder()
+                    .name("active")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("true")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            // Test Double conversion
+            QueryCriteria doubleCriteria = QueryCriteria.builder()
+                    .name("salary")
+                    .operator(IEnumOperator.Types.GT)
+                    .value("50000.0")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            List<QueryCriteria> criteria = List.of(intCriteria, boolCriteria, doubleCriteria);
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    null, criteria, TestEntity.class);
+
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should handle invalid type conversion gracefully")
+        void testBuildSpecification_InvalidTypeConversion() {
+            QueryCriteria criteria = QueryCriteria.builder()
+                    .name("age")
+                    .operator(IEnumOperator.Types.EQ)
+                    .value("invalid_number")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            // Should not throw exception, should fallback to string
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    null, List.of(criteria), TestEntity.class);
+
+            assertNotNull(spec);
+        }
     }
 
-    @Test
-    void testconvertSqlWhereToCriteria_ComplexWithParentheses() {
-        String sqlWhere = "(name = 'John' | age > 25) & (department = 'IT' | status = 'ACTIVE')";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+    @Nested
+    @DisplayName("Individual Specification Methods Tests")
+    class IndividualSpecificationTests {
 
-        assertEquals(4, criteria.size());
+        @Test
+        @DisplayName("Should create equal specification")
+        void testEqualSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.equal("name", "John");
+            assertNotNull(spec);
 
-        // Verify all combiners are correct
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner()); // name
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(1).getCombiner()); // age
-        assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(2).getCombiner()); // department
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(3).getCombiner()); // status
+            // Test with mock criteria builder
+            Root<TestEntity> root = mock(Root.class);
+            CriteriaQuery<?> query = mock(CriteriaQuery.class);
+            CriteriaBuilder cb = mock(CriteriaBuilder.class);
+
+            spec.toPredicate(root, query, cb);
+            verify(cb).equal(any(), eq("John"));
+        }
+
+        @Test
+        @DisplayName("Should create not equal specification")
+        void testNotEqualSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.notEqual("name", "John");
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should create like specification")
+        void testLikeSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.like("name", "John");
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should create not like specification")
+        void testNotLikeSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.notLike("name", "John");
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should create less than specification")
+        void testLessThanSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.lessThan("age", 30);
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should create less than or equal specification")
+        void testLessThanOrEqualToSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.lessThanOrEqualTo("age", 30);
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should create greater than specification")
+        void testGreaterThanSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.greaterThan("age", 30);
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should create greater than or equal specification")
+        void testGreaterThanOrEqualToSpecification() {
+            Specification<TestEntity> spec = CriteriaHelper.greaterThanOrEqualTo("age", 30);
+            assertNotNull(spec);
+        }
     }
 
-    @Test
-    void testconvertSqlWhereToCriteria_SingleConditionInParentheses() {
-        String sqlWhere = "(name = 'John')";
-        List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+    @Nested
+    @DisplayName("Utility Class Tests")
+    class UtilityClassTests {
 
-        assertEquals(1, criteria.size());
-        assertEquals("name", criteria.get(0).getName());
-        assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
+        @Test
+        @DisplayName("Should not allow instantiation")
+        void testPrivateConstructor() {
+            assertThrows(UnsupportedOperationException.class, () -> {
+                try {
+                    var constructor = CriteriaHelper.class.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    constructor.newInstance();
+                } catch (Exception e) {
+                    if (e.getCause() instanceof UnsupportedOperationException) {
+                        throw (UnsupportedOperationException) e.getCause();
+                    }
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
-    @Test
-    void testBuildSpecification_WithParentheses() {
-        QueryCriteria criteria1 = QueryCriteria.builder()
-                .name("name")
-                .operator(IEnumOperator.Types.EQ)
-                .value("John")
-                .combiner(IEnumCriteriaCombiner.Types.OR)
-                .build();
+    @Nested
+    @DisplayName("Integration Tests")
+    class IntegrationTests {
 
-        QueryCriteria criteria2 = QueryCriteria.builder()
-                .name("age")
-                .operator(IEnumOperator.Types.GT)
-                .value("25")
-                .combiner(IEnumCriteriaCombiner.Types.AND)
-                .build();
+        @Test
+        @DisplayName("Should handle complex real-world scenario")
+        void testComplexRealWorldScenario() {
+            String complexQuery = "WHERE (name ~ 'John' | name ~ 'Jane') & age >= 18 & age <= 65 & " +
+                    "active = true & (department = 'IT' | department = 'HR') & salary > 50000";
 
-        QueryCriteria criteria3 = QueryCriteria.builder()
-                .name("status")
-                .operator(IEnumOperator.Types.EQ)
-                .value("ACTIVE")
-                .combiner(IEnumCriteriaCombiner.Types.OR)
-                .build();
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(complexQuery);
 
-        // Simulates: (name = 'John' AND age > 25) OR status = 'ACTIVE'
-        Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
-                null, List.of(criteria1, criteria2, criteria3), TestEntity.class);
+            assertFalse(criteria.isEmpty());
 
-        assertNotNull(spec);
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    "tenant1", criteria, TestEntity.class);
+
+            assertNotNull(spec);
+        }
+
+        @Test
+        @DisplayName("Should handle end-to-end workflow")
+        void testEndToEndWorkflow() {
+            // 1. Parse SQL WHERE clause
+            String sqlWhere = "name = 'John' & age > 25 & active = true";
+            List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
+
+            // 2. Verify criteria parsing
+            assertEquals(3, criteria.size());
+
+            // 3. Get criteria metadata
+            Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertTrue(criteriaData.containsKey("name"));
+            assertTrue(criteriaData.containsKey("age"));
+            assertTrue(criteriaData.containsKey("active"));
+
+            // 4. Build specification
+            Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                    "tenant1", criteria, TestEntity.class);
+
+            assertNotNull(spec);
+        }
+    }
+
+    // Test entities
+    @Data
+    static class TestEntity implements IIdAssignable<Long> {
+        private Long id;
+
+        @Criteria
+        private String name;
+
+        @Criteria
+        private Integer age;
+
+        @Criteria
+        private String status;
+
+        @Criteria
+        private Boolean active;
+
+        @Criteria
+        private String department;
+
+        @Criteria
+        private Double salary;
+
+        @Criteria
+        private Long score;
+
+        private String nonCriteriaField;
+
+        @Criteria
+        private String tenant;
+    }
+
+    @Data
+    static class EmptyTestEntity implements IIdAssignable<Long> {
+        private Long id;
+        private String someField;
     }
 }
