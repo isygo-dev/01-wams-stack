@@ -1,4 +1,4 @@
-package eu.isygoit.storage.s3.exception;
+package eu.isygoit.storage.exception;
 
 import eu.isygoit.annotation.MsgLocale;
 import eu.isygoit.exception.ManagedException;
@@ -7,15 +7,15 @@ import eu.isygoit.exception.ManagedException;
 /**
  * The type Min io object exception.
  */
-@MsgLocale("oxicloud.get.object.exception")
-public class OxiCloudObjectException extends ManagedException {
+@MsgLocale("minio.get.object.exception")
+public class MinIoObjectException extends ManagedException {
 
     /**
      * Instantiates a new Min io object exception.
      *
      * @param message the message
      */
-    public OxiCloudObjectException(String message) {
+    public MinIoObjectException(String message) {
         super(message);
     }
 
@@ -24,7 +24,7 @@ public class OxiCloudObjectException extends ManagedException {
      *
      * @param throwable the throwable
      */
-    public OxiCloudObjectException(Throwable throwable) {
+    public MinIoObjectException(Throwable throwable) {
         super(throwable);
     }
 
@@ -34,7 +34,7 @@ public class OxiCloudObjectException extends ManagedException {
      * @param message the message
      * @param cause   the cause
      */
-    public OxiCloudObjectException(String message, Throwable cause) {
+    public MinIoObjectException(String message, Throwable cause) {
         super(message, cause);
     }
 }

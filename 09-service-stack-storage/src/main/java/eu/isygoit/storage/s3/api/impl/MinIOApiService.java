@@ -2,7 +2,7 @@ package eu.isygoit.storage.s3.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.s3.api.IMinIOApiService;
-import eu.isygoit.storage.s3.exception.MinIoObjectException;
+import eu.isygoit.storage.exception.MinIoObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.object.StorageConfig;
 import io.minio.*;

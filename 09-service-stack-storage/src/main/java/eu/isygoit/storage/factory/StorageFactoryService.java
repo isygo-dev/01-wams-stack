@@ -1,7 +1,7 @@
-package eu.isygoit.storage.s3.factory;
+package eu.isygoit.storage.factory;
 
 import eu.isygoit.enums.IEnumStorage;
-import eu.isygoit.storage.s3.service.IObjectStorageService;
+import eu.isygoit.storage.service.IObjectStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;

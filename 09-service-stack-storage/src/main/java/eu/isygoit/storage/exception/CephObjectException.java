@@ -1,4 +1,4 @@
-package eu.isygoit.storage.s3.exception;
+package eu.isygoit.storage.exception;
 
 import eu.isygoit.annotation.MsgLocale;
 import eu.isygoit.exception.ManagedException;
@@ -7,15 +7,15 @@ import eu.isygoit.exception.ManagedException;
 /**
  * The type Min io object exception.
  */
-@MsgLocale("lakefs.get.object.exception")
-public class LakeFSObjectException extends ManagedException {
+@MsgLocale("ceph.get.object.exception")
+public class CephObjectException extends ManagedException {
 
     /**
      * Instantiates a new Min io object exception.
      *
      * @param message the message
      */
-    public LakeFSObjectException(String message) {
+    public CephObjectException(String message) {
         super(message);
     }
 
@@ -24,7 +24,7 @@ public class LakeFSObjectException extends ManagedException {
      *
      * @param throwable the throwable
      */
-    public LakeFSObjectException(Throwable throwable) {
+    public CephObjectException(Throwable throwable) {
         super(throwable);
     }
 
@@ -34,7 +34,7 @@ public class LakeFSObjectException extends ManagedException {
      * @param message the message
      * @param cause   the cause
      */
-    public LakeFSObjectException(String message, Throwable cause) {
+    public CephObjectException(String message, Throwable cause) {
         super(message, cause);
     }
 }

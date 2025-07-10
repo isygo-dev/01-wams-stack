@@ -14,7 +14,7 @@ import java.util.Map;
  * The type Minio configuration.
  */
 @Configuration
-public class MinioConfiguration {
+public class S3Configuration {
 
     /**
      * Min io map map.
@@ -33,16 +33,6 @@ public class MinioConfiguration {
      */
     @Bean
     public Map<String, S3Client> s3ClientMap() {
-        return new HashMap<>();
-    }
-
-    /**
-     * Open io connections map.
-     *
-     * @return the map
-     */
-    @Bean
-    public Map<String, Object> openIoConnections() {
         return new HashMap<>();
     }
 }

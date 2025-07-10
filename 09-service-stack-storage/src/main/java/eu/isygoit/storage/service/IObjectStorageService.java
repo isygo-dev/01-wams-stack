@@ -1,4 +1,4 @@
-package eu.isygoit.storage.s3.service;
+package eu.isygoit.storage.service;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.s3.object.FileStorage;

@@ -1,8 +1,8 @@
-package eu.isygoit.storage.s3.api.impl;
+package eu.isygoit.storage.lfs.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.s3.api.ILakeFSApiService;
-import eu.isygoit.storage.s3.exception.LakeFSObjectException;
+import eu.isygoit.storage.lfs.api.ILakeFSApiService;
+import eu.isygoit.storage.exception.LakeFSObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.object.StorageConfig;
 import lombok.extern.slf4j.Slf4j;

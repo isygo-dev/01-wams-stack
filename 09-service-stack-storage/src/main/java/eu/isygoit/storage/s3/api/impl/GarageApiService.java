@@ -2,7 +2,7 @@ package eu.isygoit.storage.s3.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.s3.api.IGarageApiService;
-import eu.isygoit.storage.s3.exception.GarageObjectException;
+import eu.isygoit.storage.exception.GarageObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.object.StorageConfig;
 import lombok.extern.slf4j.Slf4j;
