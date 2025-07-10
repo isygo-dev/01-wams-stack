@@ -22,4 +22,5 @@ public class StorageConfig {
     private String password;
     private String url;
     private String namespace;
+    private String region;
 }

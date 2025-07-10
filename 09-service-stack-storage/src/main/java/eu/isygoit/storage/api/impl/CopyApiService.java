@@ -35,6 +35,12 @@ public abstract class CopyApiService implements ICopyApiService {
     private final RestTemplate restTemplate;
     private final Map<String, StorageConfig> configMap;
 
+    /**
+     * Instantiates a new Copy api service.
+     *
+     * @param restTemplate the rest template
+     * @param configMap    the config map
+     */
     public CopyApiService(RestTemplate restTemplate, Map<String, StorageConfig> configMap) {
         this.restTemplate = restTemplate;
         this.configMap = configMap;

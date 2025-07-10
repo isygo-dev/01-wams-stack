@@ -1,0 +1,28 @@
+package eu.isygoit.storage.service;
+
+import eu.isygoit.storage.api.impl.CephApiService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.S3Client;
+
+import java.util.Map;
+
+/**
+ * The type Ceph service.
+ */
+@Slf4j
+@Service
+public class CephService extends CephApiService {
+
+
+    /**
+     * Instantiates a new Ceph service.
+     *
+     * @param s3ClientMap the s 3 client map
+     */
+    @Autowired
+    public CephService(Map<String, S3Client> s3ClientMap) {
+        super(s3ClientMap);
+    }
+}

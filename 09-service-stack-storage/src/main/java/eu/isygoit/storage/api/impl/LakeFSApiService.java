@@ -36,6 +36,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
     private final Map<String, RestTemplate> lakeFSClientMap;
 
+    /**
+     * Instantiates a new Lake fs api service.
+     *
+     * @param lakeFSClientMap the lake fs client map
+     */
     public LakeFSApiService(Map<String, RestTemplate> lakeFSClientMap) {
         this.lakeFSClientMap = lakeFSClientMap;
     }

@@ -7,9 +7,6 @@ import eu.isygoit.storage.object.FileStorage;
 import eu.isygoit.storage.object.StorageConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -26,12 +23,11 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 import java.net.URI;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +43,11 @@ public abstract class OxiCloudApiService implements IOxiCloudApiService {
 
     private final Map<String, S3Client> s3ClientMap;
 
+    /**
+     * Instantiates a new Oxi cloud api service.
+     *
+     * @param s3ClientMap the s 3 client map
+     */
     public OxiCloudApiService(Map<String, S3Client> s3ClientMap) {
         this.s3ClientMap = s3ClientMap;
     }
@@ -384,7 +385,7 @@ public abstract class OxiCloudApiService implements IOxiCloudApiService {
                     fileObject.objectName = object.key();
                     fileObject.size = object.size();
                     fileObject.etag = object.eTag();
-                    fileObject.lastModified = ZonedDateTime.from(object.lastModified());
+                    fileObject.lastModified = object.lastModified().atZone(ZoneId.systemDefault());
                     fileObject.versionID = null; // OxiCloud versioning support assumed limited
                     fileObject.currentVersion = true; // Simplified assumption
                     listFileStorage.add(fileObject);

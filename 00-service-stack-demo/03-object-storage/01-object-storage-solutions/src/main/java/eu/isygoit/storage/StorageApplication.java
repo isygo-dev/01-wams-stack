@@ -6,6 +6,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
+/**
+ * The type Storage application.
+ */
 @SpringBootApplication(scanBasePackages = {
         "eu.isygoit.storage",        // additional package where api resides
         "eu.isygoit.app"
@@ -23,6 +26,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 )
 public class StorageApplication {
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         SpringApplication.run(StorageApplication.class, args);
     }

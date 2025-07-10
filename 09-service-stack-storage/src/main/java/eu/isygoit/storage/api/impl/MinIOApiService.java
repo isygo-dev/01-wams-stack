@@ -38,6 +38,11 @@ public abstract class MinIOApiService implements IMinIOApiService {
 
     private final Map<String, MinioClient> minIoMap;
 
+    /**
+     * Instantiates a new Min io api service.
+     *
+     * @param minIoMap the min io map
+     */
     public MinIOApiService(Map<String, MinioClient> minIoMap) {
         this.minIoMap = minIoMap;
     }

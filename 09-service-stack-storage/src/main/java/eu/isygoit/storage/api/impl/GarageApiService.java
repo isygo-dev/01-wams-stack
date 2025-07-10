@@ -7,15 +7,11 @@ import eu.isygoit.storage.object.FileStorage;
 import eu.isygoit.storage.object.StorageConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -25,13 +21,13 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +43,11 @@ public abstract class GarageApiService implements IGarageApiService {
 
     private final Map<String, S3Client> s3ClientMap;
 
+    /**
+     * Instantiates a new Garage api service.
+     *
+     * @param s3ClientMap the s 3 client map
+     */
     public GarageApiService(Map<String, S3Client> s3ClientMap) {
         this.s3ClientMap = s3ClientMap;
     }
@@ -63,16 +64,23 @@ public abstract class GarageApiService implements IGarageApiService {
         validateConfig(config);
         return s3ClientMap.computeIfAbsent(config.getTenant(), k -> {
             try {
+                log.info("Creating S3 client for tenant: {}, endpoint: {}", config.getTenant(), config.getUrl());
                 return S3Client.builder()
                         .endpointOverride(URI.create(config.getUrl()))
                         .credentialsProvider(StaticCredentialsProvider.create(
                                 AwsBasicCredentials.create(config.getUserName(), config.getPassword())))
-                        .region(Region.of("garage")) // Garage uses 'garage' as the region
-                        .httpClient(ApacheHttpClient.builder().build())
-                        .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                        .region(Region.of(config.getRegion() != null ? config.getRegion() : "us-east-1"))
+                        .forcePathStyle(true)
                         .build();
+            } catch (IllegalArgumentException e) {
+                log.error("Invalid endpoint URL: {} for tenant: {}", config.getUrl(), config.getTenant(), e);
+                throw new GarageObjectException("Invalid Ceph endpoint URL: " + config.getUrl(), e);
             } catch (Exception e) {
-                log.error("Failed to create S3 client for tenant: {}", config.getTenant(), e);
+                if (e.getCause() instanceof UnknownHostException) {
+                    log.error("DNS resolution failed for endpoint: {} for tenant: {}", config.getUrl(), config.getTenant(), e);
+                    throw new GarageObjectException("Cannot resolve Ceph endpoint: " + config.getUrl(), e);
+                }
+                log.error("Failed to create S3 client for tenant: {}, endpoint: {}", config.getTenant(), config.getUrl(), e);
                 throw new GarageObjectException("Failed to initialize S3 client", e);
             }
         });
@@ -92,9 +100,8 @@ public abstract class GarageApiService implements IGarageApiService {
                     .endpointOverride(URI.create(config.getUrl()))
                     .credentialsProvider(StaticCredentialsProvider.create(
                             AwsBasicCredentials.create(config.getUserName(), config.getPassword())))
-                    .region(Region.of("garage"))
-                    .httpClient(ApacheHttpClient.builder().build())
-                    .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                    .region(Region.of(config.getRegion() != null ? config.getRegion() : "us-east-1"))
+                    .forcePathStyle(true)
                     .build();
             s3ClientMap.put(config.getTenant(), client);
             log.info("Updated S3 connection for tenant: {}", config.getTenant());
@@ -265,7 +272,7 @@ public abstract class GarageApiService implements IGarageApiService {
                         .endpointOverride(URI.create(config.getUrl()))
                         .credentialsProvider(StaticCredentialsProvider.create(
                                 AwsBasicCredentials.create(config.getUserName(), config.getPassword())))
-                        .region(Region.of("garage"))
+                        .region(Region.of(config.getRegion() != null ? config.getRegion() : "us-east-1"))
                         .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
                         .build();
                 GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -384,8 +391,9 @@ public abstract class GarageApiService implements IGarageApiService {
                     fileObject.objectName = object.key();
                     fileObject.size = object.size();
                     fileObject.etag = object.eTag();
-                    fileObject.lastModified = ZonedDateTime.from(object.lastModified());
-                    fileObject.versionID = null; // Garage may not support versioning fully
+                    fileObject.lastModified = object.lastModified().atZone(ZoneId.systemDefault());
+                    // Garage may not return version IDs unless versioning is enabled
+                    fileObject.versionID = null; // Versioning not supported in this simplified implementation
                     fileObject.currentVersion = true; // Simplified assumption
                     listFileStorage.add(fileObject);
                 }

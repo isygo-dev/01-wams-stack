@@ -32,6 +32,12 @@ public abstract class OpenIOApiService implements IOpenIOApiService {
     private final Map<String, Object> openIoConnections;
     private final OkHttpClient httpClient;
 
+    /**
+     * Instantiates a new Open io api service.
+     *
+     * @param openIoConnections the open io connections
+     * @param httpClient        the http client
+     */
     public OpenIOApiService(Map<String, Object> openIoConnections, OkHttpClient httpClient) {
         this.openIoConnections = openIoConnections;
         this.httpClient = httpClient;
