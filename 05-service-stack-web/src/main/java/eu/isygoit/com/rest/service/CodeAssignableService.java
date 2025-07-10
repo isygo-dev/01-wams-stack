@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The type Code assignable service.
+ * The type Code assignable api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter
@@ -127,7 +127,7 @@ public abstract class CodeAssignableService<I extends Serializable,
             if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
                 return response.getBody();
             } else {
-                throw new BadResponseException("Invalid response from remote next code service.");
+                throw new BadResponseException("Invalid response from remote next code api.");
             }
         } catch (Exception e) {
             log.error("Remote Feign call failed during code generation", e);

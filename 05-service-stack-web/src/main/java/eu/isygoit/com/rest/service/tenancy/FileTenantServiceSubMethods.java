@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.Serializable;
 
 /**
- * The type File service sub methods.
+ * The type File api sub methods.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

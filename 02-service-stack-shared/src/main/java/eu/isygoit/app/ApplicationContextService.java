@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The interface Application context service.
+ * The interface Application context api.
  */
 public interface ApplicationContextService {
 

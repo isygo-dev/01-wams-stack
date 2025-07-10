@@ -5,7 +5,7 @@ import eu.isygoit.model.extendable.NextCodeModel;
 import java.util.Optional;
 
 /**
- * The interface Next code service.
+ * The interface Next code api.
  *
  * @param <T> the type parameter
  */

@@ -4,7 +4,7 @@ import eu.isygoit.model.ITLEntity;
 
 
 /**
- * The interface Time line listener service.
+ * The interface Time line listener api.
  */
 public interface ITimeLineListenerService {
 

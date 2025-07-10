@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * The interface File service methods.
+ * The interface File api methods.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

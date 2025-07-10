@@ -31,15 +31,15 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
     private TokenServiceApi tokenService;
 
     /**
-     * Validates a JWT token using the remote token service API.
-     * Makes a Feign client call to the token service and handles the response.
+     * Validates a JWT token using the remote token api API.
+     * Makes a Feign client call to the token api and handles the response.
      *
      * @param jwt         the JWT token to validate
      * @param tenant      the tenant extracted from token
      * @param application the application identifier from token
      * @param userName    the username from token
      * @return true if token is valid
-     * @throws TokenInvalidException if token validation fails or service is unavailable
+     * @throws TokenInvalidException if token validation fails or api is unavailable
      */
     @Override
     public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
@@ -94,11 +94,11 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
         } catch (Exception e) {
             // Log the exception but allow the request to proceed
             // Consider if this is the desired behavior or if you should throw an exception
-            log.error("Remote token service call failed for user: {}, application: {}, tenant: {}",
+            log.error("Remote token api call failed for user: {}, application: {}, tenant: {}",
                     userName, application, tenant, e);
 
             // Uncomment to throw exception instead of continuing
-            // throw new TokenInvalidException("Token validation service unavailable", e);
+            // throw new TokenInvalidException("Token validation api unavailable", e);
         }
 
         return true;
@@ -120,10 +120,10 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
     }
 
     /**
-     * Gets the token service API instance.
-     * Protected access allows subclasses to access the token service if needed.
+     * Gets the token api API instance.
+     * Protected access allows subclasses to access the token api if needed.
      *
-     * @return the token service API
+     * @return the token api API
      */
     protected TokenServiceApi getTokenService() {
         return tokenService;

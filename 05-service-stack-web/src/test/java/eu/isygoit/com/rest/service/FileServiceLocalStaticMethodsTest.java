@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileServiceLocalStaticMethodsTest {
 
     // Temporary directory for testing file operations
-    private static final Path TEMP_DIR = Path.of(System.getProperty("java.io.tmpdir"), "file-service-test");
+    private static final Path TEMP_DIR = Path.of(System.getProperty("java.io.tmpdir"), "file-api-test");
 
     /**
      * Sets .

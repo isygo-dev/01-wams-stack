@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * The interface Crud service events.
+ * The interface Crud api events.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

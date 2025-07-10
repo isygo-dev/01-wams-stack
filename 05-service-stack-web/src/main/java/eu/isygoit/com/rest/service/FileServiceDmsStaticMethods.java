@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * The type File service dms static methods.
+ * The type File api dms static methods.
  */
 @Slf4j
 public final class FileServiceDmsStaticMethods {
@@ -29,7 +29,7 @@ public final class FileServiceDmsStaticMethods {
      * @param <T>               the type parameter
      * @param file              the file
      * @param entity            the entity
-     * @param linkedFileService the linked file service
+     * @param linkedFileService the linked file api
      * @return the linked file response dto
      * @throws IOException the io exception
      */
@@ -39,8 +39,8 @@ public final class FileServiceDmsStaticMethods {
             ILinkedFileApi linkedFileService) throws IOException {
 
         if (linkedFileService == null) {
-            log.error("LinkedFileApi service is null in upload");
-            throw new LinkedFileServiceNullException("LinkedFileApi service is null");
+            log.error("LinkedFileApi api is null in upload");
+            throw new LinkedFileServiceNullException("LinkedFileApi api is null");
         }
         if (file == null) {
             log.error("MultipartFile is null in upload");
@@ -66,7 +66,7 @@ public final class FileServiceDmsStaticMethods {
                 .file(file)
                 .build();
 
-        // Call linked file service to upload
+        // Call linked file api to upload
         ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(requestDto);
 
         // Return body if successful, else null
@@ -85,7 +85,7 @@ public final class FileServiceDmsStaticMethods {
      * @param <T>               the type parameter
      * @param entity            the entity
      * @param version           the version
-     * @param linkedFileService the linked file service
+     * @param linkedFileService the linked file api
      * @return the resource
      * @throws IOException the io exception
      */
@@ -95,8 +95,8 @@ public final class FileServiceDmsStaticMethods {
             ILinkedFileApi linkedFileService) throws IOException {
 
         if (linkedFileService == null) {
-            log.error("LinkedFileApi service is null in upload");
-            throw new LinkedFileServiceNullException("LinkedFileApi service is null");
+            log.error("LinkedFileApi api is null in upload");
+            throw new LinkedFileServiceNullException("LinkedFileApi api is null");
         }
 
         if (entity == null) {
@@ -125,7 +125,7 @@ public final class FileServiceDmsStaticMethods {
      *
      * @param <L>               the type parameter
      * @param entity            the entity
-     * @param linkedFileService the linked file service
+     * @param linkedFileService the linked file api
      * @return the boolean
      */
     public static <L extends ILinkedFile & ICodeAssignable & IIdAssignable> boolean delete(
@@ -133,8 +133,8 @@ public final class FileServiceDmsStaticMethods {
             ILinkedFileApi linkedFileService) {
 
         if (linkedFileService == null) {
-            log.error("LinkedFileApi service is null in upload");
-            throw new LinkedFileServiceNullException("LinkedFileApi service is null");
+            log.error("LinkedFileApi api is null in upload");
+            throw new LinkedFileServiceNullException("LinkedFileApi api is null");
         }
 
         if (entity == null) {

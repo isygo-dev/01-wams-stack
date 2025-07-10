@@ -33,7 +33,7 @@ public class LocaleServiceImpl implements LocaleService {
      * @param messageSource         the message source
      * @param localeResolver        the locale resolver
      * @param messageMap            the message map
-     * @param extendedLocaleService the extended locale service
+     * @param extendedLocaleService the extended locale api
      */
     public LocaleServiceImpl(
             MessageSource messageSource,

@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.util.Date;
 
 /**
- * The type Quartz service.
+ * The type Quartz api.
  */
 @Slf4j
 @Service

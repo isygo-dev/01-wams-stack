@@ -16,7 +16,7 @@ public class NotificationListener {
     /**
      * Init.
      *
-     * @param notificationService the notification service
+     * @param notificationService the notification api
      */
 //@Autowired
     public void init(INotificationListenerService notificationService) {

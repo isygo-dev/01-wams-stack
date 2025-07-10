@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * The interface Jwt service.
+ * The interface Jwt api.
  */
 public interface IJwtService {
 

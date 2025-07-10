@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Generic JSON-based service implementation with CRUD operations.
+ * Generic JSON-based api implementation with CRUD operations.
  * Provides a flexible way to handle entities stored as JSON in the database.
  *
  * @param <T>  JSON element type extending IIdAssignable and JsonElement
@@ -51,7 +51,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     private final ObjectMapper objectMapper;
 
     /**
-     * Instantiates a new Json based service.
+     * Instantiates a new Json based api.
      *
      * @param objectMapper the object mapper
      */

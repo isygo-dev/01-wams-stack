@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The interface Crud service method.
+ * The interface Crud api method.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

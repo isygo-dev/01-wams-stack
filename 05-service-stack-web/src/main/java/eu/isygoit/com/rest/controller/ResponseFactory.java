@@ -365,7 +365,7 @@ public class ResponseFactory {
     }
 
     /**
-     * Response service unavailable response entity.
+     * Response api unavailable response entity.
      *
      * @param <T> the type parameter
      * @return the response entity

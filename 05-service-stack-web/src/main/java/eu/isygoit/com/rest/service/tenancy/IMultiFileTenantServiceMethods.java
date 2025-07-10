@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * The interface Multi file service methods.
+ * The interface Multi file api methods.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

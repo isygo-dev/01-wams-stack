@@ -5,7 +5,7 @@ import eu.isygoit.model.IIdAssignable;
 import org.springframework.data.repository.Repository;
 
 /**
- * The interface Crud service utils.
+ * The interface Crud api utils.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

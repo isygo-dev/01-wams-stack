@@ -27,7 +27,7 @@ public abstract class ServiceStarter {
     /**
      * Instantiates a new Service starter.
      *
-     * @param applicationContextService the application context service
+     * @param applicationContextService the application context api
      * @param apiExtractor              the api extractor
      */
     protected ServiceStarter(@Autowired ApplicationContextService applicationContextService,
@@ -47,7 +47,7 @@ public abstract class ServiceStarter {
                 if (apiExtractor != null) {
                     apiExtractor.extractApis(ctrl.getClass());
                 } else {
-                    log.warn("<Warning>: Extract service is null {}", ctrl.getClass().getSimpleName());
+                    log.warn("<Warning>: Extract api is null {}", ctrl.getClass().getSimpleName());
                 }
             } catch (InvocationTargetException e) {
                 log.error(ERROR_EXTRACT_API_FAILS, ctrl.getClass().getSimpleName(), e);

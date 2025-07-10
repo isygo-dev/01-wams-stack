@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * The type Jwt service test.
+ * The type Jwt api test.
  */
 class JwtServiceTest {
 

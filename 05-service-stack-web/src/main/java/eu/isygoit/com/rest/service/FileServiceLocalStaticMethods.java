@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 /**
- * The type File service local static methods.
+ * The type File api local static methods.
  */
 @Slf4j
 public final class FileServiceLocalStaticMethods {

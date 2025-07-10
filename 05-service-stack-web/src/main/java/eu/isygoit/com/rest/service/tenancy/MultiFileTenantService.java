@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The type Multi file service.
+ * The type Multi file api.
  *
  * @param <I>  the type parameter
  * @param <T>  the type parameter

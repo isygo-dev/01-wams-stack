@@ -6,9 +6,9 @@ package eu.isygoit.quartz.service;
 public interface QuartzJob {
 
     /**
-     * Gets job service.
+     * Gets job api.
      *
-     * @return the job service
+     * @return the job api
      */
     JobService getJobService();
 }

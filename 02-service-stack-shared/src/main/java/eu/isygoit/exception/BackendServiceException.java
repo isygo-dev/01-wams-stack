@@ -7,9 +7,9 @@ package eu.isygoit.exception;
 import eu.isygoit.annotation.MsgLocale;
 
 /**
- * The type Backend service exception.
+ * The type Backend api exception.
  */
-@MsgLocale(value = "backend.service.exception")
+@MsgLocale(value = "backend.api.exception")
 public class BackendServiceException extends ManagedException {
 
     /**
@@ -18,13 +18,13 @@ public class BackendServiceException extends ManagedException {
     public static final long serialVersionUID = 1L;
 
     /**
-     * Instantiates a new Backend service exception.
+     * Instantiates a new Backend api exception.
      */
     public BackendServiceException() {
     }
 
     /**
-     * Instantiates a new Backend service exception.
+     * Instantiates a new Backend api exception.
      *
      * @param message the message
      */

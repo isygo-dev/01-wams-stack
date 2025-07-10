@@ -18,7 +18,7 @@ public class AuditorAwareImpl implements AuditorAware<String> {
     /**
      * Instantiates a new Auditor aware.
      *
-     * @param auditAwereService the audit awere service
+     * @param auditAwereService the audit awere api
      */
     public AuditorAwareImpl(IAuditAwereService auditAwereService) {
         this.auditAwereService = auditAwereService;

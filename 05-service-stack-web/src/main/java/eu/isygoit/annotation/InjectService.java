@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Ctrl service.
+ * The interface Ctrl api.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
@@ -16,5 +16,5 @@ public @interface InjectService {
      *
      * @return the class
      */
-    Class<?> value(); // service class
+    Class<?> value(); // api class
 }

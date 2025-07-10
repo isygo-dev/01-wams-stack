@@ -29,7 +29,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Generic tenant-aware JSON-based service implementation with CRUD operations.
+ * Generic tenant-aware JSON-based api implementation with CRUD operations.
  * Provides multi-tenant support for entities stored as JSON in the database.
  *
  * @param <T>  JSON element type extending IIdAssignable and JsonElement
@@ -54,7 +54,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     private final ObjectMapper objectMapper;
 
     /**
-     * Instantiates a new Json based tenant service.
+     * Instantiates a new Json based tenant api.
      *
      * @param objectMapper the object mapper
      */

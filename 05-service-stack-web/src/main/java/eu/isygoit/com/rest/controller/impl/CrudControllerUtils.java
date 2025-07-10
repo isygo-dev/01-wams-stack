@@ -53,7 +53,7 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     /**
      * The constant CONTROLLER_SERVICE.
      */
-    public static final String CONTROLLER_SERVICE = "controller service";
+    public static final String CONTROLLER_SERVICE = "controller api";
     @Getter
     private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
     @Getter

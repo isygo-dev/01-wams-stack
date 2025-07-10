@@ -7,7 +7,7 @@ import java.io.IOException;
 
 
 /**
- * The interface Notification listener service.
+ * The interface Notification listener api.
  */
 public interface INotificationListenerService {
 

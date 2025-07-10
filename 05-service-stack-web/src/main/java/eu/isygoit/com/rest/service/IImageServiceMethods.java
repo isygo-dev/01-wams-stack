@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * The interface Image service methods.
+ * The interface Image api methods.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

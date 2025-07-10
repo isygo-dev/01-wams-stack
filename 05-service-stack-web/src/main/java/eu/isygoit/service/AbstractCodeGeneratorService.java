@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * The type Abstract next code service.
+ * The type Abstract next code api.
  *
  * @param <T> the type parameter
  */

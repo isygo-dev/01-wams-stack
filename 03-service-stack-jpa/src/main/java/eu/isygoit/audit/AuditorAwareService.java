@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * The type Auditor aware service.
+ * The type Auditor aware api.
  */
 @Slf4j
 @Service

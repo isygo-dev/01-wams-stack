@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @param <T> the entity type (must implement IIdAssignable)
  * @param <M> the minimal DTO type (must implement IIdAssignableDto)
  * @param <F> the full DTO type (extends M)
- * @param <S> the service type (must implement ICrudServiceMethods, ICrudServiceEvents, ICrudServiceUtils)
+ * @param <S> the api type (must implement ICrudServiceMethods, ICrudServiceEvents, ICrudServiceUtils)
  */
 @Slf4j
 public abstract class CrudControllerSubMethods<

@@ -20,7 +20,7 @@ public class TimeLineListener {
     /**
      * Init.
      *
-     * @param timeLineListenerService the time line listener service
+     * @param timeLineListenerService the time line listener api
      */
     @Nullable
     @Autowired

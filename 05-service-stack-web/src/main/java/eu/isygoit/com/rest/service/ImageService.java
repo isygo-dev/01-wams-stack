@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- * The type Image service.
+ * The type Image api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

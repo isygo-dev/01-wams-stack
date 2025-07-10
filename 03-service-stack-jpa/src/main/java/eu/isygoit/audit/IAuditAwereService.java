@@ -3,7 +3,7 @@ package eu.isygoit.audit;
 import java.util.Optional;
 
 /**
- * The interface Audit awere service.
+ * The interface Audit awere api.
  *
  * @param <T> the type parameter
  */

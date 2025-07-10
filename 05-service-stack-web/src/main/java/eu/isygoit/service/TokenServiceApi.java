@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * The interface Token service api.
+ * The interface Token api api.
  */
 public interface TokenServiceApi {
 

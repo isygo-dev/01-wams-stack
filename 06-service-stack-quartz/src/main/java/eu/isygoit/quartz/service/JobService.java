@@ -3,7 +3,7 @@ package eu.isygoit.quartz.service;
 import org.quartz.JobExecutionContext;
 
 /**
- * The interface Job service.
+ * The interface Job api.
  */
 public interface JobService {
 

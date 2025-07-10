@@ -17,7 +17,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * The type Crud service utils.
+ * The type Crud api utils.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

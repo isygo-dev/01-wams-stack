@@ -6,7 +6,7 @@ import eu.isygoit.annotation.MsgLocale;
 /**
  * The type Operation not allowed exception.
  */
-@MsgLocale(value = "service.operation.exception")
+@MsgLocale(value = "api.operation.exception")
 public class ServiceOperationException extends ManagedException {
 
     /**

@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
- * The interface Code assignable service.
+ * The interface Code assignable api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter
@@ -33,18 +33,18 @@ public interface ICodeAssignableService<I extends Serializable, T extends IIdAss
     String getNextCode();
 
     /**
-     * Next code service code generator service.
+     * Next code api code generator api.
      *
-     * @return the code generator service
-     * @throws NextCodeServiceNotDefinedException the next code service not defined exception
+     * @return the code generator api
+     * @throws NextCodeServiceNotDefinedException the next code api not defined exception
      */
     ICodeGeneratorService<NextCodeModel> nextCodeService() throws NextCodeServiceNotDefinedException;
 
     /**
-     * Remote next code service remote next code service.
+     * Remote next code api remote next code api.
      *
-     * @return the remote next code service
-     * @throws RemoteNextCodeServiceNotDefinedException the remote next code service not defined exception
+     * @return the remote next code api
+     * @throws RemoteNextCodeServiceNotDefinedException the remote next code api not defined exception
      */
     IRemoteNextCodeService remoteNextCodeService() throws RemoteNextCodeServiceNotDefinedException;
 

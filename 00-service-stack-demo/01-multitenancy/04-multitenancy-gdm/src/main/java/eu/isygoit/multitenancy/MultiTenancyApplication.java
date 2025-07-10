@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication(scanBasePackages = {
-        "eu.isygoit.multitenancy",        // additional package where service resides
-        "eu.isygoit.multitenancy.service",
+        "eu.isygoit.multitenancy",        // additional package where api resides
+        "eu.isygoit.multitenancy.api",
         "eu.isygoit.app"
 },
         exclude = {

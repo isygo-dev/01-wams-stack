@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * The type Spring class scanner.
- * This service scans for classes annotated with a specific annotation within a given package.
+ * This api scans for classes annotated with a specific annotation within a given package.
  * It returns a set of bean definitions representing those classes.
  */
 @Service

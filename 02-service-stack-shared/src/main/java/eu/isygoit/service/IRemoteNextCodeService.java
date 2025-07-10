@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * The interface Remote next code service.
+ * The interface Remote next code api.
  */
 public interface IRemoteNextCodeService {
 

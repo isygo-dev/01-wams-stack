@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * The type File image service.
+ * The type File image api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

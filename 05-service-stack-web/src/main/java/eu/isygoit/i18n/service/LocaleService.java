@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
 /**
- * The interface Locale service.
+ * The interface Locale api.
  */
 public interface LocaleService {
 

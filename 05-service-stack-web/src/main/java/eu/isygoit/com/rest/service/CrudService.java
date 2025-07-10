@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /**
- * Abstract base class for CRUD service operations with tenant-aware functionality.
+ * Abstract base class for CRUD api operations with tenant-aware functionality.
  * Provides methods for creating, reading, updating, and deleting entities with performance optimizations.
  *
  * @param <I> the type of the identifier (must be Serializable)

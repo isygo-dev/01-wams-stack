@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Dms link file service.
+ * The interface Dms link file api.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

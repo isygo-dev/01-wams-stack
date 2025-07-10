@@ -8,7 +8,7 @@ import java.util.Date;
 
 
 /**
- * The interface Quartz service.
+ * The interface Quartz api.
  */
 public interface QuartzService {
 

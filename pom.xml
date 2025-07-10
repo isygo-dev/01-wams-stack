@@ -26,6 +26,7 @@
         <module>06-service-stack-quartz</module>
         <module>07-service-stack-cassandra</module>
         <module>08-service-stack-multitenancy</module>
+        <module>09-service-stack-storage</module>
 
         <module>00-service-stack-demo</module>
     </modules>

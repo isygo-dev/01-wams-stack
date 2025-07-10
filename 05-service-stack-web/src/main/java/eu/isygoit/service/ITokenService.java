@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The interface Token service.
+ * The interface Token api.
  */
 public interface ITokenService extends IJwtService {
 

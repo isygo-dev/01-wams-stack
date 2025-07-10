@@ -29,7 +29,7 @@ import java.time.Instant;
 import java.util.*;
 
 /**
- * The type Cassandra crud service.
+ * The type Cassandra crud api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

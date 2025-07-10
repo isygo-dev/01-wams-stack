@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
- * The interface Key service api.
+ * The interface Key api api.
  */
 public interface KeyServiceApi {
 

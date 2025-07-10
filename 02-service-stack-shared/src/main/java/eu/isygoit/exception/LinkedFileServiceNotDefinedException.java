@@ -4,13 +4,13 @@ import eu.isygoit.annotation.MsgLocale;
 
 
 /**
- * The type Linked file service not defined exception.
+ * The type Linked file api not defined exception.
  */
-@MsgLocale(value = "lnk.file.service.not.defined.exception")
+@MsgLocale(value = "lnk.file.api.not.defined.exception")
 public class LinkedFileServiceNotDefinedException extends ManagedException {
 
     /**
-     * Instantiates a new Linked file service not defined exception.
+     * Instantiates a new Linked file api not defined exception.
      *
      * @param message the message
      */

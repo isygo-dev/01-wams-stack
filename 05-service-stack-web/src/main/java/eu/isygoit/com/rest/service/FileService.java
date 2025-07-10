@@ -20,7 +20,7 @@ import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 
 /**
- * The type File service.
+ * The type File api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

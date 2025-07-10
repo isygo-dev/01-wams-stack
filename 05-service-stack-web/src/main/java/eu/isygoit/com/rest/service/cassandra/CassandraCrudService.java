@@ -1,13 +1,13 @@
 package eu.isygoit.com.rest.service.cassandra;
 
-import eu.isygoit.com.rest.service.*;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.CrudServiceUtils;
+import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.constants.LogConstants;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.OperationNotAllowedException;
-import eu.isygoit.exception.OperationNotSupportedException;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -17,7 +17,6 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -30,7 +29,7 @@ import java.time.Instant;
 import java.util.*;
 
 /**
- * The type Cassandra crud service.
+ * The type Cassandra crud api.
  *
  * @param <I> the type parameter
  * @param <T> the type parameter

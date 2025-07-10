@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * The type File service dms static methods test.
+ * The type File api dms static methods test.
  */
 class FileServiceDmsStaticMethodsTest {
 
@@ -48,7 +48,7 @@ class FileServiceDmsStaticMethodsTest {
     }
 
     /**
-     * Upload should throw linked file service null exception when linked file service is null.
+     * Upload should throw linked file api null exception when linked file api is null.
      *
      * @throws IOException the io exception
      */
@@ -59,7 +59,7 @@ class FileServiceDmsStaticMethodsTest {
 
         LinkedFileServiceNullException ex = assertThrows(LinkedFileServiceNullException.class,
                 () -> FileServiceDmsStaticMethods.upload(file, entity, null));
-        assertEquals("LinkedFileApi service is null", ex.getMessage());
+        assertEquals("LinkedFileApi api is null", ex.getMessage());
     }
 
     /**
@@ -115,7 +115,7 @@ class FileServiceDmsStaticMethodsTest {
     }
 
     /**
-     * Download should throw linked file service null exception when linked file service is null.
+     * Download should throw linked file api null exception when linked file api is null.
      *
      * @throws IOException the io exception
      */
@@ -125,7 +125,7 @@ class FileServiceDmsStaticMethodsTest {
 
         LinkedFileServiceNullException ex = assertThrows(LinkedFileServiceNullException.class,
                 () -> FileServiceDmsStaticMethods.download(entity, 1L, null));
-        assertEquals("LinkedFileApi service is null", ex.getMessage());
+        assertEquals("LinkedFileApi api is null", ex.getMessage());
     }
 
     /**
@@ -163,7 +163,7 @@ class FileServiceDmsStaticMethodsTest {
     }
 
     /**
-     * Delete should throw linked file service null exception when linked file service is null.
+     * Delete should throw linked file api null exception when linked file api is null.
      */
     @Test
     void delete_shouldThrowLinkedFileServiceNullException_whenLinkedFileServiceIsNull() {
@@ -171,7 +171,7 @@ class FileServiceDmsStaticMethodsTest {
 
         LinkedFileServiceNullException ex = assertThrows(LinkedFileServiceNullException.class,
                 () -> FileServiceDmsStaticMethods.delete(entity, null));
-        assertEquals("LinkedFileApi service is null", ex.getMessage());
+        assertEquals("LinkedFileApi api is null", ex.getMessage());
     }
 
     /**

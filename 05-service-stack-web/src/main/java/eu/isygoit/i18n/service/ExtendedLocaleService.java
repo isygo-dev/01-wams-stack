@@ -1,7 +1,7 @@
 package eu.isygoit.i18n.service;
 
 /**
- * The interface Extended locale service.
+ * The interface Extended locale api.
  */
 public interface ExtendedLocaleService {
 

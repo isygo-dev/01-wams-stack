@@ -5,7 +5,7 @@ import org.quartz.JobExecutionContext;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The type Abstract job service.
+ * The type Abstract job api.
  */
 @Slf4j
 public abstract class AbstractJobService implements JobService {

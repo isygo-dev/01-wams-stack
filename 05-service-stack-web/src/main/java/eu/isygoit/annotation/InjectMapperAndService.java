@@ -41,5 +41,5 @@ public @interface InjectMapperAndService {
      *
      * @return the class
      */
-    Class<? extends ICrudServiceUtils> service(); // eu.isygoit.service class
+    Class<? extends ICrudServiceUtils> service(); // eu.isygoit.api class
 }

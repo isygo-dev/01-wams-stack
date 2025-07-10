@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The type Application context service.
+ * The type Application context api.
  */
 @Slf4j
 @Service
@@ -25,7 +25,7 @@ public class ApplicationContextServiceImpl implements ApplicationContextService 
     private final ApplicationContext applicationContext;
 
     /**
-     * Instantiates a new Application context service.
+     * Instantiates a new Application context api.
      *
      * @param applicationContext the application context
      */

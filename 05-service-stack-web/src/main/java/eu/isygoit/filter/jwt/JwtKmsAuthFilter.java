@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * JWT KMS authentication filter that validates tokens using the token service.
+ * JWT KMS authentication filter that validates tokens using the token api.
  * This implementation extends AbstractJwtAuthFilter and adds KMS-specific validation logic.
  * It manages a list of hosts that should not be filtered and handles token validation
  * through the ITokenService.
@@ -50,7 +50,7 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
     }
 
     /**
-     * Validates a JWT token using the token service.
+     * Validates a JWT token using the token api.
      * Creates a user identifier by combining username and tenant.
      *
      * @param jwt         the JWT token to validate
@@ -58,19 +58,19 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
      * @param application the application identifier from token
      * @param userName    the username from token
      * @return true if token is valid
-     * @throws TokenInvalidException if token is invalid or token service is unavailable
+     * @throws TokenInvalidException if token is invalid or token api is unavailable
      */
     @Override
     public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
         if (tokenService == null) {
-            log.error("Token validation failed: Token service is not available");
+            log.error("Token validation failed: Token api is not available");
             throw new TokenInvalidException("No token validator available");
         }
 
         // Create user identifier by combining lowercase username with tenant
         String userIdentifier = userName.toLowerCase() + "@" + tenant;
 
-        // Validate token using token service
+        // Validate token using token api
         if (!tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)) {
             log.warn("Invalid token for user: {}, application: {}, tenant: {}",
                     userName, application, tenant);

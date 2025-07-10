@@ -41,11 +41,11 @@ public interface ICrudControllerUtils<I, T extends IIdAssignable<I>,
     EntityMapper<T, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException;
 
     /**
-     * Crud service s.
+     * Crud api s.
      *
      * @return the s
      * @throws BeanNotFoundException      the bean not found exception
-     * @throws ServiceNotDefinedException the service not defined exception
+     * @throws ServiceNotDefinedException the api not defined exception
      */
     S crudService() throws BeanNotFoundException, ServiceNotDefinedException;
 }
