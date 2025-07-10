@@ -30,16 +30,17 @@ import java.util.stream.Collectors;
  * connection pooling, and retry logic.
  */
 @Slf4j
-@Service
-@Transactional
-public class MinIOApiService implements IMinIOApiService {
+public abstract class MinIOApiService implements IMinIOApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
     private static final int DEFAULT_PRESIGNED_URL_EXPIRY_HOURS = 2;
 
-    @Autowired
-    private Map<String, MinioClient> minIoMap = new ConcurrentHashMap<>();
+    private final Map<String, MinioClient> minIoMap;
+
+    public MinIOApiService(Map<String, MinioClient> minIoMap) {
+        this.minIoMap = minIoMap;
+    }
 
     /**
      * Retrieves or creates a MinIO client connection for the specified tenant.

@@ -39,16 +39,17 @@ import java.util.stream.Collectors;
  * connection pooling, and retry logic.
  */
 @Slf4j
-@Service
-@Transactional
-public class OxiCloudApiService implements IOxiCloudApiService {
+public abstract class OxiCloudApiService implements IOxiCloudApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
     private static final int DEFAULT_PRESIGNED_URL_EXPIRY_HOURS = 2;
 
-    @Autowired
-    private Map<String, S3Client> s3ClientMap = new ConcurrentHashMap<>();
+    private final Map<String, S3Client> s3ClientMap;
+
+    public OxiCloudApiService(Map<String, S3Client> s3ClientMap) {
+        this.s3ClientMap = s3ClientMap;
+    }
 
     /**
      * Retrieves or creates an S3 client connection for the specified tenant.

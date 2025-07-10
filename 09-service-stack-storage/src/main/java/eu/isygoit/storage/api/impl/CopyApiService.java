@@ -26,19 +26,19 @@ import java.util.stream.Collectors;
  * connection pooling, and retry logic.
  */
 @Slf4j
-@Service
-@Transactional
-public class CopyApiService implements ICopyApiService {
+public abstract class CopyApiService implements ICopyApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
     private static final int DEFAULT_PRESIGNED_URL_EXPIRY_HOURS = 2;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final Map<String, StorageConfig> configMap;
 
-    @Autowired
-    private Map<String, StorageConfig> configMap = new ConcurrentHashMap<>();
+    public CopyApiService(RestTemplate restTemplate, Map<String, StorageConfig> configMap) {
+        this.restTemplate = restTemplate;
+        this.configMap = configMap;
+    }
 
     /**
      * Retrieves or stores the Copy configuration for the specified tenant.

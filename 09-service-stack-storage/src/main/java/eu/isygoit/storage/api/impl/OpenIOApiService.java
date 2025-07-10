@@ -23,16 +23,19 @@ import java.util.stream.Collectors;
  * Service implementation for OpenIO object storage operations using REST API.
  */
 @Slf4j
-@Service
-@Transactional
-public class OpenIOApiService implements IOpenIOApiService {
+public abstract class OpenIOApiService implements IOpenIOApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
     private static final int DEFAULT_PRESIGNED_URL_EXPIRY_HOURS = 2;
-    private final Map<String, Object> openIoConnections = new ConcurrentHashMap<>();
-    @Autowired
-    private OkHttpClient httpClient;
+
+    private final Map<String, Object> openIoConnections;
+    private final OkHttpClient httpClient;
+
+    public OpenIOApiService(Map<String, Object> openIoConnections, OkHttpClient httpClient) {
+        this.openIoConnections = openIoConnections;
+        this.httpClient = httpClient;
+    }
 
     /**
      * Retrieves or creates an OpenIO client connection for the specified tenant (simulated via REST).

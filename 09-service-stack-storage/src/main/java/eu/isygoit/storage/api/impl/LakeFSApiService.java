@@ -27,17 +27,18 @@ import java.util.stream.Collectors;
  * connection pooling, and retry logic.
  */
 @Slf4j
-@Service
-@Transactional
-public class LakeFSApiService implements ILakeFSApiService {
+public abstract class LakeFSApiService implements ILakeFSApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
     private static final int DEFAULT_PRESIGNED_URL_EXPIRY_HOURS = 2;
     private static final String DEFAULT_BRANCH = "main";
 
-    @Autowired
-    private Map<String, RestTemplate> lakeFSClientMap = new ConcurrentHashMap<>();
+    private final Map<String, RestTemplate> lakeFSClientMap;
+
+    public LakeFSApiService(Map<String, RestTemplate> lakeFSClientMap) {
+        this.lakeFSClientMap = lakeFSClientMap;
+    }
 
     /**
      * Retrieves or creates a LakeFS client connection for the specified tenant.
