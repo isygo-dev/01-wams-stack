@@ -1,382 +1,145 @@
-# multitenancy Implementation
-
-A comprehensive Spring Boot multitenancy solution supporting four different isolation strategies: Database, Schema,
-Discriminator-based, and Generic Discriminator multitenancy (GDM).
-
-## Features
-
-- **Multiple Tenancy Strategies**: Supports DATABASE, SCHEMA, DISCRIMINATOR, and GDM modes
-- **Flexible Configuration**: Property-based configuration for easy switching between strategies
-- **Thread-Safe**: Uses ThreadLocal for tenant context management
-- **Rich Context Management**: Comprehensive request context with user and tenant information
-- **Database Support**: Works with PostgreSQL and H2 databases
-- **Hibernate Integration**: Seamless integration with Hibernate's multitenancy features
-- **Request Filtering**: Automatic tenant extraction from HTTP headers
-- **Entity Listener**: Automatic tenant assignment to entities
-- **Audit Support**: Built-in support for audit trails with formatted user identifiers
-
-## Architecture Overview
-
-The implementation consists of several key components:
-
-### Core Components
-
-1. **TenantContext**: Thread-local storage for current tenant information
-2. **RequestContextDto**: Data transfer object for request context information
-3. **Connection Providers**: Database-specific connection management for each strategy
-4. **Filters**: HTTP request processing for tenant extraction and validation
-5. **Configuration**: Auto-configuration based on properties
-
-### Tenancy Strategies
-
-#### 1. DATABASE Strategy
-
-- **Isolation Level**: Complete database separation
-- **Use Case**: High security requirements, complete data isolation
-- **Implementation**: Each tenant has its own database with separate DataSource
-
-#### 2. SCHEMA Strategy
-
-- **Isolation Level**: Schema-level separation within the same database
-- **Use Case**: Moderate isolation with shared database infrastructure
-- **Implementation**: Single database with multiple schemas, dynamic schema switching
-
-#### 3. DISCRIMINATOR Strategy
-
-- **Isolation Level**: Row-level separation using tenant columns
-- **Use Case**: Shared schema with logical separation
-- **Implementation**: Hibernate filters with tenant discriminator columns
-
-#### 4. GDM (Generic Discriminator multitenancy) Strategy
-
-- **Isolation Level**: Row-level separation with generic implementation
-- **Use Case**: Flexible discriminator-based approach with enhanced features
-- **Implementation**: Extended discriminator pattern with generic tenant handling
-
-## Configuration
-
-### Application Properties
-
-```yaml
-# multitenancy configuration
-multitenancy:
-  mode: DATABASE  # Options: DATABASE, SCHEMA, DISCRIMINATOR, GDM
-  filter: TENANT  # Options: TENANT, CONTEXT
-  tenants:
-    - id: tenant1
-      url: jdbc:postgresql://localhost:5432/tenant1_db
-      username: tenant1_user
-      password: tenant1_pass
-    - id: tenant2
-      url: jdbc:postgresql://localhost:5432/tenant2_db
-      username: tenant2_user
-      password: tenant2_pass
-```
-
-### Tenant Configuration Options
-
-| Mode            | Description                        | Database Support | Isolation Level |
-|-----------------|------------------------------------|------------------|-----------------|
-| `DATABASE`      | Separate database per tenant       | PostgreSQL, H2   | Complete        |
-| `SCHEMA`        | Separate schema per tenant         | PostgreSQL, H2   | Schema-level    |
-| `DISCRIMINATOR` | Shared schema with filters         | PostgreSQL, H2   | Row-level       |
-| `GDM`           | Generic Discriminator multitenancy | PostgreSQL, H2   | Row-level       |
-
-### Filter Configuration Options
-
-| Filter Type | Description                            | Context Features       |
-|-------------|----------------------------------------|------------------------|
-| `TENANT`    | Basic tenant extraction and validation | Tenant ID only         |
-| `CONTEXT`   | Enhanced context with user information | Full RequestContextDto |
-
-## Usage
-
-### 1. Entity Configuration
-
-For DISCRIMINATOR and GDM modes, entities should implement the tenant interface:
-
-```java
-@Entity
-@EntityListeners(TenantEntityListener.class)
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-public class MyEntity implements ITenantAssignable {
-    
-    @Column(name = "tenant_id")
-    private String tenant;
-    
-    // Other fields...
-    
-    @Override
-    public String getTenant() {
-        return tenant;
-    }
-    
-    @Override
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
-    }
-}
-```
-
-### 2. HTTP Requests
-
-Include the tenant identifier in the request header:
-
-```http
-GET /api/data
-X-Tenant-ID: tenant1
-```
-
-### 3. Request Context Access
-
-The system provides rich context information through `RequestContextDto`:
-
-```java
-// Access request context (usually set by TenantToContextFilter)
-RequestContextDto context = (RequestContextDto) request.getAttribute(JwtConstants.JWT_USER_CONTEXT);
-
-// Context information available:
-String tenant = context.getSenderTenant();
-String user = context.getSenderUser();
-Boolean isAdmin = context.getIsAdmin();
-String application = context.getLogApp();
-
-// Get formatted user identifier for auditing
-String createdBy = context.getCreatedByString(); // Returns "user@tenant" or "anonymousUser"
-```
-
-### 4. Context DTO Structure
-
-```java
-RequestContextDto context = RequestContextDto.builder()
-    .senderTenant("tenant1")
-    .senderUser("john.doe")
-    .isAdmin(false)
-    .logApp("myapp")
-    .build();
-
-// Provides formatted identifier for audit trails
-String auditIdentifier = context.getCreatedByString(); // "john.doe@tenant1"
-```
-
-### 5. Programmatic Access
-
-```java
-// Get current tenant
-String currentTenant = TenantContext.getTenantId();
-
-// Set tenant (usually done by filters)
-TenantContext.setTenantId("tenant1");
-
-// Clear tenant context
-TenantContext.clear();
-```
-
-## Implementation Details
-
-### Connection Providers
-
-#### DatabaseMultiTenantConnectionProvider
-
-- Manages separate DataSource instances per tenant
-- Routes connections based on tenant identifier
-- Suitable for complete database isolation
-
-#### SchemaMultiTenantConnectionProvider
-
-- Uses single DataSource with dynamic schema switching
-- Executes `SET SCHEMA` or `SET search_path` commands
-- Supports PostgreSQL and H2 databases
-
-#### DiscriminatorMultiTenantConnectionProvider
-
-- Always returns the same connection
-- Relies on Hibernate filters for data isolation
-- Most resource-efficient approach
-- Used for both DISCRIMINATOR and GDM strategies
-
-### Filters
-
-#### TenantFilter
-
-- Extracts tenant ID from `X-Tenant-ID` header
-- Validates tenant existence
-- Sets tenant context for request duration
-- Basic tenant-only filtering
-
-#### TenantToContextFilter
-
-- Extended version that also builds request context
-- Creates `RequestContextDto` with tenant and user information
-- Adds comprehensive context attributes to request
-- Useful for auditing and user tracking across tenants
-
-#### TenantFilterActivationFilter
-
-- Activates Hibernate tenant filters for DISCRIMINATOR and GDM modes
-- Ensures proper data filtering at database level
-
-### Request Context DTO
-
-The `RequestContextDto` provides comprehensive context information:
-
-```java
-public class RequestContextDto extends AbstractDto {
-    private String tenant;    // Tenant identifier
-    private String senderUser;      // User identifier
-    private Boolean isAdmin;        // Admin status
-    private String logApp;          // Application identifier
-    
-    // Returns formatted string: "user@tenant" or "anonymousUser"
-    public String getCreatedByString();
-}
-```
-
-**Key Features:**
-
-- **Audit Trail Support**: `getCreatedByString()` provides formatted identifiers
-- **Anonymous User Handling**: Returns "anonymousUser" when user/tenant is empty
-- **Extensible**: Built on `AbstractDto` for additional functionality
-
-## Database Support
-
-### PostgreSQL
-
-- Full support for all tenancy strategies
-- Uses `search_path` for schema switching
-- Recommended for production environments
-
-### H2
-
-- Primarily for development and testing
-- Uses `SET SCHEMA` for schema switching
-- In-memory and file-based modes supported
-
-## Security Considerations
-
-1. **Tenant Validation**: Always validate tenant identifiers against allowed values
-2. **SQL Injection**: Tenant identifiers are used in SQL commands - ensure proper validation
-3. **Data Isolation**: Verify that the chosen strategy meets your security requirements
-4. **Connection Pooling**: Consider pool sizing for DATABASE strategy
-5. **Context Security**: Ensure RequestContextDto doesn't expose sensitive information
-
-## Best Practices
-
-1. **Tenant Validation**: Implement robust tenant validation logic
-2. **Error Handling**: Provide clear error messages for invalid tenants
-3. **Connection Management**: Properly close connections to prevent leaks
-4. **Performance**: Choose the appropriate strategy based on your performance requirements
-5. **Monitoring**: Implement monitoring for tenant-specific operations
-6. **Audit Logging**: Leverage `RequestContextDto.getCreatedByString()` for consistent audit trails
-7. **Context Management**: Use appropriate filter type based on your needs (TENANT vs CONTEXT)
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Missing Tenant Header**: Ensure `X-Tenant-ID` header is included in requests
-2. **Invalid Tenant**: Verify tenant exists in configuration
-3. **Schema Not Found**: Ensure schemas exist for SCHEMA strategy
-4. **Connection Pool Exhaustion**: Monitor connection pool usage in DATABASE strategy
-5. **Context Not Available**: Ensure using CONTEXT filter when accessing RequestContextDto
-
-### Debug Configuration
-
-```yaml
-logging:
-  level:
-    eu.isygoit.multitenancy: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-```
-
-## Migration Guide
-
-### From Single-Tenant to Multi-Tenant
-
-1. Add tenant fields to existing entities
-2. Update database schema with tenant columns/schemas
-3. Configure multitenancy properties
-4. Update client applications to include tenant headers
-5. Test thoroughly with multiple tenants
-
-### Switching Between Strategies
-
-1. Export data from current setup
-2. Update configuration properties
-3. Restructure database according to new strategy
-4. Import data into new structure
-5. Update entity annotations if needed
-
-### Upgrading Filter Types
-
-When switching from TENANT to CONTEXT filter:
-
-1. Update `multitenancy.filter` property
-2. Modify code to use `RequestContextDto` instead of just tenant ID
-3. Update any custom filtering logic
-
-## Performance Considerations
-
-| Strategy      | Memory Usage          | Connection Overhead | Query Performance           | Context Overhead |
-|---------------|-----------------------|---------------------|-----------------------------|------------------|
-| DATABASE      | High (multiple pools) | High                | Excellent                   | Low              |
-| SCHEMA        | Medium                | Medium              | Good                        | Low              |
-| DISCRIMINATOR | Low                   | Low                 | Good (with proper indexing) | Low              |
-| GDM           | Low                   | Low                 | Good (with proper indexing) | Low              |
-
-### Filter Performance
-
-| Filter Type | Overhead | Features                     | Use Case                |
-|-------------|----------|------------------------------|-------------------------|
-| TENANT      | Minimal  | Basic tenant extraction      | Simple multitenancy     |
-| CONTEXT     | Low      | Full context + audit support | Enterprise applications |
-
-## Advanced Configuration
-
-### Custom Tenant Validation
-
-```java
-@Component
-public class CustomTenantValidator implements ITenantValidator {
-    
-    @Override
-    public boolean isValid(String tenantId) {
-        // Custom validation logic
-        return tenantRepository.existsByCode(tenantId);
-    }
-}
-```
-
-### Custom Context Building
-
-The `TenantToContextFilter` can be extended to include additional context information:
-
-```java
-private RequestContextDto buildRequestContext(String tenant, String userName, 
-                                            Boolean isAdmin, String application) {
-    return RequestContextDto.builder()
-            .senderTenant(tenant)
-            .senderUser(userName)
-            .isAdmin(isAdmin)
-            .logApp(application)
-            .build();
-}
-```
-
+# S3-Compatible and Data Versioning Storage Solutions
+
+This repository contains Java service implementations for interacting with S3-compatible object storage systems (Ceph, Garage, MinIO, OxiCloud) and a data versioning platform (LakeFS). Below is a table of the top 10 open-source S3-compatible storage solutions, followed by a separate section for LakeFS, which uses a distinct Git-like interface for data versioning. The implemented service files are described in detail afterward.
+
+## Top 10 Open-Source S3-Compatible Storage Solutions
+
+The following table lists the top 10 open-source S3-compatible storage solutions, highlighting their key features, licenses, advantages, and limitations. These solutions are selected based on their S3 API compatibility, performance, scalability, and community adoption.
+
+| **Solution**   | **Key Features**                                                                 | **License**         | **Pros**                                                                 | **Cons**                                                                 |
+|----------------|----------------------------------------------------------------------------------|---------------------|--------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| **MinIO**      | High-performance, Kubernetes-native, active-active replication, erasure coding   | GNU AGPL v3         | Simple deployment, excellent performance, widely adopted                 | Requires infrastructure setup for self-hosting                          |
+| **Ceph**       | Unified storage (object, block, file), RADOS Gateway, data replication, tiering  | LGPL v2.1           | Robust, scalable, self-healing architecture                              | Complex setup and management                                             |
+| **Storj**      | Decentralized, client-side encryption, S3 API, Veeam Ready                       | AGPL v3             | No vendor lock-in, eco-friendly, secure                                  | Potential latency in decentralized model                                 |
+| **OpenIO**     | Grid-based, hybrid/multi-cloud, event-driven processing                          | AGPL v3             | Lightweight, flexible for diverse use cases                              | Less community traction than MinIO or Ceph                               |
+| **Zenko**      | Multi-cloud data controller, S3 API, data orchestration                          | Apache License 2.0  | Ideal for multi-cloud, avoids vendor lock-in                             | Setup complexity, limited adoption                                       |
+| **SwiftStack** | Geo-distribution, S3 compatibility, OpenStack integration                        | Apache License 2.0  | Enterprise-ready, robust management tools                                | Less focus on S3 compared to MinIO, OpenStack-centric                    |
+| **SeaweedFS**  | Object/file/POSIX storage, erasure coding, replication                          | Apache License 2.0  | Easy to deploy, good for small/medium setups                             | Less mature S3 compatibility                                             |
+| **Riak CS**    | Distributed, no single point of failure, strong consistency                      | Apache License 2.0  | Reliable for distributed environments                                    | Slowed development, limited community support                            |
+| **Garage**     | Lightweight, geo-replicated, S3 API, self-hosted                                | AGPL v3             | Simple, lightweight, ideal for self-hosted setups                        | Younger project, fewer features than MinIO                               |
+| **LeoFS**      | Multi-protocol (S3, REST, NFS), high availability, auto-rebalancing              | Apache License 2.0  | Good for large-scale, high-availability setups                           | Complex configuration, less community traction                           |
+
+### Notes on S3-Compatible Storage Solutions
+- **Selection Criteria**: These solutions were chosen for their full compatibility with the S3 API, performance metrics (e.g., MinIO's 325 GiB/s GET throughput), scalability, and relevance in open-source ecosystems. MinIO and Ceph are leaders due to their maturity, while Garage and SeaweedFS are emerging for lightweight setups.
+- **Use Case Considerations**:
+    - **MinIO**: Ideal for high-performance AI/ML and cloud-native workloads.
+    - **Ceph**: Best for unified storage across object, block, and file systems.
+    - **Storj**: Suited for decentralized, cost-effective storage.
+    - **Garage**: Lightweight and ideal for self-hosted, geo-distributed setups.
+- **Sources**: Information is derived from official documentation and community discussions for each solution.
+- 
+## Implemented Service Files
+
+This repository includes Java service implementations for four S3-compatible storage systems (Ceph, Garage, MinIO, OxiCloud) and one data versioning platform (LakeFS). Each service handles common operations like bucket/repository management, file uploads, object retrieval, tagging/metadata, and deletion, with robust error handling, connection pooling, and retry logic. Below is a detailed overview of each implemented file.
+
+### CephApiService.java
+- **Purpose**: Interfaces with Ceph’s RADOS Gateway (RGW) using the AWS S3 SDK for S3-compatible object storage operations.
+- **Key Features**:
+    - Manages tenant-specific S3 client connections with endpoint and credential configuration.
+    - Supports bucket operations (create, delete, check existence, versioning).
+    - Handles file operations (upload, retrieve, delete, presigned URLs).
+    - Provides tag-based object retrieval with AND/OR logical conditions.
+    - Implements retry logic (3 attempts, 1-second delay) for robust error handling.
+- **Implementation Details**:
+    - Uses `S3Client` from the AWS SDK with path-style access enabled.
+    - Validates inputs (e.g., bucket names, object names, configuration).
+    - Logs operations and errors using SLF4J.
+    - Throws `CephObjectException` for Ceph-specific errors.
+- **Use Case**: Suitable for enterprise-grade deployments requiring unified storage and high scalability.
+
+### GarageApiService.java
+- **Purpose**: Interacts with Garage, a lightweight, S3-compatible, geo-distributed storage system.
+- **Key Features**:
+    - Supports bucket and object operations (create, delete, upload, retrieve, presigned URLs).
+    - Manages tenant-specific S3 client connections.
+    - Provides tag-based object filtering with AND/OR conditions.
+    - Includes retry logic and input validation.
+- **Implementation Details**:
+    - Uses `S3Client` from the AWS SDK with path-style access, similar to Ceph.
+    - Throws `GarageObjectException` for error handling.
+    - Simplified versioning support (assumes versioning is not enabled by default).
+- **Use Case**: Ideal for self-hosted, lightweight, and geo-distributed storage setups.
+
+### LakeFSApiService.java
+- **Purpose**: Interfaces with LakeFS, a data versioning platform with a REST-based API, focusing on repository, branch, and commit management.
+- **Key Features**:
+    - Supports repository operations (create, delete, list) and branch management (create, delete, list).
+    - Handles file operations (upload, retrieve, delete) with versioning via branches or commits.
+    - Provides commit, merge, revert, and diff operations for data versioning.
+    - Supports metadata-based object filtering with AND/OR conditions.
+    - Generates presigned URLs for object access.
+- **Implementation Details**:
+    - Uses `RestTemplate` with Basic Authentication, reflecting LakeFS’s HTTP-based API (not S3-native).
+    - Handles LakeFS-specific concepts like repositories, branches, and commits.
+    - Includes retry logic (3 attempts, 1-second delay) and validation for repository, branch, and object parameters.
+    - Throws `LakeFSObjectException` for error handling.
+- **Use Case**: Best for data versioning, reproducibility, and ML/AI workflows requiring Git-like control over data.
+
+### MinIOApiService.java
+- **Purpose**: Interfaces with MinIO, a high-performance, S3-compatible object storage system.
+- **Key Features**:
+    - Supports bucket operations (create, delete, check existence, versioning).
+    - Handles file operations (upload, retrieve, delete, presigned URLs) with tag support.
+    - Retrieves objects by tags with AND/OR logical conditions.
+    - Includes retry logic and connection pooling for tenant-specific clients.
+- **Implementation Details**:
+    - Uses the MinIO Java SDK (`MinioClient`) for optimized MinIO interactions.
+    - Supports versioning with explicit version ID handling in object operations.
+    - Validates inputs and throws `MinIoObjectException` for errors.
+    - Logs operations using SLF4J for debugging and monitoring.
+- **Use Case**: Perfect for cloud-native applications, AI/ML workloads, and high-throughput storage needs.
+
+### OxiCloudApiService.java
+- **Purpose**: Interfaces with OxiCloud, an S3-compatible storage solution (assumed to be a placeholder or less-documented system).
+- **Key Features**:
+    - Supports bucket and object operations (create, delete, upload, retrieve, presigned URLs).
+    - Provides tag-based object retrieval with AND/OR conditions.
+    - Includes retry logic and tenant-specific connection management.
+- **Implementation Details**:
+    - Uses `S3Client` from the AWS SDK with path-style access, similar to Ceph and Garage.
+    - Throws `OxiCloudObjectException` for error handling.
+    - Assumes minimal versioning support, similar to Garage.
+- **Use Case**: Suitable for environments using OxiCloud or similar S3-compatible systems with standard object storage needs.
+
+## Implementation Notes
+- **Common Features**:
+    - All services implement retry logic (3 attempts, 1-second delay) to handle transient failures.
+    - Connection pooling manages tenant-specific clients for performance.
+    - Input validation ensures robust error handling for bucket/repository names, object names, and configurations.
+    - Logging (via SLF4J) provides detailed operation tracking and error reporting.
+- **Differences**:
+    - `MinIOApiService` uses the MinIO SDK for optimized interactions, while Ceph, Garage, and OxiCloud use the AWS S3 SDK.
+    - `CephApiService`, `GarageApiService`, and `OxiCloudApiService` are structurally similar, differing mainly in exception types.
+- **Dependencies**:
+    - AWS SDK for Java (`software.amazon.awssdk`) for Ceph, Garage, and OxiCloud.
+    - MinIO Java SDK (`io.minio`) for MinIO.
+    - Spring Framework (`RestTemplate`, `MultipartFile`) for HTTP and file handling in LakeFS.
+    - Apache Commons IO for stream utilities.
+    - Lombok for logging (`@Slf4j`) and boilerplate reduction.
+- **Extensibility**:
+    - Abstract classes can be extended to customize behavior or add functionality.
+    - Interfaces (`ICephApiService`, `IGarageApiService`, etc.) ensure consistent APIs.
+
+## Getting Started
+1. **Setup Dependencies**: Include dependencies (AWS SDK, MinIO SDK, Spring Framework, Apache Commons IO, Lombok) in your project’s build file (e.g., `pom.xml` for Maven).
+2. **Configure Storage**:
+    - Provide a `StorageConfig` object with tenant, URL, username, and password.
+    - Example: `StorageConfig config = new StorageConfig("tenant1", "http://minio:9000", "user", "password");`
+3. **Extend Services**: Implement the abstract classes (e.g., `extends CephApiService`) and inject the appropriate client map (`Map<String, S3Client>` or `Map<String, MinioClient>`).
+4. **Usage Example (S3-Compatible)**:
+   ```java
+   CephApiService cephService = new MyCephApiService(s3ClientMap);
+   cephService.makeBucket(config, "my-bucket");
+   cephService.uploadFile(config, "my-bucket", "path/to", "file.txt", multipartFile, Map.of("key", "value"));
+   byte[] fileContent = cephService.getObject(config, "my-bucket", "path/to/file.txt", null);
+   ```
+   
 ## Contributing
-
-When contributing to this multitenancy implementation:
-
-1. Ensure all strategies are tested
-2. Add appropriate conditional annotations
-3. Update documentation for new features
-4. Follow existing code patterns
-5. Add integration tests for new database support
-6. Test context handling for both filter types
-7. Verify audit trail functionality
+Contributions are welcome! To add support for other S3-compatible solutions (e.g., SeaweedFS, Riak CS) or enhance LakeFS functionality:
+1. Create a new service class following the pattern of existing implementations.
+2. Ensure compatibility with `StorageConfig` and `FileStorage` models.
+3. Add unit tests to validate functionality.
+4. Update this README with details of the new implementation.
 
 ## License
-
-This implementation is part of the ISyGoit framework and follows the project's licensing terms.
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
