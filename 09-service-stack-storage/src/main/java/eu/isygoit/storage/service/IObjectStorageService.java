@@ -108,7 +108,7 @@ public interface IObjectStorageService {
      * @param config     the config
      * @param bucketName the bucket name
      */
-    void deletebucket(StorageConfig config, String bucketName);
+    void deleteBucket(StorageConfig config, String bucketName);
 
     /**
      * Gets buckets.
