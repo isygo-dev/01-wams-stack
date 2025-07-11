@@ -750,11 +750,31 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects?path=" + URLEncoder.encode(objectName, StandardCharsets.UTF_8) + "&presign=true";
+
+                // Try with API version prefix and query parameter format
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference +
+                        "/objects?path=" + URLEncoder.encode(objectName, StandardCharsets.UTF_8) + "&presign=true";
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+
+                if (!response.getStatusCode().is2xxSuccessful()) {
+                    throw new LakeFSObjectException("Failed to get presigned URL. Status: " + response.getStatusCode());
+                }
+
                 Map<String, Object> responseBody = response.getBody();
-                return (String) responseBody.get("url");
+                if (responseBody == null) {
+                    throw new LakeFSObjectException("Empty response body when getting presigned URL for: " + objectName);
+                }
+
+                String presignedUrl = (String) responseBody.get("url");
+                if (presignedUrl == null || presignedUrl.isEmpty()) {
+                    throw new LakeFSObjectException("No presigned URL returned for object: " + objectName);
+                }
+
+                return presignedUrl;
+
+            } catch (LakeFSObjectException e) {
+                throw e;
             } catch (Exception e) {
                 throw new LakeFSObjectException("Error generating presigned URL for: " + objectName, e);
             }

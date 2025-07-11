@@ -62,6 +62,7 @@ public class LFSStorageApplicationTest {
     @Container
     private static GenericContainer<?> lakeFSContainer = new GenericContainer<>("treeverse/lakefs:latest")
             .withNetwork(network)
+            .withNetworkAliases("lakefs")
             .withExposedPorts(8000)
             .withEnv("LAKEFS_AUTH_ACCESS_KEY_ID", ACCESS_KEY)
             .withEnv("LAKEFS_AUTH_SECRET_ACCESS_KEY", SECRET_KEY)
@@ -72,9 +73,7 @@ public class LFSStorageApplicationTest {
             .withEnv("LAKEFS_BLOCKSTORE_S3_ENDPOINT", "http://minio:9000")
             .withEnv("LAKEFS_BLOCKSTORE_S3_REGION", "us-east-1")
             .withEnv("LAKEFS_BLOCKSTORE_S3_FORCE_PATH_STYLE", "true")
-            // Fix for EC2 metadata service access - disable AWS metadata service
             .withEnv("AWS_EC2_METADATA_DISABLED", "true")
-            // Explicitly set AWS credentials to avoid metadata service lookup
             .withEnv("AWS_ACCESS_KEY_ID", MINIO_ACCESS_KEY)
             .withEnv("AWS_SECRET_ACCESS_KEY", MINIO_SECRET_KEY)
             .withEnv("AWS_REGION", "us-east-1")
@@ -336,6 +335,7 @@ public class LFSStorageApplicationTest {
         MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
+        lakeFSService.createBranch(config, repositoryName, defaultBranch, defaultBranch);
         lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
 
         String url = lakeFSService.getPresignedObjectUrl(config, repositoryName, defaultBranch, objectName);
