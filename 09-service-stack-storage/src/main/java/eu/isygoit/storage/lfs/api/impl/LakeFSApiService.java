@@ -3,8 +3,9 @@ package eu.isygoit.storage.lfs.api.impl;
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.lfs.api.ILakeFSApiService;
 import eu.isygoit.storage.exception.LakeFSObjectException;
+import eu.isygoit.storage.s3.api.IMinIOApiService;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.lfs.config.LFSConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
@@ -33,14 +34,16 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     private static final String DEFAULT_BRANCH = "main";
 
     private final Map<String, RestTemplate> lakeFSClientMap;
+    private final IMinIOApiService minIOApiService;
 
     /**
      * Instantiates a new Lake fs api service.
      *
      * @param lakeFSClientMap the lake fs client map
      */
-    public LakeFSApiService(Map<String, RestTemplate> lakeFSClientMap) {
+    public LakeFSApiService(Map<String, RestTemplate> lakeFSClientMap, IMinIOApiService minIOApiService) {
         this.lakeFSClientMap = lakeFSClientMap;
+        this.minIOApiService = minIOApiService;
     }
 
     /**
@@ -51,7 +54,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws IllegalArgumentException if config is invalid
      */
     @Override
-    public RestTemplate getConnection(StorageConfig config) {
+    public RestTemplate getConnection(LFSConfig config) {
         validateConfig(config);
         return lakeFSClientMap.computeIfAbsent(config.getTenant(), k -> {
             try {
@@ -79,7 +82,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws IllegalArgumentException if config is invalid
      */
     @Override
-    public void updateConnection(StorageConfig config) {
+    public void updateConnection(LFSConfig config) {
         validateConfig(config);
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -107,7 +110,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException on failure
      */
     @Override
-    public boolean repositoryExists(StorageConfig config, String repositoryName) {
+    public boolean repositoryExists(LFSConfig config, String repositoryName) {
         validateRepositoryName(repositoryName);
         return executeWithRetry(() -> {
             try {
@@ -134,20 +137,23 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if repository creation fails
      */
     @Override
-    public void createRepository(StorageConfig config, String repositoryName, String storageNamespace, String defaultBranch) {
+    public void createRepository(LFSConfig config, String repositoryName, String storageNamespace, String defaultBranch) {
         validateRepositoryName(repositoryName);
         if (!StringUtils.hasText(storageNamespace)) {
             throw new IllegalArgumentException("Storage namespace cannot be empty");
         }
         executeWithRetry(() -> {
             try {
+                if(!minIOApiService.bucketExists(config.getS3Config(), storageNamespace)){
+                    minIOApiService.makeBucket(config.getS3Config(), storageNamespace);
+                }
                 if (!repositoryExists(config, repositoryName)) {
                     RestTemplate client = getConnection(config);
                     String url = config.getUrl() + "/repositories";
 
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("name", repositoryName);
-                    requestBody.put("storage_namespace", storageNamespace);
+                    requestBody.put("storage_namespace", "s3://" + storageNamespace);
                     requestBody.put("default_branch", StringUtils.hasText(defaultBranch) ? defaultBranch : DEFAULT_BRANCH);
 
                     HttpHeaders headers = new HttpHeaders();
@@ -174,7 +180,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if deletion fails
      */
     @Override
-    public void deleteObjects(StorageConfig config, String repositoryName, String branchName, List<String> objectNames) {
+    public void deleteObjects(LFSConfig config, String repositoryName, String branchName, List<String> objectNames) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         if (objectNames == null || objectNames.isEmpty()) {
@@ -213,7 +219,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if commit fails
      */
     @Override
-    public String commit(StorageConfig config, String repositoryName, String branchName, String message, Map<String, String> metadata) {
+    public String commit(LFSConfig config, String repositoryName, String branchName, String message, Map<String, String> metadata) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         if (!StringUtils.hasText(message)) {
@@ -257,7 +263,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if merge fails
      */
     @Override
-    public String merge(StorageConfig config, String repositoryName, String sourceBranchName, String destinationBranchName, String message) {
+    public String merge(LFSConfig config, String repositoryName, String sourceBranchName, String destinationBranchName, String message) {
         validateRepositoryName(repositoryName);
         validateBranchName(sourceBranchName);
         validateBranchName(destinationBranchName);
@@ -296,7 +302,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if listing fails
      */
     @Override
-    public List<String> getBranches(StorageConfig config, String repositoryName) {
+    public List<String> getBranches(LFSConfig config, String repositoryName) {
         validateRepositoryName(repositoryName);
         return executeWithRetry(() -> {
             try {
@@ -324,7 +330,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if listing fails
      */
     @Override
-    public List<String> getRepositories(StorageConfig config) {
+    public List<String> getRepositories(LFSConfig config) {
         validateConfig(config);
         return executeWithRetry(() -> {
             try {
@@ -357,7 +363,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if retrieval fails
      */
     @Override
-    public List<Map<String, Object>> getCommitHistory(StorageConfig config, String repositoryName, String branchName, int limit) {
+    public List<Map<String, Object>> getCommitHistory(LFSConfig config, String repositoryName, String branchName, int limit) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         return executeWithRetry(() -> {
@@ -388,7 +394,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if retrieval fails
      */
     @Override
-    public List<Map<String, Object>> getDiff(StorageConfig config, String repositoryName, String leftRef, String rightRef) {
+    public List<Map<String, Object>> getDiff(LFSConfig config, String repositoryName, String leftRef, String rightRef) {
         validateRepositoryName(repositoryName);
         validateBranchName(leftRef);
         validateBranchName(rightRef);
@@ -416,7 +422,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if revert fails
      */
     @Override
-    public void revert(StorageConfig config, String repositoryName, String branchName, String commitId) {
+    public void revert(LFSConfig config, String repositoryName, String branchName, String commitId) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         if (!StringUtils.hasText(commitId)) {
@@ -452,7 +458,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if branch deletion fails
      */
     @Override
-    public void deleteBranch(StorageConfig config, String repositoryName, String branchName) {
+    public void deleteBranch(LFSConfig config, String repositoryName, String branchName) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         executeWithRetry(() -> {
@@ -477,7 +483,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if repository deletion fails
      */
     @Override
-    public void deleteRepository(StorageConfig config, String repositoryName) {
+    public void deleteRepository(LFSConfig config, String repositoryName) {
         validateRepositoryName(repositoryName);
         executeWithRetry(() -> {
             try {
@@ -529,7 +535,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @param config Storage configuration
      * @throws IllegalArgumentException if invalid
      */
-    private void validateConfig(StorageConfig config) {
+    private void validateConfig(LFSConfig config) {
         if (config == null || !StringUtils.hasText(config.getTenant()) ||
                 !StringUtils.hasText(config.getUrl()) ||
                 !StringUtils.hasText(config.getUserName()) ||
@@ -604,7 +610,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException on failure
      */
     @Override
-    public boolean branchExists(StorageConfig config, String repositoryName, String branchName) {
+    public boolean branchExists(LFSConfig config, String repositoryName, String branchName) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         return executeWithRetry(() -> {
@@ -632,7 +638,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if branch creation fails
      */
     @Override
-    public void createBranch(StorageConfig config, String repositoryName, String branchName, String sourceBranch) {
+    public void createBranch(LFSConfig config, String repositoryName, String branchName, String sourceBranch) {
         validateRepositoryName(repositoryName);
         validateBranchName(branchName);
         validateBranchName(sourceBranch);
@@ -673,7 +679,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if upload fails
      */
     @Override
-    public void uploadFile(StorageConfig config, String repositoryName, String branchName, String path, String objectName,
+    public void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
                            MultipartFile multipartFile, Map<String, String> metadata) {
         validateUploadParams(repositoryName, branchName, objectName, multipartFile);
         executeWithRetry(() -> {
@@ -713,7 +719,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if retrieval fails
      */
     @Override
-    public byte[] getObject(StorageConfig config, String repositoryName, String reference, String objectName) {
+    public byte[] getObject(LFSConfig config, String repositoryName, String reference, String objectName) {
         validateObjectParams(repositoryName, reference, objectName);
         return executeWithRetry(() -> {
             try {
@@ -739,7 +745,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if URL generation fails
      */
     @Override
-    public String getPresignedObjectUrl(StorageConfig config, String repositoryName, String reference, String objectName) {
+    public String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName) {
         validateObjectParams(repositoryName, reference, objectName);
         return executeWithRetry(() -> {
             try {
@@ -765,7 +771,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if deletion fails
      */
     @Override
-    public void deleteObject(StorageConfig config, String repositoryName, String branchName, String objectName) {
+    public void deleteObject(LFSConfig config, String repositoryName, String branchName, String objectName) {
         validateObjectParams(repositoryName, branchName, objectName);
         executeWithRetry(() -> {
             try {
@@ -793,7 +799,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if retrieval fails
      */
     @Override
-    public List<FileStorage> getObjectByMetadata(StorageConfig config, String repositoryName, String reference,
+    public List<FileStorage> getObjectByMetadata(LFSConfig config, String repositoryName, String reference,
                                                  Map<String, String> metadata, IEnumLogicalOperator.Types condition) {
         validateRepositoryName(repositoryName);
         validateBranchName(reference);
@@ -833,7 +839,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if listing fails
      */
     @Override
-    public List<FileStorage> getObjects(StorageConfig config, String repositoryName, String reference, String prefix) {
+    public List<FileStorage> getObjects(LFSConfig config, String repositoryName, String reference, String prefix) {
         validateRepositoryName(repositoryName);
         validateBranchName(reference);
         return executeWithRetry(() -> {
@@ -879,7 +885,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if metadata update fails
      */
     @Override
-    public void updateMetadata(StorageConfig config, String repositoryName, String branchName, String objectName, Map<String, String> metadata) {
+    public void updateMetadata(LFSConfig config, String repositoryName, String branchName, String objectName, Map<String, String> metadata) {
         validateObjectParams(repositoryName, branchName, objectName);
         if (metadata == null) {
             throw new IllegalArgumentException("Metadata cannot be null");

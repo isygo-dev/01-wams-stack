@@ -2,7 +2,7 @@ package eu.isygoit.storage.service;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.s3.config.S3Config;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteObject;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +24,7 @@ public interface IObjectStorageService {
      * @param tags          the tags
      * @param multipartFile the multipart file
      */
-    void upload(StorageConfig config, String bucketName, String path, Map<String, String> tags, MultipartFile multipartFile);
+    void upload(S3Config config, String bucketName, String path, Map<String, String> tags, MultipartFile multipartFile);
 
     /**
      * Download byte [ ].
@@ -35,7 +35,7 @@ public interface IObjectStorageService {
      * @param versionID  the version id
      * @return the byte [ ]
      */
-    byte[] download(StorageConfig config, String bucketName, String fileName, String versionID);
+    byte[] download(S3Config config, String bucketName, String fileName, String versionID);
 
     /**
      * Delete file.
@@ -44,7 +44,7 @@ public interface IObjectStorageService {
      * @param bucketName the bucket name
      * @param fileName   the file name
      */
-    void deleteFile(StorageConfig config, String bucketName, String fileName);
+    void deleteFile(S3Config config, String bucketName, String fileName);
 
     /**
      * Gets object by tags.
@@ -55,7 +55,7 @@ public interface IObjectStorageService {
      * @param condition  the condition
      * @return the object by tags
      */
-    List<FileStorage> getObjectByTags(StorageConfig config, String bucketName, Map<String, String> tags, IEnumLogicalOperator.Types condition);
+    List<FileStorage> getObjectByTags(S3Config config, String bucketName, Map<String, String> tags, IEnumLogicalOperator.Types condition);
 
     /**
      * Update tags.
@@ -65,7 +65,7 @@ public interface IObjectStorageService {
      * @param objectName the object name
      * @param tags       the tags
      */
-    void updateTags(StorageConfig config, String bucketName, String objectName, Map<String, String> tags);
+    void updateTags(S3Config config, String bucketName, String objectName, Map<String, String> tags);
 
     /**
      * Gets objects.
@@ -74,7 +74,7 @@ public interface IObjectStorageService {
      * @param bucketName the bucket name
      * @return the objects
      */
-    List<FileStorage> getObjects(StorageConfig config, String bucketName);
+    List<FileStorage> getObjects(S3Config config, String bucketName);
 
     /**
      * Delete objects.
@@ -83,7 +83,7 @@ public interface IObjectStorageService {
      * @param bucketName the bucket name
      * @param objects    the objects
      */
-    void deleteObjects(StorageConfig config, String bucketName, List<DeleteObject> objects);
+    void deleteObjects(S3Config config, String bucketName, List<DeleteObject> objects);
 
     /**
      * Save buckets.
@@ -91,7 +91,7 @@ public interface IObjectStorageService {
      * @param config     the config
      * @param bucketName the bucket name
      */
-    void saveBuckets(StorageConfig config, String bucketName);
+    void saveBuckets(S3Config config, String bucketName);
 
     /**
      * Sets versioning bucket.
@@ -100,7 +100,7 @@ public interface IObjectStorageService {
      * @param bucketName the bucket name
      * @param status     the status
      */
-    void setVersioningBucket(StorageConfig config, String bucketName, boolean status);
+    void setVersioningBucket(S3Config config, String bucketName, boolean status);
 
     /**
      * Deletebucket.
@@ -108,7 +108,7 @@ public interface IObjectStorageService {
      * @param config     the config
      * @param bucketName the bucket name
      */
-    void deleteBucket(StorageConfig config, String bucketName);
+    void deleteBucket(S3Config config, String bucketName);
 
     /**
      * Gets buckets.
@@ -116,5 +116,5 @@ public interface IObjectStorageService {
      * @param config the config
      * @return the buckets
      */
-    List<Bucket> getBuckets(StorageConfig config);
+    List<Bucket> getBuckets(S3Config config);
 }

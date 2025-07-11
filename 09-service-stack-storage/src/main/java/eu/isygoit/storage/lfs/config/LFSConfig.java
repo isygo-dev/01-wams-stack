@@ -1,7 +1,9 @@
-package eu.isygoit.storage.s3.object;
+package eu.isygoit.storage.lfs.config;
 
 import eu.isygoit.enums.IEnumStorage;
+import eu.isygoit.storage.s3.config.S3Config;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -14,13 +16,14 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class StorageConfig {
+public class LFSConfig {
 
     private String tenant;
-    private IEnumStorage.Types type;
+    @Builder.Default
+    private final IEnumStorage.Types type = IEnumStorage.Types.LAKEFS_STORAGE;
     private String userName;
     private String password;
     private String url;
-    private String namespace;
-    private String region;
+
+    private S3Config s3Config;
 }

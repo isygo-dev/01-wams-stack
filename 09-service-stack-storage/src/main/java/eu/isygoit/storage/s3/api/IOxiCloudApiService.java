@@ -3,7 +3,7 @@ package eu.isygoit.storage.s3.api;
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.OxiCloudObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.s3.config.S3Config;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -23,7 +23,7 @@ public interface IOxiCloudApiService {
      * @return S3Client instance
      * @throws OxiCloudObjectException if connection creation fails
      */
-    software.amazon.awssdk.services.s3.S3Client getConnection(StorageConfig config);
+    software.amazon.awssdk.services.s3.S3Client getConnection(S3Config config);
 
     /**
      * Updates the S3 client connection for a tenant.
@@ -31,7 +31,7 @@ public interface IOxiCloudApiService {
      * @param config Storage configuration
      * @throws OxiCloudObjectException if connection update fails
      */
-    void updateConnection(StorageConfig config);
+    void updateConnection(S3Config config);
 
     /**
      * Checks if a bucket exists with retry logic.
@@ -41,7 +41,7 @@ public interface IOxiCloudApiService {
      * @return true if bucket exists
      * @throws OxiCloudObjectException on failure
      */
-    boolean bucketExists(StorageConfig config, String bucketName);
+    boolean bucketExists(S3Config config, String bucketName);
 
     /**
      * Enables or suspends bucket versioning.
@@ -51,7 +51,7 @@ public interface IOxiCloudApiService {
      * @param status     true to enable, false to suspend
      * @throws OxiCloudObjectException if operation fails
      */
-    void setVersioningBucket(StorageConfig config, String bucketName, boolean status);
+    void setVersioningBucket(S3Config config, String bucketName, boolean status);
 
     /**
      * Creates a bucket if it doesn't exist.
@@ -60,7 +60,7 @@ public interface IOxiCloudApiService {
      * @param bucketName Name of the bucket
      * @throws OxiCloudObjectException if bucket creation fails
      */
-    void makeBucket(StorageConfig config, String bucketName);
+    void makeBucket(S3Config config, String bucketName);
 
     /**
      * Uploads a file to OxiCloud with optional tags.
@@ -73,7 +73,7 @@ public interface IOxiCloudApiService {
      * @param tags          Metadata tags
      * @throws OxiCloudObjectException if upload fails
      */
-    void uploadFile(StorageConfig config, String bucketName, String path, String objectName,
+    void uploadFile(S3Config config, String bucketName, String path, String objectName,
                     MultipartFile multipartFile, Map<String, String> tags);
 
     /**
@@ -86,7 +86,7 @@ public interface IOxiCloudApiService {
      * @return Object content as byte array
      * @throws OxiCloudObjectException if retrieval fails
      */
-    byte[] getObject(StorageConfig config, String bucketName, String objectName, String versionID);
+    byte[] getObject(S3Config config, String bucketName, String objectName, String versionID);
 
     /**
      * Generates a presigned URL for an object.
@@ -97,7 +97,7 @@ public interface IOxiCloudApiService {
      * @return Presigned URL
      * @throws OxiCloudObjectException if URL generation fails
      */
-    String getPresignedObjectUrl(StorageConfig config, String bucketName, String objectName);
+    String getPresignedObjectUrl(S3Config config, String bucketName, String objectName);
 
     /**
      * Deletes an object from OxiCloud.
@@ -107,7 +107,7 @@ public interface IOxiCloudApiService {
      * @param objectName Object name
      * @throws OxiCloudObjectException if deletion fails
      */
-    void deleteObject(StorageConfig config, String bucketName, String objectName);
+    void deleteObject(S3Config config, String bucketName, String objectName);
 
     /**
      * Retrieves objects by tags with AND/OR condition.
@@ -119,7 +119,7 @@ public interface IOxiCloudApiService {
      * @return List of matching FileStorage objects
      * @throws OxiCloudObjectException if retrieval fails
      */
-    List<FileStorage> getObjectByTags(StorageConfig config, String bucketName,
+    List<FileStorage> getObjectByTags(S3Config config, String bucketName,
                                       Map<String, String> tags, IEnumLogicalOperator.Types condition);
 
     /**
@@ -130,7 +130,7 @@ public interface IOxiCloudApiService {
      * @return List of FileStorage objects
      * @throws OxiCloudObjectException if listing fails
      */
-    List<FileStorage> getObjects(StorageConfig config, String bucketName);
+    List<FileStorage> getObjects(S3Config config, String bucketName);
 
     /**
      * Updates tags for an object.
@@ -141,7 +141,7 @@ public interface IOxiCloudApiService {
      * @param tags       New tags
      * @throws OxiCloudObjectException if tag update fails
      */
-    void updateTags(StorageConfig config, String bucketName, String objectName, Map<String, String> tags);
+    void updateTags(S3Config config, String bucketName, String objectName, Map<String, String> tags);
 
     /**
      * Deletes multiple objects from a bucket.
@@ -151,7 +151,7 @@ public interface IOxiCloudApiService {
      * @param objects    List of objects to delete
      * @throws OxiCloudObjectException if deletion fails
      */
-    void deleteObjects(StorageConfig config, String bucketName, List<DeleteObjectRequest> objects);
+    void deleteObjects(S3Config config, String bucketName, List<DeleteObjectRequest> objects);
 
     /**
      * Deletes a bucket if it exists.
@@ -160,7 +160,7 @@ public interface IOxiCloudApiService {
      * @param bucketName Name of the bucket
      * @throws OxiCloudObjectException if bucket deletion fails
      */
-    void deleteBucket(StorageConfig config, String bucketName);
+    void deleteBucket(S3Config config, String bucketName);
 
     /**
      * Lists all buckets for the given configuration.
@@ -169,5 +169,5 @@ public interface IOxiCloudApiService {
      * @return List of buckets
      * @throws OxiCloudObjectException if listing fails
      */
-    List<Bucket> getBuckets(StorageConfig config);
+    List<Bucket> getBuckets(S3Config config);
 }

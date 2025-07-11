@@ -3,7 +3,7 @@ package eu.isygoit.storage.lfs.api;
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.LakeFSObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.lfs.config.LFSConfig;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public interface ILakeFSApiService {
      * @return LakeFS client instance
      * @throws LakeFSObjectException if connection creation fails
      */
-    Object getConnection(StorageConfig config);
+    Object getConnection(LFSConfig config);
 
     /**
      * Updates the LakeFS client connection for a tenant.
@@ -29,7 +29,7 @@ public interface ILakeFSApiService {
      * @param config Storage configuration
      * @throws LakeFSObjectException if connection update fails
      */
-    void updateConnection(StorageConfig config);
+    void updateConnection(LFSConfig config);
 
     /**
      * Checks if a repository exists.
@@ -39,7 +39,7 @@ public interface ILakeFSApiService {
      * @return true if repository exists
      * @throws LakeFSObjectException on failure
      */
-    boolean repositoryExists(StorageConfig config, String repositoryName);
+    boolean repositoryExists(LFSConfig config, String repositoryName);
 
     /**
      * Creates a repository if it doesn't exist.
@@ -50,7 +50,7 @@ public interface ILakeFSApiService {
      * @param defaultBranch    Default branch name (typically "main")
      * @throws LakeFSObjectException if repository creation fails
      */
-    void createRepository(StorageConfig config, String repositoryName, String storageNamespace, String defaultBranch);
+    void createRepository(LFSConfig config, String repositoryName, String storageNamespace, String defaultBranch);
 
     /**
      * Checks if a branch exists in a repository.
@@ -61,7 +61,7 @@ public interface ILakeFSApiService {
      * @return true if branch exists
      * @throws LakeFSObjectException on failure
      */
-    boolean branchExists(StorageConfig config, String repositoryName, String branchName);
+    boolean branchExists(LFSConfig config, String repositoryName, String branchName);
 
     /**
      * Creates a new branch from an existing branch.
@@ -72,7 +72,7 @@ public interface ILakeFSApiService {
      * @param sourceBranch   Source branch to create from
      * @throws LakeFSObjectException if branch creation fails
      */
-    void createBranch(StorageConfig config, String repositoryName, String branchName, String sourceBranch);
+    void createBranch(LFSConfig config, String repositoryName, String branchName, String sourceBranch);
 
     /**
      * Uploads a file to LakeFS with metadata.
@@ -86,7 +86,7 @@ public interface ILakeFSApiService {
      * @param metadata       Metadata tags
      * @throws LakeFSObjectException if upload fails
      */
-    void uploadFile(StorageConfig config, String repositoryName, String branchName, String path, String objectName,
+    void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
                     MultipartFile multipartFile, Map<String, String> metadata);
 
     /**
@@ -99,7 +99,7 @@ public interface ILakeFSApiService {
      * @return Object content as byte array
      * @throws LakeFSObjectException if retrieval fails
      */
-    byte[] getObject(StorageConfig config, String repositoryName, String reference, String objectName);
+    byte[] getObject(LFSConfig config, String repositoryName, String reference, String objectName);
 
     /**
      * Generates a presigned URL for an object.
@@ -111,7 +111,7 @@ public interface ILakeFSApiService {
      * @return Presigned URL
      * @throws LakeFSObjectException if URL generation fails
      */
-    String getPresignedObjectUrl(StorageConfig config, String repositoryName, String reference, String objectName);
+    String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName);
 
     /**
      * Deletes an object from LakeFS.
@@ -122,7 +122,7 @@ public interface ILakeFSApiService {
      * @param objectName     Object name
      * @throws LakeFSObjectException if deletion fails
      */
-    void deleteObject(StorageConfig config, String repositoryName, String branchName, String objectName);
+    void deleteObject(LFSConfig config, String repositoryName, String branchName, String objectName);
 
     /**
      * Retrieves objects by metadata with AND/OR condition.
@@ -135,7 +135,7 @@ public interface ILakeFSApiService {
      * @return List of matching FileStorage objects
      * @throws LakeFSObjectException if retrieval fails
      */
-    List<FileStorage> getObjectByMetadata(StorageConfig config, String repositoryName, String reference,
+    List<FileStorage> getObjectByMetadata(LFSConfig config, String repositoryName, String reference,
                                           Map<String, String> metadata, IEnumLogicalOperator.Types condition);
 
     /**
@@ -148,7 +148,7 @@ public interface ILakeFSApiService {
      * @return List of FileStorage objects
      * @throws LakeFSObjectException if listing fails
      */
-    List<FileStorage> getObjects(StorageConfig config, String repositoryName, String reference, String prefix);
+    List<FileStorage> getObjects(LFSConfig config, String repositoryName, String reference, String prefix);
 
     /**
      * Updates metadata for an object.
@@ -160,7 +160,7 @@ public interface ILakeFSApiService {
      * @param metadata       New metadata
      * @throws LakeFSObjectException if metadata update fails
      */
-    void updateMetadata(StorageConfig config, String repositoryName, String branchName, String objectName, Map<String, String> metadata);
+    void updateMetadata(LFSConfig config, String repositoryName, String branchName, String objectName, Map<String, String> metadata);
 
     /**
      * Deletes multiple objects from a branch.
@@ -171,7 +171,7 @@ public interface ILakeFSApiService {
      * @param objectNames    List of object names to delete
      * @throws LakeFSObjectException if deletion fails
      */
-    void deleteObjects(StorageConfig config, String repositoryName, String branchName, List<String> objectNames);
+    void deleteObjects(LFSConfig config, String repositoryName, String branchName, List<String> objectNames);
 
     /**
      * Commits changes to a branch.
@@ -184,7 +184,7 @@ public interface ILakeFSApiService {
      * @return Commit ID
      * @throws LakeFSObjectException if commit fails
      */
-    String commit(StorageConfig config, String repositoryName, String branchName, String message, Map<String, String> metadata);
+    String commit(LFSConfig config, String repositoryName, String branchName, String message, Map<String, String> metadata);
 
     /**
      * Merges a source branch into a destination branch.
@@ -197,7 +197,7 @@ public interface ILakeFSApiService {
      * @return Merge commit ID
      * @throws LakeFSObjectException if merge fails
      */
-    String merge(StorageConfig config, String repositoryName, String sourceBranchName, String destinationBranchName, String message);
+    String merge(LFSConfig config, String repositoryName, String sourceBranchName, String destinationBranchName, String message);
 
     /**
      * Lists all branches in a repository.
@@ -207,7 +207,7 @@ public interface ILakeFSApiService {
      * @return List of branch names
      * @throws LakeFSObjectException if listing fails
      */
-    List<String> getBranches(StorageConfig config, String repositoryName);
+    List<String> getBranches(LFSConfig config, String repositoryName);
 
     /**
      * Lists all repositories for the given configuration.
@@ -216,7 +216,7 @@ public interface ILakeFSApiService {
      * @return List of repository names
      * @throws LakeFSObjectException if listing fails
      */
-    List<String> getRepositories(StorageConfig config);
+    List<String> getRepositories(LFSConfig config);
 
     /**
      * Gets the commit history for a branch.
@@ -228,7 +228,7 @@ public interface ILakeFSApiService {
      * @return List of commit information
      * @throws LakeFSObjectException if retrieval fails
      */
-    List<Map<String, Object>> getCommitHistory(StorageConfig config, String repositoryName, String branchName, int limit);
+    List<Map<String, Object>> getCommitHistory(LFSConfig config, String repositoryName, String branchName, int limit);
 
     /**
      * Gets the differences between two references (branches or commits).
@@ -240,7 +240,7 @@ public interface ILakeFSApiService {
      * @return List of differences
      * @throws LakeFSObjectException if retrieval fails
      */
-    List<Map<String, Object>> getDiff(StorageConfig config, String repositoryName, String leftRef, String rightRef);
+    List<Map<String, Object>> getDiff(LFSConfig config, String repositoryName, String leftRef, String rightRef);
 
     /**
      * Reverts changes in a branch to a specific commit.
@@ -251,7 +251,7 @@ public interface ILakeFSApiService {
      * @param commitId       Commit ID to revert to
      * @throws LakeFSObjectException if revert fails
      */
-    void revert(StorageConfig config, String repositoryName, String branchName, String commitId);
+    void revert(LFSConfig config, String repositoryName, String branchName, String commitId);
 
     /**
      * Deletes a branch from a repository.
@@ -261,7 +261,7 @@ public interface ILakeFSApiService {
      * @param branchName     Name of the branch
      * @throws LakeFSObjectException if branch deletion fails
      */
-    void deleteBranch(StorageConfig config, String repositoryName, String branchName);
+    void deleteBranch(LFSConfig config, String repositoryName, String branchName);
 
     /**
      * Deletes a repository.
@@ -270,5 +270,5 @@ public interface ILakeFSApiService {
      * @param repositoryName Name of the repository
      * @throws LakeFSObjectException if repository deletion fails
      */
-    void deleteRepository(StorageConfig config, String repositoryName);
+    void deleteRepository(LFSConfig config, String repositoryName);
 }

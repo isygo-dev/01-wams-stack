@@ -3,7 +3,7 @@ package eu.isygoit.storage.s3.api;
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.MinIoObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.s3.config.S3Config;
 import io.minio.MinioClient;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteObject;
@@ -24,7 +24,7 @@ public interface IMinIOApiService {
      * @return MinioClient instance
      * @throws MinIoObjectException if connection creation fails
      */
-    MinioClient getConnection(StorageConfig config);
+    MinioClient getConnection(S3Config config);
 
     /**
      * Updates the MinIO client connection for a tenant.
@@ -32,7 +32,7 @@ public interface IMinIOApiService {
      * @param config Storage configuration
      * @throws MinIoObjectException if connection update fails
      */
-    void updateConnection(StorageConfig config);
+    void updateConnection(S3Config config);
 
     /**
      * Checks if a bucket exists with retry logic.
@@ -42,7 +42,7 @@ public interface IMinIOApiService {
      * @return true if bucket exists
      * @throws MinIoObjectException on failure
      */
-    boolean bucketExists(StorageConfig config, String bucketName);
+    boolean bucketExists(S3Config config, String bucketName);
 
     /**
      * Enables or suspends bucket versioning.
@@ -52,7 +52,7 @@ public interface IMinIOApiService {
      * @param status     true to enable, false to suspend
      * @throws MinIoObjectException if operation fails
      */
-    void setVersioningBucket(StorageConfig config, String bucketName, boolean status);
+    void setVersioningBucket(S3Config config, String bucketName, boolean status);
 
     /**
      * Creates a bucket if it doesn't exist.
@@ -61,7 +61,7 @@ public interface IMinIOApiService {
      * @param bucketName Name of the bucket
      * @throws MinIoObjectException if bucket creation fails
      */
-    void makeBucket(StorageConfig config, String bucketName);
+    void makeBucket(S3Config config, String bucketName);
 
     /**
      * Uploads a file to MinIO with optional tags.
@@ -74,7 +74,7 @@ public interface IMinIOApiService {
      * @param tags          Metadata tags
      * @throws MinIoObjectException if upload fails
      */
-    void uploadFile(StorageConfig config, String bucketName, String path, String objectName,
+    void uploadFile(S3Config config, String bucketName, String path, String objectName,
                     MultipartFile multipartFile, Map<String, String> tags);
 
     /**
@@ -87,7 +87,7 @@ public interface IMinIOApiService {
      * @return Object content as byte array
      * @throws MinIoObjectException if retrieval fails
      */
-    byte[] getObject(StorageConfig config, String bucketName, String objectName, String versionID);
+    byte[] getObject(S3Config config, String bucketName, String objectName, String versionID);
 
     /**
      * Generates a presigned URL for an object.
@@ -98,7 +98,7 @@ public interface IMinIOApiService {
      * @return Presigned URL
      * @throws MinIoObjectException if URL generation fails
      */
-    String getPresignedObjectUrl(StorageConfig config, String bucketName, String objectName);
+    String getPresignedObjectUrl(S3Config config, String bucketName, String objectName);
 
     /**
      * Deletes an object from MinIO.
@@ -108,7 +108,7 @@ public interface IMinIOApiService {
      * @param objectName Object name
      * @throws MinIoObjectException if deletion fails
      */
-    void deleteObject(StorageConfig config, String bucketName, String objectName);
+    void deleteObject(S3Config config, String bucketName, String objectName);
 
     /**
      * Retrieves objects by tags with AND/OR condition.
@@ -120,7 +120,7 @@ public interface IMinIOApiService {
      * @return List of matching FileStorage objects
      * @throws MinIoObjectException if retrieval fails
      */
-    List<FileStorage> getObjectByTags(StorageConfig config, String bucketName,
+    List<FileStorage> getObjectByTags(S3Config config, String bucketName,
                                       Map<String, String> tags, IEnumLogicalOperator.Types condition);
 
     /**
@@ -131,7 +131,7 @@ public interface IMinIOApiService {
      * @return List of FileStorage objects
      * @throws MinIoObjectException if listing fails
      */
-    List<FileStorage> getObjects(StorageConfig config, String bucketName);
+    List<FileStorage> getObjects(S3Config config, String bucketName);
 
     /**
      * Updates tags for an object.
@@ -142,7 +142,7 @@ public interface IMinIOApiService {
      * @param tags       New tags
      * @throws MinIoObjectException if tag update fails
      */
-    void updateTags(StorageConfig config, String bucketName, String objectName, Map<String, String> tags);
+    void updateTags(S3Config config, String bucketName, String objectName, Map<String, String> tags);
 
     /**
      * Deletes multiple objects from a bucket.
@@ -152,7 +152,7 @@ public interface IMinIOApiService {
      * @param objects    List of objects to delete
      * @throws MinIoObjectException if deletion fails
      */
-    void deleteObjects(StorageConfig config, String bucketName, List<DeleteObject> objects);
+    void deleteObjects(S3Config config, String bucketName, List<DeleteObject> objects);
 
     /**
      * Deletes a bucket if it exists.
@@ -161,7 +161,7 @@ public interface IMinIOApiService {
      * @param bucketName Name of the bucket
      * @throws MinIoObjectException if bucket deletion fails
      */
-    void deleteBucket(StorageConfig config, String bucketName);
+    void deleteBucket(S3Config config, String bucketName);
 
     /**
      * Lists all buckets for the given configuration.
@@ -170,5 +170,5 @@ public interface IMinIOApiService {
      * @return List of buckets
      * @throws MinIoObjectException if listing fails
      */
-    List<Bucket> getBuckets(StorageConfig config);
+    List<Bucket> getBuckets(S3Config config);
 }

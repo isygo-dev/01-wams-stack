@@ -4,7 +4,7 @@ import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.s3.api.IMinIOApiService;
 import eu.isygoit.storage.exception.MinIoObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.s3.config.S3Config;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.*;
@@ -51,7 +51,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws IllegalArgumentException if config is invalid
      */
     @Override
-    public MinioClient getConnection(StorageConfig config) {
+    public MinioClient getConnection(S3Config config) {
         validateConfig(config);
         return minIoMap.computeIfAbsent(config.getTenant(), k -> {
             try {
@@ -73,7 +73,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws IllegalArgumentException if config is invalid
      */
     @Override
-    public void updateConnection(StorageConfig config) {
+    public void updateConnection(S3Config config) {
         validateConfig(config);
         try {
             MinioClient client = MinioClient.builder()
@@ -97,7 +97,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public boolean bucketExists(StorageConfig config, String bucketName) {
+    public boolean bucketExists(S3Config config, String bucketName) {
         validateBucketName(bucketName);
         return executeWithRetry(() -> {
             try {
@@ -118,7 +118,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void setVersioningBucket(StorageConfig config, String bucketName, boolean status) {
+    public void setVersioningBucket(S3Config config, String bucketName, boolean status) {
         validateBucketName(bucketName);
         executeWithRetry(() -> {
             try {
@@ -143,7 +143,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void makeBucket(StorageConfig config, String bucketName) {
+    public void makeBucket(S3Config config, String bucketName) {
         validateBucketName(bucketName);
         executeWithRetry(() -> {
             try {
@@ -171,7 +171,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void uploadFile(StorageConfig config, String bucketName, String path, String objectName,
+    public void uploadFile(S3Config config, String bucketName, String path, String objectName,
                            MultipartFile multipartFile, Map<String, String> tags) {
         validateUploadParams(bucketName, path, objectName, multipartFile);
         executeWithRetry(() -> {
@@ -205,7 +205,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public byte[] getObject(StorageConfig config, String bucketName, String objectName, String versionID) {
+    public byte[] getObject(S3Config config, String bucketName, String objectName, String versionID) {
         validateObjectParams(bucketName, objectName);
         return executeWithRetry(() -> {
             try {
@@ -235,7 +235,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public String getPresignedObjectUrl(StorageConfig config, String bucketName, String objectName) {
+    public String getPresignedObjectUrl(S3Config config, String bucketName, String objectName) {
         validateObjectParams(bucketName, objectName);
         return executeWithRetry(() -> {
             try {
@@ -261,7 +261,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void deleteObject(StorageConfig config, String bucketName, String objectName) {
+    public void deleteObject(S3Config config, String bucketName, String objectName) {
         validateObjectParams(bucketName, objectName);
         executeWithRetry(() -> {
             try {
@@ -289,7 +289,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public List<FileStorage> getObjectByTags(StorageConfig config, String bucketName,
+    public List<FileStorage> getObjectByTags(S3Config config, String bucketName,
                                              Map<String, String> tags, IEnumLogicalOperator.Types condition) {
         validateBucketName(bucketName);
         if (tags == null || tags.isEmpty()) {
@@ -335,7 +335,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public List<FileStorage> getObjects(StorageConfig config, String bucketName) {
+    public List<FileStorage> getObjects(S3Config config, String bucketName) {
         validateBucketName(bucketName);
         return executeWithRetry(() -> {
             try {
@@ -374,7 +374,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void updateTags(StorageConfig config, String bucketName, String objectName, Map<String, String> tags) {
+    public void updateTags(S3Config config, String bucketName, String objectName, Map<String, String> tags) {
         validateObjectParams(bucketName, objectName);
         if (tags == null) {
             throw new IllegalArgumentException("Tags cannot be null");
@@ -404,7 +404,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void deleteObjects(StorageConfig config, String bucketName, List<DeleteObject> objects) {
+    public void deleteObjects(S3Config config, String bucketName, List<DeleteObject> objects) {
         validateBucketName(bucketName);
         if (objects == null || objects.isEmpty()) {
             throw new IllegalArgumentException("Objects list cannot be null or empty");
@@ -438,7 +438,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public void deleteBucket(StorageConfig config, String bucketName) {
+    public void deleteBucket(S3Config config, String bucketName) {
         validateBucketName(bucketName);
         executeWithRetry(() -> {
             try {
@@ -462,7 +462,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @throws MinIoObjectException on failure
      */
     @Override
-    public List<Bucket> getBuckets(StorageConfig config) {
+    public List<Bucket> getBuckets(S3Config config) {
         validateConfig(config);
         return executeWithRetry(() -> {
             try {
@@ -512,7 +512,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
      * @param config Storage configuration
      * @throws IllegalArgumentException if invalid
      */
-    private void validateConfig(StorageConfig config) {
+    private void validateConfig(S3Config config) {
         if (config == null || !StringUtils.hasText(config.getTenant()) ||
                 !StringUtils.hasText(config.getUrl()) ||
                 !StringUtils.hasText(config.getUserName()) ||

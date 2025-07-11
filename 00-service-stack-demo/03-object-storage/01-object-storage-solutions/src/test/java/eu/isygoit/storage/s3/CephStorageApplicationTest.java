@@ -3,7 +3,7 @@ package eu.isygoit.storage.s3;
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.CephObjectException;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.object.StorageConfig;
+import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.service.CephService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ class CephStorageApplicationTest {
     private static final String TENANT = "test-tenant";
     @Autowired
     private CephService cephService;
-    private StorageConfig storageConfig;
+    private S3Config s3Config;
 
     @DynamicPropertySource
     static void minioProperties(DynamicPropertyRegistry registry) {
@@ -50,27 +50,27 @@ class CephStorageApplicationTest {
 
     @BeforeEach
     void setUp() {
-        storageConfig = new StorageConfig();
-        storageConfig.setTenant(TENANT);
-        storageConfig.setUrl(minioContainer.getS3URL());
-        storageConfig.setUserName(minioContainer.getUserName());
-        storageConfig.setPassword(minioContainer.getPassword());
+        s3Config = new S3Config();
+        s3Config.setTenant(TENANT);
+        s3Config.setUrl(minioContainer.getS3URL());
+        s3Config.setUserName(minioContainer.getUserName());
+        s3Config.setPassword(minioContainer.getPassword());
     }
 
     @Test
     @Order(1)
     void testCreateAndCheckBucket() {
-        cephService.makeBucket(storageConfig, BUCKET_NAME);
-        assertTrue(cephService.bucketExists(storageConfig, BUCKET_NAME));
+        cephService.makeBucket(s3Config, BUCKET_NAME);
+        assertTrue(cephService.bucketExists(s3Config, BUCKET_NAME));
     }
 
     @Test
     @Order(2)
     void testSetVersioning() {
-        cephService.makeBucket(storageConfig, BUCKET_NAME);
+        cephService.makeBucket(s3Config, BUCKET_NAME);
 
-        cephService.setVersioningBucket(storageConfig, BUCKET_NAME, true);
-        S3Client client = cephService.getConnection(storageConfig);
+        cephService.setVersioningBucket(s3Config, BUCKET_NAME, true);
+        S3Client client = cephService.getConnection(s3Config);
         try {
             GetBucketVersioningResponse config = client.getBucketVersioning(
                     GetBucketVersioningRequest.builder().bucket(BUCKET_NAME).build());
@@ -79,7 +79,7 @@ class CephStorageApplicationTest {
             fail("Failed to check versioning: " + e.getMessage());
         }
 
-        cephService.setVersioningBucket(storageConfig, BUCKET_NAME, false);
+        cephService.setVersioningBucket(s3Config, BUCKET_NAME, false);
         try {
             GetBucketVersioningResponse config = client.getBucketVersioning(
                     GetBucketVersioningRequest.builder().bucket(BUCKET_NAME).build());
@@ -94,8 +94,8 @@ class CephStorageApplicationTest {
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Test content".getBytes(StandardCharsets.UTF_8));
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, file, null);
-        byte[] data = cephService.getObject(storageConfig, BUCKET_NAME, OBJECT_NAME, null);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        byte[] data = cephService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
 
@@ -104,8 +104,8 @@ class CephStorageApplicationTest {
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content for presigned".getBytes(StandardCharsets.UTF_8));
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, file, null);
-        String url = cephService.getPresignedObjectUrl(storageConfig, BUCKET_NAME, OBJECT_NAME);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        String url = cephService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertNotNull(url);
         assertTrue(url.contains(OBJECT_NAME));
     }
@@ -116,11 +116,11 @@ class CephStorageApplicationTest {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Tagged content".getBytes(StandardCharsets.UTF_8));
         Map<String, String> tags = Map.of("type", "document", "env", "test");
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, file, tags);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
 
         Map<String, String> searchTags = Map.of("type", "document");
         List<FileStorage> results = cephService.getObjectByTags(
-                storageConfig, BUCKET_NAME, searchTags, IEnumLogicalOperator.Types.AND);
+                s3Config, BUCKET_NAME, searchTags, IEnumLogicalOperator.Types.AND);
         assertFalse(results.isEmpty());
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
@@ -130,12 +130,12 @@ class CephStorageApplicationTest {
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to tag".getBytes(StandardCharsets.UTF_8));
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
 
-        cephService.updateTags(storageConfig, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
+        cephService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
 
         List<FileStorage> results = cephService.getObjectByTags(
-                storageConfig, BUCKET_NAME, Map.of("updated", "yes"), IEnumLogicalOperator.Types.AND);
+                s3Config, BUCKET_NAME, Map.of("updated", "yes"), IEnumLogicalOperator.Types.AND);
         assertFalse(results.isEmpty());
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
@@ -145,10 +145,10 @@ class CephStorageApplicationTest {
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, file, null);
-        cephService.deleteObject(storageConfig, BUCKET_NAME, OBJECT_NAME);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        cephService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertThrows(CephObjectException.class, () ->
-                cephService.getObject(storageConfig, BUCKET_NAME, OBJECT_NAME, null));
+                cephService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
     @Test
@@ -157,23 +157,23 @@ class CephStorageApplicationTest {
         MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
         MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2".getBytes());
 
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", "file1.txt", f1, null);
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", "file2.txt", f2, null);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
 
-        cephService.deleteObjects(storageConfig, BUCKET_NAME,
+        cephService.deleteObjects(s3Config, BUCKET_NAME,
                 List.of(DeleteObjectRequest.builder().key("file1.txt").build(),
                         DeleteObjectRequest.builder().key("file2.txt").build()));
 
         assertThrows(CephObjectException.class, () ->
-                cephService.getObject(storageConfig, BUCKET_NAME, "file1.txt", null));
+                cephService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
         assertThrows(CephObjectException.class, () ->
-                cephService.getObject(storageConfig, BUCKET_NAME, "file2.txt", null));
+                cephService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 
     @Test
     @Order(9)
     void testListBuckets() {
-        List<Bucket> buckets = cephService.getBuckets(storageConfig);
+        List<Bucket> buckets = cephService.getBuckets(s3Config);
         assertFalse(buckets.isEmpty());
         assertTrue(buckets.stream().anyMatch(b -> b.name().equals(BUCKET_NAME)));
     }
@@ -181,42 +181,42 @@ class CephStorageApplicationTest {
     @Test
     @Order(10)
     void testDeleteBucket() {
-        cephService.makeBucket(storageConfig, "bucket-delete");
-        cephService.deleteBucket(storageConfig, "bucket-delete");
-        assertFalse(cephService.bucketExists(storageConfig, "bucket-delete"));
+        cephService.makeBucket(s3Config, "bucket-delete");
+        cephService.deleteBucket(s3Config, "bucket-delete");
+        assertFalse(cephService.bucketExists(s3Config, "bucket-delete"));
     }
 
     @Test
     @Order(11)
     void testInvalidConfig() {
-        StorageConfig invalid = new StorageConfig();
+        S3Config invalid = new S3Config();
         assertThrows(IllegalArgumentException.class, () -> cephService.getConnection(invalid));
     }
 
     @Test
     @Order(12)
     void testInvalidBucketName() {
-        assertThrows(IllegalArgumentException.class, () -> cephService.bucketExists(storageConfig, ""));
+        assertThrows(IllegalArgumentException.class, () -> cephService.bucketExists(s3Config, ""));
     }
 
     @Test
     @Order(13)
     void testInvalidObjectName() {
         assertThrows(IllegalArgumentException.class,
-                () -> cephService.getObject(storageConfig, BUCKET_NAME, "", null));
+                () -> cephService.getObject(s3Config, BUCKET_NAME, "", null));
     }
 
     @Test
     @Order(14)
     void testInvalidUploadParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, null, null));
+                () -> cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
     }
 
     @Test
     @Order(15)
     void testUpdateConnection() {
-        assertDoesNotThrow(() -> cephService.updateConnection(storageConfig));
+        assertDoesNotThrow(() -> cephService.updateConnection(s3Config));
     }
 
     @Test
@@ -226,8 +226,8 @@ class CephStorageApplicationTest {
         String objectName = "path-object.txt";
         MockMultipartFile file = new MockMultipartFile("file", objectPath, "text/plain",
                 "Path content".getBytes(StandardCharsets.UTF_8));
-        cephService.uploadFile(storageConfig, BUCKET_NAME, objectPath, objectName, file, null);
-        byte[] retrieved = cephService.getObject(storageConfig, BUCKET_NAME, objectPath + objectName, null);
+        cephService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
+        byte[] retrieved = cephService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
         assertEquals("Path content", new String(retrieved));
     }
 
@@ -235,8 +235,8 @@ class CephStorageApplicationTest {
     @Order(17)
     void testListObjectsInBucket() {
         MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", "list.txt", file, null);
-        List<FileStorage> files = cephService.getObjects(storageConfig, BUCKET_NAME);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
+        List<FileStorage> files = cephService.getObjects(s3Config, BUCKET_NAME);
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
 
@@ -245,8 +245,8 @@ class CephStorageApplicationTest {
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "With empty version".getBytes());
-        cephService.uploadFile(storageConfig, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         assertDoesNotThrow(() ->
-                cephService.getObject(storageConfig, BUCKET_NAME, OBJECT_NAME, ""));
+                cephService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));
     }
 }
