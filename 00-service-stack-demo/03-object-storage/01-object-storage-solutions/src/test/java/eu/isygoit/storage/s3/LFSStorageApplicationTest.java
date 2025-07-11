@@ -46,7 +46,11 @@ public class LFSStorageApplicationTest {
             .withExposedPorts(8000)
             .withEnv("LAKEFS_AUTH_USERNAME", "admin")
             .withEnv("LAKEFS_AUTH_ACCESS_KEY_ID", "AKIAIOSFODNN7EXAMPLE")
-            .withEnv("LAKEFS_AUTH_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
+            .withEnv("LAKEFS_AUTH_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY")
+            .withEnv("LAKEFS_BLOCKSTORE_TYPE", "local")
+            .withEnv("LAKEFS_BLOCKSTORE_LOCAL_PATH", "/lakefs/data")
+            .withCommand("run", "--quickstart")
+            .withFileSystemBind("./lakefs-data", "/lakefs/data"); // Local directory for persistence
 
     @BeforeEach
     public void setUp() {
