@@ -1,4 +1,4 @@
-package eu.isygoit.storage.s3;
+package eu.isygoit.storage;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
