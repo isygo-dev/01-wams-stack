@@ -14,6 +14,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -678,10 +680,9 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             try {
                 RestTemplate client = getConnection(config);
                 String fullPath = StringUtils.hasText(path) ? path + "/" + objectName : objectName;
-                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/objects";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/objects?path=" + URLEncoder.encode(fullPath, StandardCharsets.UTF_8);
 
                 MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                body.add("path", fullPath);
                 body.add("content", new InputStreamResource(multipartFile.getInputStream()));
 
                 if (metadata != null) {
@@ -717,7 +718,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects/" + objectName;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects?path=" + URLEncoder.encode(objectName, StandardCharsets.UTF_8);
 
                 ResponseEntity<byte[]> response = client.getForEntity(url, byte[].class);
                 return response.getBody();
@@ -743,7 +744,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects/" + objectName + "/presign";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects?path=" + URLEncoder.encode(objectName, StandardCharsets.UTF_8) + "&presign=true";
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = response.getBody();
