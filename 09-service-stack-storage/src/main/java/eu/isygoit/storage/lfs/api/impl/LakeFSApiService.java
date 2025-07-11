@@ -110,7 +110,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName;
+                String url = config.getUrl() + "/repositories/" + repositoryName;
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 return response.getStatusCode() == HttpStatus.OK;
             } catch (Exception e) {
@@ -141,7 +141,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             try {
                 if (!repositoryExists(config, repositoryName)) {
                     RestTemplate client = getConnection(config);
-                    String url = config.getUrl() + "/api/v1/repositories";
+                    String url = config.getUrl() + "/repositories";
 
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("name", repositoryName);
@@ -181,7 +181,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName + "/objects/delete";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/objects/delete";
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("paths", objectNames);
@@ -220,7 +220,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName + "/commits";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/commits";
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("message", message);
@@ -265,7 +265,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/refs/" + destinationBranchName + "/merge/" + sourceBranchName;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + destinationBranchName + "/merge/" + sourceBranchName;
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("message", message);
@@ -299,7 +299,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches";
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = response.getBody();
@@ -327,7 +327,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories";
+                String url = config.getUrl() + "/repositories";
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = response.getBody();
@@ -361,7 +361,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/refs/" + branchName + "/commits";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + branchName + "/commits";
                 if (limit > 0) {
                     url += "?amount=" + limit;
                 }
@@ -393,7 +393,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/refs/" + leftRef + "/diff/" + rightRef;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + leftRef + "/diff/" + rightRef;
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = response.getBody();
@@ -423,7 +423,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName + "/revert";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/revert";
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("ref", commitId);
@@ -456,7 +456,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName;
 
                 client.delete(url);
                 log.info("Deleted branch: {} from repository: {}", branchName, repositoryName);
@@ -480,7 +480,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName;
+                String url = config.getUrl() + "/repositories/" + repositoryName;
 
                 client.delete(url);
                 log.info("Deleted repository: {}", repositoryName);
@@ -608,7 +608,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName;
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 return response.getStatusCode() == HttpStatus.OK;
             } catch (Exception e) {
@@ -638,7 +638,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             try {
                 if (!branchExists(config, repositoryName, branchName)) {
                     RestTemplate client = getConnection(config);
-                    String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches";
+                    String url = config.getUrl() + "/repositories/" + repositoryName + "/branches";
 
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("name", branchName);
@@ -678,7 +678,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             try {
                 RestTemplate client = getConnection(config);
                 String fullPath = StringUtils.hasText(path) ? path + "/" + objectName : objectName;
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName + "/objects";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/objects";
 
                 MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
                 body.add("path", fullPath);
@@ -717,7 +717,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/refs/" + reference + "/objects/" + objectName;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects/" + objectName;
 
                 ResponseEntity<byte[]> response = client.getForEntity(url, byte[].class);
                 return response.getBody();
@@ -743,7 +743,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/refs/" + reference + "/objects/" + objectName + "/presign";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects/" + objectName + "/presign";
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = response.getBody();
@@ -769,7 +769,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName + "/objects/" + objectName;
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/objects/" + objectName;
 
                 client.delete(url);
                 log.info("Deleted object: {} from branch: {} in repository: {}", objectName, branchName, repositoryName);
@@ -838,7 +838,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/refs/" + reference + "/objects";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/refs/" + reference + "/objects";
 
                 if (StringUtils.hasText(prefix)) {
                     url += "?prefix=" + prefix;
@@ -886,7 +886,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = config.getUrl() + "/api/v1/repositories/" + repositoryName + "/branches/" + branchName + "/objects/" + objectName + "/metadata";
+                String url = config.getUrl() + "/repositories/" + repositoryName + "/branches/" + branchName + "/objects/" + objectName + "/metadata";
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
