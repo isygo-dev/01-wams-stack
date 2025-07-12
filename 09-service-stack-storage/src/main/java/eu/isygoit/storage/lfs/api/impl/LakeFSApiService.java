@@ -894,7 +894,9 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "branches", branchName, "objects", objectName}, null);
+                // Use query parameter 'path' instead of appending objectName to the path
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "branches", branchName, "objects"},
+                        Map.of("path", URLEncoder.encode(objectName, StandardCharsets.UTF_8)));
 
                 client.delete(url);
                 log.info("Deleted object: {} from branch: {} in repository: {}", objectName, branchName, repositoryName);
@@ -960,7 +962,8 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                Map<String, String> queryParams = StringUtils.hasText(prefix) ? Map.of("prefix", prefix) : null;
+                // Use an empty path if prefix is null to list all objects
+                Map<String, String> queryParams = StringUtils.hasText(prefix) ? Map.of("prefix", prefix) : Map.of("path", "");
                 String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", reference, "objects"}, queryParams);
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
@@ -979,6 +982,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     fileObject.pathType = (String) item.get("path_type");
                     fileStorageList.add(fileObject);
                 }
+                log.info("Retrieved {} objects from repository: {}, branch: {}", fileStorageList.size(), repositoryName, reference);
                 return fileStorageList;
             } catch (HttpClientErrorException e) {
                 throw new LakeFSObjectException("Error listing objects in repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
@@ -1004,22 +1008,44 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         }
         executeWithRetry(() -> {
             try {
+                // Step 1: Retrieve the existing object content
+                byte[] objectContent = getObject(config, repositoryName, branchName, objectName);
+                if (objectContent == null) {
+                    throw new LakeFSObjectException("Object not found: " + objectName);
+                }
+
+                // Step 2: Re-upload the object with new metadata
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "branches", branchName, "objects", objectName, "metadata"}, null);
+                String fullPath = objectName; // Assuming objectName is the full path; adjust if a path prefix is needed
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "branches", branchName, "objects"},
+                        Map.of("path", URLEncoder.encode(fullPath, StandardCharsets.UTF_8)));
+
+                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+                body.add("content", new ByteArrayResource(objectContent) {
+                    @Override
+                    public String getFilename() {
+                        return objectName;
+                    }
+                });
+
+                if (metadata != null && !metadata.isEmpty()) {
+                    metadata.forEach(body::add);
+                }
 
                 HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<Map<String, String>> request = new HttpEntity<>(metadata, headers);
+                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+                HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 
-                client.put(url, request);
+                client.postForEntity(url, request, Map.class);
                 log.info("Updated metadata for object: {} in branch: {} in repository: {}", objectName, branchName, repositoryName);
             } catch (HttpClientErrorException e) {
                 throw new LakeFSObjectException("Error updating metadata for object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
+            } catch (Exception e) {
+                throw new LakeFSObjectException("Error updating metadata for object: " + objectName, e);
             }
             return null;
         });
     }
-
     @FunctionalInterface
     private interface Supplier<T> {
         T get() throws LakeFSObjectException;
