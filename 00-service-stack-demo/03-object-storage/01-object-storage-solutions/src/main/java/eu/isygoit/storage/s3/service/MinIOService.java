@@ -4,6 +4,7 @@ import eu.isygoit.storage.s3.api.impl.MinIOApiService;
 import io.minio.MinioClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Map;
  * The type Min io service.
  */
 @Slf4j
+@Profile("MinIO")
 @Service
 public class MinIOService extends MinIOApiService {
 

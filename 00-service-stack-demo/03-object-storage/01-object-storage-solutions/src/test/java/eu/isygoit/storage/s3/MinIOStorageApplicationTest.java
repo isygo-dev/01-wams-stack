@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MinIOContainer;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("MinIO")
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers

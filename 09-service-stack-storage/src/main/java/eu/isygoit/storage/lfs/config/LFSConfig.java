@@ -24,6 +24,8 @@ public class LFSConfig {
     private String userName;
     private String password;
     private String url;
+    @Builder.Default
+    private String apiPrefix = "/api/v1";
 
     private S3Config s3Config;
 }

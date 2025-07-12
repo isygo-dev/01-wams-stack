@@ -3,6 +3,7 @@ package eu.isygoit.storage.s3.service;
 import eu.isygoit.storage.s3.api.impl.CephApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -12,6 +13,7 @@ import java.util.Map;
  * The type Ceph service.
  */
 @Slf4j
+@Profile("Ceph")
 @Service
 public class CephService extends CephApiService {
 

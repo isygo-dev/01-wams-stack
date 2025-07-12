@@ -13,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -27,6 +28,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles(profiles = {
+        "LakeFS",
+        "MinIO",
+})
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
