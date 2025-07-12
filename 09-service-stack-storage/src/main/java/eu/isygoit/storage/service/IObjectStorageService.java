@@ -1,8 +1,8 @@
 package eu.isygoit.storage.service;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteObject;
 import org.springframework.web.multipart.MultipartFile;

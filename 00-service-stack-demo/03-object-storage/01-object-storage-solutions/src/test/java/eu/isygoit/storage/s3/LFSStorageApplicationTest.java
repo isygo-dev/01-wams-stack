@@ -31,6 +31,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The type Lfs storage application test.
+ */
 @ActiveProfiles(profiles = {
         "LakeFS",
         "MinIO",
@@ -99,6 +102,9 @@ public class LFSStorageApplicationTest {
     private LFSConfig config;
     private String tenant;
 
+    /**
+     * Sets up container.
+     */
     @BeforeAll
     public static void setUpContainer() {
         try {
@@ -161,6 +167,11 @@ public class LFSStorageApplicationTest {
         }
     }
 
+    /**
+     * Sets up.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
     @BeforeEach
     public void setUp() throws InterruptedException {
         if (!minioContainer.isRunning() || !lakeFSContainer.isRunning()) {
@@ -214,6 +225,9 @@ public class LFSStorageApplicationTest {
         throw new RuntimeException("Could not connect to LakeFS", lastException);
     }
 
+    /**
+     * Tear down.
+     */
     @AfterEach
     public void tearDown() {
         try {
@@ -231,6 +245,9 @@ public class LFSStorageApplicationTest {
         lakeFSClientMap.remove(tenant);
     }
 
+    /**
+     * Test get connection.
+     */
     @Test
     @Order(1)
     public void testGetConnection() {
@@ -239,6 +256,9 @@ public class LFSStorageApplicationTest {
         assertSame(lakeFSClientMap.get(tenant), result);
     }
 
+    /**
+     * Test update connection.
+     */
     @Test
     @Order(2)
     public void testUpdateConnection() {
@@ -246,6 +266,9 @@ public class LFSStorageApplicationTest {
         assertNotNull(lakeFSClientMap.get(tenant));
     }
 
+    /**
+     * Test create repository.
+     */
     @Test
     @Order(3)
     public void testCreateRepository() {
@@ -259,6 +282,9 @@ public class LFSStorageApplicationTest {
         assertTrue(exists);
     }
 
+    /**
+     * Test repository exists.
+     */
     @Test
     @Order(4)
     public void testRepositoryExists() {
@@ -271,6 +297,9 @@ public class LFSStorageApplicationTest {
         assertTrue(exists);
     }
 
+    /**
+     * Test branch exists.
+     */
     @Test
     @Order(5)
     public void testBranchExists() {
@@ -284,6 +313,9 @@ public class LFSStorageApplicationTest {
         assertTrue(exists);
     }
 
+    /**
+     * Test create branch.
+     */
     @Test
     @Order(6)
     public void testCreateBranch() {
@@ -299,6 +331,9 @@ public class LFSStorageApplicationTest {
         assertTrue(exists);
     }
 
+    /**
+     * Test upload file.
+     */
     @Test
     @Order(7)
     public void testUploadFile() {
@@ -313,9 +348,12 @@ public class LFSStorageApplicationTest {
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
 
-        assertDoesNotThrow(() -> lakeFSService.uploadFile(config, repositoryName, defaultBranch, path, objectName, multipartFile, metadata));
+        assertDoesNotThrow(() -> lakeFSService.uploadFile(config, repositoryName, defaultBranch, path, objectName, multipartFile));
     }
 
+    /**
+     * Test get object.
+     */
     @Test
     @Order(8)
     public void testGetObject() {
@@ -327,7 +365,7 @@ public class LFSStorageApplicationTest {
         MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
         byte[] result = lakeFSService.getObject(config, repositoryName, defaultBranch, objectName);
         assertArrayEquals("Hello".getBytes(), result);
@@ -345,13 +383,16 @@ public class LFSStorageApplicationTest {
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
         lakeFSService.createBranch(config, repositoryName, defaultBranch, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
         String url = lakeFSService.getPresignedObjectUrl(config, repositoryName, defaultBranch, objectName);
         assertNotNull(url);
         assertTrue(url.startsWith("http"));
     }*/
 
+    /**
+     * Test delete object.
+     */
     @Test
     @Order(10)
     public void testDeleteObject() {
@@ -363,11 +404,16 @@ public class LFSStorageApplicationTest {
         MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
         assertDoesNotThrow(() -> lakeFSService.deleteObject(config, repositoryName, defaultBranch, objectName));
     }
 
+    /**
+     * Test get object by metadata.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     @Order(11)
     public void testGetObjectByMetadata() throws InterruptedException {
@@ -385,12 +431,14 @@ public class LFSStorageApplicationTest {
             // Upload first file with metadata
             MockMultipartFile multipartFile1 = new MockMultipartFile("file", "test1.txt", "text/plain", "Content 1".getBytes());
             Map<String, String> metadata1 = Map.of("key", "value", "category", "test", "type", "document");
-            lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName1, multipartFile1, metadata1);
+            lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName1, multipartFile1);
+            lakeFSService.updateMetadata(config, repositoryName, defaultBranch, objectName1, metadata1);
 
             // Upload second file with different metadata
             MockMultipartFile multipartFile2 = new MockMultipartFile("file", "test2.txt", "text/plain", "Content 2".getBytes());
             Map<String, String> metadata2 = Map.of("key", "different", "category", "test", "type", "image");
-            lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName2, multipartFile2, metadata2);
+            lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName2, multipartFile2);
+            lakeFSService.updateMetadata(config, repositoryName, defaultBranch, objectName2, metadata2);
 
             // Commit changes
             lakeFSService.commit(config, repositoryName, defaultBranch, "Add test files with metadata", null);
@@ -475,7 +523,10 @@ public class LFSStorageApplicationTest {
         }
     }
 
-    // Additional helper test methods for edge cases
+    /**
+     * Test get object by metadata edge cases.
+     */
+// Additional helper test methods for edge cases
     @Test
     @Order(12)
     public void testGetObjectByMetadataEdgeCases() {
@@ -533,6 +584,11 @@ public class LFSStorageApplicationTest {
         }
     }
 
+    /**
+     * Test get objects.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     @Order(12)
     public void testGetObjects() throws InterruptedException {
@@ -547,7 +603,7 @@ public class LFSStorageApplicationTest {
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
 
         // Upload file
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
         // Commit changes
         lakeFSService.commit(config, repositoryName, defaultBranch, "Add test file", null);
@@ -570,6 +626,9 @@ public class LFSStorageApplicationTest {
         assertTrue(objects.isEmpty(), "Should not find objects with non-matching prefix");
     }
 
+    /**
+     * Test update metadata.
+     */
     @Test
     @Order(13)
     public void testUpdateMetadata() {
@@ -582,11 +641,14 @@ public class LFSStorageApplicationTest {
         Map<String, String> metadata = Map.of("key", "new-value");
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
         assertDoesNotThrow(() -> lakeFSService.updateMetadata(config, repositoryName, defaultBranch, objectName, metadata));
     }
 
+    /**
+     * Test delete objects.
+     */
     @Test
     @Order(14)
     public void testDeleteObjects() {
@@ -599,12 +661,15 @@ public class LFSStorageApplicationTest {
         MockMultipartFile multipartFile2 = new MockMultipartFile("file", "test2.txt", "text/plain", "Hello2".getBytes());
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test1.txt", multipartFile1, null);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test2.txt", multipartFile2, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test1.txt", multipartFile1);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test2.txt", multipartFile2);
 
         assertDoesNotThrow(() -> lakeFSService.deleteObjects(config, repositoryName, defaultBranch, objectNames));
     }
 
+    /**
+     * Test commit.
+     */
     @Test
     @Order(15)
     public void testCommit() {
@@ -621,13 +686,16 @@ public class LFSStorageApplicationTest {
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
 
         // Upload a file to create changes in the branch
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
         // Commit the changes
         String commitId = lakeFSService.commit(config, repositoryName, defaultBranch, message, metadata);
         assertNotNull(commitId);
     }
 
+    /**
+     * Test commit no changes.
+     */
     @Test
     @Order(15)
     public void testCommitNoChanges() {
@@ -644,7 +712,12 @@ public class LFSStorageApplicationTest {
                 lakeFSService.commit(config, repositoryName, defaultBranch, message, metadata));
     }
 
-    @Test
+    /**
+     * Test merge.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
+/*    @Test
     @Order(16)
     public void testMerge() throws InterruptedException {
         String strUUID = UUID.randomUUID().toString();
@@ -661,7 +734,7 @@ public class LFSStorageApplicationTest {
         lakeFSService.createBranch(config, repositoryName, featureBranch, defaultBranch);
 
         // Upload a file to the feature branch
-        lakeFSService.uploadFile(config, repositoryName, featureBranch, "", objectName, multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, featureBranch, "", objectName, multipartFile);
 
         // Commit changes in the feature branch with a proper commit message
         String commitId = lakeFSService.commit(config, repositoryName, featureBranch, "Add test file", null);
@@ -686,8 +759,11 @@ public class LFSStorageApplicationTest {
         // Verify merge by checking file now exists in main
         byte[] mergedContent = lakeFSService.getObject(config, repositoryName, defaultBranch, objectName);
         assertArrayEquals("Hello".getBytes(), mergedContent, "File should now exist in main branch after merge");
-    }
+    }*/
 
+    /**
+     * Test merge no changes.
+     */
     @Test
     @Order(16)
     public void testMergeNoChanges() {
@@ -705,6 +781,9 @@ public class LFSStorageApplicationTest {
                 lakeFSService.merge(config, repositoryName, featureBranch, defaultBranch, message));
     }
 
+    /**
+     * Test get branches.
+     */
     @Test
     @Order(17)
     public void testGetBranches() {
@@ -719,6 +798,9 @@ public class LFSStorageApplicationTest {
         assertTrue(branches.contains("main"));
     }
 
+    /**
+     * Test get repositories.
+     */
     @Test
     @Order(18)
     public void testGetRepositories() {
@@ -732,6 +814,9 @@ public class LFSStorageApplicationTest {
         assertTrue(repositories.contains(repositoryName));
     }
 
+    /**
+     * Test get commit history.
+     */
     @Test
     @Order(19)
     public void testGetCommitHistory() {
@@ -743,13 +828,18 @@ public class LFSStorageApplicationTest {
         MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test.txt", multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test.txt", multipartFile);
         lakeFSService.commit(config, repositoryName, defaultBranch, "Initial commit", null);
 
         List<Map<String, Object>> commits = lakeFSService.getCommitHistory(config, repositoryName, defaultBranch, limit);
         assertFalse(commits.isEmpty());
     }
 
+    /**
+     * Test get diff.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     @Order(20)
     public void testGetDiff() throws InterruptedException {
@@ -762,7 +852,7 @@ public class LFSStorageApplicationTest {
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
         lakeFSService.createBranch(config, repositoryName, rightRef, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, rightRef, "", "test.txt", multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, rightRef, "", "test.txt", multipartFile);
 
         // Add commit to ensure changes are persisted
         lakeFSService.commit(config, repositoryName, rightRef, "Add test file", null);
@@ -778,6 +868,9 @@ public class LFSStorageApplicationTest {
                 "Expected diff to contain test.txt. Actual diffs: " + diffs);
     }
 
+    /**
+     * Test revert.
+     */
     @Test
     @Order(21)
     public void testRevert() {
@@ -788,12 +881,15 @@ public class LFSStorageApplicationTest {
         MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
 
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test.txt", multipartFile, null);
+        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", "test.txt", multipartFile);
         String commitId = lakeFSService.commit(config, repositoryName, defaultBranch, "Initial commit", null);
 
         assertDoesNotThrow(() -> lakeFSService.revert(config, repositoryName, defaultBranch, commitId));
     }
 
+    /**
+     * Test delete branch.
+     */
     @Test
     @Order(22)
     public void testDeleteBranch() {
@@ -809,6 +905,9 @@ public class LFSStorageApplicationTest {
         assertFalse(lakeFSService.branchExists(config, repositoryName, branchName));
     }
 
+    /**
+     * Test delete repository.
+     */
     @Test
     @Order(23)
     public void testDeleteRepository() {

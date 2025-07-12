@@ -1,14 +1,13 @@
 package eu.isygoit.storage.lfs.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.lfs.api.ILakeFSApiService;
 import eu.isygoit.storage.exception.LakeFSObjectException;
+import eu.isygoit.storage.lfs.api.ILakeFSApiService;
+import eu.isygoit.storage.lfs.config.LFSConfig;
 import eu.isygoit.storage.s3.api.IMinIOApiService;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.lfs.config.LFSConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -24,14 +23,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Enhanced service implementation for LakeFS data versioning operations with improved URL handling,
- * robust error handling, and optimized retry logic.
+ * ref: https://pydocs.lakefs.io/docs/
  */
 @Slf4j
 public abstract class LakeFSApiService implements ILakeFSApiService {
@@ -50,8 +46,8 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     /**
      * Instantiates a new LakeFS API service.
      *
-     * @param lakeFSClientMap  the LakeFS client map
-     * @param minIOApiService  the MinIO API service
+     * @param lakeFSClientMap the LakeFS client map
+     * @param minIOApiService the MinIO API service
      */
     public LakeFSApiService(Map<String, RestTemplate> lakeFSClientMap, IMinIOApiService minIOApiService) {
         this.lakeFSClientMap = lakeFSClientMap;
@@ -786,12 +782,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @param path           Object path
      * @param objectName     Object name
      * @param multipartFile  File to upload
-     * @param metadata       Metadata tags
      * @throws LakeFSObjectException if upload fails
      */
     @Override
     public void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
-                           MultipartFile multipartFile, Map<String, String> metadata) {
+                           MultipartFile multipartFile) {
         validateUploadParams(repositoryName, branchName, objectName, multipartFile);
         executeWithRetry(() -> {
             try {
@@ -809,9 +804,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     }
                 });
 
+                /*
                 if (metadata != null && !metadata.isEmpty()) {
                     metadata.forEach(body::add);
                 }
+                 */
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -1074,26 +1071,16 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 // Step 2: Re-upload the object with new metadata
                 RestTemplate client = getConnection(config);
                 String fullPath = objectName; // Assuming objectName is the full path; adjust if a path prefix is needed
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "branches", branchName, "objects"},
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "branches", branchName, "objects", "stat", "user_metadata"},
                         Map.of("path", URLEncoder.encode(fullPath, StandardCharsets.UTF_8)));
 
-                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                body.add("content", new ByteArrayResource(objectContent) {
-                    @Override
-                    public String getFilename() {
-                        return objectName;
-                    }
-                });
-
-                if (metadata != null && !metadata.isEmpty()) {
-                    metadata.forEach(body::add);
-                }
+                Map<String, Map<String, String>> body = Map.of("set", metadata);
 
                 HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-                HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Map<String, String>>> request = new HttpEntity<>(body, headers);
 
-                client.postForEntity(url, request, Map.class);
+                client.put(url, request, Map.class);
                 log.info("Updated metadata for object: {} in branch: {} in repository: {}", objectName, branchName, repositoryName);
             } catch (HttpClientErrorException e) {
                 throw new LakeFSObjectException("Error updating metadata for object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
@@ -1105,6 +1092,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     }
     @FunctionalInterface
     private interface Supplier<T> {
+        /**
+         * Get t.
+         *
+         * @return the t
+         * @throws LakeFSObjectException the lake fs object exception
+         */
         T get() throws LakeFSObjectException;
     }
 }

@@ -2,8 +2,8 @@ package eu.isygoit.storage.s3.api;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.OxiCloudObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;

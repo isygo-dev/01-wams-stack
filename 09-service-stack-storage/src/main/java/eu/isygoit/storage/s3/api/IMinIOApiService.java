@@ -2,8 +2,8 @@ package eu.isygoit.storage.s3.api;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.MinIoObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import io.minio.MinioClient;
 import io.minio.messages.Bucket;
 import io.minio.messages.DeleteObject;

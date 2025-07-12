@@ -2,8 +2,8 @@ package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.GarageObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.service.GarageService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The type Garage storage application test.
+ */
 @ActiveProfiles("Garage")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,6 +46,11 @@ class GarageStorageApplicationTest {
     private GarageService garageService;
     private S3Config s3Config;
 
+    /**
+     * Minio properties.
+     *
+     * @param registry the registry
+     */
     @DynamicPropertySource
     static void minioProperties(DynamicPropertyRegistry registry) {
         registry.add("minio.url", minioContainer::getS3URL);
@@ -50,6 +58,9 @@ class GarageStorageApplicationTest {
         registry.add("minio.password", minioContainer::getPassword);
     }
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         s3Config = new S3Config();
@@ -59,6 +70,9 @@ class GarageStorageApplicationTest {
         s3Config.setPassword(minioContainer.getPassword());
     }
 
+    /**
+     * Test create and check bucket.
+     */
     @Test
     @Order(1)
     void testCreateAndCheckBucket() {
@@ -66,6 +80,9 @@ class GarageStorageApplicationTest {
         assertTrue(garageService.bucketExists(s3Config, BUCKET_NAME));
     }
 
+    /**
+     * Test set versioning.
+     */
     @Test
     @Order(2)
     void testSetVersioning() {
@@ -91,6 +108,9 @@ class GarageStorageApplicationTest {
         }
     }
 
+    /**
+     * Test upload and get object.
+     */
     @Test
     @Order(3)
     void testUploadAndGetObject() {
@@ -101,6 +121,9 @@ class GarageStorageApplicationTest {
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Test get presigned url.
+     */
     @Test
     @Order(4)
     void testGetPresignedUrl() {
@@ -112,6 +135,9 @@ class GarageStorageApplicationTest {
         assertTrue(url.contains(OBJECT_NAME));
     }
 
+    /**
+     * Test get objects by tags.
+     */
     @Test
     @Order(5)
     void testGetObjectsByTags() {
@@ -127,6 +153,9 @@ class GarageStorageApplicationTest {
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
 
+    /**
+     * Test update tags.
+     */
     @Test
     @Order(6)
     void testUpdateTags() {
@@ -142,6 +171,9 @@ class GarageStorageApplicationTest {
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
 
+    /**
+     * Test delete object.
+     */
     @Test
     @Order(7)
     void testDeleteObject() {
@@ -153,6 +185,9 @@ class GarageStorageApplicationTest {
                 garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
+    /**
+     * Test delete multiple objects.
+     */
     @Test
     @Order(8)
     void testDeleteMultipleObjects() {
@@ -172,6 +207,9 @@ class GarageStorageApplicationTest {
                 garageService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 
+    /**
+     * Test list buckets.
+     */
     @Test
     @Order(9)
     void testListBuckets() {
@@ -180,6 +218,9 @@ class GarageStorageApplicationTest {
         assertTrue(buckets.stream().anyMatch(b -> b.name().equals(BUCKET_NAME)));
     }
 
+    /**
+     * Test delete bucket.
+     */
     @Test
     @Order(10)
     void testDeleteBucket() {
@@ -188,6 +229,9 @@ class GarageStorageApplicationTest {
         assertFalse(garageService.bucketExists(s3Config, "bucket-delete"));
     }
 
+    /**
+     * Test invalid config.
+     */
     @Test
     @Order(11)
     void testInvalidConfig() {
@@ -195,12 +239,18 @@ class GarageStorageApplicationTest {
         assertThrows(IllegalArgumentException.class, () -> garageService.getConnection(invalid));
     }
 
+    /**
+     * Test invalid bucket name.
+     */
     @Test
     @Order(12)
     void testInvalidBucketName() {
         assertThrows(IllegalArgumentException.class, () -> garageService.bucketExists(s3Config, ""));
     }
 
+    /**
+     * Test invalid object name.
+     */
     @Test
     @Order(13)
     void testInvalidObjectName() {
@@ -208,6 +258,9 @@ class GarageStorageApplicationTest {
                 () -> garageService.getObject(s3Config, BUCKET_NAME, "", null));
     }
 
+    /**
+     * Test invalid upload params.
+     */
     @Test
     @Order(14)
     void testInvalidUploadParams() {
@@ -215,12 +268,18 @@ class GarageStorageApplicationTest {
                 () -> garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
     }
 
+    /**
+     * Test update connection.
+     */
     @Test
     @Order(15)
     void testUpdateConnection() {
         assertDoesNotThrow(() -> garageService.updateConnection(s3Config));
     }
 
+    /**
+     * Test upload with path.
+     */
     @Test
     @Order(16)
     void testUploadWithPath() {
@@ -233,6 +292,9 @@ class GarageStorageApplicationTest {
         assertEquals("Path content", new String(retrieved));
     }
 
+    /**
+     * Test list objects in bucket.
+     */
     @Test
     @Order(17)
     void testListObjectsInBucket() {
@@ -242,6 +304,9 @@ class GarageStorageApplicationTest {
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
 
+    /**
+     * Test get object with empty version id.
+     */
     @Test
     @Order(18)
     void testGetObjectWithEmptyVersionId() {

@@ -22,7 +22,7 @@ public class LakeFSService extends LakeFSApiService {
      * Instantiates a new Lake fs api service.
      *
      * @param lakeFSClientMap the lake fs client map
-     * @param minIOApiService
+     * @param minIOApiService the min io api service
      */
     public LakeFSService(Map<String, RestTemplate> lakeFSClientMap, IMinIOApiService minIOApiService) {
         super(lakeFSClientMap, minIOApiService);

@@ -2,8 +2,8 @@ package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.OxiCloudObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.service.OxiCloudService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The type Oxi cloud storage application test.
+ */
 @ActiveProfiles("OxiCloud")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -44,6 +47,11 @@ class OxiCloudStorageApplicationTest {
     private static final String OBJECT_NAME = "test-object.txt";
     private static final String TENANT = "test-tenant";
 
+    /**
+     * Minio properties.
+     *
+     * @param registry the registry
+     */
     @DynamicPropertySource
     static void minioProperties(DynamicPropertyRegistry registry) {
         registry.add("minio.url", minioContainer::getS3URL);
@@ -51,6 +59,9 @@ class OxiCloudStorageApplicationTest {
         registry.add("minio.password", minioContainer::getPassword);
     }
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         s3Config = new S3Config();
@@ -60,12 +71,18 @@ class OxiCloudStorageApplicationTest {
         s3Config.setPassword(minioContainer.getPassword());
     }
 
+    /**
+     * Test create and check bucket.
+     */
     @Test @Order(1)
     void testCreateAndCheckBucket() {
         oxiCloudService.makeBucket(s3Config, BUCKET_NAME);
         assertTrue(oxiCloudService.bucketExists(s3Config, BUCKET_NAME));
     }
 
+    /**
+     * Test set versioning.
+     */
     @Test @Order(2)
     void testSetVersioning() {
         oxiCloudService.makeBucket(s3Config, BUCKET_NAME);
@@ -90,6 +107,9 @@ class OxiCloudStorageApplicationTest {
         }
     }
 
+    /**
+     * Test upload and get object.
+     */
     @Test @Order(3)
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -99,6 +119,9 @@ class OxiCloudStorageApplicationTest {
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Test get presigned url.
+     */
     @Test @Order(4)
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -109,6 +132,9 @@ class OxiCloudStorageApplicationTest {
         assertTrue(url.contains(OBJECT_NAME));
     }
 
+    /**
+     * Test get objects by tags.
+     */
     @Test @Order(5)
     void testGetObjectsByTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -123,6 +149,9 @@ class OxiCloudStorageApplicationTest {
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
 
+    /**
+     * Test update tags.
+     */
     @Test @Order(6)
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -137,6 +166,9 @@ class OxiCloudStorageApplicationTest {
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
 
+    /**
+     * Test delete object.
+     */
     @Test @Order(7)
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -147,6 +179,9 @@ class OxiCloudStorageApplicationTest {
                 oxiCloudService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
+    /**
+     * Test delete multiple objects.
+     */
     @Test @Order(8)
     void testDeleteMultipleObjects() {
         MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
@@ -165,6 +200,9 @@ class OxiCloudStorageApplicationTest {
                 oxiCloudService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 
+    /**
+     * Test list buckets.
+     */
     @Test @Order(9)
     void testListBuckets() {
         List<Bucket> buckets = oxiCloudService.getBuckets(s3Config);
@@ -172,6 +210,9 @@ class OxiCloudStorageApplicationTest {
         assertTrue(buckets.stream().anyMatch(b -> b.name().equals(BUCKET_NAME)));
     }
 
+    /**
+     * Test delete bucket.
+     */
     @Test @Order(10)
     void testDeleteBucket() {
         oxiCloudService.makeBucket(s3Config, "bucket-delete");
@@ -179,34 +220,52 @@ class OxiCloudStorageApplicationTest {
         assertFalse(oxiCloudService.bucketExists(s3Config, "bucket-delete"));
     }
 
+    /**
+     * Test invalid config.
+     */
     @Test @Order(11)
     void testInvalidConfig() {
         S3Config invalid = new S3Config();
         assertThrows(IllegalArgumentException.class, () -> oxiCloudService.getConnection(invalid));
     }
 
+    /**
+     * Test invalid bucket name.
+     */
     @Test @Order(12)
     void testInvalidBucketName() {
         assertThrows(IllegalArgumentException.class, () -> oxiCloudService.bucketExists(s3Config, ""));
     }
 
+    /**
+     * Test invalid object name.
+     */
     @Test @Order(13)
     void testInvalidObjectName() {
         assertThrows(IllegalArgumentException.class,
                 () -> oxiCloudService.getObject(s3Config, BUCKET_NAME, "", null));
     }
 
+    /**
+     * Test invalid upload params.
+     */
     @Test @Order(14)
     void testInvalidUploadParams() {
         assertThrows(IllegalArgumentException.class,
                 () -> oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
     }
 
+    /**
+     * Test update connection.
+     */
     @Test @Order(15)
     void testUpdateConnection() {
         assertDoesNotThrow(() -> oxiCloudService.updateConnection(s3Config));
     }
 
+    /**
+     * Test upload with path.
+     */
     @Test @Order(16)
     void testUploadWithPath() {
         String objectPath = "/dir1/dir2/";
@@ -218,6 +277,9 @@ class OxiCloudStorageApplicationTest {
         assertEquals("Path content", new String(retrieved));
     }
 
+    /**
+     * Test list objects in bucket.
+     */
     @Test @Order(17)
     void testListObjectsInBucket() {
         MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
@@ -226,6 +288,9 @@ class OxiCloudStorageApplicationTest {
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
 
+    /**
+     * Test get object with empty version id.
+     */
     @Test @Order(18)
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",

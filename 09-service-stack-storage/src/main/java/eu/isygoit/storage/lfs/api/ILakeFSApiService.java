@@ -2,8 +2,8 @@ package eu.isygoit.storage.lfs.api;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.LakeFSObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.lfs.config.LFSConfig;
+import eu.isygoit.storage.s3.object.FileStorage;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -83,11 +83,10 @@ public interface ILakeFSApiService {
      * @param path           Object path
      * @param objectName     Object name
      * @param multipartFile  File to upload
-     * @param metadata       Metadata tags
      * @throws LakeFSObjectException if upload fails
      */
     void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
-                    MultipartFile multipartFile, Map<String, String> metadata);
+                    MultipartFile multipartFile);
 
     /**
      * Retrieves an object from LakeFS.

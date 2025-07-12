@@ -2,8 +2,8 @@ package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.storage.exception.MinIoObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.service.MinIOService;
 import io.minio.GetBucketVersioningArgs;
 import io.minio.MinioClient;
@@ -28,6 +28,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * The type Min io storage application test.
+ */
 @ActiveProfiles("MinIO")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,6 +51,11 @@ class MinIOStorageApplicationTest {
     private static final String OBJECT_NAME = "test-object.txt";
     private static final String TENANT = "test-tenant";
 
+    /**
+     * Minio properties.
+     *
+     * @param registry the registry
+     */
     @DynamicPropertySource
     static void minioProperties(DynamicPropertyRegistry registry) {
         registry.add("minio.url", minioContainer::getS3URL);
@@ -55,6 +63,9 @@ class MinIOStorageApplicationTest {
         registry.add("minio.password", minioContainer::getPassword);
     }
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         s3Config = new S3Config();
@@ -64,12 +75,18 @@ class MinIOStorageApplicationTest {
         s3Config.setPassword(minioContainer.getPassword());
     }
 
+    /**
+     * Test create and check bucket.
+     */
     @Test @Order(1)
     void testCreateAndCheckBucket() {
         minIOService.makeBucket(s3Config, BUCKET_NAME);
         assertTrue(minIOService.bucketExists(s3Config, BUCKET_NAME));
     }
 
+    /**
+     * Test set versioning.
+     */
     @Test @Order(2)
     void testSetVersioning() {
         minIOService.makeBucket(s3Config, BUCKET_NAME);
@@ -94,6 +111,9 @@ class MinIOStorageApplicationTest {
         }
     }
 
+    /**
+     * Test upload and get object.
+     */
     @Test @Order(3)
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -103,6 +123,9 @@ class MinIOStorageApplicationTest {
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Test get presigned url.
+     */
     @Test @Order(4)
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -113,6 +136,9 @@ class MinIOStorageApplicationTest {
         assertTrue(url.contains(OBJECT_NAME));
     }
 
+    /**
+     * Test get objects by tags.
+     */
     @Test @Order(5)
     void testGetObjectsByTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -127,6 +153,9 @@ class MinIOStorageApplicationTest {
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
 
+    /**
+     * Test update tags.
+     */
     @Test @Order(6)
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -141,6 +170,9 @@ class MinIOStorageApplicationTest {
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
     }
 
+    /**
+     * Test delete object.
+     */
     @Test @Order(7)
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
@@ -151,6 +183,9 @@ class MinIOStorageApplicationTest {
                 minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
+    /**
+     * Test delete multiple objects.
+     */
     @Test @Order(8)
     void testDeleteMultipleObjects() {
         MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
@@ -168,6 +203,9 @@ class MinIOStorageApplicationTest {
                 minIOService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 
+    /**
+     * Test list buckets.
+     */
     @Test @Order(9)
     void testListBuckets() {
         List<Bucket> buckets = minIOService.getBuckets(s3Config);
@@ -175,6 +213,9 @@ class MinIOStorageApplicationTest {
         assertTrue(buckets.stream().anyMatch(b -> b.name().equals(BUCKET_NAME)));
     }
 
+    /**
+     * Test delete bucket.
+     */
     @Test @Order(10)
     void testDeleteBucket() {
         minIOService.makeBucket(s3Config, "bucket-delete");
@@ -182,34 +223,52 @@ class MinIOStorageApplicationTest {
         assertFalse(minIOService.bucketExists(s3Config, "bucket-delete"));
     }
 
+    /**
+     * Test invalid config.
+     */
     @Test @Order(11)
     void testInvalidConfig() {
         S3Config invalid = new S3Config();
         assertThrows(IllegalArgumentException.class, () -> minIOService.getConnection(invalid));
     }
 
+    /**
+     * Test invalid bucket name.
+     */
     @Test @Order(12)
     void testInvalidBucketName() {
         assertThrows(IllegalArgumentException.class, () -> minIOService.bucketExists(s3Config, ""));
     }
 
+    /**
+     * Test invalid object name.
+     */
     @Test @Order(13)
     void testInvalidObjectName() {
         assertThrows(IllegalArgumentException.class,
                 () -> minIOService.getObject(s3Config, BUCKET_NAME, "", null));
     }
 
+    /**
+     * Test invalid upload params.
+     */
     @Test @Order(14)
     void testInvalidUploadParams() {
         assertThrows(IllegalArgumentException.class,
                 () -> minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
     }
 
+    /**
+     * Test update connection.
+     */
     @Test @Order(15)
     void testUpdateConnection() {
         assertDoesNotThrow(() -> minIOService.updateConnection(s3Config));
     }
 
+    /**
+     * Test upload with path.
+     */
     @Test @Order(16)
     void testUploadWithPath() {
         String objectPath = "/dir1/dir2/";
@@ -221,6 +280,9 @@ class MinIOStorageApplicationTest {
         assertEquals("Path content", new String(retrieved));
     }
 
+    /**
+     * Test list objects in bucket.
+     */
     @Test @Order(17)
     void testListObjectsInBucket() {
         MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
@@ -229,6 +291,9 @@ class MinIOStorageApplicationTest {
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
 
+    /**
+     * Test get object with empty version id.
+     */
     @Test @Order(18)
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",

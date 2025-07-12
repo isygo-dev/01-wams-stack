@@ -1,10 +1,10 @@
 package eu.isygoit.storage.s3.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.s3.api.IGarageApiService;
 import eu.isygoit.storage.exception.GarageObjectException;
-import eu.isygoit.storage.s3.object.FileStorage;
+import eu.isygoit.storage.s3.api.IGarageApiService;
 import eu.isygoit.storage.s3.config.S3Config;
+import eu.isygoit.storage.s3.object.FileStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.StringUtils;
