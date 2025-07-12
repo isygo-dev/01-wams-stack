@@ -22,6 +22,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Supplier;
@@ -485,14 +487,22 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", leftRef, "diff", rightRef}, null);
+                String url = buildLakeFSUrl(config,
+                        new String[]{"repositories", repositoryName, "refs", leftRef, "diff", rightRef},
+                        Map.of("amount", "1000")); // Ensure we get all diffs
+
+                log.debug("Fetching diff from URL: {}", url);
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
                         .orElseThrow(() -> new LakeFSObjectException("Empty response body for diff"));
+
+                log.debug("Diff response: {}", responseBody);
+
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 return Optional.ofNullable(results).orElse(Collections.emptyList());
             } catch (HttpClientErrorException e) {
+                log.error("Diff API error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
                 throw new LakeFSObjectException("Error retrieving diff between: " + leftRef + " and: " + rightRef + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
@@ -521,6 +531,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("ref", commitId);
+                requestBody.put("parent_number", 1); // Default to 1 for non-merge commits
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -926,21 +937,54 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         if (metadata == null || metadata.isEmpty()) {
             throw new IllegalArgumentException("Metadata cannot be null or empty");
         }
+        if (condition == null) {
+            throw new IllegalArgumentException("Logical operator condition cannot be null");
+        }
+
         return executeWithRetry(() -> {
             try {
-                List<FileStorage> allObjects = getObjects(config, repositoryName, reference, null);
-                return allObjects.stream()
+                // Get all objects from the repository/branch
+                List<FileStorage> allObjects = getObjects(config, repositoryName, reference, "");
+
+                if (allObjects.isEmpty()) {
+                    log.debug("No objects found in repository: {}, branch: {}", repositoryName, reference);
+                    return Collections.emptyList();
+                }
+
+                // Filter objects based on metadata and condition
+                List<FileStorage> filteredObjects = allObjects.stream()
+                        .filter(obj -> obj.metadata != null && !obj.metadata.isEmpty())
                         .filter(obj -> {
-                            if (obj.metadata == null) return false;
-                            return condition == IEnumLogicalOperator.Types.AND
-                                    ? metadata.entrySet().stream().allMatch(entry ->
-                                    Objects.equals(obj.metadata.get(entry.getKey()), entry.getValue()))
-                                    : metadata.entrySet().stream().anyMatch(entry ->
-                                    Objects.equals(obj.metadata.get(entry.getKey()), entry.getValue()));
+                            boolean matches = false;
+
+                            if (condition == IEnumLogicalOperator.Types.AND) {
+                                // For AND: all provided metadata entries must match
+                                matches = metadata.entrySet().stream()
+                                        .allMatch(entry -> {
+                                            String objectValue = obj.metadata.get(entry.getKey());
+                                            return objectValue != null && objectValue.equals(entry.getValue());
+                                        });
+                            } else if (condition == IEnumLogicalOperator.Types.OR) {
+                                // For OR: at least one provided metadata entry must match
+                                matches = metadata.entrySet().stream()
+                                        .anyMatch(entry -> {
+                                            String objectValue = obj.metadata.get(entry.getKey());
+                                            return objectValue != null && objectValue.equals(entry.getValue());
+                                        });
+                            }
+
+                            return matches;
                         })
                         .collect(Collectors.toList());
+
+                log.info("Found {} objects matching metadata criteria (condition: {}) in repository: {}, branch: {}",
+                        filteredObjects.size(), condition, repositoryName, reference);
+
+                return filteredObjects;
+
             } catch (Exception e) {
-                throw new LakeFSObjectException("Error retrieving objects by metadata in repository: " + repositoryName, e);
+                log.error("Error retrieving objects by metadata in repository: {}, branch: {}", repositoryName, reference, e);
+                throw new LakeFSObjectException("Error retrieving objects by metadata in repository: " + repositoryName + ", branch: " + reference, e);
             }
         });
     }
@@ -959,16 +1003,27 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     public List<FileStorage> getObjects(LFSConfig config, String repositoryName, String reference, String prefix) {
         validateRepositoryName(repositoryName);
         validateBranchName(reference);
+        // Convert null prefix to empty string
+        final String effectivePrefix = prefix != null ? prefix : "";
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                // Use an empty path if prefix is null to list all objects
-                Map<String, String> queryParams = StringUtils.hasText(prefix) ? Map.of("prefix", prefix) : Map.of("path", "");
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", reference, "objects"}, queryParams);
+                Map<String, String> queryParams = Map.of(
+                        "prefix", effectivePrefix
+                );
+
+                String url = buildLakeFSUrl(config,
+                        new String[]{"repositories", repositoryName, "refs", reference, "objects", "ls"},
+                        queryParams);
+
+                log.debug("Listing objects from URL: {}", url);
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
                         .orElseThrow(() -> new LakeFSObjectException("Empty response body for object listing"));
+
+                log.debug("Objects response: {}", responseBody);
+
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 List<FileStorage> fileStorageList = new ArrayList<>();
                 for (Map<String, Object> item : Optional.ofNullable(results).orElse(Collections.emptyList())) {
@@ -977,7 +1032,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     fileObject.size = item.get("size_bytes") != null ? ((Number) item.get("size_bytes")).longValue() : 0L;
                     fileObject.etag = (String) item.get("checksum");
                     fileObject.lastModified = item.get("mtime") != null ?
-                            ZonedDateTime.parse((String) item.get("mtime")) : null;
+                            Instant.ofEpochSecond((Integer) item.get("mtime")).atZone(ZoneId.systemDefault()): null;
                     fileObject.metadata = (Map<String, String>) item.get("metadata");
                     fileObject.pathType = (String) item.get("path_type");
                     fileStorageList.add(fileObject);
@@ -985,7 +1040,9 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("Retrieved {} objects from repository: {}, branch: {}", fileStorageList.size(), repositoryName, reference);
                 return fileStorageList;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing objects in repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
+                log.error("Objects listing error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+                throw new LakeFSObjectException("Error listing objects in repository: " + repositoryName +
+                        ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }

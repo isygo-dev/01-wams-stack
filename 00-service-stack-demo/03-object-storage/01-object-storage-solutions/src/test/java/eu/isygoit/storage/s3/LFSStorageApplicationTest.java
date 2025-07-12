@@ -6,6 +6,7 @@ import eu.isygoit.storage.lfs.config.LFSConfig;
 import eu.isygoit.storage.lfs.service.LakeFSService;
 import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.object.FileStorage;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,6 +24,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
         "LakeFS",
         "MinIO",
 })
+@Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
@@ -367,26 +370,172 @@ public class LFSStorageApplicationTest {
 
     @Test
     @Order(11)
-    public void testGetObjectByMetadata() {
+    public void testGetObjectByMetadata() throws InterruptedException {
         String strUUID = UUID.randomUUID().toString();
         String repositoryName = "test-repo-" + strUUID;
         String storageNamespace = "bucket-" + strUUID;
         String defaultBranch = "main";
-        String objectName = "test.txt";
-        MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
-        Map<String, String> metadata = Map.of("key", "value");
+        String objectName1 = "test1.txt";
+        String objectName2 = "test2.txt";
 
-        lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
-        lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, metadata);
+        try {
+            // Create repository
+            lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
 
-        List<FileStorage> objects = lakeFSService.getObjectByMetadata(config, repositoryName, defaultBranch, metadata, IEnumLogicalOperator.Types.AND);
-        assertFalse(objects.isEmpty());
-        assertEquals(objectName, objects.get(0).objectName);
+            // Upload first file with metadata
+            MockMultipartFile multipartFile1 = new MockMultipartFile("file", "test1.txt", "text/plain", "Content 1".getBytes());
+            Map<String, String> metadata1 = Map.of("key", "value", "category", "test", "type", "document");
+            lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName1, multipartFile1, metadata1);
+
+            // Upload second file with different metadata
+            MockMultipartFile multipartFile2 = new MockMultipartFile("file", "test2.txt", "text/plain", "Content 2".getBytes());
+            Map<String, String> metadata2 = Map.of("key", "different", "category", "test", "type", "image");
+            lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName2, multipartFile2, metadata2);
+
+            // Commit changes
+            lakeFSService.commit(config, repositoryName, defaultBranch, "Add test files with metadata", null);
+
+            // Allow time for changes to be processed
+            Thread.sleep(2000);
+
+            // Test 1: AND condition - all metadata must match (should find test1.txt)
+            List<FileStorage> objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("key", "value", "category", "test"),
+                    IEnumLogicalOperator.Types.AND
+            );
+            assertFalse(objects.isEmpty(), "Should find object with all matching metadata (AND)");
+            assertEquals(1, objects.size(), "Should find exactly one object");
+            assertEquals(objectName1, objects.get(0).objectName);
+            assertNotNull(objects.get(0).metadata, "Object should have metadata");
+
+            // Test 2: AND condition with non-matching metadata (should find nothing)
+            objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("key", "value", "category", "wrong"),
+                    IEnumLogicalOperator.Types.AND
+            );
+            assertTrue(objects.isEmpty(), "Should not find object with non-matching metadata (AND)");
+
+            // Test 3: OR condition - any metadata can match (should find both files)
+            objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("category", "test"),
+                    IEnumLogicalOperator.Types.OR
+            );
+            assertFalse(objects.isEmpty(), "Should find objects with matching metadata (OR)");
+            assertEquals(2, objects.size(), "Should find both objects with matching category");
+
+            // Test 4: OR condition with partial match (should find test1.txt)
+            objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("key", "value", "nonexistent", "value"),
+                    IEnumLogicalOperator.Types.OR
+            );
+            assertFalse(objects.isEmpty(), "Should find object with partial matching metadata (OR)");
+            assertEquals(1, objects.size(), "Should find exactly one object");
+            assertEquals(objectName1, objects.get(0).objectName);
+
+            // Test 5: OR condition with no matches (should find nothing)
+            objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("nonexistent", "value", "missing", "data"),
+                    IEnumLogicalOperator.Types.OR
+            );
+            assertTrue(objects.isEmpty(), "Should not find object with no matching metadata (OR)");
+
+            // Test 6: Single metadata key match (should find test2.txt)
+            objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("key", "different"),
+                    IEnumLogicalOperator.Types.AND
+            );
+            assertFalse(objects.isEmpty(), "Should find object with single matching metadata");
+            assertEquals(1, objects.size(), "Should find exactly one object");
+            assertEquals(objectName2, objects.get(0).objectName);
+
+            // Test 7: Verify metadata content is correctly preserved
+            FileStorage foundObject = objects.get(0);
+            assertEquals("different", foundObject.metadata.get("key"));
+            assertEquals("test", foundObject.metadata.get("category"));
+            assertEquals("image", foundObject.metadata.get("type"));
+
+            log.info("All metadata filtering tests passed successfully");
+
+        } catch (Exception e) {
+            log.error("Test failed with exception", e);
+            throw e;
+        } finally {
+            // Clean up
+            try {
+                lakeFSService.deleteRepository(config, repositoryName);
+            } catch (Exception e) {
+                log.warn("Failed to clean up test repository: {}", repositoryName, e);
+            }
+        }
+    }
+
+    // Additional helper test methods for edge cases
+    @Test
+    @Order(12)
+    public void testGetObjectByMetadataEdgeCases() {
+        String strUUID = UUID.randomUUID().toString();
+        String repositoryName = "test-repo-edge-" + strUUID;
+        String storageNamespace = "bucket-edge-" + strUUID;
+        String defaultBranch = "main";
+
+        try {
+            // Create repository
+            lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
+
+            // Test with empty metadata search
+            assertThrows(IllegalArgumentException.class, () -> {
+                lakeFSService.getObjectByMetadata(
+                        config, repositoryName, defaultBranch,
+                        Collections.emptyMap(),
+                        IEnumLogicalOperator.Types.AND
+                );
+            }, "Should throw exception for empty metadata");
+
+            // Test with null metadata search
+            assertThrows(IllegalArgumentException.class, () -> {
+                lakeFSService.getObjectByMetadata(
+                        config, repositoryName, defaultBranch,
+                        null,
+                        IEnumLogicalOperator.Types.AND
+                );
+            }, "Should throw exception for null metadata");
+
+            // Test with null condition
+            assertThrows(IllegalArgumentException.class, () -> {
+                lakeFSService.getObjectByMetadata(
+                        config, repositoryName, defaultBranch,
+                        Map.of("key", "value"),
+                        null
+                );
+            }, "Should throw exception for null condition");
+
+            // Test with empty repository (should return empty list)
+            List<FileStorage> objects = lakeFSService.getObjectByMetadata(
+                    config, repositoryName, defaultBranch,
+                    Map.of("key", "value"),
+                    IEnumLogicalOperator.Types.AND
+            );
+            assertTrue(objects.isEmpty(), "Should return empty list for empty repository");
+
+        } finally {
+            // Clean up
+            try {
+                lakeFSService.deleteRepository(config, repositoryName);
+            } catch (Exception e) {
+                log.warn("Failed to clean up test repository: {}", repositoryName, e);
+            }
+        }
     }
 
     @Test
     @Order(12)
-    public void testGetObjects() {
+    public void testGetObjects() throws InterruptedException {
         String strUUID = UUID.randomUUID().toString();
         String repositoryName = "test-repo-" + strUUID;
         String storageNamespace = "bucket-" + strUUID;
@@ -394,12 +543,31 @@ public class LFSStorageApplicationTest {
         String objectName = "test.txt";
         MockMultipartFile multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello".getBytes());
 
+        // Create repository
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
+
+        // Upload file
         lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile, null);
 
-        List<FileStorage> objects = lakeFSService.getObjects(config, repositoryName, defaultBranch, null);
-        assertFalse(objects.isEmpty());
-        assertEquals(objectName, objects.get(0).objectName);
+        // Commit changes
+        lakeFSService.commit(config, repositoryName, defaultBranch, "Add test file", null);
+
+        // Small delay to ensure changes are processed
+        Thread.sleep(1000);
+
+        // Test listing objects with empty prefix (root level)
+        List<FileStorage> objects = lakeFSService.getObjects(config, repositoryName, defaultBranch, "");
+        assertFalse(objects.isEmpty(), "Should find at least one object");
+        assertEquals(objectName, objects.get(0).objectName, "Should find the uploaded file");
+
+        // Test listing with specific prefix
+        objects = lakeFSService.getObjects(config, repositoryName, defaultBranch, "test");
+        assertFalse(objects.isEmpty(), "Should find objects with matching prefix");
+        assertEquals(objectName, objects.get(0).objectName, "Should find the uploaded file with matching prefix");
+
+        // Test listing with non-matching prefix
+        objects = lakeFSService.getObjects(config, repositoryName, defaultBranch, "nonexistent");
+        assertTrue(objects.isEmpty(), "Should not find objects with non-matching prefix");
     }
 
     @Test
@@ -478,7 +646,7 @@ public class LFSStorageApplicationTest {
 
     @Test
     @Order(16)
-    public void testMerge() {
+    public void testMerge() throws InterruptedException {
         String strUUID = UUID.randomUUID().toString();
         String repositoryName = "test-repo-" + strUUID;
         String storageNamespace = "bucket-" + strUUID;
@@ -492,16 +660,32 @@ public class LFSStorageApplicationTest {
         lakeFSService.createRepository(config, repositoryName, storageNamespace, defaultBranch);
         lakeFSService.createBranch(config, repositoryName, featureBranch, defaultBranch);
 
-        // Upload a file to the feature branch to create changes
+        // Upload a file to the feature branch
         lakeFSService.uploadFile(config, repositoryName, featureBranch, "", objectName, multipartFile, null);
 
-        // Commit changes in the feature branch
+        // Commit changes in the feature branch with a proper commit message
         String commitId = lakeFSService.commit(config, repositoryName, featureBranch, "Add test file", null);
-        assertNotNull(commitId);
+        assertNotNull(commitId, "Commit should succeed and return a commit ID");
+
+        // Small delay to ensure changes are processed
+        Thread.sleep(1000);
+
+        // Verify the file exists in feature branch
+        byte[] fileContent = lakeFSService.getObject(config, repositoryName, featureBranch, objectName);
+        assertArrayEquals("Hello".getBytes(), fileContent, "File should exist in feature branch");
+
+        // Verify the file doesn't exist in main branch (optional)
+        assertThrows(LakeFSObjectException.class, () ->
+                        lakeFSService.getObject(config, repositoryName, defaultBranch, objectName),
+                "File should not exist in main branch yet");
 
         // Merge feature branch into main
         String mergeId = lakeFSService.merge(config, repositoryName, featureBranch, defaultBranch, message);
-        assertNotNull(mergeId);
+        assertNotNull(mergeId, "Merge should succeed and return a merge ID");
+
+        // Verify merge by checking file now exists in main
+        byte[] mergedContent = lakeFSService.getObject(config, repositoryName, defaultBranch, objectName);
+        assertArrayEquals("Hello".getBytes(), mergedContent, "File should now exist in main branch after merge");
     }
 
     @Test
@@ -568,7 +752,7 @@ public class LFSStorageApplicationTest {
 
     @Test
     @Order(20)
-    public void testGetDiff() {
+    public void testGetDiff() throws InterruptedException {
         String strUUID = UUID.randomUUID().toString();
         String repositoryName = "test-repo-" + strUUID;
         String storageNamespace = "bucket-" + strUUID;
@@ -580,8 +764,18 @@ public class LFSStorageApplicationTest {
         lakeFSService.createBranch(config, repositoryName, rightRef, defaultBranch);
         lakeFSService.uploadFile(config, repositoryName, rightRef, "", "test.txt", multipartFile, null);
 
+        // Add commit to ensure changes are persisted
+        lakeFSService.commit(config, repositoryName, rightRef, "Add test file", null);
+
+        // Add small delay to ensure changes are processed
+        Thread.sleep(1000);
+
         List<Map<String, Object>> diffs = lakeFSService.getDiff(config, repositoryName, defaultBranch, rightRef);
-        assertFalse(diffs.isEmpty());
+        assertFalse(diffs.isEmpty(), "Expected differences due to uploaded file in feature branch");
+
+        // Enhanced assertion with more debug info
+        assertTrue(diffs.stream().anyMatch(diff -> diff.get("path").equals("test.txt")),
+                "Expected diff to contain test.txt. Actual diffs: " + diffs);
     }
 
     @Test
