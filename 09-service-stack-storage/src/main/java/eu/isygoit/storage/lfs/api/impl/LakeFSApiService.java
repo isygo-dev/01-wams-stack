@@ -485,14 +485,22 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", leftRef, "diff", rightRef}, null);
+                String url = buildLakeFSUrl(config,
+                        new String[]{"repositories", repositoryName, "refs", leftRef, "diff", rightRef},
+                        Map.of("amount", "1000")); // Ensure we get all diffs
+
+                log.debug("Fetching diff from URL: {}", url);
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
                         .orElseThrow(() -> new LakeFSObjectException("Empty response body for diff"));
+
+                log.debug("Diff response: {}", responseBody);
+
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 return Optional.ofNullable(results).orElse(Collections.emptyList());
             } catch (HttpClientErrorException e) {
+                log.error("Diff API error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
                 throw new LakeFSObjectException("Error retrieving diff between: " + leftRef + " and: " + rightRef + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
@@ -521,6 +529,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("ref", commitId);
+                requestBody.put("parent_number", 1); // Default to 1 for non-merge commits
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -926,20 +935,28 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         if (metadata == null || metadata.isEmpty()) {
             throw new IllegalArgumentException("Metadata cannot be null or empty");
         }
+
         return executeWithRetry(() -> {
             try {
-                List<FileStorage> allObjects = getObjects(config, repositoryName, reference, null);
+                // Get all objects with empty prefix (root level)
+                List<FileStorage> allObjects = getObjects(config, repositoryName, reference, "");
+
                 return allObjects.stream()
+                        .filter(obj -> obj.metadata != null)
                         .filter(obj -> {
-                            if (obj.metadata == null) return false;
-                            return condition == IEnumLogicalOperator.Types.AND
-                                    ? metadata.entrySet().stream().allMatch(entry ->
-                                    Objects.equals(obj.metadata.get(entry.getKey()), entry.getValue()))
-                                    : metadata.entrySet().stream().anyMatch(entry ->
-                                    Objects.equals(obj.metadata.get(entry.getKey()), entry.getValue()));
+                            if (condition == IEnumLogicalOperator.Types.AND) {
+                                return metadata.entrySet().stream()
+                                        .allMatch(entry ->
+                                                entry.getValue().equals(obj.metadata.get(entry.getKey())));
+                            } else {
+                                return metadata.entrySet().stream()
+                                        .anyMatch(entry ->
+                                                entry.getValue().equals(obj.metadata.get(entry.getKey())));
+                            }
                         })
                         .collect(Collectors.toList());
             } catch (Exception e) {
+                log.error("Error retrieving objects by metadata in repository: {}", repositoryName, e);
                 throw new LakeFSObjectException("Error retrieving objects by metadata in repository: " + repositoryName, e);
             }
         });
@@ -962,13 +979,23 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                // Use an empty path if prefix is null to list all objects
-                Map<String, String> queryParams = StringUtils.hasText(prefix) ? Map.of("prefix", prefix) : Map.of("path", "");
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", reference, "objects"}, queryParams);
+                // Only include query parameters if prefix is provided
+                Map<String, String> queryParams = StringUtils.hasText(prefix) ?
+                        Map.of("prefix", prefix) :
+                        Collections.emptyMap();
+
+                String url = buildLakeFSUrl(config,
+                        new String[]{"repositories", repositoryName, "refs", reference, "objects"},
+                        queryParams);
+
+                log.debug("Listing objects from URL: {}", url);
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
                         .orElseThrow(() -> new LakeFSObjectException("Empty response body for object listing"));
+
+                log.debug("Objects response: {}", responseBody);
+
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 List<FileStorage> fileStorageList = new ArrayList<>();
                 for (Map<String, Object> item : Optional.ofNullable(results).orElse(Collections.emptyList())) {
@@ -985,7 +1012,9 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("Retrieved {} objects from repository: {}, branch: {}", fileStorageList.size(), repositoryName, reference);
                 return fileStorageList;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing objects in repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
+                log.error("Objects listing error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+                throw new LakeFSObjectException("Error listing objects in repository: " + repositoryName +
+                        ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
