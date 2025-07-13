@@ -110,7 +110,7 @@ public interface ILakeFSApiService {
      * @return Presigned URL
      * @throws LakeFSObjectException if URL generation fails
      */
-    String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName);
+    String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName, int expiryHours);
 
     /**
      * Deletes an object from LakeFS.
@@ -270,4 +270,180 @@ public interface ILakeFSApiService {
      * @throws LakeFSObjectException if repository deletion fails
      */
     void deleteRepository(LFSConfig config, String repositoryName);
+
+    /*
+     * Interface for LakeFS Auth API operations.
+     */
+
+    /**
+     * Gets a specific policy.
+     *
+     * @param config   Storage configuration
+     * @param policyId Policy identifier
+     * @return Policy information
+     * @throws LakeFSObjectException if retrieval fails
+     */
+    Map<String, Object> getPolicy(LFSConfig config, String policyId);
+
+    /**
+     * Gets a specific user.
+     *
+     * @param config Storage configuration
+     * @param userId User identifier
+     * @return User information
+     * @throws LakeFSObjectException if retrieval fails
+     */
+    Map<String, Object> getUser(LFSConfig config, String userId);
+
+    /**
+     * Lists members of a group with pagination.
+     *
+     * @param config  Storage configuration
+     * @param groupId Group identifier
+     * @param after   Pagination token (optional)
+     * @param amount  Number of members to return (default: 100)
+     * @return List of member user IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    List<String> listGroupMembers(LFSConfig config, String groupId, String after, int amount);
+
+    /**
+     * Lists policies attached to a group with pagination.
+     *
+     * @param config  Storage configuration
+     * @param groupId Group identifier
+     * @param after   Pagination token (optional)
+     * @param amount  Number of policies to return (default: 100)
+     * @return List of policy IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    List<String> listGroupPolicies(LFSConfig config, String groupId, String after, int amount);
+
+    /**
+     * Lists all groups with pagination.
+     *
+     * @param config Storage configuration
+     * @param after  Pagination token (optional)
+     * @param amount Number of groups to return (default: 100)
+     * @return List of group IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    List<String> listGroups(LFSConfig config, String after, int amount);
+
+    /**
+     * Lists all policies with pagination.
+     *
+     * @param config Storage configuration
+     * @param after  Pagination token (optional)
+     * @param amount Number of policies to return (default: 100)
+     * @return List of policy IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    List<String> listPolicies(LFSConfig config, String after, int amount);
+
+    /**
+     * Lists all users with pagination.
+     *
+     * @param config Storage configuration
+     * @param after  Pagination token (optional)
+     * @param amount Number of users to return (default: 100)
+     * @return List of user IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    List<String> listUsers(LFSConfig config, String after, int amount);
+
+    /**
+     * Creates a new policy.
+     *
+     * @param config    Storage configuration
+     * @param policyId  Policy identifier
+     * @param statement Policy statement
+     * @throws LakeFSObjectException if creation fails
+     */
+    void createPolicy(LFSConfig config, String policyId, List<Map<String, Object>> statement);
+
+    /**
+     * Creates a new user.
+     *
+     * @param config Storage configuration
+     * @param userId User identifier
+     * @throws LakeFSObjectException if creation fails
+     */
+    void createUser(LFSConfig config, String userId);
+
+    /**
+     * Creates a new group.
+     *
+     * @param config  Storage configuration
+     * @param groupId Group identifier
+     * @throws LakeFSObjectException if creation fails
+     */
+    void createGroup(LFSConfig config, String groupId);
+
+    /**
+     * Deletes a policy.
+     *
+     * @param config   Storage configuration
+     * @param policyId Policy identifier
+     * @throws LakeFSObjectException if deletion fails
+     */
+    void deletePolicy(LFSConfig config, String policyId);
+
+    /**
+     * Deletes a user.
+     *
+     * @param config Storage configuration
+     * @param userId User identifier
+     * @throws LakeFSObjectException if deletion fails
+     */
+    void deleteUser(LFSConfig config, String userId);
+
+    /**
+     * Deletes a group.
+     *
+     * @param config  Storage configuration
+     * @param groupId Group identifier
+     * @throws LakeFSObjectException if deletion fails
+     */
+    void deleteGroup(LFSConfig config, String groupId);
+
+    /**
+     * Attaches a policy to a group.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @param policyId Policy identifier
+     * @throws LakeFSObjectException if attachment fails
+     */
+    void attachPolicyToGroup(LFSConfig config, String groupId, String policyId);
+
+    /**
+     * Detaches a policy from a group.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @param policyId Policy identifier
+     * @throws LakeFSObjectException if detachment fails
+     */
+    void detachPolicyFromGroup(LFSConfig config, String groupId, String policyId);
+
+    /**
+     * Adds a user to a group.
+     *
+     * @param config  Storage configuration
+     * @param groupId Group identifier
+     * @param userId  User identifier
+     * @throws LakeFSObjectException if addition fails
+     */
+    void addGroupMember(LFSConfig config, String groupId, String userId);
+
+    /**
+     * Removes a user from a group.
+     *
+     * @param config  Storage configuration
+     * @param groupId Group identifier
+     * @param userId  User identifier
+     * @throws LakeFSObjectException if removal fails
+     */
+    void removeGroupMember(LFSConfig config, String groupId, String userId);
 }

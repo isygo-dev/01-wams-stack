@@ -39,6 +39,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     private static final String API_PATH_PREFIX = "/api/v1";
     private static final int CONNECTION_TIMEOUT_MS = 5000;
     private static final int READ_TIMEOUT_MS = 10000;
+    private static final int DEFAULT_PAGINATION_LIMIT = 100;
 
     private final Map<String, RestTemplate> lakeFSClientMap;
     private final IMinIOApiService minIOApiService;
@@ -855,37 +856,43 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     }
 
     /**
-     * Generates a presigned URL for an object.
+     * Generates a presigned URL for an object with configurable expiry.
      *
      * @param config         Storage configuration
      * @param repositoryName Name of the repository
      * @param reference      Branch name or commit ID
      * @param objectName     Object name
+     * @param expiryHours    Expiry time in hours (optional, default: 2)
      * @return Presigned URL
      * @throws LakeFSObjectException if URL generation fails
      */
-    /*@Override
-    public String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName) {
+    @Override
+    public String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName, int expiryHours) {
         validateObjectParams(repositoryName, reference, objectName);
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", reference, "objects"},
-                        Map.of("path", URLEncoder.encode(objectName, StandardCharsets.UTF_8), "presign", "true"));
+                Map<String, String> queryParams = new HashMap<>();
+                queryParams.put("path", URLEncoder.encode(objectName, StandardCharsets.UTF_8));
+                queryParams.put("presign", "true");
+                if (expiryHours > 0) {
+                    queryParams.put("expiry", String.valueOf(expiryHours * 3600));
+                }
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", reference, "objects"}, queryParams);
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body when getting presigned URL for: " + objectName));
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for presigned URL"));
                 String presignedUrl = (String) responseBody.get("url");
                 if (!StringUtils.hasText(presignedUrl)) {
                     throw new LakeFSObjectException("No presigned URL returned for object: " + objectName);
                 }
                 return presignedUrl;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error generating presigned URL for: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSObjectException("Error generating presigned URL for: " + objectName, e);
             }
         });
-    }*/
+    }
 
     /**
      * Deletes an object from LakeFS.
@@ -1090,6 +1097,583 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             return null;
         });
     }
+
+    /**
+     * Gets a specific policy.
+     *
+     * @param config    Storage configuration
+     * @param policyId  Policy identifier
+     * @return Policy information
+     * @throws LakeFSObjectException if retrieval fails
+     */
+    @Override
+    public Map<String, Object> getPolicy(LFSConfig config, String policyId) {
+        if (!StringUtils.hasText(policyId)) {
+            throw new IllegalArgumentException("Policy ID cannot be empty");
+        }
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "policies", policyId}, null);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for policy: " + policyId));
+                log.info("Retrieved policy: {}", policyId);
+                return responseBody;
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error retrieving policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Gets a specific user.
+     *
+     * @param config  Storage configuration
+     * @param userId  User identifier
+     * @return User information
+     * @throws LakeFSObjectException if retrieval fails
+     */
+    @Override
+    public Map<String, Object> getUser(LFSConfig config, String userId) {
+        if (!StringUtils.hasText(userId)) {
+            throw new IllegalArgumentException("User ID cannot be empty");
+        }
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "users", userId}, null);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for user: " + userId));
+                log.info("Retrieved user: {}", userId);
+                return responseBody;
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error retrieving user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Lists members of a group with pagination.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @param after    Pagination token (optional)
+     * @param amount   Number of members to return (default: 100)
+     * @return List of member user IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    @Override
+    public List<String> listGroupMembers(LFSConfig config, String groupId, String after, int amount) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                Map<String, String> queryParams = new HashMap<>();
+                queryParams.put("amount", String.valueOf(amount > 0 ? amount : DEFAULT_PAGINATION_LIMIT));
+                if (StringUtils.hasText(after)) {
+                    queryParams.put("after", after);
+                }
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId, "members"}, queryParams);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for group members: " + groupId));
+                List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+                return Optional.ofNullable(results)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(member -> (String) member.get("id"))
+                        .filter(StringUtils::hasText)
+                        .collect(Collectors.toList());
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error listing group members for group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Lists policies attached to a group with pagination.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @param after    Pagination token (optional)
+     * @param amount   Number of policies to return (default: 100)
+     * @return List of policy IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    @Override
+    public List<String> listGroupPolicies(LFSConfig config, String groupId, String after, int amount) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                Map<String, String> queryParams = new HashMap<>();
+                queryParams.put("amount", String.valueOf(amount > 0 ? amount : DEFAULT_PAGINATION_LIMIT));
+                if (StringUtils.hasText(after)) {
+                    queryParams.put("after", after);
+                }
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId, "policies"}, queryParams);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for group policies: " + groupId));
+                List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+                return Optional.ofNullable(results)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(policy -> (String) policy.get("id"))
+                        .filter(StringUtils::hasText)
+                        .collect(Collectors.toList());
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error listing policies for group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Lists all groups with pagination.
+     *
+     * @param config Storage configuration
+     * @param after  Pagination token (optional)
+     * @param amount Number of groups to return (default: 100)
+     * @return List of group IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    @Override
+    public List<String> listGroups(LFSConfig config, String after, int amount) {
+        validateConfig(config);
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                Map<String, String> queryParams = new HashMap<>();
+                queryParams.put("amount", String.valueOf(amount > 0 ? amount : DEFAULT_PAGINATION_LIMIT));
+                if (StringUtils.hasText(after)) {
+                    queryParams.put("after", after);
+                }
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups"}, queryParams);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for groups"));
+                List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+                List<String> groups = Optional.ofNullable(results)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(group -> (String) group.get("id"))
+                        .filter(StringUtils::hasText)
+                        .collect(Collectors.toList());
+                log.info("Retrieved {} groups for tenant: {}", groups.size(), config.getTenant());
+                return groups;
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error listing groups for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Lists all policies with pagination.
+     *
+     * @param config Storage configuration
+     * @param after  Pagination token (optional)
+     * @param amount Number of policies to return (default: 100)
+     * @return List of policy IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    @Override
+    public List<String> listPolicies(LFSConfig config, String after, int amount) {
+        validateConfig(config);
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                Map<String, String> queryParams = new HashMap<>();
+                queryParams.put("amount", String.valueOf(amount > 0 ? amount : DEFAULT_PAGINATION_LIMIT));
+                if (StringUtils.hasText(after)) {
+                    queryParams.put("after", after);
+                }
+                String url = buildLakeFSUrl(config, new String[]{"auth", "policies"}, queryParams);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for policies"));
+                List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+                List<String> policies = Optional.ofNullable(results)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(policy -> (String) policy.get("id"))
+                        .filter(StringUtils::hasText)
+                        .collect(Collectors.toList());
+                log.info("Retrieved {} policies for tenant: {}", policies.size(), config.getTenant());
+                return policies;
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error listing policies for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Lists all users with pagination.
+     *
+     * @param config Storage configuration
+     * @param after  Pagination token (optional)
+     * @param amount Number of users to return (default: 100)
+     * @return List of user IDs
+     * @throws LakeFSObjectException if listing fails
+     */
+    @Override
+    public List<String> listUsers(LFSConfig config, String after, int amount) {
+        validateConfig(config);
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                Map<String, String> queryParams = new HashMap<>();
+                queryParams.put("amount", String.valueOf(amount > 0 ? amount : DEFAULT_PAGINATION_LIMIT));
+                if (StringUtils.hasText(after)) {
+                    queryParams.put("after", after);
+                }
+                String url = buildLakeFSUrl(config, new String[]{"auth", "users"}, queryParams);
+
+                ResponseEntity<Map> response = client.getForEntity(url, Map.class);
+                Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
+                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for users"));
+                List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
+                List<String> users = Optional.ofNullable(results)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(user -> (String) user.get("id"))
+                        .filter(StringUtils::hasText)
+                        .collect(Collectors.toList());
+                log.info("Retrieved {} users for tenant: {}", users.size(), config.getTenant());
+                return users;
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error listing users for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
+    /**
+     * Creates a new policy.
+     *
+     * @param config      Storage configuration
+     * @param policyId    Policy identifier
+     * @param statement   Policy statement
+     * @throws LakeFSObjectException if creation fails
+     */
+    @Override
+    public void createPolicy(LFSConfig config, String policyId, List<Map<String, Object>> statement) {
+        if (!StringUtils.hasText(policyId)) {
+            throw new IllegalArgumentException("Policy ID cannot be empty");
+        }
+        if (statement == null || statement.isEmpty()) {
+            throw new IllegalArgumentException("Policy statement cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "policies"}, null);
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("id", policyId);
+                requestBody.put("statement", statement);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+                client.postForEntity(url, request, Map.class);
+                log.info("Created policy: {}", policyId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error creating policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param config  Storage configuration
+     * @param userId  User identifier
+     * @throws LakeFSObjectException if creation fails
+     */
+    @Override
+    public void createUser(LFSConfig config, String userId) {
+        if (!StringUtils.hasText(userId)) {
+            throw new IllegalArgumentException("User ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "users"}, null);
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("id", userId);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+                client.postForEntity(url, request, Map.class);
+                log.info("Created user: {}", userId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error creating user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Creates a new group.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @throws LakeFSObjectException if creation fails
+     */
+    @Override
+    public void createGroup(LFSConfig config, String groupId) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups"}, null);
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("id", groupId);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+                client.postForEntity(url, request, Map.class);
+                log.info("Created group: {}", groupId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error creating group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Deletes a policy.
+     *
+     * @param config    Storage configuration
+     * @param policyId  Policy identifier
+     * @throws LakeFSObjectException if deletion fails
+     */
+    @Override
+    public void deletePolicy(LFSConfig config, String policyId) {
+        if (!StringUtils.hasText(policyId)) {
+            throw new IllegalArgumentException("Policy ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "policies", policyId}, null);
+
+                client.delete(url);
+                log.info("Deleted policy: {}", policyId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error deleting policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Deletes a user.
+     *
+     * @param config  Storage configuration
+     * @param userId  User identifier
+     * @throws LakeFSObjectException if deletion fails
+     */
+    @Override
+    public void deleteUser(LFSConfig config, String userId) {
+        if (!StringUtils.hasText(userId)) {
+            throw new IllegalArgumentException("User ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "users", userId}, null);
+
+                client.delete(url);
+                log.info("Deleted user: {}", userId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error deleting user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Deletes a group.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @throws LakeFSObjectException if deletion fails
+     */
+    @Override
+    public void deleteGroup(LFSConfig config, String groupId) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId}, null);
+
+                client.delete(url);
+                log.info("Deleted group: {}", groupId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error deleting group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Attaches a policy to a group.
+     *
+     * @param config    Storage configuration
+     * @param groupId   Group identifier
+     * @param policyId  Policy identifier
+     * @throws LakeFSObjectException if attachment fails
+     */
+    @Override
+    public void attachPolicyToGroup(LFSConfig config, String groupId, String policyId) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        if (!StringUtils.hasText(policyId)) {
+            throw new IllegalArgumentException("Policy ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId, "policies"}, null);
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("id", policyId);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+                client.postForEntity(url, request, Map.class);
+                log.info("Attached policy: {} to group: {}", policyId, groupId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error attaching policy: " + policyId + " to group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Detaches a policy from a group.
+     *
+     * @param config    Storage configuration
+     * @param groupId   Group identifier
+     * @param policyId  Policy identifier
+     * @throws LakeFSObjectException if detachment fails
+     */
+    @Override
+    public void detachPolicyFromGroup(LFSConfig config, String groupId, String policyId) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        if (!StringUtils.hasText(policyId)) {
+            throw new IllegalArgumentException("Policy ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId, "policies", policyId}, null);
+
+                client.delete(url);
+                log.info("Detached policy: {} from group: {}", policyId, groupId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error detaching policy: " + policyId + " from group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Adds a user to a group.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @param userId   User identifier
+     * @throws LakeFSObjectException if addition fails
+     */
+    @Override
+    public void addGroupMember(LFSConfig config, String groupId, String userId) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        if (!StringUtils.hasText(userId)) {
+            throw new IllegalArgumentException("User ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId, "members"}, null);
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("id", userId);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+                client.postForEntity(url, request, Map.class);
+                log.info("Added user: {} to group: {}", userId, groupId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error adding user: " + userId + " to group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Removes a user from a group.
+     *
+     * @param config   Storage configuration
+     * @param groupId  Group identifier
+     * @param userId   User identifier
+     * @throws LakeFSObjectException if removal fails
+     */
+    @Override
+    public void removeGroupMember(LFSConfig config, String groupId, String userId) {
+        if (!StringUtils.hasText(groupId)) {
+            throw new IllegalArgumentException("Group ID cannot be empty");
+        }
+        if (!StringUtils.hasText(userId)) {
+            throw new IllegalArgumentException("User ID cannot be empty");
+        }
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "groups", groupId, "members", userId}, null);
+
+                client.delete(url);
+                log.info("Removed user: {} from group: {}", userId, groupId);
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error removing user: " + userId + " from group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
     @FunctionalInterface
     private interface Supplier<T> {
         /**

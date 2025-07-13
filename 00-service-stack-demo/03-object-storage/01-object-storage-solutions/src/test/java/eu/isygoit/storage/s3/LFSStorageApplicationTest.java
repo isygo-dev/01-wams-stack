@@ -385,7 +385,7 @@ public class LFSStorageApplicationTest {
         lakeFSService.createBranch(config, repositoryName, defaultBranch, defaultBranch);
         lakeFSService.uploadFile(config, repositoryName, defaultBranch, "", objectName, multipartFile);
 
-        String url = lakeFSService.getPresignedObjectUrl(config, repositoryName, defaultBranch, objectName);
+        String url = lakeFSService.getPresignedObjectUrl(config, repositoryName, defaultBranch, objectName, 1);
         assertNotNull(url);
         assertTrue(url.startsWith("http"));
     }

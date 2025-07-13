@@ -22,8 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Service implementation for MinIO object storage operations with enhanced error handling,
- * connection pooling, and retry logic.
+ * The type Min io api service.
  */
 @Slf4j
 public abstract class MinIOApiService implements IMinIOApiService {
@@ -43,13 +42,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         this.minIoMap = minIoMap;
     }
 
-    /**
-     * Retrieves or creates a MinIO client connection for the specified tenant.
-     *
-     * @param config Storage configuration containing tenant, credentials, and endpoint
-     * @return MinioClient instance
-     * @throws IllegalArgumentException if config is invalid
-     */
     @Override
     public MinioClient getConnection(S3Config config) {
         validateConfig(config);
@@ -66,12 +58,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Updates the MinIO client connection for a tenant.
-     *
-     * @param config Storage configuration
-     * @throws IllegalArgumentException if config is invalid
-     */
     @Override
     public void updateConnection(S3Config config) {
         validateConfig(config);
@@ -88,14 +74,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         }
     }
 
-    /**
-     * Checks if a bucket exists with retry logic.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @return true if bucket exists
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public boolean bucketExists(S3Config config, String bucketName) {
         validateBucketName(bucketName);
@@ -109,14 +87,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Enables or suspends bucket versioning.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param status     true to enable, false to suspend
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void setVersioningBucket(S3Config config, String bucketName, boolean status) {
         validateBucketName(bucketName);
@@ -135,13 +105,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Creates a bucket if it doesn't exist.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void makeBucket(S3Config config, String bucketName) {
         validateBucketName(bucketName);
@@ -159,17 +122,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Uploads a file to MinIO with tags.
-     *
-     * @param config        Storage configuration
-     * @param bucketName    Name of the bucket
-     * @param path          Object path
-     * @param objectName    Object name
-     * @param multipartFile File to upload
-     * @param tags          Metadata tags
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void uploadFile(S3Config config, String bucketName, String path, String objectName,
                            MultipartFile multipartFile, Map<String, String> tags) {
@@ -194,16 +146,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Retrieves an object from MinIO.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param objectName Object name
-     * @param versionID  Version ID (optional)
-     * @return Object content as byte array
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public byte[] getObject(S3Config config, String bucketName, String objectName, String versionID) {
         validateObjectParams(bucketName, objectName);
@@ -225,15 +167,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Generates a presigned URL for an object.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param objectName Object name
-     * @return Presigned URL
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public String getPresignedObjectUrl(S3Config config, String bucketName, String objectName) {
         validateObjectParams(bucketName, objectName);
@@ -252,14 +185,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Deletes an object from MinIO.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param objectName Object name
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void deleteObject(S3Config config, String bucketName, String objectName) {
         validateObjectParams(bucketName, objectName);
@@ -278,16 +203,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Retrieves objects by tags with AND/OR condition.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param tags       Tags to filter
-     * @param condition  Logical operator (AND/OR)
-     * @return List of matching FileStorage objects
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public List<FileStorage> getObjectByTags(S3Config config, String bucketName,
                                              Map<String, String> tags, IEnumLogicalOperator.Types condition) {
@@ -326,14 +241,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Lists all objects in a bucket.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @return List of FileStorage objects
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public List<FileStorage> getObjects(S3Config config, String bucketName) {
         validateBucketName(bucketName);
@@ -364,15 +271,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Updates tags for an object.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param objectName Object name
-     * @param tags       New tags
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void updateTags(S3Config config, String bucketName, String objectName, Map<String, String> tags) {
         validateObjectParams(bucketName, objectName);
@@ -395,14 +293,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Deletes multiple objects from a bucket.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @param objects    List of objects to delete
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void deleteObjects(S3Config config, String bucketName, List<DeleteObject> objects) {
         validateBucketName(bucketName);
@@ -430,13 +320,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Deletes a bucket if it exists.
-     *
-     * @param config     Storage configuration
-     * @param bucketName Name of the bucket
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public void deleteBucket(S3Config config, String bucketName) {
         validateBucketName(bucketName);
@@ -454,13 +337,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Lists all buckets for the given configuration.
-     *
-     * @param config Storage configuration
-     * @return List of buckets
-     * @throws MinIoObjectException on failure
-     */
     @Override
     public List<Bucket> getBuckets(S3Config config) {
         validateConfig(config);
@@ -476,14 +352,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    /**
-     * Executes an operation with retry logic.
-     *
-     * @param operation The operation to execute
-     * @param <T>       Return type
-     * @return Operation result
-     * @throws MinIoObjectException on failure after retries
-     */
     private <T> T executeWithRetry(Supplier<T> operation) {
         int attempt = 0;
         while (attempt < MAX_RETRIES) {
@@ -506,12 +374,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         throw new MinIoObjectException("Operation failed after maximum retries");
     }
 
-    /**
-     * Validates storage configuration.
-     *
-     * @param config Storage configuration
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateConfig(S3Config config) {
         if (config == null || !StringUtils.hasText(config.getTenant()) ||
                 !StringUtils.hasText(config.getUrl()) ||
@@ -521,25 +383,12 @@ public abstract class MinIOApiService implements IMinIOApiService {
         }
     }
 
-    /**
-     * Validates bucket name.
-     *
-     * @param bucketName Name of the bucket
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateBucketName(String bucketName) {
         if (!StringUtils.hasText(bucketName)) {
             throw new IllegalArgumentException("Bucket name cannot be empty");
         }
     }
 
-    /**
-     * Validates object parameters.
-     *
-     * @param bucketName Name of the bucket
-     * @param objectName Object name
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateObjectParams(String bucketName, String objectName) {
         validateBucketName(bucketName);
         if (!StringUtils.hasText(objectName)) {
@@ -547,15 +396,6 @@ public abstract class MinIOApiService implements IMinIOApiService {
         }
     }
 
-    /**
-     * Validates upload parameters.
-     *
-     * @param bucketName    Name of the bucket
-     * @param path          Object path
-     * @param objectName    Object name
-     * @param multipartFile File to upload
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateUploadParams(String bucketName, String path, String objectName, MultipartFile multipartFile) {
         validateObjectParams(bucketName, objectName);
         if (multipartFile == null || multipartFile.isEmpty()) {

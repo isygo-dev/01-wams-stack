@@ -11,7 +11,7 @@ import java.util.Map;
 
 
 /**
- * The type Minio configuration.
+ * The type S 3 configuration.
  */
 @Configuration
 public class S3Configuration {

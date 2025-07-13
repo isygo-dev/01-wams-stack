@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 
 /**
- * The type Storage config dto.
+ * The type S 3 config.
  */
 @Data
 @AllArgsConstructor
