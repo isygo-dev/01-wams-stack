@@ -371,7 +371,7 @@ public class LFSStorageApplicationTest {
         assertArrayEquals("Hello".getBytes(), result);
     }
 
- /*   @Test
+    @Test
     @Order(9)
     public void testGetPresignedObjectUrl() {
         String strUUID = UUID.randomUUID().toString();
@@ -388,7 +388,7 @@ public class LFSStorageApplicationTest {
         String url = lakeFSService.getPresignedObjectUrl(config, repositoryName, defaultBranch, objectName);
         assertNotNull(url);
         assertTrue(url.startsWith("http"));
-    }*/
+    }
 
     /**
      * Test delete object.
@@ -717,7 +717,7 @@ public class LFSStorageApplicationTest {
      *
      * @throws InterruptedException the interrupted exception
      */
-/*    @Test
+    @Test
     @Order(16)
     public void testMerge() throws InterruptedException {
         String strUUID = UUID.randomUUID().toString();
@@ -759,7 +759,7 @@ public class LFSStorageApplicationTest {
         // Verify merge by checking file now exists in main
         byte[] mergedContent = lakeFSService.getObject(config, repositoryName, defaultBranch, objectName);
         assertArrayEquals("Hello".getBytes(), mergedContent, "File should now exist in main branch after merge");
-    }*/
+    }
 
     /**
      * Test merge no changes.

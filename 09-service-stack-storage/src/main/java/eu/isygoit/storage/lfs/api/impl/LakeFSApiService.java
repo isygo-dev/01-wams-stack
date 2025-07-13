@@ -345,7 +345,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", destinationBranchName, "merge", sourceBranchName}, null);
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", sourceBranchName , "merge", destinationBranchName}, null);
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("message", message);
@@ -864,7 +864,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @return Presigned URL
      * @throws LakeFSObjectException if URL generation fails
      */
-    @Override
+    /*@Override
     public String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName) {
         validateObjectParams(repositoryName, reference, objectName);
         return executeWithRetry(() -> {
@@ -885,7 +885,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 throw new LakeFSObjectException("Error generating presigned URL for: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
-    }
+    }*/
 
     /**
      * Deletes an object from LakeFS.
