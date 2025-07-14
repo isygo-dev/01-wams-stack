@@ -577,13 +577,13 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
      * @throws LakeFSObjectException if repository deletion fails
      */
     @Override
-    public void deleteRepository(LFSConfig config, String repositoryName) {
+    public void deleteRepository(LFSConfig config, String repositoryName, boolean force) {
         validateRepositoryName(repositoryName);
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName}, null);
-
+                Map<String, String> queryParams = Map.of("repository", repositoryName, "force", String.valueOf(Boolean.TRUE));
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName}, queryParams);
                 client.delete(url);
                 log.info("Deleted repository: {}", repositoryName);
             } catch (HttpClientErrorException e) {

@@ -107,6 +107,7 @@ public interface ILakeFSApiService {
      * @param repositoryName Name of the repository
      * @param reference      Branch name or commit ID
      * @param objectName     Object name
+     * @param expiryHours    the expiry hours
      * @return Presigned URL
      * @throws LakeFSObjectException if URL generation fails
      */
@@ -267,9 +268,10 @@ public interface ILakeFSApiService {
      *
      * @param config         Storage configuration
      * @param repositoryName Name of the repository
+     * @param force          the force
      * @throws LakeFSObjectException if repository deletion fails
      */
-    void deleteRepository(LFSConfig config, String repositoryName);
+    void deleteRepository(LFSConfig config, String repositoryName, boolean force);
 
     /*
      * Interface for LakeFS Auth API operations.
