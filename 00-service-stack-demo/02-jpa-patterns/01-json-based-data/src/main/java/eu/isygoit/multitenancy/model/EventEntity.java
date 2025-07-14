@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import eu.isygoit.annotation.Criteria;
 
 @Data
 @SuperBuilder
@@ -21,9 +22,11 @@ public class EventEntity extends JsonBasedEntity<Long> implements ITenantAssigna
     @SequenceGenerator(name = "events_seq_generator", sequenceName = "events_seq", allocationSize = 1)
     private Long id;
 
+    @Criteria
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 
+    @Criteria
     @Column(name = "ELEMENT_TYPE", nullable = false)
     private String elementType;
 }
