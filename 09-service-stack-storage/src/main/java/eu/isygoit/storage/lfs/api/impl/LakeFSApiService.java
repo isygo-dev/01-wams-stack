@@ -55,6 +55,43 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         this.minIOApiService = minIOApiService;
     }
 
+    public void setupLakeFS(LFSConfig config, String username, String accessKey, String secretKey) {
+        log.info("Initializing LakeFS at URL: {}", config.getUrl());
+
+        executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+
+                Map<String, Object> key = Map.of(
+                        "access_key_id", accessKey,
+                        "secret_access_key", secretKey
+                );
+
+                Map<String, Object> setupRequest = Map.of(
+                        "username", username,
+                        "key", key
+                );
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> request = new HttpEntity<>(setupRequest, headers);
+
+                String url = buildLakeFSUrl(config, new String[]{"setup_lakefs"}, null);
+                ResponseEntity<String> response = client.postForEntity(url, request, String.class);
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    log.info("LakeFS setup completed successfully: {}", response.getBody());
+                } else {
+                    throw new LakeFSObjectException("LakeFS initialization failed: " + response.getBody());
+                }
+
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("LakeFS setup failed with HTTP status: " + e.getStatusCode(), e);
+            }
+            return null;
+        });
+    }
+
     /**
      * Builds a standardized LakeFS API URL.
      *
@@ -582,7 +619,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                Map<String, String> queryParams = Map.of("repository", repositoryName, "force", String.valueOf(Boolean.TRUE));
+                Map<String, String> queryParams = Map.of( "force", String.valueOf(Boolean.TRUE));
                 String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName}, queryParams);
                 client.delete(url);
                 log.info("Deleted repository: {}", repositoryName);
@@ -1396,6 +1433,27 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         });
     }
 
+    public boolean isUserExists(LFSConfig config, String userId) {
+        if (!StringUtils.hasText(userId)) {
+            throw new IllegalArgumentException("User ID cannot be empty");
+        }
+
+        return executeWithRetry(() -> {
+            try {
+                RestTemplate client = getConnection(config);
+                String url = buildLakeFSUrl(config, new String[]{"auth", "users", userId}, null);
+                client.getForEntity(url, Map.class);
+                log.info("User '{}' exists.", userId);
+                return true;
+            } catch (HttpClientErrorException.NotFound e) {
+                log.info("User '{}' does not exist.", userId);
+                return false;
+            } catch (HttpClientErrorException e) {
+                throw new LakeFSObjectException("Error checking user existence: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+            }
+        });
+    }
+
     /**
      * Creates a new user.
      *
@@ -1408,13 +1466,18 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         if (!StringUtils.hasText(userId)) {
             throw new IllegalArgumentException("User ID cannot be empty");
         }
+
         executeWithRetry(() -> {
+            if (isUserExists(config, userId)) {
+                log.info("User '{}' already exists. Skipping creation.", userId);
+                return null;
+            }
+
             try {
                 RestTemplate client = getConnection(config);
                 String url = buildLakeFSUrl(config, new String[]{"auth", "users"}, null);
 
-                Map<String, Object> requestBody = new HashMap<>();
-                requestBody.put("id", userId);
+                Map<String, Object> requestBody = Map.of("id", userId, "invite_user", String.valueOf(Boolean.TRUE));
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
@@ -1422,12 +1485,17 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 client.postForEntity(url, request, Map.class);
                 log.info("Created user: {}", userId);
+
+            } catch (HttpClientErrorException.Conflict conflict) {
+                log.warn("User '{}' already exists (409 Conflict).", userId);
             } catch (HttpClientErrorException e) {
                 throw new LakeFSObjectException("Error creating user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
+
+
 
     /**
      * Creates a new group.

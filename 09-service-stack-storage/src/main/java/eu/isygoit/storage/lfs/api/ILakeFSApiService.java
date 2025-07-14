@@ -15,6 +15,16 @@ import java.util.Map;
 public interface ILakeFSApiService {
 
     /**
+     * Sets lake fs.
+     *
+     * @param config    the config
+     * @param username  the username
+     * @param accessKey the access key
+     * @param secretKey the secret key
+     */
+    void setupLakeFS(LFSConfig config, String username, String accessKey, String secretKey);
+
+    /**
      * Retrieves or creates a LakeFS client connection for the specified tenant.
      *
      * @param config Storage configuration containing tenant, credentials, and endpoint
@@ -363,6 +373,8 @@ public interface ILakeFSApiService {
      * @throws LakeFSObjectException if creation fails
      */
     void createPolicy(LFSConfig config, String policyId, List<Map<String, Object>> statement);
+
+    boolean isUserExists(LFSConfig config, String userId);
 
     /**
      * Creates a new user.

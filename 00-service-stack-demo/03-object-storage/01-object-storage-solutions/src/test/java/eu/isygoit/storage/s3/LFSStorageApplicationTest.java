@@ -144,12 +144,12 @@ public class LFSStorageApplicationTest {
             throw new RuntimeException("Containers are not running. MinIO logs: " + minioContainer.getLogs() + "\nLakeFS logs: " + lakeFSContainer.getLogs());
         }
 
-        TEST_USER = "test-user-" + UUID.randomUUID();
-        TEST_GROUP = "test-group-" + UUID.randomUUID();
-        TEST_POLICY = "test-policy-" + UUID.randomUUID();
+        TEST_USER = UUID.randomUUID().toString();
+        TEST_GROUP = UUID.randomUUID().toString();
+        TEST_POLICY = UUID.randomUUID().toString();
 
-        tenant = "test-tenant-" + UUID.randomUUID();
-        repositoryName = "test-repo-" + UUID.randomUUID();
+        tenant = "tenant-" + UUID.randomUUID();
+        repositoryName = "repo-" + UUID.randomUUID();
         storageNamespace = "bucket-" + UUID.randomUUID();
 
         config = new LFSConfig();
@@ -196,24 +196,6 @@ public class LFSStorageApplicationTest {
                 } catch (Exception e) {
                     log.warn("Failed to delete repository {}: {}", repo, e.getMessage());
                 }
-            }
-            try {
-                lakeFSService.deleteUser(config, TEST_USER);
-                log.info("Cleaned up user: {}", TEST_USER);
-            } catch (Exception e) {
-                log.warn("Failed to delete user {}: {}", TEST_USER, e.getMessage());
-            }
-            try {
-                lakeFSService.deleteGroup(config, TEST_GROUP);
-                log.info("Cleaned up group: {}", TEST_GROUP);
-            } catch (Exception e) {
-                log.warn("Failed to delete group {}: {}", TEST_GROUP, e.getMessage());
-            }
-            try {
-                lakeFSService.deletePolicy(config, TEST_POLICY);
-                log.info("Cleaned up policy: {}", TEST_POLICY);
-            } catch (Exception e) {
-                log.warn("Failed to delete policy {}: {}", TEST_POLICY, e.getMessage());
             }
 
             lakeFSClientMap.remove(tenant);
