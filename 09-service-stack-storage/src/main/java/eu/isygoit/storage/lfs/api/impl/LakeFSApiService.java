@@ -1,7 +1,7 @@
 package eu.isygoit.storage.lfs.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.LakeFSObjectException;
+import eu.isygoit.storage.exception.LakeFSException;
 import eu.isygoit.storage.lfs.api.ILakeFSApiService;
 import eu.isygoit.storage.lfs.config.LFSConfig;
 import eu.isygoit.storage.s3.api.IMinIOApiService;
@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * ref: https://pydocs.lakefs.io/docs/
+ * The type Lake fs api service.
  */
 @Slf4j
 public abstract class LakeFSApiService implements ILakeFSApiService {
@@ -45,14 +45,60 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     private final IMinIOApiService minIOApiService;
 
     /**
-     * Instantiates a new LakeFS API service.
+     * Instantiates a new Lake fs api service.
      *
-     * @param lakeFSClientMap the LakeFS client map
-     * @param minIOApiService the MinIO API service
+     * @param lakeFSClientMap the lake fs client map
+     * @param minIOApiService the min io api service
      */
     public LakeFSApiService(Map<String, RestTemplate> lakeFSClientMap, IMinIOApiService minIOApiService) {
         this.lakeFSClientMap = lakeFSClientMap;
         this.minIOApiService = minIOApiService;
+    }
+
+    private static void validateStorageNamespace(String storageNamespace) {
+        if (!StringUtils.hasText(storageNamespace)) {
+            throw new IllegalArgumentException("Storage namespace cannot be empty");
+        }
+    }
+
+    private String buildLakeFSUrl(LFSConfig config, String[] pathSegments, Map<String, String> queryParams) {
+        String baseUrl = config.getUrl().endsWith("/") ? config.getUrl() : config.getUrl() + "/";
+        String apiPrefix = config.getApiPrefix() != null ? config.getApiPrefix() : API_PATH_PREFIX;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+        if (!baseUrl.contains(apiPrefix)) {
+            builder.path(apiPrefix);
+        }
+        for (String segment : pathSegments) {
+            builder.pathSegment(URLEncoder.encode(segment, StandardCharsets.UTF_8));
+        }
+        if (queryParams != null) {
+            queryParams.forEach((key, value) -> builder.queryParam(key, URLEncoder.encode(value, StandardCharsets.UTF_8)));
+        }
+        String url = builder.build().toUriString();
+        log.info("Constructed LakeFS URL: {}", url);
+        return url;
+    }
+
+    private RestTemplate configureRestTemplate(LFSConfig config) {
+        RestTemplate restTemplate = new RestTemplate();
+        // Configure timeouts
+        restTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {{
+            setConnectTimeout(CONNECTION_TIMEOUT_MS);
+            setReadTimeout(READ_TIMEOUT_MS);
+        }});
+        // Remove custom text/plain converter to avoid JSON parsing for byte[] responses
+        restTemplate.getMessageConverters().removeIf(converter ->
+                converter instanceof MappingJackson2HttpMessageConverter);
+        // Add default MappingJackson2HttpMessageConverter for JSON responses
+        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+        // Configure basic authentication
+        restTemplate.getInterceptors().add((ClientHttpRequestInterceptor) (request, body, execution) -> {
+            String auth = config.getUserName() + ":" + config.getPassword();
+            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+            request.getHeaders().add("Authorization", "Basic " + new String(encodedAuth));
+            return execution.execute(request, body);
+        });
+        return restTemplate;
     }
 
     public void setupLakeFS(LFSConfig config, String username, String accessKey, String secretKey) {
@@ -82,100 +128,16 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 if (response.getStatusCode().is2xxSuccessful()) {
                     log.info("LakeFS setup completed successfully: {}", response.getBody());
                 } else {
-                    throw new LakeFSObjectException("LakeFS initialization failed: " + response.getBody());
+                    throw new LakeFSException("LakeFS initialization failed: " + response.getBody());
                 }
 
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("LakeFS setup failed with HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("LakeFS setup failed with HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Builds a standardized LakeFS API URL.
-     *
-     * @param config       Storage configuration
-     * @param pathSegments API path segments
-     * @param queryParams  Query parameters
-     * @return Constructed URL
-     */
-    private String buildLakeFSUrl(LFSConfig config, String[] pathSegments, Map<String, String> queryParams) {
-        String baseUrl = config.getUrl().endsWith("/") ? config.getUrl() : config.getUrl() + "/";
-        String apiPrefix = config.getApiPrefix() != null ? config.getApiPrefix() : API_PATH_PREFIX;
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl);
-        if (!baseUrl.contains(apiPrefix)) {
-            builder.path(apiPrefix);
-        }
-        for (String segment : pathSegments) {
-            builder.pathSegment(URLEncoder.encode(segment, StandardCharsets.UTF_8));
-        }
-        if (queryParams != null) {
-            queryParams.forEach((key, value) -> builder.queryParam(key, URLEncoder.encode(value, StandardCharsets.UTF_8)));
-        }
-        String url = builder.build().toUriString();
-        log.info("Constructed LakeFS URL: {}", url);
-        return url;
-    }
-
-    /**
-     * Configures a RestTemplate with timeouts and authentication.
-     *
-     * @param config Storage configuration
-     * @return Configured RestTemplate
-     */
-    /*private RestTemplate configureRestTemplate(LFSConfig config) {
-        RestTemplate restTemplate = new RestTemplate();
-        // Configure timeouts
-        restTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {{
-            setConnectTimeout(CONNECTION_TIMEOUT_MS);
-            setReadTimeout(READ_TIMEOUT_MS);
-        }});
-        // Add custom message converter for text/plain
-        restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter() {
-            @Override
-            protected boolean canRead(MediaType mediaType) {
-                return super.canRead(mediaType) || MediaType.TEXT_PLAIN.includes(mediaType);
-            }
-        });
-        // Configure basic authentication
-        restTemplate.getInterceptors().add((ClientHttpRequestInterceptor) (request, body, execution) -> {
-            String auth = config.getUserName() + ":" + config.getPassword();
-            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
-            request.getHeaders().add("Authorization", "Basic " + new String(encodedAuth));
-            return execution.execute(request, body);
-        });
-        return restTemplate;
-    }*/
-    private RestTemplate configureRestTemplate(LFSConfig config) {
-        RestTemplate restTemplate = new RestTemplate();
-        // Configure timeouts
-        restTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {{
-            setConnectTimeout(CONNECTION_TIMEOUT_MS);
-            setReadTimeout(READ_TIMEOUT_MS);
-        }});
-        // Remove custom text/plain converter to avoid JSON parsing for byte[] responses
-        restTemplate.getMessageConverters().removeIf(converter ->
-                converter instanceof MappingJackson2HttpMessageConverter);
-        // Add default MappingJackson2HttpMessageConverter for JSON responses
-        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-        // Configure basic authentication
-        restTemplate.getInterceptors().add((ClientHttpRequestInterceptor) (request, body, execution) -> {
-            String auth = config.getUserName() + ":" + config.getPassword();
-            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
-            request.getHeaders().add("Authorization", "Basic " + new String(encodedAuth));
-            return execution.execute(request, body);
-        });
-        return restTemplate;
-    }
-
-    /**
-     * Retrieves or creates a LakeFS client connection for the specified tenant.
-     *
-     * @param config Storage configuration containing tenant, credentials, and endpoint
-     * @return RestTemplate configured for LakeFS API calls
-     * @throws IllegalArgumentException if config is invalid
-     */
     @Override
     public RestTemplate getConnection(LFSConfig config) {
         validateConfig(config);
@@ -184,17 +146,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 return configureRestTemplate(config);
             } catch (Exception e) {
                 log.error("Failed to create LakeFS client for tenant: {}", config.getTenant(), e);
-                throw new LakeFSObjectException("Failed to initialize LakeFS client for tenant: " + config.getTenant(), e);
+                throw new LakeFSException("Failed to initialize LakeFS client for tenant: " + config.getTenant(), e);
             }
         });
     }
 
-    /**
-     * Updates the LakeFS client connection for a tenant.
-     *
-     * @param config Storage configuration
-     * @throws IllegalArgumentException if config is invalid
-     */
     @Override
     public void updateConnection(LFSConfig config) {
         validateConfig(config);
@@ -203,18 +159,10 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             log.info("Updated LakeFS connection for tenant: {}", config.getTenant());
         } catch (Exception e) {
             log.error("Failed to update LakeFS connection for tenant: {}", config.getTenant(), e);
-            throw new LakeFSObjectException("Failed to update LakeFS connection for tenant: " + config.getTenant(), e);
+            throw new LakeFSException("Failed to update LakeFS connection for tenant: " + config.getTenant(), e);
         }
     }
 
-    /**
-     * Checks if a repository exists.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @return true if repository exists
-     * @throws LakeFSObjectException on failure
-     */
     @Override
     public boolean repositoryExists(LFSConfig config, String repositoryName) {
         validateRepositoryName(repositoryName);
@@ -228,38 +176,31 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                     return false;
                 }
-                throw new LakeFSObjectException("Error checking repository existence: " + repositoryName, e);
+                throw new LakeFSException("Error checking repository existence: " + repositoryName, e);
             }
         });
     }
 
-    /**
-     * Creates a repository if it doesn't exist.
-     *
-     * @param config           Storage configuration
-     * @param repositoryName   Name of the repository
-     * @param storageNamespace Storage namespace
-     * @param defaultBranch    Default branch name
-     * @throws LakeFSObjectException if repository creation fails
-     */
     @Override
     public void createRepository(LFSConfig config, String repositoryName, String storageNamespace, String defaultBranch) {
         validateRepositoryName(repositoryName);
-        if (!StringUtils.hasText(storageNamespace)) {
-            throw new IllegalArgumentException("Storage namespace cannot be empty");
-        }
+        validateStorageNamespace(storageNamespace);
         executeWithRetry(() -> {
             try {
-                if (!minIOApiService.bucketExists(config.getS3Config(), storageNamespace)) {
-                    minIOApiService.makeBucket(config.getS3Config(), storageNamespace);
+                if (config.getS3Config() != null) {
+                    // Use S3 storage
+                    if (!minIOApiService.bucketExists(config.getS3Config(), storageNamespace)) {
+                        minIOApiService.makeBucket(config.getS3Config(), storageNamespace);
+                    }
                 }
+
                 if (!repositoryExists(config, repositoryName)) {
                     RestTemplate client = getConnection(config);
                     String url = buildLakeFSUrl(config, new String[]{"repositories"}, null);
 
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("name", repositoryName);
-                    requestBody.put("storage_namespace", "s3://" + storageNamespace);
+                    requestBody.put("storage_namespace", config.getS3Config() != null? "s3://" + storageNamespace: "local://" + storageNamespace);
                     requestBody.put("default_branch", StringUtils.hasText(defaultBranch) ? defaultBranch : DEFAULT_BRANCH);
 
                     HttpHeaders headers = new HttpHeaders();
@@ -267,24 +208,15 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
                     client.postForEntity(url, request, Map.class);
-                    log.info("Created repository: {} with namespace: {}", repositoryName, storageNamespace);
+                    log.info("Created repository: {} with namespace: {}", repositoryName, config.getS3Config() != null? "s3://" + storageNamespace: "local://" + storageNamespace);
                 }
             } catch (Exception e) {
-                throw new LakeFSObjectException("Error creating repository: " + repositoryName, e);
+                throw new LakeFSException("Error creating repository: " + repositoryName, e);
             }
             return null;
         });
     }
 
-    /**
-     * Deletes multiple objects from a branch.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectNames    List of object names to delete
-     * @throws LakeFSObjectException if deletion fails
-     */
     @Override
     public void deleteObjects(LFSConfig config, String repositoryName, String branchName, List<String> objectNames) {
         validateRepositoryName(repositoryName);
@@ -307,23 +239,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Deleted {} objects from branch: {} in repository: {}", objectNames.size(), branchName, repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting objects from repository: " + repositoryName + ", branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting objects from repository: " + repositoryName + ", branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Commits changes to a branch.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param message        Commit message
-     * @param metadata       Commit metadata (optional)
-     * @return Commit ID
-     * @throws LakeFSObjectException if commit fails
-     */
     @Override
     public String commit(LFSConfig config, String repositoryName, String branchName, String message, Map<String, String> metadata) {
         validateRepositoryName(repositoryName);
@@ -348,30 +269,19 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.postForEntity(url, request, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for commit"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for commit"));
                 String commitId = (String) responseBody.get("id");
                 if (!StringUtils.hasText(commitId)) {
-                    throw new LakeFSObjectException("Commit ID not found in response");
+                    throw new LakeFSException("Commit ID not found in response");
                 }
                 log.info("Committed changes to branch: {} in repository: {}, commit ID: {}", branchName, repositoryName, commitId);
                 return commitId;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error committing to branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error committing to branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Merges a source branch into a destination branch.
-     *
-     * @param config                Storage configuration
-     * @param repositoryName        Name of the repository
-     * @param sourceBranchName      Source branch name
-     * @param destinationBranchName Destination branch name
-     * @param message               Merge message
-     * @return Merge commit ID
-     * @throws LakeFSObjectException if merge fails
-     */
     @Override
     public String merge(LFSConfig config, String repositoryName, String sourceBranchName, String destinationBranchName, String message) {
         validateRepositoryName(repositoryName);
@@ -394,27 +304,19 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.postForEntity(url, request, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for merge"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for merge"));
                 String mergeCommitId = (String) responseBody.get("reference");
                 if (!StringUtils.hasText(mergeCommitId)) {
-                    throw new LakeFSObjectException("Merge commit ID not found in response");
+                    throw new LakeFSException("Merge commit ID not found in response");
                 }
                 log.info("Merged branch: {} into: {} in repository: {}, merge commit: {}", sourceBranchName, destinationBranchName, repositoryName, mergeCommitId);
                 return mergeCommitId;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error merging branch: " + sourceBranchName + " into: " + destinationBranchName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error merging branch: " + sourceBranchName + " into: " + destinationBranchName + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists all branches in a repository.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @return List of branch names
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> getBranches(LFSConfig config, String repositoryName) {
         validateRepositoryName(repositoryName);
@@ -425,7 +327,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for branches"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for branches"));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 return Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -434,18 +336,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                         .filter(StringUtils::hasText)
                         .collect(Collectors.toList());
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing branches in repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing branches in repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists all repositories for the given configuration.
-     *
-     * @param config Storage configuration
-     * @return List of repository names
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> getRepositories(LFSConfig config) {
         validateConfig(config);
@@ -456,7 +351,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for repositories"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for repositories"));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 List<String> repositories = Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -467,21 +362,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("Retrieved {} repositories for tenant: {}", repositories.size(), config.getTenant());
                 return repositories;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing repositories for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing repositories for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Gets the commit history for a branch.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param limit          Maximum number of commits to return
-     * @return List of commit information
-     * @throws LakeFSObjectException if retrieval fails
-     */
     @Override
     public List<Map<String, Object>> getCommitHistory(LFSConfig config, String repositoryName, String branchName, int limit) {
         validateRepositoryName(repositoryName);
@@ -494,25 +379,15 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for commit history"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for commit history"));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 return Optional.ofNullable(results).orElse(Collections.emptyList());
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error retrieving commit history for branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error retrieving commit history for branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Gets the differences between two references (branches or commits).
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param leftRef        Left reference (branch or commit)
-     * @param rightRef       Right reference (branch or commit)
-     * @return List of differences
-     * @throws LakeFSObjectException if retrieval fails
-     */
     @Override
     public List<Map<String, Object>> getDiff(LFSConfig config, String repositoryName, String leftRef, String rightRef) {
         validateRepositoryName(repositoryName);
@@ -529,7 +404,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for diff"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for diff"));
 
                 log.debug("Diff response: {}", responseBody);
 
@@ -537,20 +412,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 return Optional.ofNullable(results).orElse(Collections.emptyList());
             } catch (HttpClientErrorException e) {
                 log.error("Diff API error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
-                throw new LakeFSObjectException("Error retrieving diff between: " + leftRef + " and: " + rightRef + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error retrieving diff between: " + leftRef + " and: " + rightRef + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Reverts changes in a branch to a specific commit.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param commitId       Commit ID to revert to
-     * @throws LakeFSObjectException if revert fails
-     */
     @Override
     public void revert(LFSConfig config, String repositoryName, String branchName, String commitId) {
         validateRepositoryName(repositoryName);
@@ -574,20 +440,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Reverted branch: {} to commit: {} in repository: {}", branchName, commitId, repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error reverting branch: " + branchName + " to commit: " + commitId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error reverting branch: " + branchName + " to commit: " + commitId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Deletes a branch from a repository.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @throws LakeFSObjectException if branch deletion fails
-     */
     @Override
     public void deleteBranch(LFSConfig config, String repositoryName, String branchName) {
         validateRepositoryName(repositoryName);
@@ -600,19 +458,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Deleted branch: {} from repository: {}", branchName, repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting branch: " + branchName + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Deletes a repository.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @throws LakeFSObjectException if repository deletion fails
-     */
     @Override
     public void deleteRepository(LFSConfig config, String repositoryName, boolean force) {
         validateRepositoryName(repositoryName);
@@ -624,26 +475,18 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Deleted repository: {}", repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting repository: " + repositoryName + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Executes an operation with retry logic and exponential backoff.
-     *
-     * @param operation The operation to execute
-     * @param <T>       Return type
-     * @return Operation result
-     * @throws LakeFSObjectException on failure after retries
-     */
     private <T> T executeWithRetry(Supplier<T> operation) {
         int attempt = 0;
         while (attempt < MAX_RETRIES) {
             try {
                 return operation.get();
-            } catch (LakeFSObjectException e) {
+            } catch (LakeFSException e) {
                 attempt++;
                 if (attempt == MAX_RETRIES) {
                     throw e;
@@ -652,20 +495,14 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     Thread.sleep((long) RETRY_DELAY_MS * (1 << attempt)); // Exponential backoff
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    throw new LakeFSObjectException("Retry interrupted", ie);
+                    throw new LakeFSException("Retry interrupted", ie);
                 }
                 log.warn("Retrying operation, attempt {}/{}", attempt + 1, MAX_RETRIES);
             }
         }
-        throw new LakeFSObjectException("Operation failed after maximum retries");
+        throw new LakeFSException("Operation failed after maximum retries");
     }
 
-    /**
-     * Validates storage configuration.
-     *
-     * @param config Storage configuration
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateConfig(LFSConfig config) {
         if (config == null ||
                 !StringUtils.hasText(config.getTenant()) ||
@@ -676,12 +513,6 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         }
     }
 
-    /**
-     * Validates repository name.
-     *
-     * @param repositoryName Name of the repository
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateRepositoryName(String repositoryName) {
         if (!StringUtils.hasText(repositoryName)) {
             throw new IllegalArgumentException("Repository name cannot be empty");
@@ -691,26 +522,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         }
     }
 
-    /**
-     * Validates branch name or reference.
-     *
-     * @param branchName Name of the branch or reference
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateBranchName(String branchName) {
         if (!StringUtils.hasText(branchName)) {
             throw new IllegalArgumentException("Branch name or reference cannot be empty");
         }
     }
 
-    /**
-     * Validates object parameters.
-     *
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param objectName     Object name
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateObjectParams(String repositoryName, String reference, String objectName) {
         validateRepositoryName(repositoryName);
         validateBranchName(reference);
@@ -719,15 +536,6 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         }
     }
 
-    /**
-     * Validates upload parameters.
-     *
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectName     Object name
-     * @param multipartFile  File to upload
-     * @throws IllegalArgumentException if invalid
-     */
     private void validateUploadParams(String repositoryName, String branchName, String objectName, MultipartFile multipartFile) {
         validateObjectParams(repositoryName, branchName, objectName);
         if (multipartFile == null || multipartFile.isEmpty()) {
@@ -735,15 +543,6 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         }
     }
 
-    /**
-     * Checks if a branch exists in a repository.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @return true if branch exists
-     * @throws LakeFSObjectException on failure
-     */
     @Override
     public boolean branchExists(LFSConfig config, String repositoryName, String branchName) {
         validateRepositoryName(repositoryName);
@@ -758,20 +557,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                     return false;
                 }
-                throw new LakeFSObjectException("Error checking branch existence: " + branchName, e);
+                throw new LakeFSException("Error checking branch existence: " + branchName, e);
             }
         });
     }
 
-    /**
-     * Creates a new branch from an existing branch.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the new branch
-     * @param sourceBranch   Source branch to create from
-     * @throws LakeFSObjectException if branch creation fails
-     */
     @Override
     public void createBranch(LFSConfig config, String repositoryName, String branchName, String sourceBranch) {
         validateRepositoryName(repositoryName);
@@ -797,31 +587,20 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                         log.info("Created branch: {} from source: {} in repository: {}", branchName, sourceBranch, repositoryName);
                     } else {
                         log.error("Failed to create branch: {} in repository: {}, HTTP status: {}, Response: {}", branchName, repositoryName, response.getStatusCode(), response.getBody());
-                        throw new LakeFSObjectException("Failed to create branch: " + branchName + ", HTTP status: " + response.getStatusCode() + ", Response: " + response.getBody());
+                        throw new LakeFSException("Failed to create branch: " + branchName + ", HTTP status: " + response.getStatusCode() + ", Response: " + response.getBody());
                     }
                 }
             } catch (HttpClientErrorException e) {
                 log.error("Error creating branch: {} in repository: {}, HTTP status: {}, Response: {}", branchName, repositoryName, e.getStatusCode(), e.getResponseBodyAsString());
-                throw new LakeFSObjectException("Error creating branch: " + branchName + ", HTTP status: " + e.getStatusCode() + ", Response: " + e.getResponseBodyAsString(), e);
+                throw new LakeFSException("Error creating branch: " + branchName + ", HTTP status: " + e.getStatusCode() + ", Response: " + e.getResponseBodyAsString(), e);
             } catch (Exception e) {
                 log.error("Unexpected error creating branch: {} in repository: {}", branchName, repositoryName, e);
-                throw new LakeFSObjectException("Unexpected error creating branch: " + branchName, e);
+                throw new LakeFSException("Unexpected error creating branch: " + branchName, e);
             }
             return null;
         });
     }
 
-    /**
-     * Uploads a file to LakeFS with metadata.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param path           Object path
-     * @param objectName     Object name
-     * @param multipartFile  File to upload
-     * @throws LakeFSObjectException if upload fails
-     */
     @Override
     public void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
                            MultipartFile multipartFile) {
@@ -855,24 +634,14 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Uploaded file: {} to branch: {} in repository: {}", fullPath, branchName, repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error uploading file: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error uploading file: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
             } catch (Exception e) {
-                throw new LakeFSObjectException("Error uploading file: " + objectName, e);
+                throw new LakeFSException("Error uploading file: " + objectName, e);
             }
             return null;
         });
     }
 
-    /**
-     * Retrieves an object from LakeFS.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param objectName     Object name
-     * @return Object content as byte array
-     * @throws LakeFSObjectException if retrieval fails
-     */
     @Override
     public byte[] getObject(LFSConfig config, String repositoryName, String reference, String objectName) {
         validateObjectParams(repositoryName, reference, objectName);
@@ -885,24 +654,13 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 // Use exchange to explicitly handle the response as a byte array
                 ResponseEntity<byte[]> response = client.exchange(url, HttpMethod.GET, null, byte[].class);
                 return Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for object: " + objectName));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for object: " + objectName));
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error retrieving object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error retrieving object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Generates a presigned URL for an object with configurable expiry.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param objectName     Object name
-     * @param expiryHours    Expiry time in hours (optional, default: 2)
-     * @return Presigned URL
-     * @throws LakeFSObjectException if URL generation fails
-     */
     @Override
     public String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName, int expiryHours) {
         validateObjectParams(repositoryName, reference, objectName);
@@ -919,27 +677,18 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for presigned URL"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for presigned URL"));
                 String presignedUrl = (String) responseBody.get("url");
                 if (!StringUtils.hasText(presignedUrl)) {
-                    throw new LakeFSObjectException("No presigned URL returned for object: " + objectName);
+                    throw new LakeFSException("No presigned URL returned for object: " + objectName);
                 }
                 return presignedUrl;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error generating presigned URL for: " + objectName, e);
+                throw new LakeFSException("Error generating presigned URL for: " + objectName, e);
             }
         });
     }
 
-    /**
-     * Deletes an object from LakeFS.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectName     Object name
-     * @throws LakeFSObjectException if deletion fails
-     */
     @Override
     public void deleteObject(LFSConfig config, String repositoryName, String branchName, String objectName) {
         validateObjectParams(repositoryName, branchName, objectName);
@@ -953,23 +702,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Deleted object: {} from branch: {} in repository: {}", objectName, branchName, repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Retrieves objects by metadata with AND/OR condition.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param metadata       Metadata to filter
-     * @param condition      Logical operator (AND/OR)
-     * @return List of matching FileStorage objects
-     * @throws LakeFSObjectException if retrieval fails
-     */
     @Override
     public List<FileStorage> getObjectByMetadata(LFSConfig config, String repositoryName, String reference,
                                                  Map<String, String> metadata, IEnumLogicalOperator.Types condition) {
@@ -1025,21 +763,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
             } catch (Exception e) {
                 log.error("Error retrieving objects by metadata in repository: {}, branch: {}", repositoryName, reference, e);
-                throw new LakeFSObjectException("Error retrieving objects by metadata in repository: " + repositoryName + ", branch: " + reference, e);
+                throw new LakeFSException("Error retrieving objects by metadata in repository: " + repositoryName + ", branch: " + reference, e);
             }
         });
     }
 
-    /**
-     * Lists all objects in a repository branch.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param prefix         Object prefix filter (optional)
-     * @return List of FileStorage objects
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<FileStorage> getObjects(LFSConfig config, String repositoryName, String reference, String prefix) {
         validateRepositoryName(repositoryName);
@@ -1061,7 +789,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for object listing"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for object listing"));
 
                 log.debug("Objects response: {}", responseBody);
 
@@ -1082,22 +810,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 return fileStorageList;
             } catch (HttpClientErrorException e) {
                 log.error("Objects listing error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
-                throw new LakeFSObjectException("Error listing objects in repository: " + repositoryName +
+                throw new LakeFSException("Error listing objects in repository: " + repositoryName +
                         ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Updates metadata for an object.
-     *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectName     Object name
-     * @param metadata       New metadata
-     * @throws LakeFSObjectException if metadata update fails
-     */
     @Override
     public void updateMetadata(LFSConfig config, String repositoryName, String branchName, String objectName, Map<String, String> metadata) {
         validateObjectParams(repositoryName, branchName, objectName);
@@ -1109,7 +827,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 // Step 1: Retrieve the existing object content
                 byte[] objectContent = getObject(config, repositoryName, branchName, objectName);
                 if (objectContent == null) {
-                    throw new LakeFSObjectException("Object not found: " + objectName);
+                    throw new LakeFSException("Object not found: " + objectName);
                 }
 
                 // Step 2: Re-upload the object with new metadata
@@ -1127,22 +845,14 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.put(url, request, Map.class);
                 log.info("Updated metadata for object: {} in branch: {} in repository: {}", objectName, branchName, repositoryName);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error updating metadata for object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error updating metadata for object: " + objectName + ", HTTP status: " + e.getStatusCode(), e);
             } catch (Exception e) {
-                throw new LakeFSObjectException("Error updating metadata for object: " + objectName, e);
+                throw new LakeFSException("Error updating metadata for object: " + objectName, e);
             }
             return null;
         });
     }
 
-    /**
-     * Gets a specific policy.
-     *
-     * @param config    Storage configuration
-     * @param policyId  Policy identifier
-     * @return Policy information
-     * @throws LakeFSObjectException if retrieval fails
-     */
     @Override
     public Map<String, Object> getPolicy(LFSConfig config, String policyId) {
         if (!StringUtils.hasText(policyId)) {
@@ -1155,23 +865,15 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for policy: " + policyId));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for policy: " + policyId));
                 log.info("Retrieved policy: {}", policyId);
                 return responseBody;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error retrieving policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error retrieving policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Gets a specific user.
-     *
-     * @param config  Storage configuration
-     * @param userId  User identifier
-     * @return User information
-     * @throws LakeFSObjectException if retrieval fails
-     */
     @Override
     public Map<String, Object> getUser(LFSConfig config, String userId) {
         if (!StringUtils.hasText(userId)) {
@@ -1184,25 +886,15 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for user: " + userId));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for user: " + userId));
                 log.info("Retrieved user: {}", userId);
                 return responseBody;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error retrieving user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error retrieving user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists members of a group with pagination.
-     *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @param after    Pagination token (optional)
-     * @param amount   Number of members to return (default: 100)
-     * @return List of member user IDs
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> listGroupMembers(LFSConfig config, String groupId, String after, int amount) {
         if (!StringUtils.hasText(groupId)) {
@@ -1220,7 +912,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for group members: " + groupId));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for group members: " + groupId));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 return Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -1229,21 +921,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                         .filter(StringUtils::hasText)
                         .collect(Collectors.toList());
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing group members for group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing group members for group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists policies attached to a group with pagination.
-     *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @param after    Pagination token (optional)
-     * @param amount   Number of policies to return (default: 100)
-     * @return List of policy IDs
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> listGroupPolicies(LFSConfig config, String groupId, String after, int amount) {
         if (!StringUtils.hasText(groupId)) {
@@ -1261,7 +943,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for group policies: " + groupId));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for group policies: " + groupId));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 return Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -1270,20 +952,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                         .filter(StringUtils::hasText)
                         .collect(Collectors.toList());
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing policies for group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing policies for group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists all groups with pagination.
-     *
-     * @param config Storage configuration
-     * @param after  Pagination token (optional)
-     * @param amount Number of groups to return (default: 100)
-     * @return List of group IDs
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> listGroups(LFSConfig config, String after, int amount) {
         validateConfig(config);
@@ -1299,7 +972,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for groups"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for groups"));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 List<String> groups = Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -1310,20 +983,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("Retrieved {} groups for tenant: {}", groups.size(), config.getTenant());
                 return groups;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing groups for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing groups for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists all policies with pagination.
-     *
-     * @param config Storage configuration
-     * @param after  Pagination token (optional)
-     * @param amount Number of policies to return (default: 100)
-     * @return List of policy IDs
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> listPolicies(LFSConfig config, String after, int amount) {
         validateConfig(config);
@@ -1339,7 +1003,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for policies"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for policies"));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 List<String> policies = Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -1350,20 +1014,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("Retrieved {} policies for tenant: {}", policies.size(), config.getTenant());
                 return policies;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing policies for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing policies for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Lists all users with pagination.
-     *
-     * @param config Storage configuration
-     * @param after  Pagination token (optional)
-     * @param amount Number of users to return (default: 100)
-     * @return List of user IDs
-     * @throws LakeFSObjectException if listing fails
-     */
     @Override
     public List<String> listUsers(LFSConfig config, String after, int amount) {
         validateConfig(config);
@@ -1379,7 +1034,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 ResponseEntity<Map> response = client.getForEntity(url, Map.class);
                 Map<String, Object> responseBody = Optional.ofNullable(response.getBody())
-                        .orElseThrow(() -> new LakeFSObjectException("Empty response body for users"));
+                        .orElseThrow(() -> new LakeFSException("Empty response body for users"));
                 List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
                 List<String> users = Optional.ofNullable(results)
                         .orElse(Collections.emptyList())
@@ -1390,19 +1045,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("Retrieved {} users for tenant: {}", users.size(), config.getTenant());
                 return users;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error listing users for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error listing users for tenant: " + config.getTenant() + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Creates a new policy.
-     *
-     * @param config      Storage configuration
-     * @param policyId    Policy identifier
-     * @param statement   Policy statement
-     * @throws LakeFSObjectException if creation fails
-     */
     @Override
     public void createPolicy(LFSConfig config, String policyId, List<Map<String, Object>> statement) {
         if (!StringUtils.hasText(policyId)) {
@@ -1427,7 +1074,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Created policy: {}", policyId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error creating policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error creating policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
@@ -1449,18 +1096,11 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 log.info("User '{}' does not exist.", userId);
                 return false;
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error checking user existence: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error checking user existence: " + userId + ", HTTP status: " + e.getStatusCode(), e);
             }
         });
     }
 
-    /**
-     * Creates a new user.
-     *
-     * @param config  Storage configuration
-     * @param userId  User identifier
-     * @throws LakeFSObjectException if creation fails
-     */
     @Override
     public void createUser(LFSConfig config, String userId) {
         if (!StringUtils.hasText(userId)) {
@@ -1489,7 +1129,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             } catch (HttpClientErrorException.Conflict conflict) {
                 log.warn("User '{}' already exists (409 Conflict).", userId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error creating user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error creating user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
@@ -1497,13 +1137,6 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
 
 
-    /**
-     * Creates a new group.
-     *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @throws LakeFSObjectException if creation fails
-     */
     @Override
     public void createGroup(LFSConfig config, String groupId) {
         if (!StringUtils.hasText(groupId)) {
@@ -1524,19 +1157,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Created group: {}", groupId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error creating group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error creating group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Deletes a policy.
-     *
-     * @param config    Storage configuration
-     * @param policyId  Policy identifier
-     * @throws LakeFSObjectException if deletion fails
-     */
     @Override
     public void deletePolicy(LFSConfig config, String policyId) {
         if (!StringUtils.hasText(policyId)) {
@@ -1550,19 +1176,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Deleted policy: {}", policyId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting policy: " + policyId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Deletes a user.
-     *
-     * @param config  Storage configuration
-     * @param userId  User identifier
-     * @throws LakeFSObjectException if deletion fails
-     */
     @Override
     public void deleteUser(LFSConfig config, String userId) {
         if (!StringUtils.hasText(userId)) {
@@ -1576,19 +1195,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Deleted user: {}", userId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting user: " + userId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Deletes a group.
-     *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @throws LakeFSObjectException if deletion fails
-     */
     @Override
     public void deleteGroup(LFSConfig config, String groupId) {
         if (!StringUtils.hasText(groupId)) {
@@ -1602,20 +1214,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Deleted group: {}", groupId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error deleting group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error deleting group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Attaches a policy to a group.
-     *
-     * @param config    Storage configuration
-     * @param groupId   Group identifier
-     * @param policyId  Policy identifier
-     * @throws LakeFSObjectException if attachment fails
-     */
     @Override
     public void attachPolicyToGroup(LFSConfig config, String groupId, String policyId) {
         if (!StringUtils.hasText(groupId)) {
@@ -1639,20 +1243,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Attached policy: {} to group: {}", policyId, groupId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error attaching policy: " + policyId + " to group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error attaching policy: " + policyId + " to group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Detaches a policy from a group.
-     *
-     * @param config    Storage configuration
-     * @param groupId   Group identifier
-     * @param policyId  Policy identifier
-     * @throws LakeFSObjectException if detachment fails
-     */
     @Override
     public void detachPolicyFromGroup(LFSConfig config, String groupId, String policyId) {
         if (!StringUtils.hasText(groupId)) {
@@ -1669,20 +1265,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Detached policy: {} from group: {}", policyId, groupId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error detaching policy: " + policyId + " from group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error detaching policy: " + policyId + " from group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Adds a user to a group.
-     *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @param userId   User identifier
-     * @throws LakeFSObjectException if addition fails
-     */
     @Override
     public void addGroupMember(LFSConfig config, String groupId, String userId) {
         if (!StringUtils.hasText(groupId)) {
@@ -1706,20 +1294,12 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.postForEntity(url, request, Map.class);
                 log.info("Added user: {} to group: {}", userId, groupId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error adding user: " + userId + " to group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error adding user: " + userId + " to group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
     }
 
-    /**
-     * Removes a user from a group.
-     *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @param userId   User identifier
-     * @throws LakeFSObjectException if removal fails
-     */
     @Override
     public void removeGroupMember(LFSConfig config, String groupId, String userId) {
         if (!StringUtils.hasText(groupId)) {
@@ -1736,7 +1316,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                 client.delete(url);
                 log.info("Removed user: {} from group: {}", userId, groupId);
             } catch (HttpClientErrorException e) {
-                throw new LakeFSObjectException("Error removing user: " + userId + " from group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
+                throw new LakeFSException("Error removing user: " + userId + " from group: " + groupId + ", HTTP status: " + e.getStatusCode(), e);
             }
             return null;
         });
@@ -1748,8 +1328,8 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
          * Get t.
          *
          * @return the t
-         * @throws LakeFSObjectException the lake fs object exception
+         * @throws LakeFSException the lake fs exception
          */
-        T get() throws LakeFSObjectException;
+        T get() throws LakeFSException;
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The interface Object storage api.
+ * The interface Object storage service.
  */
 public interface IObjectStorageService {
 
@@ -103,7 +103,7 @@ public interface IObjectStorageService {
     void setVersioningBucket(S3Config config, String bucketName, boolean status);
 
     /**
-     * Deletebucket.
+     * Delete bucket.
      *
      * @param config     the config
      * @param bucketName the bucket name

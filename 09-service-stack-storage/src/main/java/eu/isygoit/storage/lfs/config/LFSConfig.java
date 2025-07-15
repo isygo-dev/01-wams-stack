@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 
 /**
- * The type Storage config dto.
+ * The type Lfs config.
  */
 @Data
 @AllArgsConstructor

@@ -1,7 +1,6 @@
 package eu.isygoit.storage.lfs.api;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.LakeFSObjectException;
 import eu.isygoit.storage.lfs.config.LFSConfig;
 import eu.isygoit.storage.s3.object.FileStorage;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface defining operations for interacting with LakeFS data versioning system.
+ * The interface Lake fs api service.
  */
 public interface ILakeFSApiService {
 
@@ -25,261 +24,238 @@ public interface ILakeFSApiService {
     void setupLakeFS(LFSConfig config, String username, String accessKey, String secretKey);
 
     /**
-     * Retrieves or creates a LakeFS client connection for the specified tenant.
+     * Gets connection.
      *
-     * @param config Storage configuration containing tenant, credentials, and endpoint
-     * @return LakeFS client instance
-     * @throws LakeFSObjectException if connection creation fails
+     * @param config the config
+     * @return the connection
      */
     Object getConnection(LFSConfig config);
 
     /**
-     * Updates the LakeFS client connection for a tenant.
+     * Update connection.
      *
-     * @param config Storage configuration
-     * @throws LakeFSObjectException if connection update fails
+     * @param config the config
      */
     void updateConnection(LFSConfig config);
 
     /**
-     * Checks if a repository exists.
+     * Repository exists boolean.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @return true if repository exists
-     * @throws LakeFSObjectException on failure
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @return the boolean
      */
     boolean repositoryExists(LFSConfig config, String repositoryName);
 
     /**
-     * Creates a repository if it doesn't exist.
+     * Create repository.
      *
-     * @param config           Storage configuration
-     * @param repositoryName   Name of the repository
-     * @param storageNamespace Storage namespace (e.g., s3://bucket-name)
-     * @param defaultBranch    Default branch name (typically "main")
-     * @throws LakeFSObjectException if repository creation fails
+     * @param config           the config
+     * @param repositoryName   the repository name
+     * @param storageNamespace the storage namespace
+     * @param defaultBranch    the default branch
      */
     void createRepository(LFSConfig config, String repositoryName, String storageNamespace, String defaultBranch);
 
     /**
-     * Checks if a branch exists in a repository.
+     * Branch exists boolean.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @return true if branch exists
-     * @throws LakeFSObjectException on failure
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @return the boolean
      */
     boolean branchExists(LFSConfig config, String repositoryName, String branchName);
 
     /**
-     * Creates a new branch from an existing branch.
+     * Create branch.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the new branch
-     * @param sourceBranch   Source branch to create from
-     * @throws LakeFSObjectException if branch creation fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param sourceBranch   the source branch
      */
     void createBranch(LFSConfig config, String repositoryName, String branchName, String sourceBranch);
 
     /**
-     * Uploads a file to LakeFS with metadata.
+     * Upload file.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param path           Object path
-     * @param objectName     Object name
-     * @param multipartFile  File to upload
-     * @throws LakeFSObjectException if upload fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param path           the path
+     * @param objectName     the object name
+     * @param multipartFile  the multipart file
      */
     void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
                     MultipartFile multipartFile);
 
     /**
-     * Retrieves an object from LakeFS.
+     * Get object byte [ ].
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param objectName     Object name
-     * @return Object content as byte array
-     * @throws LakeFSObjectException if retrieval fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param reference      the reference
+     * @param objectName     the object name
+     * @return the byte [ ]
      */
     byte[] getObject(LFSConfig config, String repositoryName, String reference, String objectName);
 
     /**
-     * Generates a presigned URL for an object.
+     * Gets presigned object url.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param objectName     Object name
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param reference      the reference
+     * @param objectName     the object name
      * @param expiryHours    the expiry hours
-     * @return Presigned URL
-     * @throws LakeFSObjectException if URL generation fails
+     * @return the presigned object url
      */
     String getPresignedObjectUrl(LFSConfig config, String repositoryName, String reference, String objectName, int expiryHours);
 
     /**
-     * Deletes an object from LakeFS.
+     * Delete object.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectName     Object name
-     * @throws LakeFSObjectException if deletion fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param objectName     the object name
      */
     void deleteObject(LFSConfig config, String repositoryName, String branchName, String objectName);
 
     /**
-     * Retrieves objects by metadata with AND/OR condition.
+     * Gets object by metadata.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param metadata       Metadata to filter
-     * @param condition      Logical operator (AND/OR)
-     * @return List of matching FileStorage objects
-     * @throws LakeFSObjectException if retrieval fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param reference      the reference
+     * @param metadata       the metadata
+     * @param condition      the condition
+     * @return the object by metadata
      */
     List<FileStorage> getObjectByMetadata(LFSConfig config, String repositoryName, String reference,
                                           Map<String, String> metadata, IEnumLogicalOperator.Types condition);
 
     /**
-     * Lists all objects in a repository branch.
+     * Gets objects.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param reference      Branch name or commit ID
-     * @param prefix         Object prefix filter (optional)
-     * @return List of FileStorage objects
-     * @throws LakeFSObjectException if listing fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param reference      the reference
+     * @param prefix         the prefix
+     * @return the objects
      */
     List<FileStorage> getObjects(LFSConfig config, String repositoryName, String reference, String prefix);
 
     /**
-     * Updates metadata for an object.
+     * Update metadata.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectName     Object name
-     * @param metadata       New metadata
-     * @throws LakeFSObjectException if metadata update fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param objectName     the object name
+     * @param metadata       the metadata
      */
     void updateMetadata(LFSConfig config, String repositoryName, String branchName, String objectName, Map<String, String> metadata);
 
     /**
-     * Deletes multiple objects from a branch.
+     * Delete objects.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param objectNames    List of object names to delete
-     * @throws LakeFSObjectException if deletion fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param objectNames    the object names
      */
     void deleteObjects(LFSConfig config, String repositoryName, String branchName, List<String> objectNames);
 
     /**
-     * Commits changes to a branch.
+     * Commit string.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param message        Commit message
-     * @param metadata       Commit metadata (optional)
-     * @return Commit ID
-     * @throws LakeFSObjectException if commit fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param message        the message
+     * @param metadata       the metadata
+     * @return the string
      */
     String commit(LFSConfig config, String repositoryName, String branchName, String message, Map<String, String> metadata);
 
     /**
-     * Merges a source branch into a destination branch.
+     * Merge string.
      *
-     * @param config                Storage configuration
-     * @param repositoryName        Name of the repository
-     * @param sourceBranchName      Source branch name
-     * @param destinationBranchName Destination branch name
-     * @param message               Merge message
-     * @return Merge commit ID
-     * @throws LakeFSObjectException if merge fails
+     * @param config                the config
+     * @param repositoryName        the repository name
+     * @param sourceBranchName      the source branch name
+     * @param destinationBranchName the destination branch name
+     * @param message               the message
+     * @return the string
      */
     String merge(LFSConfig config, String repositoryName, String sourceBranchName, String destinationBranchName, String message);
 
     /**
-     * Lists all branches in a repository.
+     * Gets branches.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @return List of branch names
-     * @throws LakeFSObjectException if listing fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @return the branches
      */
     List<String> getBranches(LFSConfig config, String repositoryName);
 
     /**
-     * Lists all repositories for the given configuration.
+     * Gets repositories.
      *
-     * @param config Storage configuration
-     * @return List of repository names
-     * @throws LakeFSObjectException if listing fails
+     * @param config the config
+     * @return the repositories
      */
     List<String> getRepositories(LFSConfig config);
 
     /**
-     * Gets the commit history for a branch.
+     * Gets commit history.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param limit          Maximum number of commits to return
-     * @return List of commit information
-     * @throws LakeFSObjectException if retrieval fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param limit          the limit
+     * @return the commit history
      */
     List<Map<String, Object>> getCommitHistory(LFSConfig config, String repositoryName, String branchName, int limit);
 
     /**
-     * Gets the differences between two references (branches or commits).
+     * Gets diff.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param leftRef        Left reference (branch or commit)
-     * @param rightRef       Right reference (branch or commit)
-     * @return List of differences
-     * @throws LakeFSObjectException if retrieval fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param leftRef        the left ref
+     * @param rightRef       the right ref
+     * @return the diff
      */
     List<Map<String, Object>> getDiff(LFSConfig config, String repositoryName, String leftRef, String rightRef);
 
     /**
-     * Reverts changes in a branch to a specific commit.
+     * Revert.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @param commitId       Commit ID to revert to
-     * @throws LakeFSObjectException if revert fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
+     * @param commitId       the commit id
      */
     void revert(LFSConfig config, String repositoryName, String branchName, String commitId);
 
     /**
-     * Deletes a branch from a repository.
+     * Delete branch.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
-     * @param branchName     Name of the branch
-     * @throws LakeFSObjectException if branch deletion fails
+     * @param config         the config
+     * @param repositoryName the repository name
+     * @param branchName     the branch name
      */
     void deleteBranch(LFSConfig config, String repositoryName, String branchName);
 
     /**
-     * Deletes a repository.
+     * Delete repository.
      *
-     * @param config         Storage configuration
-     * @param repositoryName Name of the repository
+     * @param config         the config
+     * @param repositoryName the repository name
      * @param force          the force
-     * @throws LakeFSObjectException if repository deletion fails
      */
     void deleteRepository(LFSConfig config, String repositoryName, boolean force);
 
@@ -288,176 +264,166 @@ public interface ILakeFSApiService {
      */
 
     /**
-     * Gets a specific policy.
+     * Gets policy.
      *
-     * @param config   Storage configuration
-     * @param policyId Policy identifier
-     * @return Policy information
-     * @throws LakeFSObjectException if retrieval fails
+     * @param config   the config
+     * @param policyId the policy id
+     * @return the policy
      */
     Map<String, Object> getPolicy(LFSConfig config, String policyId);
 
     /**
-     * Gets a specific user.
+     * Gets user.
      *
-     * @param config Storage configuration
-     * @param userId User identifier
-     * @return User information
-     * @throws LakeFSObjectException if retrieval fails
+     * @param config the config
+     * @param userId the user id
+     * @return the user
      */
     Map<String, Object> getUser(LFSConfig config, String userId);
 
     /**
-     * Lists members of a group with pagination.
+     * List group members list.
      *
-     * @param config  Storage configuration
-     * @param groupId Group identifier
-     * @param after   Pagination token (optional)
-     * @param amount  Number of members to return (default: 100)
-     * @return List of member user IDs
-     * @throws LakeFSObjectException if listing fails
+     * @param config  the config
+     * @param groupId the group id
+     * @param after   the after
+     * @param amount  the amount
+     * @return the list
      */
     List<String> listGroupMembers(LFSConfig config, String groupId, String after, int amount);
 
     /**
-     * Lists policies attached to a group with pagination.
+     * List group policies list.
      *
-     * @param config  Storage configuration
-     * @param groupId Group identifier
-     * @param after   Pagination token (optional)
-     * @param amount  Number of policies to return (default: 100)
-     * @return List of policy IDs
-     * @throws LakeFSObjectException if listing fails
+     * @param config  the config
+     * @param groupId the group id
+     * @param after   the after
+     * @param amount  the amount
+     * @return the list
      */
     List<String> listGroupPolicies(LFSConfig config, String groupId, String after, int amount);
 
     /**
-     * Lists all groups with pagination.
+     * List groups list.
      *
-     * @param config Storage configuration
-     * @param after  Pagination token (optional)
-     * @param amount Number of groups to return (default: 100)
-     * @return List of group IDs
-     * @throws LakeFSObjectException if listing fails
+     * @param config the config
+     * @param after  the after
+     * @param amount the amount
+     * @return the list
      */
     List<String> listGroups(LFSConfig config, String after, int amount);
 
     /**
-     * Lists all policies with pagination.
+     * List policies list.
      *
-     * @param config Storage configuration
-     * @param after  Pagination token (optional)
-     * @param amount Number of policies to return (default: 100)
-     * @return List of policy IDs
-     * @throws LakeFSObjectException if listing fails
+     * @param config the config
+     * @param after  the after
+     * @param amount the amount
+     * @return the list
      */
     List<String> listPolicies(LFSConfig config, String after, int amount);
 
     /**
-     * Lists all users with pagination.
+     * List users list.
      *
-     * @param config Storage configuration
-     * @param after  Pagination token (optional)
-     * @param amount Number of users to return (default: 100)
-     * @return List of user IDs
-     * @throws LakeFSObjectException if listing fails
+     * @param config the config
+     * @param after  the after
+     * @param amount the amount
+     * @return the list
      */
     List<String> listUsers(LFSConfig config, String after, int amount);
 
     /**
-     * Creates a new policy.
+     * Create policy.
      *
-     * @param config    Storage configuration
-     * @param policyId  Policy identifier
-     * @param statement Policy statement
-     * @throws LakeFSObjectException if creation fails
+     * @param config    the config
+     * @param policyId  the policy id
+     * @param statement the statement
      */
     void createPolicy(LFSConfig config, String policyId, List<Map<String, Object>> statement);
 
+    /**
+     * Is user exists boolean.
+     *
+     * @param config the config
+     * @param userId the user id
+     * @return the boolean
+     */
     boolean isUserExists(LFSConfig config, String userId);
 
     /**
-     * Creates a new user.
+     * Create user.
      *
-     * @param config Storage configuration
-     * @param userId User identifier
-     * @throws LakeFSObjectException if creation fails
+     * @param config the config
+     * @param userId the user id
      */
     void createUser(LFSConfig config, String userId);
 
     /**
-     * Creates a new group.
+     * Create group.
      *
-     * @param config  Storage configuration
-     * @param groupId Group identifier
-     * @throws LakeFSObjectException if creation fails
+     * @param config  the config
+     * @param groupId the group id
      */
     void createGroup(LFSConfig config, String groupId);
 
     /**
-     * Deletes a policy.
+     * Delete policy.
      *
-     * @param config   Storage configuration
-     * @param policyId Policy identifier
-     * @throws LakeFSObjectException if deletion fails
+     * @param config   the config
+     * @param policyId the policy id
      */
     void deletePolicy(LFSConfig config, String policyId);
 
     /**
-     * Deletes a user.
+     * Delete user.
      *
-     * @param config Storage configuration
-     * @param userId User identifier
-     * @throws LakeFSObjectException if deletion fails
+     * @param config the config
+     * @param userId the user id
      */
     void deleteUser(LFSConfig config, String userId);
 
     /**
-     * Deletes a group.
+     * Delete group.
      *
-     * @param config  Storage configuration
-     * @param groupId Group identifier
-     * @throws LakeFSObjectException if deletion fails
+     * @param config  the config
+     * @param groupId the group id
      */
     void deleteGroup(LFSConfig config, String groupId);
 
     /**
-     * Attaches a policy to a group.
+     * Attach policy to group.
      *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @param policyId Policy identifier
-     * @throws LakeFSObjectException if attachment fails
+     * @param config   the config
+     * @param groupId  the group id
+     * @param policyId the policy id
      */
     void attachPolicyToGroup(LFSConfig config, String groupId, String policyId);
 
     /**
-     * Detaches a policy from a group.
+     * Detach policy from group.
      *
-     * @param config   Storage configuration
-     * @param groupId  Group identifier
-     * @param policyId Policy identifier
-     * @throws LakeFSObjectException if detachment fails
+     * @param config   the config
+     * @param groupId  the group id
+     * @param policyId the policy id
      */
     void detachPolicyFromGroup(LFSConfig config, String groupId, String policyId);
 
     /**
-     * Adds a user to a group.
+     * Add group member.
      *
-     * @param config  Storage configuration
-     * @param groupId Group identifier
-     * @param userId  User identifier
-     * @throws LakeFSObjectException if addition fails
+     * @param config  the config
+     * @param groupId the group id
+     * @param userId  the user id
      */
     void addGroupMember(LFSConfig config, String groupId, String userId);
 
     /**
-     * Removes a user from a group.
+     * Remove group member.
      *
-     * @param config  Storage configuration
-     * @param groupId Group identifier
-     * @param userId  User identifier
-     * @throws LakeFSObjectException if removal fails
+     * @param config  the config
+     * @param groupId the group id
+     * @param userId  the user id
      */
     void removeGroupMember(LFSConfig config, String groupId, String userId);
 }

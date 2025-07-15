@@ -1,7 +1,7 @@
 package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.CephObjectException;
+import eu.isygoit.storage.exception.S3BuketException;
 import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.service.CephService;
@@ -181,7 +181,7 @@ class CephStorageApplicationTest {
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
         cephService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         cephService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
-        assertThrows(CephObjectException.class, () ->
+        assertThrows(S3BuketException.class, () ->
                 cephService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
@@ -201,9 +201,9 @@ class CephStorageApplicationTest {
                 List.of(DeleteObjectRequest.builder().key("file1.txt").build(),
                         DeleteObjectRequest.builder().key("file2.txt").build()));
 
-        assertThrows(CephObjectException.class, () ->
+        assertThrows(S3BuketException.class, () ->
                 cephService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
-        assertThrows(CephObjectException.class, () ->
+        assertThrows(S3BuketException.class, () ->
                 cephService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 

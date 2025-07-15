@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The type Storage factory api.
+ * The type Storage factory service.
  */
 @Slf4j
 @Service
@@ -20,7 +20,7 @@ public class StorageFactoryService {
     private final BeanFactory beanFactory;
 
     /**
-     * Instantiates a new Storage factory api.
+     * Instantiates a new Storage factory service.
      *
      * @param beanFactory the bean factory
      */
@@ -30,10 +30,10 @@ public class StorageFactoryService {
     }
 
     /**
-     * Gets api.
+     * Gets service.
      *
      * @param type the type
-     * @return the api
+     * @return the service
      */
     public IObjectStorageService getService(IEnumStorage.Types type) {
         return beanFactory.getBean(getServiceBeanName(type.meaning()), IObjectStorageService.class);

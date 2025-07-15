@@ -44,7 +44,7 @@ This repository includes Java service implementations for four S3-compatible sto
     - Uses `S3Client` from the AWS SDK with path-style access enabled.
     - Validates inputs (e.g., bucket names, object names, configuration).
     - Logs operations and errors using SLF4J.
-    - Throws `CephObjectException` for Ceph-specific errors.
+  - Throws `S3BuketException` for Ceph-specific errors.
 - **Use Case**: Suitable for enterprise-grade deployments requiring unified storage and high scalability.
 
 ### GarageApiService.java
@@ -56,7 +56,7 @@ This repository includes Java service implementations for four S3-compatible sto
     - Includes retry logic and input validation.
 - **Implementation Details**:
     - Uses `S3Client` from the AWS SDK with path-style access, similar to Ceph.
-    - Throws `GarageObjectException` for error handling.
+  - Throws `S3BuketException` for error handling.
     - Simplified versioning support (assumes versioning is not enabled by default).
 - **Use Case**: Ideal for self-hosted, lightweight, and geo-distributed storage setups.
 

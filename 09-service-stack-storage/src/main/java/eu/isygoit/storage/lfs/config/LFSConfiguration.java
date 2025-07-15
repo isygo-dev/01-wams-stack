@@ -10,13 +10,13 @@ import java.util.Map;
 
 
 /**
- * The type Minio configuration.
+ * The type Lfs configuration.
  */
 @Configuration
 public class LFSConfiguration {
 
     /**
-     * Min io map map.
+     * Lake fs client map map.
      *
      * @return the map
      */

@@ -1,7 +1,7 @@
 package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.MinIoObjectException;
+import eu.isygoit.storage.exception.MinIoS3BucketException;
 import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.service.MinIOService;
@@ -179,7 +179,7 @@ class MinIOStorageApplicationTest {
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
         minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         minIOService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
-        assertThrows(MinIoObjectException.class, () ->
+        assertThrows(MinIoS3BucketException.class, () ->
                 minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
@@ -197,9 +197,9 @@ class MinIOStorageApplicationTest {
         minIOService.deleteObjects(s3Config, BUCKET_NAME,
                 List.of(new DeleteObject("file1.txt"), new DeleteObject("file2.txt")));
 
-        assertThrows(MinIoObjectException.class, () ->
+        assertThrows(MinIoS3BucketException.class, () ->
                 minIOService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
-        assertThrows(MinIoObjectException.class, () ->
+        assertThrows(MinIoS3BucketException.class, () ->
                 minIOService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 

@@ -1,7 +1,7 @@
 package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.GarageObjectException;
+import eu.isygoit.storage.exception.S3BuketException;
 import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.object.FileStorage;
 import eu.isygoit.storage.s3.service.GarageService;
@@ -181,7 +181,7 @@ class GarageStorageApplicationTest {
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         garageService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
-        assertThrows(GarageObjectException.class, () ->
+        assertThrows(S3BuketException.class, () ->
                 garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
@@ -201,9 +201,9 @@ class GarageStorageApplicationTest {
                 List.of(DeleteObjectRequest.builder().key("file1.txt").build(),
                         DeleteObjectRequest.builder().key("file2.txt").build()));
 
-        assertThrows(GarageObjectException.class, () ->
+        assertThrows(S3BuketException.class, () ->
                 garageService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
-        assertThrows(GarageObjectException.class, () ->
+        assertThrows(S3BuketException.class, () ->
                 garageService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 

@@ -1,7 +1,7 @@
 package eu.isygoit.storage.s3.api.impl;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.MinIoObjectException;
+import eu.isygoit.storage.exception.MinIoS3BucketException;
 import eu.isygoit.storage.s3.api.IMinIOApiService;
 import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.object.FileStorage;
@@ -53,7 +53,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         .build();
             } catch (Exception e) {
                 log.error("Failed to create MinIO client for tenant: {}", config.getTenant(), e);
-                throw new MinIoObjectException("Failed to initialize MinIO client", e);
+                throw new MinIoS3BucketException("Failed to initialize MinIO client", e);
             }
         });
     }
@@ -70,7 +70,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
             log.info("Updated MinIO connection for tenant: {}", config.getTenant());
         } catch (Exception e) {
             log.error("Failed to update MinIO connection for tenant: {}", config.getTenant(), e);
-            throw new MinIoObjectException("Failed to update MinIO connection", e);
+            throw new MinIoS3BucketException("Failed to update MinIO connection", e);
         }
     }
 
@@ -82,7 +82,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                 MinioClient client = getConnection(config);
                 return client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
             } catch (Exception e) {
-                throw new MinIoObjectException("Error checking bucket existence", e);
+                throw new MinIoS3BucketException("Error checking bucket existence", e);
             }
         });
     }
@@ -99,7 +99,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         SetBucketVersioningArgs.builder().bucket(bucketName).config(versionConfig).build());
                 log.info("Set versioning {} for bucket: {}", status ? "enabled" : "suspended", bucketName);
             } catch (Exception e) {
-                throw new MinIoObjectException("Error setting bucket versioning", e);
+                throw new MinIoS3BucketException("Error setting bucket versioning", e);
             }
             return null;
         });
@@ -116,7 +116,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                     log.info("Created bucket: {}", bucketName);
                 }
             } catch (Exception e) {
-                throw new MinIoObjectException("Error creating bucket: " + bucketName, e);
+                throw new MinIoS3BucketException("Error creating bucket: " + bucketName, e);
             }
             return null;
         });
@@ -140,7 +140,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         .build());
                 log.info("Uploaded file: {} to bucket: {}", fullPath, bucketName);
             } catch (Exception e) {
-                throw new MinIoObjectException("Error uploading file: " + objectName, e);
+                throw new MinIoS3BucketException("Error uploading file: " + objectName, e);
             }
             return null;
         });
@@ -162,7 +162,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                     return IOUtils.toByteArray(stream);
                 }
             } catch (Exception e) {
-                throw new MinIoObjectException("Error retrieving object: " + objectName, e);
+                throw new MinIoS3BucketException("Error retrieving object: " + objectName, e);
             }
         });
     }
@@ -180,7 +180,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         .expiry(DEFAULT_PRESIGNED_URL_EXPIRY_HOURS, TimeUnit.HOURS)
                         .build());
             } catch (Exception e) {
-                throw new MinIoObjectException("Error generating presigned URL for: " + objectName, e);
+                throw new MinIoS3BucketException("Error generating presigned URL for: " + objectName, e);
             }
         });
     }
@@ -197,7 +197,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         .build());
                 log.info("Deleted object: {} from bucket: {}", objectName, bucketName);
             } catch (Exception e) {
-                throw new MinIoObjectException("Error deleting object: " + objectName, e);
+                throw new MinIoS3BucketException("Error deleting object: " + objectName, e);
             }
             return null;
         });
@@ -236,7 +236,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                 }
                 return listFileStorage;
             } catch (Exception e) {
-                throw new MinIoObjectException("Error retrieving objects by tags", e);
+                throw new MinIoS3BucketException("Error retrieving objects by tags", e);
             }
         });
     }
@@ -266,7 +266,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                 }
                 return listFileStorage;
             } catch (Exception e) {
-                throw new MinIoObjectException("Error listing objects in bucket: " + bucketName, e);
+                throw new MinIoS3BucketException("Error listing objects in bucket: " + bucketName, e);
             }
         });
     }
@@ -287,7 +287,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         .build());
                 log.info("Updated tags for object: {} in bucket: {}", objectName, bucketName);
             } catch (Exception e) {
-                throw new MinIoObjectException("Error updating tags for object: " + objectName, e);
+                throw new MinIoS3BucketException("Error updating tags for object: " + objectName, e);
             }
             return null;
         });
@@ -310,11 +310,11 @@ public abstract class MinIOApiService implements IMinIOApiService {
                 }
                 if (!errors.isEmpty()) {
                     log.error("Errors occurred while deleting objects: {}", errors);
-                    throw new MinIoObjectException("Failed to delete some objects");
+                    throw new MinIoS3BucketException("Failed to delete some objects");
                 }
                 log.info("Deleted {} objects from bucket: {}", objects.size(), bucketName);
             } catch (Exception e) {
-                throw new MinIoObjectException("Error deleting objects from bucket: " + bucketName, e);
+                throw new MinIoS3BucketException("Error deleting objects from bucket: " + bucketName, e);
             }
             return null;
         });
@@ -331,7 +331,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                     log.info("Deleted bucket: {}", bucketName);
                 }
             } catch (Exception e) {
-                throw new MinIoObjectException("Error deleting bucket: " + bucketName, e);
+                throw new MinIoS3BucketException("Error deleting bucket: " + bucketName, e);
             }
             return null;
         });
@@ -347,7 +347,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
                 log.info("Retrieved {} buckets for tenant: {}", buckets.size(), config.getTenant());
                 return buckets;
             } catch (Exception e) {
-                throw new MinIoObjectException("Error listing buckets", e);
+                throw new MinIoS3BucketException("Error listing buckets", e);
             }
         });
     }
@@ -357,7 +357,7 @@ public abstract class MinIOApiService implements IMinIOApiService {
         while (attempt < MAX_RETRIES) {
             try {
                 return operation.get();
-            } catch (MinIoObjectException e) {
+            } catch (MinIoS3BucketException e) {
                 attempt++;
                 if (attempt == MAX_RETRIES) {
                     throw e;
@@ -366,12 +366,12 @@ public abstract class MinIOApiService implements IMinIOApiService {
                     Thread.sleep((long) RETRY_DELAY_MS * attempt);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    throw new MinIoObjectException("Retry interrupted", ie);
+                    throw new MinIoS3BucketException("Retry interrupted", ie);
                 }
                 log.warn("Retrying operation, attempt {}/{}", attempt, MAX_RETRIES);
             }
         }
-        throw new MinIoObjectException("Operation failed after maximum retries");
+        throw new MinIoS3BucketException("Operation failed after maximum retries");
     }
 
     private void validateConfig(S3Config config) {
@@ -409,8 +409,8 @@ public abstract class MinIOApiService implements IMinIOApiService {
          * Get t.
          *
          * @return the t
-         * @throws MinIoObjectException the min io object exception
+         * @throws MinIoS3BucketException the min io s 3 bucket exception
          */
-        T get() throws MinIoObjectException;
+        T get() throws MinIoS3BucketException;
     }
 }
