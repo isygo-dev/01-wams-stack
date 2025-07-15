@@ -1,0 +1,37 @@
+server:
+  port: 8081
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1024
+
+spring:
+  application:
+    name: gemini-ai-service
+
+  jackson:
+    serialization:
+      indent-output: true
+    default-property-inclusion: non_null
+
+# Google Gemini API Configuration
+google:
+  gemini:
+    api:
+      key: ${GEMINI_API_KEY:AIzaSyB_zTqX0i6_byALBndwHZkpG4eIQ3EPOsU}
+      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+      timeout: 30000  # 30 seconds timeout
+      max-retries: 3
+      retry-delay: 1000  # 1 second delay between retries
+      rate-limit: 60     # requests per minute
+      max-input-length: 8192
+
+
+logging:
+  level:
+    root: INFO
+    eu.isygoit.openai: DEBUG
+  file:
+    name: logs/application.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
