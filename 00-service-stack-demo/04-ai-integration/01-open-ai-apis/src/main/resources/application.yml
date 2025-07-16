@@ -29,7 +29,7 @@ google:
 ollama:
   api:
     url: http://localhost:11434  # default Ollama API URL if running locally
-  model: llama3  # or another model like mistral, gemma, etc.
+  model: qwen2.5:1.5b  # or another model like mistral, gemma, etc.
 
 logging:
   level:

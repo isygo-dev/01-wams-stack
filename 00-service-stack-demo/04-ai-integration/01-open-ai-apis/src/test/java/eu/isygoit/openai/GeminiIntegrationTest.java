@@ -15,6 +15,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * The type Gemini integration test.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
@@ -23,6 +26,11 @@ public class GeminiIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Test generate endpoint with simple prompt.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testGenerateEndpointWithSimplePrompt() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/v1/chat/ai/gemini/generate")

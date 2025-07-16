@@ -1,5 +1,6 @@
 package eu.isygoit.openai;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * The type Ollama integration test.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
@@ -35,6 +39,9 @@ public class OllamaIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * The constant ollama.
+     */
     @Container
     static GenericContainer<?> ollama = new GenericContainer<>("ollama/ollama:latest")
             .withExposedPorts(11434)
@@ -43,14 +50,35 @@ public class OllamaIntegrationTest {
                     .withStartupTimeout(Duration.ofMinutes(3)))
             .withCommand("serve");
 
+    /**
+     * Configure properties.
+     *
+     * @param registry the registry
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
+     */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) throws IOException, InterruptedException {
         registry.add("ollama.api.url", () ->
                 "http://localhost:" + ollama.getFirstMappedPort() + "/api/generate");
-        registry.add("ollama.model", () -> "qwen2.5:1.5b" /*llama3.2:1b*/);
+        registry.add("ollama.model", () -> "qwen2.5:1.5b");
 
+    }
+
+    /**
+     * Sets up.
+     *
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
+     */
+    @BeforeAll
+    static void setUp() throws IOException, InterruptedException {
         // Pull the model during container setup
-        ollama.execInContainer("ollama", "pull", "qwen2.5:1.5b" /*llama3.2:1b*/);
+        pullModel("qwen2.5:1.5b");
+    }
+
+    private static void pullModel(String model) throws IOException, InterruptedException {
+        ollama.execInContainer("ollama", "pull", model);
 
         // Wait for the model to be available
         try {
@@ -61,7 +89,7 @@ public class OllamaIntegrationTest {
             while (System.currentTimeMillis() - startTime < timeout) {
                 org.testcontainers.containers.Container.ExecResult result = ollama.execInContainer("ollama", "list");
                 String output = result.getStdout();
-                if (output.contains("qwen2.5:1.5b" /*llama3.2:1b*/)) {
+                if (output.contains(model)) {
                     modelFound = true;
                     break;
                 }
@@ -69,17 +97,20 @@ public class OllamaIntegrationTest {
             }
 
             if (!modelFound) {
-                throw new RuntimeException("Model llama3.2:1b not found after pulling");
+                throw new RuntimeException("Model qwen2.5:1.5b not found after pulling");
             }
         } catch (Exception e) {
             throw new RuntimeException("Error pulling model: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Test ollama generate endpoint with simple prompt.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testOllamaGenerateEndpointWithSimplePrompt() throws Exception {
-        // First, pull the model
-        pullModel();
 
         // Wait a bit for model to be ready
         Thread.sleep(2000);
@@ -96,10 +127,13 @@ public class OllamaIntegrationTest {
         System.out.println("Ollama Response: " + result.getResponse().getContentAsString());
     }
 
+    /**
+     * Test ollama generate endpoint with temperature.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testOllamaGenerateEndpointWithTemperature() throws Exception {
-        // First, pull the model
-        pullModel();
 
         // Wait a bit for model to be ready
         Thread.sleep(2000);
@@ -118,6 +152,11 @@ public class OllamaIntegrationTest {
         System.out.println("Ollama Response with temperature: " + result.getResponse().getContentAsString());
     }
 
+    /**
+     * Test ollama generate endpoint with empty message.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testOllamaGenerateEndpointWithEmptyMessage() throws Exception {
         mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
@@ -129,6 +168,11 @@ public class OllamaIntegrationTest {
                 .andExpect(jsonPath("$.generatedText").doesNotExist());
     }
 
+    /**
+     * Test ollama generate endpoint with long message.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testOllamaGenerateEndpointWithLongMessage() throws Exception {
         String longMessage = "a".repeat(5000); // Exceeds 4096 character limit
@@ -140,42 +184,5 @@ public class OllamaIntegrationTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errorMessage").exists())
                 .andExpect(jsonPath("$.generatedText").doesNotExist());
-    }
-
-    private void pullModel() {
-        try {
-            String pullCommand = String.format(
-                    "curl -X POST http://localhost:%d/api/pull -H 'Content-Type: application/json' -d '{\"name\": \"llama3.2:1b\"}'",
-                    ollama.getFirstMappedPort()
-            );
-            Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", pullCommand});
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new RuntimeException("Failed to pull model: exit code " + exitCode);
-            }
-
-            // Poll /api/tags to confirm model is available
-            String tagsUrl = String.format("http://localhost:%d/api/tags", ollama.getFirstMappedPort());
-            long startTime = System.currentTimeMillis();
-            long timeout = Duration.ofMinutes(5).toMillis(); // 5-minute timeout
-            boolean modelFound = false;
-
-            while (System.currentTimeMillis() - startTime < timeout) {
-                Process tagsProcess = Runtime.getRuntime().exec(new String[]{"curl", tagsUrl});
-                String response = new String(tagsProcess.getInputStream().readAllBytes());
-                tagsProcess.waitFor();
-                if (response.contains("qwen2.5:1.5b" /*llama3.2:1b*/)) {
-                    modelFound = true;
-                    break;
-                }
-                Thread.sleep(2000); // Wait 2 seconds before retrying
-            }
-
-            if (!modelFound) {
-                throw new RuntimeException("Model llama3.2:1b not found after pulling");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error pulling model: " + e.getMessage(), e);
-        }
     }
 }
