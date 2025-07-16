@@ -1,288 +1,204 @@
-# OpenAI Integration Example
+# Open AI Service
 
-This document presents an example of integrating an AI service (specifically Google's Gemini API) into a Spring Boot application. The example demonstrates a RESTful API for generating AI content, handling requests, and managing responses with proper error handling and testing.
+This project provides a Spring Boot-based REST API for interacting with AI models, specifically integrating with Google's Gemini API and the Ollama framework for local model inference. It allows users to generate content using either the Gemini API or various Ollama-supported models.
 
-## Project Overview
+## Table of Contents
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Supported Ollama Models](#supported-ollama-models)
+- [Testing](#testing)
+- [Logging](#logging)
+- [Contributing](#contributing)
+- [License](#license)
 
-The project is a Spring Boot application (`OpenAiApplication`) that provides a REST endpoint for generating AI content using the Gemini API. It includes data transfer objects (DTOs), a service layer for API communication, a controller for handling HTTP requests, and integration tests.
+## Features
+- Integration with Google Gemini API for content generation.
+- Support for local inference using Ollama with various open-source models.
+- RESTful API endpoints for generating AI responses.
+- Configurable parameters like temperature and max tokens.
+- Comprehensive error handling for API calls.
+- Integration tests using Testcontainers for Ollama and MockMvc for endpoint testing.
 
-## Project Structure
+## Prerequisites
+- Java 17 or higher
+- Maven 3.8.0+
+- Docker (for running Ollama and Testcontainers)
+- Google Gemini API key (optional, for Gemini integration)
+- Ollama installed locally or running via Docker (for Ollama integration)
 
-The codebase is organized under the `eu.isygoit.openai` package with the following key components:
+## Installation
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-repo/gemini-ai-service.git
+   cd gemini-ai-service
+   ```
 
-- **DTOs**: Data structures for API requests and responses (`GeminiRequest`, `GeminiResponse`, `ConversationRequest`).
-- **Service**: `GeminiApiService` for interacting with the Gemini API.
-- **Controller**: `ChatController` for handling HTTP requests.
-- **Exception**: `GeminiApiException` for custom error handling.
-- **Main Application**: `OpenAiApplication` to bootstrap the Spring Boot application.
-- **Tests**: `ChatControllerIntegrationTest` for integration testing.
+2. **Install dependencies**:
+   ```bash
+   mvn clean install
+   ```
 
-## Key Components
+3. **Set up Ollama (optional)**:
+   If using Ollama, ensure it is running locally or via Docker:
+   ```bash
+   docker run -d -p 11434:11434 --name ollama ollama/ollama:latest
+   ```
 
-### 1. GeminiRequest DTO
-The `GeminiRequest` class defines the structure for requests sent to the Gemini API, including content, safety settings, and generation configuration.
+4. **Configure environment variables**:
+   Create or update `application.yml` with your Gemini API key and Ollama settings (see [Configuration](#configuration)).
 
-**File**: `GeminiRequest.java`
+5. **Run the application**:
+   ```bash
+   mvn spring-boot:run
+   ```
 
-```java
-package eu.isygoit.openai.dto;
+## Configuration
+The application uses `application.yml` for configuration. Key settings include:
 
-import lombok.Data;
-
-@Data
-public class GeminiRequest {
-    private Content[] contents;
-    private SafetySetting[] safetySettings;
-    private GenerationConfig generationConfig;
-
-    @Data
-    public static class Content {
-        private Part[] parts;
-    }
-
-    @Data
-    public static class Part {
-        private String text;
-    }
-
-    @Data
-    public static class SafetySetting {
-        private String category;
-        private String threshold;
-
-        public SafetySetting(String category, String threshold) {
-            this.category = category;
-            this.threshold = threshold;
-        }
-    }
-
-    @Data
-    public static class GenerationConfig {
-        private double temperature;
-        private double topP;
-        private int maxOutputTokens;
-
-        public GenerationConfig(double temperature, double topP, int maxOutputTokens) {
-            this.temperature = temperature;
-            this.topP = topP;
-            this.maxOutputTokens = maxOutputTokens;
-        }
-    }
-}
+```yaml
+server:
+  port: 8081
+google:
+  gemini:
+    api:
+      key: ${GEMINI_API_KEY:your-api-key}
+      url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+      timeout: 30000
+      max-retries: 3
+ollama:
+  api:
+    url: http://localhost:11434
+  model: qwen2.5:1.5b
 ```
 
-### 2. GeminiResponse DTO
-The `GeminiResponse` class handles API responses, including success status, generated text, and error messages.
-
-**File**: `GeminiResponse.java`
-
-```java
-package eu.isygoit.openai.dto;
-
-import lombok.Data;
-
-@Data
-public class GeminiResponse {
-    private boolean success;
-    private String generatedText;
-    private String errorMessage;
-
-    public static GeminiResponse success(String generatedText) {
-        GeminiResponse response = new GeminiResponse();
-        response.setSuccess(true);
-        response.setGeneratedText(generatedText);
-        return response;
-    }
-
-    public static GeminiResponse error(String errorMessage) {
-        GeminiResponse response = new GeminiResponse();
-        response.setSuccess(false);
-        response.setErrorMessage(errorMessage);
-        return response;
-    }
-}
-```
-
-### 3. GeminiApiService
-The `GeminiApiService` handles communication with the Gemini API, including request preparation, safety settings, and response parsing.
-
-**Key Features**:
-- Validates input messages (non-empty, max 8192 characters).
-- Configures safety settings to block high-risk content.
-- Uses `RestTemplate` for HTTP requests with configurable timeout and retries.
-- Parses and validates API responses, handling errors appropriately.
-
-**File**: `GeminiApiService.java`
-
-```java
-package eu.isygoit.openai.service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.openai.dto.GeminiRequest;
-import eu.isygoit.openai.dto.GeminiResponse;
-import eu.isygoit.openai.exception.GeminiApiException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Collections;
-
-@Service
-@Slf4j
-public class GeminiApiService {
-    // Service implementation (see full code in provided documents)
-}
-```
-
-### 4. ChatController
-The `ChatController` exposes a REST endpoint (`/api/v1/chat/ai/generate`) to accept user messages and optional parameters (temperature, max tokens) and returns AI-generated content.
-
-**Key Features**:
-- Handles HTTP GET requests with query parameters.
-- Returns appropriate HTTP status codes (200, 400, 429, 500) based on API response or errors.
-- Logs errors for debugging.
-
-**File**: `ChatController.java`
-
-```java
-package eu.isygoit.openai.controller;
-
-import eu.isygoit.openai.dto.GeminiResponse;
-import eu.isygoit.openai.exception.GeminiApiException;
-import eu.isygoit.openai.service.GeminiApiService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-@RequestMapping("/api/v1/chat")
-@Slf4j
-public class ChatController {
-    // Controller implementation (see full code in provided documents)
-}
-```
-
-### 5. Integration Test
-The `ChatControllerIntegrationTest` verifies the functionality of the `/api/v1/chat/ai/generate` endpoint using Spring Boot's testing framework and MockMvc.
-
-**Test Case**:
-- Sends a sample prompt ("Translate to Arabic: Hello, how can I help you").
-- Verifies HTTP 200 status, successful response, and presence of generated text.
-
-**File**: `ChatControllerIntegrationTest.java`
-
-```java
-package eu.isygoit.openai;
-
-import eu.isygoit.openai.dto.GeminiResponse;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest
-@AutoConfigureMockMvc
-public class ChatControllerIntegrationTest {
-    // Test implementation (see full code in provided documents)
-}
-```
-
-### 6. Main Application
-The `OpenAiApplication` class is the entry point for the Spring Boot application, configuring the application context and excluding unnecessary auto-configurations.
-
-**File**: `OpenAiApplication.java`
-
-```java
-package eu.isygoit.openai;
-
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Info;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
-
-@Slf4j
-@SpringBootApplication(scanBasePackages = {
-        "eu.isygoit.openai",
-        "eu.isygoit.app"
-}, exclude = {
-        // Excluded auto-configurations
-})
-@OpenAPIDefinition(info = @Info(title = "Poc Open AI", version = "1.0", description = "Poc Open AI"))
-public class OpenAiApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(OpenAiApplication.class, args);
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        log.debug("Configuring RestTemplate bean");
-        return new RestTemplate();
-    }
-}
-```
+- Replace `${GEMINI_API_KEY}` with your actual Gemini API key.
+- Update `ollama.api.url` if Ollama is running on a different host/port.
+- Specify the desired Ollama model (e.g., `qwen2.5:1.5b`).
 
 ## Usage
+The application exposes REST endpoints for interacting with Gemini and Ollama models.
 
-1. **Configuration**:
-   - Set up the Gemini API credentials and endpoint in the application properties:
-     ```properties
-     google.gemini.api.url=https://api.gemini.google.com/v1
-     google.gemini.api.key=your-api-key
-     google.gemini.api.timeout=30000
-     google.gemini.api.max-retries=3
-     ```
+### Example API Calls
 
-2. **Running the Application**:
-   - Run `OpenAiApplication` to start the Spring Boot server.
-   - The API will be available at `http://localhost:8080/api/v1/chat/ai/generate`.
+#### Gemini API
+```bash
+curl "http://localhost:8081/api/v1/chat/ai/gemini/generate?message=Translate%20to%20Arabic:%20Hello,%20how%20can%20I%20help%20you"
+```
 
-3. **Making Requests**:
-   - Use a tool like `curl` or Postman to send a GET request:
-     ```bash
-     curl "http://localhost:8080/api/v1/chat/ai/generate?message=Translate%20to%20Arabic:%20Hello,%20how%20can%20I%20help%20you"
-     ```
-   - Expected response:
-     ```json
-     {
-         "success": true,
-         "generatedText": "مرحبا، كيف يمكنني مساعدتك",
-         "errorMessage": null
-     }
-     ```
+#### Ollama API
+```bash
+curl "http://localhost:8081/api/v1/chat/ai/ollama/generate?message=Translate%20to%20French:%20Hello,%20how%20can%20I%20help%20you?&temperature=0.8&maxTokens=100"
+```
 
-4. **Error Handling**:
-   - The API handles various errors (e.g., empty input, rate limits, safety concerns) and returns appropriate HTTP status codes (400, 429, 500) with error messages.
+### Response Format
+Both endpoints return a JSON response in the format:
+```json
+{
+  "success": true,
+  "generatedText": "Translated text or generated content",
+  "errorMessage": null
+}
+```
+On error:
+```json
+{
+  "success": false,
+  "generatedText": null,
+  "errorMessage": "Error message"
+}
+```
+
+## API Endpoints
+- **Gemini Generate Content**:
+    - `GET /api/v1/chat/ai/gemini/generate`
+    - Parameters:
+        - `message` (required): The input prompt.
+        - `temperature` (optional): Controls randomness (0.0 to 1.0).
+        - `maxTokens` (optional): Maximum number of output tokens.
+    - Returns: `GeminiResponse` with generated text or error.
+
+- **Ollama Generate Content**:
+    - `GET /api/v1/chat/ai/ollama/generate`
+    - Parameters:
+        - `message` (required): The input prompt.
+        - `temperature` (optional): Controls randomness (0.0 to 1.0).
+        - `maxTokens` (optional): Maximum number of output tokens.
+    - Returns: `GeminiResponse` with generated text or error.
+
+## Supported Ollama Models
+Ollama supports a variety of models that can be pulled and used locally. To use a specific model, update the `ollama.model` property in `application.yml`. The following table lists officially supported models maintained by Ollama, along with details on size, pertinence, precision, licensing, and scope.
+
+| Model Name             | Size (Parameters) | Pertinence | Precision | Free | Scope | Notes |
+|-----------------------|-------------------|------------|-----------|------|-------|-------|
+| **llama2**            | 7B                | High       | FP16      | Yes  | General-purpose, dialogue | Default Llama 2 model, optimized for dialogue and general tasks. |[](https://ollama.com/library)
+| **llama2:13b**        | 13B               | High       | FP16      | Yes  | General-purpose, dialogue | Larger model for improved performance. Requires 16GB RAM. |[](https://github.com/ollama/ollama)
+| **llama2:70b**        | 70B               | High       | FP16      | Yes  | General-purpose, dialogue | High-performance model, requires 32GB RAM. |[](https://github.com/ollama/ollama)
+| **llama2-uncensored** | 7B                | Moderate   | FP16      | Yes  | General-purpose, less restricted | Less restrictive version of Llama 2 for more open-ended tasks. |[](https://ollama.com/library)
+| **codellama**         | 7B                | High       | FP16      | Yes  | Code generation | Optimized for code-related tasks. |[](https://ollama.com/library)
+| **codellama:13b**     | 13B               | High       | FP16      | Yes  | Code generation | Larger code-focused model, requires 16GB RAM. |[](https://ollama.com/library)
+| **codellama:34b**     | 34B               | High       | FP16      | Yes  | Code generation | High-capacity code model, requires significant resources. |[](https://ollama.com/library)
+| **codellama:70b**     | 70B               | High       | FP16      | Yes  | Code generation | Largest code model, requires 32GB+ RAM. |[](https://ollama.com/library)
+| **codellama:python**  | 7B                | High       | FP16      | Yes  | Python-specific code | Specialized for Python programming tasks. |[](https://ollama.com/library)
+| **mistral**           | 7B                | High       | FP16      | Yes  | General-purpose, dialogue | Default Mistral model, outperforms Llama 2 13B on many benchmarks. |[](https://klu.ai/blog/open-source-llm-models)
+| **mistral-openorca**  | 7B                | High       | FP16      | Yes  | Instruction-following | Fine-tuned for instruction-following tasks. |[](https://ollama.com/library)
+| **mixtral**           | 8x7B (MoE)        | High       | FP16      | Yes  | General-purpose, coding | Mixture of Experts model, excels in coding and reasoning. |[](https://ollama.com/library)
+| **gemma**             | 2B                | Moderate   | FP16      | Yes  | General-purpose, lightweight | Lightweight model for resource-constrained devices. |[](https://ollama.com/library)
+| **gemma:7b**          | 7B                | High       | FP16      | Yes  | General-purpose, lightweight | Larger Gemma model, suitable for various tasks. |[](https://ollama.com/library)
+| **phi**               | 2.7B              | Moderate   | FP16      | Yes  | General-purpose, efficient | Microsoft’s small but powerful model. |[](https://ollama.com/library)
+| **stablelm2**         | 1.6B              | Moderate   | FP16      | Yes  | General-purpose, lightweight | Efficient model from Stability AI. |[](https://ollama.com/library)
+| **neural-chat**       | 7B                | High       | FP16      | Yes  | Conversational | Intel’s fine-tuned Mistral for conversational tasks. |[](https://ollama.com/library)
+| **dolphin-mixtral**   | 8x7B (MoE)        | High       | FP16      | Yes  | General-purpose, coding | Uncensored Mixtral variant, excels in coding. |[](https://ollama.com/library)
+| **starling-lm**       | 7B                | High       | FP16      | Yes  | Conversational, RLHF-tuned | RLHF-tuned for improved dialogue performance. |[](https://ollama.com/library)
+| **qwen2.5:1.5b**      | 1.5B              | High       | FP16      | Yes  | General-purpose, multilingual | Default model in this project, supports 128K tokens, multilingual. |[](https://ollama.com/library?sort=newest)
+| **deepseek-r1**       | 8B, 70B           | High       | FP16      | Yes  | Reasoning, general-purpose | High-performance reasoning model, approaches Gemini 2.5 Pro. |[](https://ollama.com/library)
+| **phi-4**             | 14B               | High       | FP16      | Yes  | Reasoning, multilingual | Advanced reasoning model from Microsoft, rivals larger models. |[](https://ollama.com/library?sort=newest)
+| **gemma3**            | 2B, 12B, 27B      | High       | FP16      | Yes  | Multimodal, reasoning | Multimodal model with vision-language support, 128K context. |[](https://deepinfra.com/)
+| **mistral-small-3.1** | 24B               | High       | FP16      | Yes  | Multimodal, reasoning | Enhanced vision and text capabilities, 128K context. |[](https://deepinfra.com/)
+
+**Notes**:
+- **Size**: Indicates the number of parameters (e.g., 7B = 7 billion). Mixture of Experts (MoE) models like Mixtral have multiple 7B experts.
+- **Pertinence**: High (widely used, strong performance), Moderate (niche or less optimized).
+- **Precision**: FP16 is standard for most models; some support quantization (e.g., Q4, Q8) for lower resource usage.
+- **Free**: All listed models are free to use under open-source licenses (e.g., Apache 2.0, MIT).
+- **Scope**: General-purpose (dialogue, text completion), code generation, instruction-following, or multimodal (text and vision).
+- **Hardware Requirements**: 7B models require ~8GB RAM, 13B ~16GB, 70B ~32GB. GPU recommended for optimal performance.[](https://github.com/ollama/ollama)
+
+To pull a model:
+```bash
+docker exec ollama ollama pull <model-name>
+```
 
 ## Testing
+The project includes integration tests for both Gemini and Ollama endpoints.
 
-Run the integration tests using Maven or your IDE:
+### Running Tests
 ```bash
 mvn test
 ```
-The `ChatControllerIntegrationTest` will verify the endpoint's functionality.
 
-## Notes
+### Test Details
+- **GeminiIntegrationTest**: Tests the Gemini API endpoint using MockMvc.
+- **OllamaIntegrationTest**: Uses Testcontainers to spin up an Ollama container and tests the Ollama API endpoint.
 
-- The application uses Lombok to reduce boilerplate code (e.g., getters, setters).
-- Safety settings are configured to block high-risk content (harassment, hate speech, etc.).
-- The API supports a maximum input length of 8192 characters and configurable generation parameters (temperature, topP, max tokens).
-- OpenAPI (Swagger) is integrated for API documentation.
+Ensure Docker is running for Testcontainers-based tests.
 
-This example demonstrates a robust integration of an AI API into a Spring Boot application, suitable for use cases like chatbots, content generation, or translation services.
+## Logging
+Logging is configured in `application.yml`:
+- Logs are written to `logs/application.log`.
+- Log level for `eu.isygoit.openai` is set to `DEBUG` for detailed output.
+- Root log level is `INFO`.
+
+## Contributing
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m "Add your feature"`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a pull request.
+
+## License
+This project is licensed under the MIT License. See the `LICENSE` file for details.
