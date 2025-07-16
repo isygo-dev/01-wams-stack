@@ -129,6 +129,47 @@ On error:
         - `maxTokens` (optional): Maximum number of output tokens.
     - Returns: `GeminiResponse` with generated text or error.
 
+# Comparison of Local LLM Deployment Tools
+
+This part provides a comparative overview of tools for running large language models (LLMs) locally, including Ollama and its alternatives. Each tool is evaluated based on key criteria to help users choose the best option for their needs.
+
+## Overview of Ollama
+
+Ollama is an open-source tool designed to simplify the deployment and operation of LLMs locally. It supports macOS, Linux, and Windows (in preview), offering a simple CLI, API support, model customization, and offline operation with over 150 models.
+
+## Comparative Table
+
+| **Tool**            | **Open Source** | **Platforms**                  | **Key Features**                                                                 | **Ease of Use**                     | **Performance**                     | **Best For**                                                                 |
+|---------------------|-----------------|-------------------------------|----------------------------------------------------------------------------------|------------------------------------|------------------------------------|------------------------------------------------------------------------------|
+| **Ollama**          | Yes             | macOS, Linux, Windows (preview)| Simple CLI, API support, model customization, offline operation, 150+ models      | High (CLI-focused, simple setup)   | Good (GPU support, CPU fallback)   | Beginners, privacy-focused users, quick local LLM deployment                  |
+| **LM Studio**       | No (Free)       | Windows, macOS, Linux         | GUI-based, model discovery, offline mode, supports Hugging Face models            | Very High (visual interface)       | Good (optimized for local use)     | Non-technical users, GUI enthusiasts, cross-platform deployment               |
+| **LocalAI**         | Yes             | Windows, macOS, Linux         | OpenAI-compatible API, no GPU required, supports multiple model formats           | Moderate (CLI, optional WebUI)     | Moderate (CPU-focused, GPU optional)| Budget-conscious developers, flexible model support                           |
+| **Nut Studio**      | No (Free)       | Windows, macOS, Linux         | GUI-based, no-code setup, 50+ models, offline mode, AI agent creation             | Very High (no CLI needed)          | Good (CPU/GPU support)             | Beginners, non-coders, Windows users seeking simplicity                       |
+| **vLLM**            | Yes             | Linux (primarily)             | High-throughput, memory-efficient, in-flight batching, multi-node support         | Moderate (requires setup skills)   | Excellent (GPU-optimized)           | Production environments, high-performance needs                               |
+| **KoboldCPP**       | Yes             | Windows, macOS, Linux         | Supports GGUF/GGML, image generation, OpenAI-style API, CUDA acceleration         | Moderate (CLI with UI options)     | Good (fast with GPU)               | Developers experimenting with model formats, image generation                 |
+| **Jan.ai**          | Yes             | Windows, macOS, Linux         | GUI and CLI, privacy-focused, offline mode, community-driven                     | High (GUI simplifies interaction)  | Good (optimized for local use)     | Open-source enthusiasts, privacy-focused developers                           |
+| **Llama.cpp**       | Yes             | Windows, macOS, Linux         | Lightweight, efficient, supports LLaMA-based models, CPU/GPU optimization         | Moderate (CLI-focused)             | Excellent (highly optimized)       | Advanced users, performance-focused developers, minimal resource usage        |
+
+## Tool Descriptions
+
+- **Ollama**: Streamlined for local LLM deployment with a focus on privacy and ease. Ideal for users who want a quick setup and broad model support.
+- **LM Studio**: A GUI-based tool for non-technical users, offering model discovery and offline capabilities. Best for those preferring a visual interface.
+- **LocalAI**: Open-source with OpenAI-compatible APIs, runs on modest hardware. Suitable for developers needing flexibility without high-end GPUs.
+- **Nut Studio**: GUI-driven, no-code platform for beginners. Supports 50+ models and AI agent creation, perfect for non-coders.
+- **vLLM**: Optimized for high-throughput inference in production. Best for advanced users with GPU resources and technical expertise.
+- **KoboldCPP**: Supports diverse model formats and image generation. Good for developers experimenting with GGUF/GGML models.
+- **Jan.ai**: Community-driven, privacy-focused tool with GUI and CLI options. Great for open-source enthusiasts.
+- **Llama.cpp**: Highly optimized for LLaMA-based models, lightweight, and efficient. Ideal for advanced users prioritizing performance.
+
+## Choosing the Right Tool
+
+- **For Beginners**: Nut Studio or LM Studio for their intuitive GUIs.
+- **For Privacy**: Ollama or Jan.ai for offline, secure operation.
+- **For Performance**: vLLM or Llama.cpp for GPU-optimized, high-throughput needs.
+- **For Flexibility**: LocalAI or KoboldCPP for diverse model support and hardware compatibility.
+
+For more details, visit the official documentation of each tool or explore community discussions on platforms like Reddit.
+
 ## Supported Ollama Models
 Ollama supports a variety of models that can be pulled and used locally. To use a specific model, update the `ollama.model` property in `application.yml`. The following table lists officially supported models maintained by Ollama, along with details on size, pertinence, precision, licensing, and scope.
 
