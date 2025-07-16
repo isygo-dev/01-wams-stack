@@ -26,6 +26,10 @@ google:
       rate-limit: 60     # requests per minute
       max-input-length: 8192
 
+ollama:
+  api:
+    url: http://localhost:11434  # default Ollama API URL if running locally
+  model: llama3  # or another model like mistral, gemma, etc.
 
 logging:
   level:
