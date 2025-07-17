@@ -198,7 +198,7 @@ public class OllamaIntegrationTest {
      */
     @Test
     void testOllamaGenerateEndpointWithLongMessage() throws Exception {
-        String longMessage = "a".repeat(5000); // Exceeds 4096 character limit
+        String longMessage = "a".repeat(15000); // Exceeds 4096 character limit
 
         mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
                         .param("message", longMessage)
@@ -225,7 +225,7 @@ public class OllamaIntegrationTest {
                 pdfResource.getInputStream().readAllBytes()
         );
 
-        // Wait a bit for modelorean to be ready
+        // Wait a bit for model to be ready
         Thread.sleep(2000);
 
         MvcResult result = mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
@@ -270,6 +270,75 @@ public class OllamaIntegrationTest {
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF".getBytes());
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
+                        .file(file)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorMessage").exists())
+                .andExpect(jsonPath("$.generatedText").doesNotExist());
+    }
+
+    /**
+     * Test ollama analyze CV endpoint with valid PDF.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    void testOllamaAnalyzeCVEndpointWithValidPDF() throws Exception {
+        // Load sample CV PDF from resources
+        Resource pdfResource = resourceLoader.getResource("classpath:Sample-CV-2025.pdf");
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "Sample-CV-2025.pdf",
+                "application/pdf",
+                pdfResource.getInputStream().readAllBytes()
+        );
+
+        // Wait a bit for model to be ready
+        Thread.sleep(2000);
+
+        MvcResult result = mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
+                        .file(file)
+                        .param("temperature", "0.7")
+                        .param("maxTokens", "1500")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.generatedText").exists())
+                .andExpect(jsonPath("$.errorMessage").doesNotExist())
+                .andReturn();
+
+        System.out.println("Ollama CV Analysis Response: " + result.getResponse().getContentAsString());
+    }
+
+    /**
+     * Test ollama analyze CV endpoint with empty file.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    void testOllamaAnalyzeCVEndpointWithEmptyFile() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "empty.pdf", "application/pdf", new byte[0]);
+
+        mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
+                        .file(file)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorMessage").exists())
+                .andExpect(jsonPath("$.generatedText").doesNotExist());
+    }
+
+    /**
+     * Test ollama analyze CV endpoint with invalid file type.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    void testOllamaAnalyzeCVEndpointWithInvalidFileType() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF".getBytes());
+
+        mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
                         .file(file)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())

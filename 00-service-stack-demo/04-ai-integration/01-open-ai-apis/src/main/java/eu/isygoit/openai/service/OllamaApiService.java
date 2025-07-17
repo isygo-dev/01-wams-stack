@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The type Ollama api service.
+ */
 @Service
 @Slf4j
 public class OllamaApiService {
@@ -28,6 +31,15 @@ public class OllamaApiService {
     private final String ollamaApiUrl;
     private final String model;
 
+    /**
+     * Instantiates a new Ollama api service.
+     *
+     * @param restTemplate   the rest template
+     * @param objectMapper   the object mapper
+     * @param resourceLoader the resource loader
+     * @param ollamaApiUrl   the ollama api url
+     * @param model          the model
+     */
     public OllamaApiService(
             RestTemplate restTemplate,
             ObjectMapper objectMapper,
@@ -41,10 +53,26 @@ public class OllamaApiService {
         this.model = model;
     }
 
+    /**
+     * Generate content string.
+     *
+     * @param message the message
+     * @return the string
+     * @throws RuntimeException the runtime exception
+     */
     public String generateContent(String message) throws RuntimeException {
         return generateContent(message, null, null);
     }
 
+    /**
+     * Generate content string.
+     *
+     * @param message     the message
+     * @param temperature the temperature
+     * @param maxTokens   the max tokens
+     * @return the string
+     * @throws RuntimeException the runtime exception
+     */
     public String generateContent(String message, Double temperature, Integer maxTokens) throws RuntimeException {
         try {
             // Validate input
@@ -52,8 +80,8 @@ public class OllamaApiService {
                 throw new RuntimeException("Message cannot be empty");
             }
 
-            if (message.length() > 4096) {
-                throw new RuntimeException("Message exceeds maximum length of 4096 characters");
+            if (message.length() > 4096 * 3) {
+                throw new RuntimeException("Message exceeds maximum length of 8192 characters");
             }
 
             // Prepare headers
@@ -104,6 +132,15 @@ public class OllamaApiService {
         }
     }
 
+    /**
+     * Analyze bill string.
+     *
+     * @param file        the file
+     * @param temperature the temperature
+     * @param maxTokens   the max tokens
+     * @return the string
+     * @throws RuntimeException the runtime exception
+     */
     public String analyzeBill(MultipartFile file, Double temperature, Integer maxTokens) throws RuntimeException {
         try {
             // Extract text from PDF
@@ -134,6 +171,48 @@ public class OllamaApiService {
         } catch (Exception e) {
             log.error("Error analyzing bill: {}", e.getMessage());
             throw new RuntimeException("Failed to analyze bill: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Analyze cv string.
+     *
+     * @param file        the file
+     * @param temperature the temperature
+     * @param maxTokens   the max tokens
+     * @return the string
+     * @throws RuntimeException the runtime exception
+     */
+    public String analyzeCV(MultipartFile file, Double temperature, Integer maxTokens) throws RuntimeException {
+        try {
+            // Extract text from PDF
+            String extractedText = extractTextFromPDF(file);
+
+            // Load JSON structure from resources
+            Resource resource = resourceLoader.getResource("classpath:cv-structure.json");
+            String jsonStructure = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+            // Create detailed prompt for Ollama
+            String prompt = "Extract the following information from the provided CV/resume text and return a pure JSON object matching the structure below. " +
+                    "Include all fields, using empty strings or 0 for missing values, and handle multiple entries for education, work experience/Achievements, skills, certifications, and languages if present. " +
+                    "Do NOT include any markdown, code blocks, or additional text—return only the JSON object:\n" +
+                    jsonStructure + "\n" +
+                    "CV text:\n" + extractedText;
+
+            // Call generateContent with increased maxTokens if not specified
+            String jsonResponse = generateContent(prompt, temperature, maxTokens != null ? maxTokens : 1500);
+
+            // Clean and validate JSON response
+            String cleanedJson = cleanJsonResponse(jsonResponse);
+
+            objectMapper.readTree(cleanedJson);
+            return cleanedJson;
+        } catch (IOException e) {
+            log.error("Error processing PDF file or reading CV JSON structure: {}", e.getMessage());
+            throw new RuntimeException("Failed to process PDF file or CV JSON structure: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Error analyzing CV: {}", e.getMessage());
+            throw new RuntimeException("Failed to analyze CV: " + e.getMessage(), e);
         }
     }
 

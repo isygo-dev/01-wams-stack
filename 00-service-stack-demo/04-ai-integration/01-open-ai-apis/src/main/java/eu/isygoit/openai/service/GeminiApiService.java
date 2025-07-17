@@ -13,6 +13,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 
+/**
+ * The type Gemini api service.
+ */
 @Service
 @Slf4j
 public class GeminiApiService {
@@ -24,6 +27,16 @@ public class GeminiApiService {
     private final long timeout;
     private final int maxRetries;
 
+    /**
+     * Instantiates a new Gemini api service.
+     *
+     * @param restTemplate the rest template
+     * @param objectMapper the object mapper
+     * @param geminiApiUrl the gemini api url
+     * @param apiKey       the api key
+     * @param timeout      the timeout
+     * @param maxRetries   the max retries
+     */
     public GeminiApiService(RestTemplate restTemplate,
                             ObjectMapper objectMapper,
                             @Value("${google.gemini.api.url}") String geminiApiUrl,
@@ -38,6 +51,13 @@ public class GeminiApiService {
         this.maxRetries = maxRetries;
     }
 
+    /**
+     * Generate content gemini response.
+     *
+     * @param message the message
+     * @return the gemini response
+     * @throws GeminiApiException the gemini api exception
+     */
     public GeminiResponse generateContent(String message) throws GeminiApiException {
         try {
             // Validate input
