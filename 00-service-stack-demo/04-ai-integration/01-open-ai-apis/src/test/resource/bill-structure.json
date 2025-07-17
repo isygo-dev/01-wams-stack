@@ -1,0 +1,43 @@
+{
+  "bill_id": "",
+  "issue_date": "",
+  "due_date": "",
+  "status": "",
+  "currency": "",
+  "subtotal": 0.0,
+  "tax": 0.0,
+  "discount": 0.0,
+  "total_amount": 0.0,
+  "notes": "",
+  "payment_method": "",
+  "payment_details": {
+    "account_name": "",
+    "account_number": "",
+    "bank_name": "",
+    "routing_number": "",
+    "swift_code": ""
+  },
+  "items": [
+    {
+      "item_id": "",
+      "description": "",
+      "quantity": 0.0,
+      "unit_price": 0.0,
+      "amount": 0.0
+    }
+  ],
+  "from": {
+    "name": "",
+    "address": "",
+    "email": "",
+    "phone": "",
+    "tax_id": ""
+  },
+  "to": {
+    "name": "",
+    "address": "",
+    "email": "",
+    "phone": "",
+    "tax_id": ""
+  }
+}

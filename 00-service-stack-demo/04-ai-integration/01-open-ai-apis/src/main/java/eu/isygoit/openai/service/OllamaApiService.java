@@ -2,12 +2,19 @@ package eu.isygoit.openai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,16 +24,19 @@ import java.util.Map;
 public class OllamaApiService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final ResourceLoader resourceLoader;
     private final String ollamaApiUrl;
     private final String model;
 
     public OllamaApiService(
             RestTemplate restTemplate,
             ObjectMapper objectMapper,
+            ResourceLoader resourceLoader,
             @Value("${ollama.api.url}") String ollamaApiUrl,
             @Value("${ollama.model}") String model) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.resourceLoader = resourceLoader;
         this.ollamaApiUrl = ollamaApiUrl;
         this.model = model;
     }
@@ -92,6 +102,62 @@ public class OllamaApiService {
             log.error("Unexpected error calling Ollama API: {}", e.getMessage());
             throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
         }
+    }
+
+    public String analyzeBill(MultipartFile file, Double temperature, Integer maxTokens) throws RuntimeException {
+        try {
+            // Extract text from PDF
+            String extractedText = extractTextFromPDF(file);
+
+            // Load JSON structure from resources
+            Resource resource = resourceLoader.getResource("classpath:bill-structure.json");
+            String jsonStructure = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+            // Create detailed prompt for Ollama
+            String prompt = "Extract the following information from the provided bill text and return a pure JSON object matching the structure below. " +
+                    "Include all fields, using empty strings or 0 for missing values, and handle multiple items if present. " +
+                    "Do NOT include any markdown, code blocks, or additional text—return only the JSON object:\n" +
+                    jsonStructure + "\n" +
+                    "Bill text:\n" + extractedText;
+
+            // Call generateContent with increased maxTokens if not specified
+            String jsonResponse = generateContent(prompt, temperature, maxTokens != null ? maxTokens : 1000);
+
+            // Clean and validate JSON response
+            String cleanedJson = cleanJsonResponse(jsonResponse);
+
+            objectMapper.readTree(cleanedJson);
+            return cleanedJson;
+        } catch (IOException e) {
+            log.error("Error processing PDF file or reading JSON structure: {}", e.getMessage());
+            throw new RuntimeException("Failed to process PDF file or JSON structure: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Error analyzing bill: {}", e.getMessage());
+            throw new RuntimeException("Failed to analyze bill: " + e.getMessage(), e);
+        }
+    }
+
+    private String extractTextFromPDF(MultipartFile file) throws IOException {
+        try (PDDocument document = PDDocument.load(file.getInputStream())) {
+            if (document.isEncrypted()) {
+                throw new IOException("Encrypted PDFs are not supported");
+            }
+            PDFTextStripper stripper = new PDFTextStripper();
+            return stripper.getText(document);
+        }
+    }
+
+    private String cleanJsonResponse(String response) throws IOException {
+        String cleaned = response.trim();
+        // Remove markdown code blocks if present
+        if (cleaned.startsWith("```json") && cleaned.endsWith("```")) {
+            cleaned = cleaned.substring(7, cleaned.length() - 3).trim();
+        } else if (cleaned.startsWith("```")) {
+            cleaned = cleaned.substring(3, cleaned.endsWith("```") ? cleaned.length() - 3 : cleaned.length()).trim();
+        }
+        // Validate JSON syntax
+        objectMapper.readTree(cleaned);
+        return cleaned;
     }
 
     private String parseAndValidateResponse(String responseBody) throws RuntimeException {

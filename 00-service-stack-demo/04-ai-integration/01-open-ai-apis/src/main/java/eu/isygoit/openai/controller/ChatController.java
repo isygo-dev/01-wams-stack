@@ -8,10 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -52,7 +50,6 @@ public class ChatController {
         }
     }
 
-
     @GetMapping(value = "/ai/ollama/generate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> ollamaGenerateContent(
             @RequestParam String message,
@@ -74,6 +71,39 @@ public class ChatController {
                     e.getMessage().contains("Message cannot be empty")) {
                 return ResponseEntity.badRequest().body(errorResponse);
             } else if (e.getMessage().contains("Client error")) {
+                return ResponseEntity.badRequest().body(errorResponse);
+            } else {
+                return ResponseEntity.internalServerError().body(errorResponse);
+            }
+        }
+    }
+
+    @PostMapping(value = "/ai/ollama/analyze-bill", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GeminiResponse> analyzeBill(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(required = false) Double temperature,
+            @RequestParam(required = false) Integer maxTokens) {
+
+        try {
+            if (file == null || file.isEmpty()) {
+                throw new RuntimeException("File cannot be empty");
+            }
+            if (!file.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
+                throw new RuntimeException("File must be a PDF");
+            }
+
+            String generatedJson = ollamaApiService.analyzeBill(file, temperature, maxTokens);
+            GeminiResponse response = GeminiResponse.success(generatedJson);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            log.error("Ollama bill analysis error: {}", e.getMessage());
+            GeminiResponse errorResponse = GeminiResponse.error(e.getMessage());
+
+            if (e.getMessage().contains("Rate limit")) {
+                return ResponseEntity.status(429).body(errorResponse);
+            } else if (e.getMessage().contains("Invalid input") ||
+                    e.getMessage().contains("File cannot be empty") ||
+                    e.getMessage().contains("File must be a PDF")) {
                 return ResponseEntity.badRequest().body(errorResponse);
             } else {
                 return ResponseEntity.internalServerError().body(errorResponse);

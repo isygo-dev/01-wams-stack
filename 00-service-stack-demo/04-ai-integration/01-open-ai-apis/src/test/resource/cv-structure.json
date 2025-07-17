@@ -1,0 +1,47 @@
+{
+  "cv_id": "",
+  "personal_info": {
+    "name": "",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "linkedin": "",
+    "portfolio": ""
+  },
+  "education": [
+    {
+      "institution": "",
+      "degree": "",
+      "field_of_study": "",
+      "start_date": "",
+      "end_date": "",
+      "gpa": 0.0
+    }
+  ],
+  "work_experience": [
+    {
+      "company": "",
+      "position": "",
+      "start_date": "",
+      "end_date": "",
+      "responsibilities": [],
+      "location": ""
+    }
+  ],
+  "skills": [],
+  "certifications": [
+    {
+      "name": "",
+      "issuer": "",
+      "issue_date": "",
+      "expiry_date": ""
+    }
+  ],
+  "languages": [
+    {
+      "language": "",
+      "proficiency": ""
+    }
+  ],
+  "summary": ""
+}
