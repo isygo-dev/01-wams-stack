@@ -95,7 +95,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
 
         entity = beforeCreate(entity);
-        entity = createAndFlush(entity);
+        entity = create(entity);
         entity = afterCreate(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -120,7 +120,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         }
 
         entity = beforeUpdate(entity);
-        entity = updateAndFlush(entity);
+        entity = update(entity);
         entity = afterUpdate(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -139,7 +139,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
             setFileAttributes(entity, file);
-            entity = updateAndFlush(entity);
+            entity = update(entity);
 
             return handleFileUpload(entity, file);
         } else {

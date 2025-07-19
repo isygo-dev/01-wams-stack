@@ -5,7 +5,9 @@ import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.exception.CreateConstraintsViolationException;
 import eu.isygoit.exception.ObjectNotFoundException;
+import eu.isygoit.exception.UpdateConstraintsViolationException;
 import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
@@ -14,6 +16,7 @@ import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,22 +80,16 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public T create(T object) {
-        JsonBasedEntityHelper.assignIdIfNull(object);
-        var beforeCreateResult = beforeCreate(object);
-        var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
-        var saved = repository().save(entity);
-        var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
-        return afterCreate(result);
-    }
-
-    @Override
-    public T createAndFlush(T object) {
-        JsonBasedEntityHelper.assignIdIfNull(object);
-        var beforeCreateResult = beforeCreate(object);
-        var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
-        var saved = repository().saveAndFlush(entity);
-        var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
-        return afterCreate(result);
+        try {
+            JsonBasedEntityHelper.assignIdIfNull(object);
+            var beforeCreateResult = beforeCreate(object);
+            var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
+            var saved = repository().saveAndFlush(entity);
+            var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
+            return afterCreate(result);
+        } catch (DataIntegrityViolationException e) {
+            throw new CreateConstraintsViolationException(e.getMessage());
+        }
     }
 
     @Override
@@ -172,20 +169,15 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     @Override
     public T update(T object) {
-        var beforeUpdateResult = beforeUpdate(object);
-        var entity = findEntityById(beforeUpdateResult.getId());
-        entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-        var result = JsonBasedEntityHelper.toJsonElement(repository().save(entity), jsonElementClass, objectMapper);
-        return afterUpdate(result);
-    }
-
-    @Override
-    public T updateAndFlush(T object) {
-        var beforeUpdateResult = beforeUpdate(object);
-        var entity = findEntityById(beforeUpdateResult.getId());
-        entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-        var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
-        return afterUpdate(result);
+        try {
+            var beforeUpdateResult = beforeUpdate(object);
+            var entity = findEntityById(beforeUpdateResult.getId());
+            entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
+            var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
+            return afterUpdate(result);
+        } catch (DataIntegrityViolationException e) {
+            throw new UpdateConstraintsViolationException(e.getMessage());
+        }
     }
 
     @Override

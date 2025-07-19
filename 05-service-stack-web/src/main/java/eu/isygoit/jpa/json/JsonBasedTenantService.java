@@ -5,8 +5,10 @@ import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.exception.CreateConstraintsViolationException;
 import eu.isygoit.exception.InvalidTenantException;
 import eu.isygoit.exception.ObjectNotFoundException;
+import eu.isygoit.exception.UpdateConstraintsViolationException;
 import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
@@ -16,6 +18,7 @@ import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,26 +85,18 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
     @Override
     public T create(String tenant, T object) {
-        validateTenant(tenant);
-        JsonBasedEntityHelper.assignIdIfNull(object);
-        var beforeCreateResult = beforeCreate(tenant, object);
-        var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
-        entity.setTenant(tenant);
-        var saved = repository().save(entity);
-        var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
-        return afterCreate(tenant, result);
-    }
-
-    @Override
-    public T createAndFlush(String tenant, T object) {
-        validateTenant(tenant);
-        JsonBasedEntityHelper.assignIdIfNull(object);
-        var beforeCreateResult = beforeCreate(tenant, object);
-        var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
-        entity.setTenant(tenant);
-        var saved = repository().saveAndFlush(entity);
-        var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
-        return afterCreate(tenant, result);
+        try {
+            validateTenant(tenant);
+            JsonBasedEntityHelper.assignIdIfNull(object);
+            var beforeCreateResult = beforeCreate(tenant, object);
+            var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
+            entity.setTenant(tenant);
+            var saved = repository().save(entity);
+            var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
+            return afterCreate(tenant, result);
+        } catch (DataIntegrityViolationException e) {
+            throw new CreateConstraintsViolationException(e.getMessage());
+        }
     }
 
     @Override
@@ -193,22 +188,16 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
     @Override
     public T update(String tenant, T object) {
-        validateTenant(tenant);
-        var beforeUpdateResult = beforeUpdate(tenant, object);
-        var entity = findEntityById(tenant, beforeUpdateResult.getId());
-        entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-        var result = JsonBasedEntityHelper.toJsonElement(repository().save(entity), jsonElementClass, objectMapper);
-        return afterUpdate(tenant, result);
-    }
-
-    @Override
-    public T updateAndFlush(String tenant, T object) {
-        validateTenant(tenant);
-        var beforeUpdateResult = beforeUpdate(tenant, object);
-        var entity = findEntityById(tenant, beforeUpdateResult.getId());
-        entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-        var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
-        return afterUpdate(tenant, result);
+        try {
+            validateTenant(tenant);
+            var beforeUpdateResult = beforeUpdate(tenant, object);
+            var entity = findEntityById(tenant, beforeUpdateResult.getId());
+            entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
+            var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
+            return afterUpdate(tenant, result);
+        } catch (DataIntegrityViolationException e) {
+            throw new UpdateConstraintsViolationException(e.getMessage());
+        }
     }
 
     @Override

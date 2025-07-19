@@ -42,14 +42,6 @@ public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssign
     T create(T object);
 
     /**
-     * Create and flush t.
-     *
-     * @param object the object
-     * @return the t
-     */
-    T createAndFlush(T object);
-
-    /**
      * Create list.
      *
      * @param objects the objects
@@ -118,14 +110,6 @@ public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssign
      * @return the t
      */
     T update(T object);
-
-    /**
-     * Update and flush t.
-     *
-     * @param object the object
-     * @return the t
-     */
-    T updateAndFlush(T object);
 
     /**
      * Update list.

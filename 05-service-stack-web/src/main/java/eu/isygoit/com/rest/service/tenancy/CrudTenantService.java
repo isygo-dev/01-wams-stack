@@ -15,6 +15,7 @@ import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,26 +151,31 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     @Transactional
     public T create(String tenant, T object) {
-        var jpaRepo = getTenantAssignableRepository();
-        validateObjectNotNull(object);
-        log.info("Creating {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
-        log.debug("Input entity: {}", object);
+        try {
+            var jpaRepo = getTenantAssignableRepository();
+            validateObjectNotNull(object);
+            log.info("Creating {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
+            log.debug("Input entity: {}", object);
 
-        // Set tenant and prepare entity
-        ((ITenantAssignable) object).setTenant(tenant);
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeCreate(tenant, object);
-        log.debug("After pre-create hook: {}", preparedObject);
+            // Set tenant and prepare entity
+            object.setTenant(tenant);
+            assignCodeIfEmpty(object);
 
-        // Save entity
-        var savedObject = jpaRepo.save(preparedObject);
-        log.debug("Saved entity: {}", savedObject);
+            var preparedObject = beforeCreate(tenant, object);
+            log.debug("After pre-create hook: {}", preparedObject);
 
-        // Post-create processing
-        var result = afterCreate(tenant, (T) savedObject);
-        log.info("Successfully created {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), result.getId(), tenant);
-        return result;
+            // Save entity
+            var savedObject = jpaRepo.saveAndFlush(preparedObject);
+            log.debug("Saved entity: {}", savedObject);
+
+            // Post-create processing
+            var result = afterCreate(tenant, (T) savedObject);
+            log.info("Successfully created {} entity with ID: {} for tenant: {}",
+                    persistentClass.getSimpleName(), result.getId(), tenant);
+            return result;
+        } catch (DataIntegrityViolationException e) {
+            throw new CreateConstraintsViolationException(e.getMessage());
+        }
     }
 
     /**
@@ -205,32 +211,6 @@ public abstract class CrudTenantService<I extends Serializable,
     }
 
     /**
-     * Creates and flushes a single entity for a specific tenant.
-     *
-     * @param tenant the tenant identifier
-     * @param object the entity to create
-     * @return the created entity
-     */
-    @Override
-    @Transactional
-    public T createAndFlush(String tenant, T object) {
-        var jpaRepo = getTenantAssignableRepository();
-        validateObjectNotNull(object);
-        log.info("Creating and flushing {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
-        log.debug("Input entity: {}", object);
-
-        // Prepare and save entity
-        ((ITenantAssignable) object).setTenant(tenant);
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeCreate(tenant, object);
-        var savedObject = jpaRepo.saveAndFlush(preparedObject);
-        var result = afterCreate(tenant, (T) savedObject);
-        log.info("Successfully created and flushed {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), result.getId(), tenant);
-        return result;
-    }
-
-    /**
      * Updates a single entity for a specific tenant.
      *
      * @param tenant the tenant identifier
@@ -240,26 +220,30 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     @Transactional
     public T update(String tenant, T object) {
-        var jpaRepo = getTenantAssignableRepository();
-        validateObjectNotNull(object);
-        validateObjectIdNotNull(object);
-        log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
+        try {
+            var jpaRepo = getTenantAssignableRepository();
+            validateObjectNotNull(object);
+            validateObjectIdNotNull(object);
+            log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
 
-        // Validate tenant access
-        validateTenantAccess(tenant, object.getId());
+            // Validate tenant access
+            validateTenantAccess(tenant, object.getId());
 
-        // Preserve attributes and prepare update
-        keepOriginalAttributes(object);
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeUpdate(tenant, object);
-        log.debug("After pre-update hook: {}", preparedObject);
+            // Preserve attributes and prepare update
+            keepOriginalAttributes(object);
+            assignCodeIfEmpty(object);
+            var preparedObject = beforeUpdate(tenant, object);
+            log.debug("After pre-update hook: {}", preparedObject);
 
-        // Save updated entity
-        var updatedObject = jpaRepo.save(preparedObject);
-        var result = afterUpdate(tenant, (T) updatedObject);
-        log.info("Successfully updated {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), result.getId(), tenant);
-        return result;
+            // Save updated entity
+            var updatedObject = jpaRepo.saveAndFlush(preparedObject);
+            var result = afterUpdate(tenant, (T) updatedObject);
+            log.info("Successfully updated {} entity with ID: {} for tenant: {}",
+                    persistentClass.getSimpleName(), result.getId(), tenant);
+            return result;
+        } catch (DataIntegrityViolationException e) {
+            throw new UpdateConstraintsViolationException(e.getMessage());
+        }
     }
 
     /**
@@ -293,40 +277,6 @@ public abstract class CrudTenantService<I extends Serializable,
         log.info("Successfully updated {} {} entities for tenant: {}",
                 finalResult.size(), persistentClass.getSimpleName(), tenant);
         return finalResult;
-    }
-
-    /**
-     * Updates and flushes a single entity for a specific tenant.
-     *
-     * @param tenant the tenant identifier
-     * @param object the entity to update
-     * @return the updated entity
-     */
-    @Override
-    @Transactional
-    public T updateAndFlush(String tenant, T object) {
-        var jpaRepo = getTenantAssignableRepository();
-        validateObjectNotNull(object);
-        validateObjectIdNotNull(object);
-        log.info("Updating and flushing {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), object.getId(), tenant);
-
-        // Validate tenant access and entity existence
-        if (!jpaRepo.existsById(object.getId())) {
-            log.error("Entity with ID: {} not found for tenant: {}", object.getId(), tenant);
-            throw new ObjectNotFoundException(" with id: " + object.getId() + " for tenant: " + tenant);
-        }
-        validateTenantAccess(tenant, object.getId());
-
-        // Prepare and save entity
-        keepOriginalAttributes(object);
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeUpdate(tenant, object);
-        var updatedObject = jpaRepo.saveAndFlush(preparedObject);
-        var result = afterUpdate(tenant, (T) updatedObject);
-        log.info("Successfully updated and flushed {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), result.getId(), tenant);
-        return result;
     }
 
     /**

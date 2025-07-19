@@ -46,6 +46,9 @@ public abstract class CrudControllerSubMethods<
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
     private final Class<T> entityClass;
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 100;
 
     /**
      * Instantiates a new Crud controller sub methods.
@@ -145,8 +148,6 @@ public abstract class CrudControllerSubMethods<
      * @param id      ID of the entity to update
      * @param dto     DTO containing updated data
      * @return ResponseEntity containing the updated DTO
-     *
-
      * @throws BadArgumentException if ID or DTO is null
      */
     @Override
@@ -274,11 +275,10 @@ public abstract class CrudControllerSubMethods<
         return executeWithMonitoring("subFindAllPaginated", () -> {
             log.info("Finding paginated {}s (page: {}, size: {}) for tenant: {}",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
-            validateNotNull(page, "Page cannot be null");
-            validateNotNull(size, "Size cannot be null");
 
+            int validatedPage = validatePage(page);
             int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
             List<T> entities = crudService().findAll(pageRequest);
             List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
@@ -321,11 +321,10 @@ public abstract class CrudControllerSubMethods<
         return executeWithMonitoring("subFindAllFullPaginated", () -> {
             log.info("Finding paginated full {}s (page: {}, size: {}) for tenant: {}",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
-            validateNotNull(page, "Page cannot be null");
-            validateNotNull(size, "Size cannot be null");
 
+            int validatedPage = validatePage(page);
             int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
             List<T> entities = crudService().findAll(pageRequest);
             List<F> resultDtos = mapper().listEntityToDto(entities);
@@ -410,13 +409,12 @@ public abstract class CrudControllerSubMethods<
             log.info("Finding paginated filtered {}s (page: {}, size: {}) for tenant: {}",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
             log.debug("Filter criteria: {}", criteria);
-            validateNotNull(page, "Page cannot be null");
-            validateNotNull(size, "Size cannot be null");
+
+            int validatedPage = validatePage(page);
+            int validatedSize = validatePageSize(size);
+            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
             List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
-            int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
-
             List<T> entities = crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
             List<F> resultDtos = mapper().listEntityToDto(entities);
 
@@ -589,6 +587,20 @@ public abstract class CrudControllerSubMethods<
      */
     private void validateCreateRequest(F dto) {
         validateNotNull(dto, "Create request DTO cannot be null");
+    }
+
+    /**
+     * Validates and adjusts page number.
+     *
+     * @param page Requested page number
+     * @return Validated page number
+     */
+    private int validatePage(Integer page) {
+        if (page == null || page < 0) {
+            log.debug("Invalid page number {}, using default: {}", page, DEFAULT_PAGE);
+            return DEFAULT_PAGE;
+        }
+        return page;
     }
 
     /**

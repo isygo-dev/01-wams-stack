@@ -1,7 +1,8 @@
 package eu.isygoit.multitenancy.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,8 +12,15 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventDto extends AbstractAuditableDto<Long> {
+public class AccountDto extends AbstractAuditableDto<Long> {
 
+    @NotNull
     private String tenant;
-    private JsonNode attributes;
+    @NotNull
+    private String login;
+    @NotNull
+    @Email
+    private String email;
+    @NotNull
+    private String passkey;
 }

@@ -51,16 +51,6 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
     T create(String tenant, T object);
 
     /**
-     * Create and flush t.
-     *
-     * @param tenant the tenant
-     * @param object the object
-     * @return the t
-     * @throws NotSupportedException the not supported exception
-     */
-    T createAndFlush(String tenant, T object);
-
-    /**
      * Create list.
      *
      * @param tenant  the tenant
@@ -146,16 +136,6 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
      * @throws NotSupportedException the not supported exception
      */
     T update(String tenant, T object);
-
-    /**
-     * Update and flush t.
-     *
-     * @param tenant the tenant
-     * @param object the object
-     * @return the t
-     * @throws NotSupportedException the not supported exception
-     */
-    T updateAndFlush(String tenant, T object);
 
     /**
      * Update list.

@@ -13,6 +13,7 @@ import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -141,24 +142,28 @@ public abstract class CrudService<I extends Serializable,
     @Override
     @Transactional
     public T create(T object) {
-        validateNotTenantSpecific("create ");
-        validateObjectNotNull(object);
-        log.info("Creating {} entity", persistentClass.getSimpleName());
-        log.debug("Input entity: {}", object);
+        try {
+            validateNotTenantSpecific("create ");
+            validateObjectNotNull(object);
+            log.info("Creating {} entity", persistentClass.getSimpleName());
+            log.debug("Input entity: {}", object);
 
-        // Prepare entity
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeCreate(object);
-        log.debug("After pre-create hook: {}", preparedObject);
+            // Prepare entity
+            assignCodeIfEmpty(object);
+            var preparedObject = beforeCreate(object);
+            log.debug("After pre-create hook: {}", preparedObject);
 
-        // Save entity
-        var savedObject = repository().save(preparedObject);
-        log.debug("Saved entity: {}", savedObject);
+            // Save entity
+            var savedObject = repository().saveAndFlush(preparedObject);
+            log.debug("Saved entity: {}", savedObject);
 
-        // Post-create processing
-        var result = afterCreate(savedObject);
-        log.info("Successfully created {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
-        return result;
+            // Post-create processing
+            var result = afterCreate(savedObject);
+            log.info("Successfully created {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+            return result;
+        } catch (DataIntegrityViolationException e) {
+            throw new CreateConstraintsViolationException(e.getMessage());
+        }
     }
 
     /**
@@ -189,30 +194,6 @@ public abstract class CrudService<I extends Serializable,
     }
 
     /**
-     * Creates and flushes a single entity (non-tenant-specific).
-     *
-     * @param object the entity to create
-     * @return the created entity
-     */
-    @Override
-    @Transactional
-    public T createAndFlush(T object) {
-        validateNotTenantSpecific("createAndFlush ");
-        validateObjectNotNull(object);
-        log.info("Creating and flushing {} entity", persistentClass.getSimpleName());
-        log.debug("Input entity: {}", object);
-
-        // Prepare and save entity
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeCreate(object);
-        var savedObject = repository().saveAndFlush(preparedObject);
-        var result = afterCreate(savedObject);
-        log.info("Successfully created and flushed {} entity with ID: {}",
-                persistentClass.getSimpleName(), result.getId());
-        return result;
-    }
-
-    /**
      * Updates a single entity (non-tenant-specific).
      *
      * @param object the entity to update
@@ -221,22 +202,26 @@ public abstract class CrudService<I extends Serializable,
     @Override
     @Transactional
     public T update(T object) {
-        validateNotTenantSpecific("update ");
-        validateObjectNotNull(object);
-        validateObjectIdNotNull(object);
-        log.info("Updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        try {
+            validateNotTenantSpecific("update ");
+            validateObjectNotNull(object);
+            validateObjectIdNotNull(object);
+            log.info("Updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
 
-        // Preserve existing attributes and prepare update
-        keepOriginalAttributes(object);
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeUpdate(object);
-        log.debug("After pre-update hook: {}", preparedObject);
+            // Preserve existing attributes and prepare update
+            keepOriginalAttributes(object);
+            assignCodeIfEmpty(object);
+            var preparedObject = beforeUpdate(object);
+            log.debug("After pre-update hook: {}", preparedObject);
 
-        // Save updated entity
-        var updatedObject = repository().save(preparedObject);
-        var result = afterUpdate(updatedObject);
-        log.info("Successfully updated {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
-        return result;
+            // Save updated entity
+            var updatedObject = repository().saveAndFlush(preparedObject);
+            var result = afterUpdate(updatedObject);
+            log.info("Successfully updated {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+            return result;
+        } catch (DataIntegrityViolationException e) {
+            throw new UpdateConstraintsViolationException(e.getMessage());
+        }
     }
 
     /**
@@ -265,31 +250,6 @@ public abstract class CrudService<I extends Serializable,
                 .toList();
         log.info("Successfully updated {} {} entities", finalResult.size(), persistentClass.getSimpleName());
         return finalResult;
-    }
-
-    /**
-     * Updates and flushes a single entity (non-tenant-specific).
-     *
-     * @param object the entity to update
-     * @return the updated entity
-     */
-    @Override
-    @Transactional
-    public T updateAndFlush(T object) {
-        validateNotTenantSpecific("updateAndFlush ");
-        validateObjectNotNull(object);
-        validateObjectIdNotNull(object);
-        log.info("Updating and flushing {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
-
-        // Prepare and save entity
-        keepOriginalAttributes(object);
-        assignCodeIfEmpty(object);
-        var preparedObject = beforeUpdate(object);
-        var updatedObject = repository().saveAndFlush(preparedObject);
-        var result = afterUpdate(updatedObject);
-        log.info("Successfully updated and flushed {} entity with ID: {}",
-                persistentClass.getSimpleName(), result.getId());
-        return result;
     }
 
     /**

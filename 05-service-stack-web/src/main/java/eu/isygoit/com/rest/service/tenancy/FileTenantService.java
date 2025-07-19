@@ -123,7 +123,7 @@ public abstract class FileTenantService<I extends Serializable,
         }
 
         entity = beforeCreate(entity);
-        entity = createAndFlush(tenant, entity);
+        entity = create(tenant, entity);
         entity = afterCreate(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -150,7 +150,7 @@ public abstract class FileTenantService<I extends Serializable,
         }
 
         entity = beforeUpdate(entity);
-        entity = updateAndFlush(tenant, entity);
+        entity = update(tenant, entity);
         entity = afterUpdate(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -169,7 +169,7 @@ public abstract class FileTenantService<I extends Serializable,
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
             setFileAttributes(tenant, entity, file);
-            entity = updateAndFlush(tenant, entity);
+            entity = update(tenant, entity);
 
             return handleFileUpload(tenant, entity, file);
         } else {

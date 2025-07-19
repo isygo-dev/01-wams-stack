@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.controller.impl.tenancy;
 import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
@@ -49,6 +48,9 @@ public abstract class CrudTenantControllerSubMethods<
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
     private final Class<T> entityClass;
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE = 0;
 
     /**
      * Instantiates a new Crud tenant controller sub methods.
@@ -275,11 +277,10 @@ public abstract class CrudTenantControllerSubMethods<
         return executeWithMonitoring("subFindAllPaginated", () -> {
             log.info("Finding paginated {}s (page: {}, size: {}) for tenant: {}",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
-            validateNotNull(page, "Page cannot be null");
-            validateNotNull(size, "Size cannot be null");
 
+            int validatedPage = validatePageNumber(page);
             int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
             List<T> entities = crudService().findAll(context.getSenderTenant(), pageRequest);
             List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
@@ -322,11 +323,10 @@ public abstract class CrudTenantControllerSubMethods<
         return executeWithMonitoring("subFindAllFullPaginated", () -> {
             log.info("Finding paginated full {}s (page: {}, size: {}) for tenant: {}",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
-            validateNotNull(page, "Page cannot be null");
-            validateNotNull(size, "Size cannot be null");
 
+            int validatedPage = validatePageNumber(page);
             int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
             List<T> entities = crudService().findAll(context.getSenderTenant(), pageRequest);
             List<F> resultDtos = mapper().listEntityToDto(entities);
@@ -345,9 +345,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public
-
-    ResponseEntity<F> subFindById(RequestContextDto context, I id) {
+    public ResponseEntity<F> subFindById(RequestContextDto context, I id) {
         return executeWithMonitoring("subFindById", () -> {
             log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -413,12 +411,11 @@ public abstract class CrudTenantControllerSubMethods<
             log.info("Finding paginated filtered {}s (page: {}, size: {}) for tenant: {}",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
             log.debug("Filter criteria: {}", criteria);
-            validateNotNull(page, "Page cannot be null");
-            validateNotNull(size, "Size cannot be null");
 
-            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
+            int validatedPage = validatePageNumber(page);
             int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
+            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
 
             List<T> entities = crudService().findAllByCriteriaFilter(context.getSenderTenant(), criteriaList, pageRequest);
             List<F> resultDtos = mapper().listEntityToDto(entities);
@@ -526,7 +523,7 @@ public abstract class CrudTenantControllerSubMethods<
      */
     @Override
     public boolean beforeDelete(List<F> dtos) {
-        log.debug("Pre-delete bulk hook for {} entities", dtos.size());
+        log.debug("Pre-delete bulk hook for {}_entities", dtos.size());
         return true;
     }
 
@@ -557,7 +554,7 @@ public abstract class CrudTenantControllerSubMethods<
     /**
      * Hook called after retrieving all full DTOs.
      *
-     -@param context Request context containing tenant information
+     * @param context Request context containing tenant information
      * @param dtos    List of retrieved DTOs
      * @return Processed list of DTOs
      */
@@ -592,6 +589,20 @@ public abstract class CrudTenantControllerSubMethods<
      */
     private void validateCreateRequest(F dto) {
         validateNotNull(dto, "Create request DTO cannot be null");
+    }
+
+    /**
+     * Validates and adjusts page number.
+     *
+     * @param page Requested page number
+     * @return Validated page number
+     */
+    private int validatePageNumber(Integer page) {
+        if (page == null || page < 0) {
+            log.debug("Invalid page number {}, using default: {}", page, DEFAULT_PAGE);
+            return DEFAULT_PAGE;
+        }
+        return page;
     }
 
     /**

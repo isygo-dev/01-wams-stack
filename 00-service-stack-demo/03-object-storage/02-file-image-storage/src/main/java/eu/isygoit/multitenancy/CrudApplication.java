@@ -20,10 +20,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @OpenAPIDefinition(info =
 @Info(title = "Poc multitenancy discriminator-tenant", version = "1.0", description = "Poc multitenancy discriminator-tenant")
 )
-public class JsonBasedSqlApplication {
+public class CrudApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(JsonBasedSqlApplication.class, args);
+        SpringApplication.run(CrudApplication.class, args);
     }
 
 }

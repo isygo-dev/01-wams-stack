@@ -120,11 +120,6 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     }
 
     @Override
-    public T createAndFlush(String tenant, T object) {
-        return null;
-    }
-
-    @Override
     public List<T> createBatch(String tenant, List<T> objects) {
         return List.of();
     }
@@ -146,11 +141,6 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
 
     @Override
     public T update(String tenant, T object) {
-        return null;
-    }
-
-    @Override
-    public T updateAndFlush(String tenant, T object) {
         return null;
     }
 

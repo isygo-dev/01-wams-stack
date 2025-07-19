@@ -83,12 +83,6 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    @Transactional
-    public T createAndFlush(T object) {
-        return this.create(object);
-    }
-
-    @Override
     public List<T> createBatch(List<T> objects) {
         validateListNotEmpty(objects);
 
@@ -114,12 +108,6 @@ public abstract class CassandraCrudService<I extends Serializable,
         } else {
             throw new EntityNotFoundException();
         }
-    }
-
-    @Override
-    @Transactional
-    public T updateAndFlush(T object) {
-        return this.update(object);
     }
 
     @Override
