@@ -41,7 +41,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = LinkedFileResponseDto.class))})
     })
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<LinkedFileResponseDto> upload(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<LinkedFileResponseDto> upload(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                                  @ModelAttribute("linkedFile") D linkedFile) throws IOException;
 
     /**

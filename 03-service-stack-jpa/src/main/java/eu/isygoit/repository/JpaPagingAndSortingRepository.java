@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The interface Jpa paging and sorting repository.
@@ -18,4 +19,6 @@ import java.io.Serializable;
 @NoRepositoryBean
 public interface JpaPagingAndSortingRepository<T extends IIdAssignable<I>, I extends Serializable>
         extends JpaRepository<T, I>, JpaSpecificationExecutor<T> {
+
+    List<T> findByIdIn(List<I> ids);
 }

@@ -70,10 +70,9 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     public void deleteBatch(String tenant, List<T> objects) {
         validateListNotEmpty(objects);
 
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
             objects.forEach(object -> {
-                if (!tenant.equals(((ITenantAssignable) object).getTenant())) {
+                if (!tenant.equals((object).getTenant())) {
                     throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
                 }
             });
@@ -94,9 +93,8 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
         Optional<T> optional = this.findById(tenant, id);
         if (optional.isPresent()) {
             T object = optional.get();
-            if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                    && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-                if (!tenant.equals(((ITenantAssignable) object).getTenant())) {
+            if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+                if (!tenant.equals(object.getTenant())) {
                     throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
                 }
             }
@@ -168,8 +166,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
 
     @Override
     public List<T> findAll(String tenant) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
+        if (repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
             List<T> list = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant);
             if (CollectionUtils.isEmpty(list)) {
                 return Collections.EMPTY_LIST;
@@ -182,8 +179,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
 
     @Override
     public List<T> findAll(String tenant, Pageable pageable) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
+        if (repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
             Page<T> page = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant, pageable);
             if (page.isEmpty()) {
                 return Collections.EMPTY_LIST;
@@ -224,6 +220,10 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
         return null;
     }
 
+    @Override
+    public List<T> getByIdIn(List<I> ids) {
+        return null;
+    }
     /**
      * Handles entity deletion, supporting soft deletion for CancelableEntity.
      *

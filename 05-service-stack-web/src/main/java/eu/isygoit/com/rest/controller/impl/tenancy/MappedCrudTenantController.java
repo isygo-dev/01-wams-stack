@@ -49,18 +49,10 @@ public abstract class MappedCrudTenantController<I extends Serializable,
     }
 
     @Override
-    public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext) {
-        return subFindAll(requestContext);
-    }
+    public final ResponseEntity<?> batchDelete(RequestContextDto requestContext,
+                                               List<I> ids) {
 
-    @Override
-    public final ResponseEntity<List<M>> findAllDefault(RequestContextDto requestContext) {
-        return subFindAllDefault(requestContext);
-    }
-
-    @Override
-    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext) {
-        return subFindAllFull(requestContext);
+        return subDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
     @Override
@@ -95,18 +87,17 @@ public abstract class MappedCrudTenantController<I extends Serializable,
         return subGetCount(requestContext);
     }
 
-    @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
-        return subFindAllFilteredByCriteria(requestContext, criteria);
-    }
 
     @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext,
+                                                             String criteria,
+                                                             Integer page,
+                                                             Integer size) {
         return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
-        return subfindAllFilterCriterias();
+    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
+        return subGetAnnotatedCriteria();
     }
 }

@@ -33,19 +33,16 @@ public abstract class MappedFakeCrudController<I extends Serializable, T extends
     }
 
     @Override
-    public ResponseEntity<List<M>> findAll(RequestContextDto requestContext) {
+    public final ResponseEntity<?> batchDelete(RequestContextDto requestContext,
+                                               List<I> ids) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
+
 
     @Override
     public ResponseEntity<List<M>> findAll(RequestContextDto requestContext,
                                            Integer page,
                                            Integer size) {
-        throw new UnsupportedOperationException("This is a fake controller");
-    }
-
-    @Override
-    public ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
@@ -85,22 +82,15 @@ public abstract class MappedFakeCrudController<I extends Serializable, T extends
     }
 
     @Override
-    public ResponseEntity<List<M>> findAllDefault(RequestContextDto requestContext) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext,
+                                                             String criteria,
+                                                             Integer page,
+                                                             Integer size) {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 
     @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
-        throw new UnsupportedOperationException("This is a fake controller");
-    }
-
-    @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
-        throw new UnsupportedOperationException("This is a fake controller");
-    }
-
-    @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
+    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
         throw new UnsupportedOperationException("This is a fake controller");
     }
 }

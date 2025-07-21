@@ -5,6 +5,8 @@ package eu.isygoit.constants;
  */
 public interface TenantConstants {
 
+    String TENANT_HEADER = "X-Tenant-ID";
+
     /**
      * The constant DEFAULT_TENANT_NAME.
      */

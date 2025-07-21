@@ -206,6 +206,8 @@ public abstract class CrudService<I extends Serializable,
             validateNotTenantSpecific("update ");
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
+            validateObjectExists(object);
+
             log.info("Updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
 
             // Preserve existing attributes and prepare update
@@ -221,6 +223,12 @@ public abstract class CrudService<I extends Serializable,
             return result;
         } catch (DataIntegrityViolationException e) {
             throw new UpdateConstraintsViolationException(e.getMessage());
+        }
+    }
+
+    private void validateObjectExists(T object) {
+        if (!repository().existsById(object.getId())) {
+            throw new ObjectNotFoundException("with id: " + object.getId());
         }
     }
 
@@ -266,8 +274,11 @@ public abstract class CrudService<I extends Serializable,
 
         // Process deletion in batch
         beforeDelete(objects);
-        objects.forEach(this::handleEntityDeletion);
-        repository().deleteAllInBatch(objects);
+        if (CancelableEntity.class.isAssignableFrom(persistentClass)) {
+            objects.forEach(this::handleEntityCancelation);
+        } else {
+            repository().deleteAllInBatch(objects);
+        }
         afterDelete(objects);
         log.info("Successfully deleted {} {} entities", objects.size(), persistentClass.getSimpleName());
     }
@@ -290,7 +301,11 @@ public abstract class CrudService<I extends Serializable,
         // Process deletion
         repository().findById(id).ifPresentOrElse(object -> {
             beforeDelete(id);
-            handleEntityDeletion(object);
+            if (CancelableEntity.class.isAssignableFrom(persistentClass)) {
+                handleEntityCancelation(object);
+            } else {
+                repository().delete(object);
+            }
             afterDelete(id);
             log.info("Successfully deleted {} entity with ID: {}", persistentClass.getSimpleName(), id);
         }, () -> {
@@ -437,6 +452,11 @@ public abstract class CrudService<I extends Serializable,
         var result = repository().findAll(specification, pageRequest).getContent();
         log.debug("Retrieved {} filtered paginated {} entities", result, persistentClass.getSimpleName());
         return result;
+    }
+
+    @Override
+    public List<T> getByIdIn(List<I> ids) {
+        return repository().findByIdIn(ids);
     }
 
     /**
@@ -617,14 +637,12 @@ public abstract class CrudService<I extends Serializable,
      *
      * @param object the entity to delete
      */
-    private void handleEntityDeletion(T object) {
+    private void handleEntityCancelation(T object) {
         log.debug("Handling deletion for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
         if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
             cancelable.setCheckCancel(true);
             cancelable.setCancelDate(Date.from(Instant.now()));
             repository().save(object);
-        } else {
-            repository().delete(object);
         }
     }
 }

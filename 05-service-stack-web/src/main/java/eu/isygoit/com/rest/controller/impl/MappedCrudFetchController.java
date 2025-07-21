@@ -33,21 +33,6 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
 
 
     @Override
-    public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext) {
-        return subFindAll(requestContext);
-    }
-
-    @Override
-    public final ResponseEntity<List<M>> findAllDefault(RequestContextDto requestContext) {
-        return subFindAll(requestContext);
-    }
-
-    @Override
-    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext) {
-        return subFindAllFull(requestContext);
-    }
-
-    @Override
     public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext, Integer page, Integer size) {
         return subFindAll(requestContext, page, size);
     }
@@ -67,10 +52,6 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
         return subGetCount(requestContext);
     }
 
-    @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
-        return subFindAllFilteredByCriteria(requestContext, criteria);
-    }
 
     @Override
     public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
@@ -78,7 +59,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
-        return subfindAllFilterCriterias();
+    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
+        return subGetAnnotatedCriteria();
     }
 }

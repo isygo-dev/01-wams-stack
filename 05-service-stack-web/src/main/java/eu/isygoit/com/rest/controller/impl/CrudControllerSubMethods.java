@@ -49,6 +49,7 @@ public abstract class CrudControllerSubMethods<
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 100;
+    private static final String CREATE_DATE_FIELD = "createDate";
 
     /**
      * Instantiates a new Crud controller sub methods.
@@ -215,7 +216,7 @@ public abstract class CrudControllerSubMethods<
             List<T> entities = mapper().listDtoToEntity(dtos);
             crudService().deleteBatch(entities);
             afterDelete(dtos);
-            return ResponseFactory.responseOk(exceptionHandler().handleMessage("object.deleted.successfully"));
+            return ResponseFactory.responseNoContent();
         });
     }
 
@@ -224,63 +225,25 @@ public abstract class CrudControllerSubMethods<
     // region Query Operations
 
     /**
-     * Retrieves all entities for the default tenant.
+     * Retrieves entities with minimal details, supporting both paginated and non-paginated queries.
      *
      * @param context Request context
+     * @param page    Page number (0-based, optional for non-paginated queries)
+     * @param size    Page size (optional for non-paginated queries)
      * @return ResponseEntity containing the list of minimal DTOs
-     */
-    @Override
-    public ResponseEntity<List<M>> subFindAllDefault(RequestContextDto context) {
-        return executeWithMonitoring("subFindAllDefault", () -> {
-            log.info("Finding all default {}s", entityClass.getSimpleName());
-
-            List<T> entities = crudService().findAll();
-            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
-            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
-
-            return createListResponse(postProcessedDtos);
-        });
-    }
-
-    /**
-     * Retrieves all entities.
-     *
-     * @param context Request context
-     * @return ResponseEntity containing the list of minimal DTOs
-     */
-    @Override
-    public ResponseEntity<List<M>> subFindAll(RequestContextDto context) {
-        return executeWithMonitoring("subFindAll", () -> {
-            log.info("Finding all {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
-
-            List<T> entities = crudService().findAll();
-            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
-            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
-
-            return createListResponse(postProcessedDtos);
-        });
-    }
-
-    /**
-     * Retrieves paginated entities.
-     *
-     * @param context Request context
-     * @param page    Page number (0-based)
-     * @param size    Page size
-     * @return ResponseEntity containing the list of minimal DTOs
-     * @throws BadArgumentException if page or size is invalid
+     * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
     public ResponseEntity<List<M>> subFindAll(RequestContextDto context, Integer page, Integer size) {
-        return executeWithMonitoring("subFindAllPaginated", () -> {
-            log.info("Finding paginated {}s (page: {}, size: {}) for tenant: {}",
+        return executeWithMonitoring("subFindAll", () -> {
+            log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
+                    isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
 
-            int validatedPage = validatePage(page);
-            int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            List<T> entities = isPaginationRequested(page, size)
+                    ? findPaginatedEntities(page, size)
+                    : crudService().findAll();
 
-            List<T> entities = crudService().findAll(pageRequest);
             List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
             List<M> postProcessedDtos = afterFindAll(context, resultDtos);
 
@@ -289,17 +252,25 @@ public abstract class CrudControllerSubMethods<
     }
 
     /**
-     * Retrieves all entities with full details.
+     * Retrieves entities with full details, supporting both paginated and non-paginated queries.
      *
      * @param context Request context
+     * @param page    Page number (0-based, optional for non-paginated queries)
+     * @param size    Page size (optional for non-paginated queries)
      * @return ResponseEntity containing the list of full DTOs
+     * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto context) {
+    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto context, Integer page, Integer size) {
         return executeWithMonitoring("subFindAllFull", () -> {
-            log.info("Finding all full {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
+            log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
+                    isPaginationRequested(page, size) ? "paginated" : "all",
+                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
 
-            List<T> entities = crudService().findAll();
+            List<T> entities = isPaginationRequested(page, size)
+                    ? findPaginatedEntities(page, size)
+                    : crudService().findAll();
+
             List<F> resultDtos = mapper().listEntityToDto(entities);
             List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
@@ -308,25 +279,28 @@ public abstract class CrudControllerSubMethods<
     }
 
     /**
-     * Retrieves paginated entities with full details.
+     * Retrieves paginated filtered entities based on criteria.
      *
-     * @param context Request context
-     * @param page    Page number (0-based)
-     * @param size    Page size
-     * @return ResponseEntity containing the list of full DTOs
-     * @throws BadArgumentException if page or size is invalid
+     * @param context  Request context
+     * @param criteria Filter criteria as a string
+     * @param page     Page number (0-based, optional for non-paginated queries)
+     * @param size     Page size (optional for non-paginated queries)
+     * @return ResponseEntity containing the list of filtered DTOs
+     * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto context, Integer page, Integer size) {
-        return executeWithMonitoring("subFindAllFullPaginated", () -> {
-            log.info("Finding paginated full {}s (page: {}, size: {}) for tenant: {}",
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto context, String criteria, Integer page, Integer size) {
+        return executeWithMonitoring("subFindAllFilteredByCriteria", () -> {
+            log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
+                    isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
+            log.debug("Filter criteria: {}", criteria);
 
-            int validatedPage = validatePage(page);
-            int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
+            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
+            List<T> entities = isPaginationRequested(page, size)
+                    ? findPaginatedFilteredEntities(criteriaList, page, size)
+                    : crudService().findAllByCriteriaFilter(criteriaList);
 
-            List<T> entities = crudService().findAll(pageRequest);
             List<F> resultDtos = mapper().listEntityToDto(entities);
             List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
@@ -373,63 +347,13 @@ public abstract class CrudControllerSubMethods<
     }
 
     /**
-     * Retrieves filtered entities based on criteria.
-     *
-     * @param context  Request context
-     * @param criteria Filter criteria as a string
-     * @return ResponseEntity containing the list of filtered DTOs
-     */
-    @Override
-    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto context, String criteria) {
-        return executeWithMonitoring("subFindAllFilteredByCriteria", () -> {
-            log.info("Finding filtered {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
-            log.debug("Filter criteria: {}", criteria);
-
-            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
-            List<T> entities = crudService().findAllByCriteriaFilter(criteriaList);
-            List<F> resultDtos = mapper().listEntityToDto(entities);
-
-            return createListResponse(resultDtos);
-        });
-    }
-
-    /**
-     * Retrieves paginated filtered entities based on criteria.
-     *
-     * @param context  Request context
-     * @param criteria Filter criteria as a string
-     * @param page     Page number (0-based)
-     * @param size     Page size
-     * @return ResponseEntity containing the list of filtered DTOs
-     * @throws BadArgumentException if page or size is invalid
-     */
-    @Override
-    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto context, String criteria, Integer page, Integer size) {
-        return executeWithMonitoring("subFindAllFilteredByCriteriaPaginated", () -> {
-            log.info("Finding paginated filtered {}s (page: {}, size: {}) for tenant: {}",
-                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
-            log.debug("Filter criteria: {}", criteria);
-
-            int validatedPage = validatePage(page);
-            int validatedSize = validatePageSize(size);
-            PageRequest pageRequest = PageRequest.of(validatedPage, validatedSize, Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD));
-
-            List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
-            List<T> entities = crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
-            List<F> resultDtos = mapper().listEntityToDto(entities);
-
-            return createListResponse(resultDtos);
-        });
-    }
-
-    /**
      * Retrieves available filter criteria for the entity type.
      *
      * @return ResponseEntity containing the map of filter criteria
      */
     @Override
-    public ResponseEntity<Map<String, String>> subfindAllFilterCriterias() {
-        return executeWithMonitoring("subfindAllFilterCriterias", () -> {
+    public ResponseEntity<Map<String, String>> subGetAnnotatedCriteria() {
+        return executeWithMonitoring("subGetAnnotatedCriteria", () -> {
             log.info("Retrieving filter criteria for {}", entityClass.getSimpleName());
             Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(entityClass);
             return createMapResponse(criteriaMap);
@@ -632,6 +556,54 @@ public abstract class CrudControllerSubMethods<
         if (obj == null) {
             throw new BadArgumentException(message);
         }
+    }
+
+    /**
+     * Checks if pagination is requested.
+     *
+     * @param page Page number
+     * @param size Page size
+     * @return true if both page and size are provided, false otherwise
+     */
+    private boolean isPaginationRequested(Integer page, Integer size) {
+        return page != null && size != null;
+    }
+
+    /**
+     * Retrieves paginated entities.
+     *
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @return List of entities
+     */
+    private List<T> findPaginatedEntities(Integer page, Integer size) {
+        int validatedPage = validatePage(page);
+        int validatedSize = validatePageSize(size);
+        PageRequest pageRequest = PageRequest.of(
+                validatedPage,
+                validatedSize,
+                Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD)
+        );
+        return crudService().findAll(pageRequest);
+    }
+
+    /**
+     * Retrieves paginated filtered entities based on criteria.
+     *
+     * @param criteriaList List of query criteria
+     * @param page         Page number (0-based)
+     * @param size         Page size
+     * @return List of filtered entities
+     */
+    private List<T> findPaginatedFilteredEntities(List<QueryCriteria> criteriaList, Integer page, Integer size) {
+        int validatedPage = validatePage(page);
+        int validatedSize = validatePageSize(size);
+        PageRequest pageRequest = PageRequest.of(
+                validatedPage,
+                validatedSize,
+                Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD)
+        );
+        return crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
     }
 
     /**

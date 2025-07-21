@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The type Mapped crud delete controller.
@@ -33,5 +34,11 @@ public abstract class MappedCrudDeleteController<I extends Serializable, T exten
     public final ResponseEntity<?> delete(RequestContextDto requestContext,
                                           I id) {
         return subDelete(requestContext, id);
+    }
+
+    @Override
+    public final ResponseEntity<?> batchDelete(RequestContextDto requestContext,
+                                               List<I> ids) {
+        return subDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 }

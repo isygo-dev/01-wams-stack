@@ -1,7 +1,6 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.multitenancy.dto.UserLoginEventDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -23,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -40,10 +40,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 class JsonBasedSqlPostgresTests {
 
+    private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
     private static final String INVALID_TENANT = "unknown";
-    private static final String SUPER_TENANT = TenantConstants.SUPER_TENANT_NAME;
 
     private static final String BASE_URL = "/api/userlogin";
 
@@ -145,7 +145,7 @@ class JsonBasedSqlPostgresTests {
         tenant1_userLogin = buildDto("user_one");
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tenant1_userLogin)))
                 .andExpect(status().isCreated())
@@ -169,7 +169,7 @@ class JsonBasedSqlPostgresTests {
         tenant2_userLogin = buildDto("user_two");
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_2)
+                        .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tenant2_userLogin)))
                 .andExpect(status().isCreated())
@@ -198,7 +198,7 @@ class JsonBasedSqlPostgresTests {
         );
 
         MvcResult result = mockMvc.perform(post(BASE_URL + "/batch")
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(batchEvents)))
                 .andExpect(status().isOk())
@@ -231,7 +231,7 @@ class JsonBasedSqlPostgresTests {
         );
 
         MvcResult result = mockMvc.perform(post(BASE_URL + "/batch")
-                        .header("X-Tenant-ID", TENANT_2)
+                        .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(batchEvents)))
                 .andExpect(status().isOk())
@@ -260,7 +260,7 @@ class JsonBasedSqlPostgresTests {
     @Order(5)
     void shouldRetrieveOwnDataForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1_userLoginId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(tenant1_userLoginId.toString()))
                 .andExpect(jsonPath("$.userId").value(tenant1_userLogin.getUserId()))
@@ -276,7 +276,7 @@ class JsonBasedSqlPostgresTests {
     @Order(6)
     void shouldRetrieveOwnDataForTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant2_userLoginId)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(tenant2_userLoginId.toString()))
                 .andExpect(jsonPath("$.userId").value(tenant2_userLogin.getUserId()))
@@ -292,7 +292,7 @@ class JsonBasedSqlPostgresTests {
     @Order(7)
     void shouldNotRetrieveTenant1DataFromTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1_userLoginId)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNotFound());
     }
 
@@ -304,7 +304,7 @@ class JsonBasedSqlPostgresTests {
     @Order(8)
     void shouldNotRetrieveTenant2DataFromTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant2_userLoginId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
     }
 
@@ -316,7 +316,7 @@ class JsonBasedSqlPostgresTests {
     @Order(9)
     void shouldFindAllForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(4)) // 1 single + 3 batch
@@ -334,7 +334,7 @@ class JsonBasedSqlPostgresTests {
     @Order(10)
     void shouldFindAllForTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(3)) // 1 single + 2 batch
@@ -350,11 +350,13 @@ class JsonBasedSqlPostgresTests {
     @Test
     @Order(11)
     void shouldFindAllWithPagination() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/0/2")
-                        .header("X-Tenant-ID", TENANT_1))
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .param("page", "0")
+                        .param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$").isArray());
     }
 
     /**
@@ -365,7 +367,7 @@ class JsonBasedSqlPostgresTests {
     @Order(12)
     void shouldGetCountForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(content().string("4"));
     }
@@ -378,7 +380,7 @@ class JsonBasedSqlPostgresTests {
     @Order(13)
     void shouldGetCountForTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
@@ -391,7 +393,7 @@ class JsonBasedSqlPostgresTests {
     @Order(14)
     void shouldFindAllFullData() throws Exception {
         mockMvc.perform(get(BASE_URL + "/full")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(4));
@@ -410,7 +412,7 @@ class JsonBasedSqlPostgresTests {
         updatedDto.setId(tenant1_userLoginId);
 
         mockMvc.perform(put(BASE_URL + "/" + tenant1_userLoginId)
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isOk())
@@ -431,7 +433,7 @@ class JsonBasedSqlPostgresTests {
         updatedDto.setId(tenant1_userLoginId);
 
         mockMvc.perform(put(BASE_URL + "/" + tenant1_userLoginId)
-                        .header("X-Tenant-ID", TENANT_2)
+                        .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isNotFound());
@@ -448,7 +450,7 @@ class JsonBasedSqlPostgresTests {
         updatedDto.setId(tenant2_userLoginId);
 
         mockMvc.perform(put(BASE_URL + "/" + tenant2_userLoginId)
-                        .header("X-Tenant-ID", TENANT_2)
+                        .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isOk())
@@ -470,15 +472,15 @@ class JsonBasedSqlPostgresTests {
         UUID toDelete = tenant1_batchIds.get(0);
 
         mockMvc.perform(delete(BASE_URL + "/" + toDelete)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
     }
@@ -493,11 +495,11 @@ class JsonBasedSqlPostgresTests {
         UUID toDelete = tenant1_batchIds.get(1);
 
         mockMvc.perform(delete(BASE_URL + "/" + toDelete)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk());
     }
 
@@ -511,15 +513,15 @@ class JsonBasedSqlPostgresTests {
         UUID toDelete = tenant2_batchIds.get(0);
 
         mockMvc.perform(delete(BASE_URL + "/" + toDelete)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get(BASE_URL + "/" + toDelete)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(content().string("2"));
     }
@@ -551,7 +553,7 @@ class JsonBasedSqlPostgresTests {
         UserLoginEventDto newDto = buildDto("invalid_tenant");
 
         mockMvc.perform(post(BASE_URL)
-                        .header("X-Tenant-ID", INVALID_TENANT)
+                        .header(TENANT_HEADER, INVALID_TENANT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newDto)))
                 .andExpect(status().isBadRequest());
@@ -567,7 +569,7 @@ class JsonBasedSqlPostgresTests {
         UUID nonExistentId = UUID.randomUUID();
 
         mockMvc.perform(get(BASE_URL + "/" + nonExistentId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
     }
 
@@ -579,7 +581,7 @@ class JsonBasedSqlPostgresTests {
     @Order(24)
     void shouldHandleInvalidIdFormat() throws Exception {
         mockMvc.perform(get(BASE_URL + "/invalid-uuid")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isBadRequest());
     }
 
@@ -591,7 +593,7 @@ class JsonBasedSqlPostgresTests {
     @Order(25)
     void shouldHandleEmptyBatchCreation() throws Exception {
         mockMvc.perform(post(BASE_URL + "/batch")
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[]"))
                 .andExpect(status().isBadRequest());
@@ -607,7 +609,7 @@ class JsonBasedSqlPostgresTests {
     @Order(26)
     void shouldFilterByUserId() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .param("criteria", "userId = 'user_one_updated' & ip = '192.168.1.100'"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -624,7 +626,7 @@ class JsonBasedSqlPostgresTests {
     @Order(27)
     void shouldFilterByDevice() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .param("criteria", "device ~ Device"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -639,7 +641,7 @@ class JsonBasedSqlPostgresTests {
     @Order(28)
     void shouldGetFilterCriteria() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter/criteria")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNotEmpty());
     }
@@ -654,7 +656,7 @@ class JsonBasedSqlPostgresTests {
     @Order(29)
     void shouldEnsureCompleteDataIsolation() throws Exception {
         MvcResult tenant1Result = mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -662,7 +664,7 @@ class JsonBasedSqlPostgresTests {
                 tenant1Result.getResponse().getContentAsString(), UserLoginEventDto[].class);
 
         MvcResult tenant2Result = mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -690,12 +692,12 @@ class JsonBasedSqlPostgresTests {
     @Order(30)
     void shouldValidateTotalDataIntegrity() throws Exception {
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3"));
 
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(content().string("2"));
     }
@@ -710,17 +712,17 @@ class JsonBasedSqlPostgresTests {
     @Order(31)
     void shouldCleanupTenant1Data() throws Exception {
         mockMvc.perform(delete(BASE_URL + "/" + tenant1_userLoginId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNoContent());
 
         for (UUID id : tenant1_batchIds.subList(1, tenant1_batchIds.size())) {
             mockMvc.perform(delete(BASE_URL + "/" + id)
-                            .header("X-Tenant-ID", TENANT_1))
+                            .header(TENANT_HEADER, TENANT_1))
                     .andExpect(status().isNoContent());
         }
 
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(content().string("0"));
     }
@@ -733,17 +735,17 @@ class JsonBasedSqlPostgresTests {
     @Order(32)
     void shouldCleanupTenant2Data() throws Exception {
         mockMvc.perform(delete(BASE_URL + "/" + tenant2_userLoginId)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNoContent());
 
         for (UUID id : tenant2_batchIds.subList(1, tenant2_batchIds.size())) {
             mockMvc.perform(delete(BASE_URL + "/" + id)
-                            .header("X-Tenant-ID", TENANT_2))
+                            .header(TENANT_HEADER, TENANT_2))
                     .andExpect(status().isNoContent());
         }
 
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(content().string("0"));
     }

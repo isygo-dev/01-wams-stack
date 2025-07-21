@@ -42,23 +42,23 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     }
 
     @Override
-    public final ResponseEntity<?> delete(RequestContextDto requestContext, I id) {
+    public final ResponseEntity<?> delete(RequestContextDto requestContext,
+                                          I id) {
         return subDelete(requestContext, id);
     }
 
     @Override
-    public final ResponseEntity<List<M>> findAll(RequestContextDto requestContext) {
-        return subFindAll(requestContext);
+    public final ResponseEntity<?> batchDelete(RequestContextDto requestContext,
+                                               List<I> ids) {
+        return subDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
-    @Override
-    public final ResponseEntity<List<M>> findAllDefault(RequestContextDto requestContext) {
-        return subFindAllDefault(requestContext);
-    }
 
     @Override
-    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext) {
-        return subFindAllFull(requestContext);
+    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext,
+                                                     Integer page,
+                                                     Integer size) {
+        return subFindAllFull(requestContext, page, size);
     }
 
     @Override
@@ -66,13 +66,6 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
                                                  Integer page,
                                                  Integer size) {
         return subFindAll(requestContext, page, size);
-    }
-
-    @Override
-    public final ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext,
-                                                     Integer page,
-                                                     Integer size) {
-        return subFindAllFull(requestContext, page, size);
     }
 
     @Override
@@ -94,17 +87,12 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     }
 
     @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria) {
-        return subFindAllFilteredByCriteria(requestContext, criteria);
-    }
-
-    @Override
     public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
         return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> findAllFilterCriterias() {
-        return subfindAllFilterCriterias();
+    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
+        return subGetAnnotatedCriteria();
     }
 }

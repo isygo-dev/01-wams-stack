@@ -5,10 +5,7 @@ import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
-import eu.isygoit.exception.CreateConstraintsViolationException;
-import eu.isygoit.exception.InvalidTenantException;
-import eu.isygoit.exception.ObjectNotFoundException;
-import eu.isygoit.exception.UpdateConstraintsViolationException;
+import eu.isygoit.exception.*;
 import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
@@ -245,6 +242,11 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
         List<T> paginated = JsonBasedEntityHelper.applyPagination(filtered, pageRequest);
         return afterFindAll(tenant, paginated);
+    }
+
+    @Override
+    public List<T> getByIdIn(List<UUID> ids) {
+        throw new OperationNotSupportedException("Json based entity: getByIdIn");
     }
 
     // Event lifecycle methods

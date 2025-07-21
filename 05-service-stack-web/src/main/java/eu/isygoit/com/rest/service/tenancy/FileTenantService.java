@@ -205,9 +205,8 @@ public abstract class FileTenantService<I extends Serializable,
     }
 
     private void setTenantIfApplicable(String tenant, T entity) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            ((ITenantAssignable) entity).setTenant(tenant);
+        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+            entity.setTenant(tenant);
         }
     }
 

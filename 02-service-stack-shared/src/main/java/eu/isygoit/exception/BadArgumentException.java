@@ -1,12 +1,13 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 
 /**
  * The type Bad argument exception.
  */
-@MsgLocale(value = "bad.argument.exception")
+@MsgLocale(httpStatus = HttpStatus.BAD_REQUEST, value = "bad.argument.exception")
 public class BadArgumentException extends ManagedException {
 
     /**

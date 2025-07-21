@@ -13,6 +13,7 @@ import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +54,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
         // Save the file and return the path as string
         return FileHelper.saveMultipartFile(target,
                         file.getOriginalFilename() + "_" + entity.getCode(),
-                        file, "png",
+                        file, FilenameUtils.getExtension(file.getOriginalFilename()),
                         StandardOpenOption.CREATE,
                         StandardOpenOption.WRITE,
                         StandardOpenOption.TRUNCATE_EXISTING,
@@ -65,7 +66,7 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
     @Transactional
     public T uploadImage(I id, MultipartFile file) throws IOException {
         // Validate input file
-        if (file == null || file.isEmpty()) {
+        if (!FileHelper.isImage(file)) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
             throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
@@ -102,32 +103,32 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
     @Override
     @Transactional
     public T createWithImage(T entity, MultipartFile file) throws IOException {
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
+            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
+        }
+
         // Assign code if empty
         assignCodeIfEmpty(entity);
 
-        // Save image if provided
-        if (file != null && !file.isEmpty()) {
-            entity.setImagePath(saveImageFile(entity, file));
-        } else {
-            log.warn("File is null or empty");
-        }
+        entity.setImagePath(saveImageFile(entity, file));
+
         return create(entity);
     }
 
     @Override
     @Transactional
     public T updateWithImage(T entity, MultipartFile file) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            // Save new image and update path
-            entity.setImagePath(saveImageFile(entity, file));
-        } else {
-            // Keep existing image path if no new file provided
-            String existingPath = findById(entity.getId())
-                    .map(T::getImagePath)
-                    .orElse(null);
-            entity.setImagePath(existingPath);
-            log.warn("File is null or empty");
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
+            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
+
+        // Save new image and update path
+        entity.setImagePath(saveImageFile(entity, file));
+
         return update(entity);
     }
 

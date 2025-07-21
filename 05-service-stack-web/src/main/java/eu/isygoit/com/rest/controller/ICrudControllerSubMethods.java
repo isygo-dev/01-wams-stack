@@ -1,6 +1,5 @@
 package eu.isygoit.com.rest.controller;
 
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -26,14 +25,6 @@ public interface ICrudControllerSubMethods<I extends Serializable,
         F extends M,
         S extends ICrudServiceUtils<I, T>>
         extends ICrudControllerEvents<I, T, M, F> {
-
-    /**
-     * Sub find all default response entity.
-     *
-     * @param requestContext the request context
-     * @return the response entity
-     */
-    ResponseEntity<List<M>> subFindAllDefault(RequestContextDto requestContext);
 
     /**
      * Sub create response entity.
@@ -94,27 +85,11 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * Sub find all full response entity.
      *
      * @param requestContext the request context
-     * @return the response entity
-     */
-    ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext);
-
-    /**
-     * Sub find all full response entity.
-     *
-     * @param requestContext the request context
      * @param page           the page
      * @param size           the size
      * @return the response entity
      */
     ResponseEntity<List<F>> subFindAllFull(RequestContextDto requestContext, Integer page, Integer size);
-
-    /**
-     * Sub find all response entity.
-     *
-     * @param requestContext the request context
-     * @return the response entity
-     */
-    ResponseEntity<List<M>> subFindAll(RequestContextDto requestContext);
 
     /**
      * Sub find all response entity.
@@ -149,16 +124,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      *
      * @return the response entity
      */
-    ResponseEntity<Map<String, String>> subfindAllFilterCriterias();
-
-    /**
-     * Sub find all filtered by criteria response entity.
-     *
-     * @param requestContext the request context
-     * @param criteria       the criteria
-     * @return the response entity
-     */
-    ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria);
+    ResponseEntity<Map<String, String>> subGetAnnotatedCriteria();
 
     /**
      * Sub find all filtered by criteria response entity.

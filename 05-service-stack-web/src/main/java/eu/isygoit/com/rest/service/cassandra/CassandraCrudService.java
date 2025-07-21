@@ -274,6 +274,10 @@ public abstract class CassandraCrudService<I extends Serializable,
         return null;
     }
 
+    @Override
+    public List<T> getByIdIn(List<I> ids) {
+        return null;
+    }
 
     /**
      * Handles entity deletion, supporting soft deletion for CancelableEntity.

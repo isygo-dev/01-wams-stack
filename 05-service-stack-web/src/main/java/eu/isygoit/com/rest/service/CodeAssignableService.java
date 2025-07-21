@@ -59,7 +59,8 @@ public abstract class CodeAssignableService<I extends Serializable,
                 .ifPresent(code -> {
                     Optional.ofNullable(remoteNextCodeService()).ifPresent(remoteService -> {
                         try {
-                            ResponseEntity<String> result = remoteService.subscribeNextCode(code.getTenant(),
+                            ResponseEntity<String> result = remoteService.subscribeNextCode(RequestContextDto.builder().build(),
+                                    code.getTenant(),
                                     NextCodeDto.builder()
                                             .tenant(code.getTenant())
                                             .entity(code.getEntity())

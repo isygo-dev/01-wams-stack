@@ -57,7 +57,7 @@ public interface IRemoteNextCodeService {
                             schema = @Schema(name = "Next code generator config", implementation = NextCodeDto.class))})
     })
     @PostMapping(path = "/incremental/config")
-    ResponseEntity<String> subscribeNextCode(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<String> subscribeNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                              @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                              @Valid @RequestBody NextCodeDto incrementalConfig);
 }

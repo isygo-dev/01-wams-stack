@@ -10,6 +10,7 @@ import eu.isygoit.helper.FileHelper;
 import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,6 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -44,7 +44,11 @@ public abstract class FileImageService<I extends Serializable,
     @Override
     @Transactional
     public T uploadImage(I id, MultipartFile file) throws IOException {
-        validateFile(file);
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
+            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
+        }
 
         T entity = findEntityByIdOrThrow(id);
 
@@ -52,7 +56,7 @@ public abstract class FileImageService<I extends Serializable,
         Path path = resolveTargetPath().apply(entity);
 
         entity.setImagePath(FileHelper.saveMultipartFile(
-                path, filename, file, "png",
+                path, filename, file, FilenameUtils.getExtension(file.getOriginalFilename()),
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE,
                 StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC
         ).toString());
@@ -79,6 +83,12 @@ public abstract class FileImageService<I extends Serializable,
     @Override
     @Transactional
     public T createWithImage(T entity, MultipartFile file) throws IOException {
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
+            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
+        }
+
         assignCodeIfEmpty(entity);
 
         if (file != null && !file.isEmpty()) {
@@ -86,11 +96,12 @@ public abstract class FileImageService<I extends Serializable,
             Path path = resolveTargetPath().apply(entity);
 
             entity.setImagePath(FileHelper.saveMultipartFile(
-                    path, filename, file, "png",
+                    path, filename, file, FilenameUtils.getExtension(file.getOriginalFilename()),
                     StandardOpenOption.CREATE, StandardOpenOption.WRITE,
                     StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC
             ).toString());
         } else {
+            entity.setImagePath(null);
             log.warn("Image file is null or empty for entity creation.");
         }
 
@@ -100,26 +111,21 @@ public abstract class FileImageService<I extends Serializable,
     @Override
     @Transactional
     public T updateWithImage(T entity, MultipartFile file) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            String filename = file.getOriginalFilename() + "_" + entity.getCode();
-            Path path = resolveTargetPath().apply(entity);
-
-            entity.setImagePath(FileHelper.saveMultipartFile(path, filename, file, "png").toString());
-        } else {
-            // Retain current image path
-            Optional<T> existing = findById(entity.getId());
-            existing.ifPresent(e -> entity.setImagePath(e.getImagePath()));
-            log.warn("Image file is null or empty for entity update.");
-        }
-
-        return update(entity);
-    }
-
-    private void validateFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
             throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
+
+        String filename = file.getOriginalFilename() + "_" + entity.getCode();
+        Path path = resolveTargetPath().apply(entity);
+
+        entity.setImagePath(FileHelper.saveMultipartFile(path,
+                filename,
+                file,
+                FilenameUtils.getExtension(file.getOriginalFilename())).toString());
+
+        return update(entity);
     }
 
     private T findEntityByIdOrThrow(I id) {

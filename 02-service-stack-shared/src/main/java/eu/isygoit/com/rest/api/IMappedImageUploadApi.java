@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +45,8 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @Valid @RequestBody MultipartFile file, D dto);
+                                      @RequestPart MultipartFile file,
+                                      @RequestPart D dto);
 
     /**
      * Update with image response entity.
@@ -66,7 +66,8 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @Valid @RequestBody MultipartFile file, D dto);
+                                      @RequestPart MultipartFile file,
+                                      @RequestPart D dto);
 
     /**
      * Upload image response entity.
@@ -87,5 +88,5 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     @PostMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                   @PathVariable(name = RestApiConstants.ID) I id,
-                                  @Valid @RequestBody MultipartFile file);
+                                  @RequestPart MultipartFile file);
 }

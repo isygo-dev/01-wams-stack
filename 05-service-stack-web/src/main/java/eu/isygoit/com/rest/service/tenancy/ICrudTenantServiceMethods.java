@@ -167,4 +167,12 @@ public interface ICrudTenantServiceMethods<I extends Serializable,
      * @throws NotSupportedException the not supported exception
      */
     List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest);
+
+    /**
+     * Gets by id in.
+     *
+     * @param ids the ids
+     * @return the by id in
+     */
+    List<T> getByIdIn(List<I> ids);
 }

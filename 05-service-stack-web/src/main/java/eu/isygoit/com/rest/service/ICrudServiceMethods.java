@@ -135,4 +135,12 @@ public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssign
      * @return the list
      */
     List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest);
+
+    /**
+     * Gets by id in.
+     *
+     * @param ids the ids
+     * @return the by id in
+     */
+    List<T> getByIdIn(List<I> ids);
 }

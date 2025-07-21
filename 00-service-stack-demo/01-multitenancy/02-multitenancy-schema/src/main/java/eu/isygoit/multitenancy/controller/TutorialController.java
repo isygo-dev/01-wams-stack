@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +68,7 @@ public class TutorialController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
-    public ResponseEntity<TutorialDto> createTutorial(@RequestBody TutorialDto TutorialDto) {
+    public ResponseEntity<TutorialDto> createTutorial(@Valid @RequestBody TutorialDto TutorialDto) {
         try {
             var saved = tutorialRepository.save(tutorialMapper.dtoToEntity(TutorialDto));
             return ResponseEntity.status(HttpStatus.CREATED).body(tutorialMapper.entityToDto(saved));

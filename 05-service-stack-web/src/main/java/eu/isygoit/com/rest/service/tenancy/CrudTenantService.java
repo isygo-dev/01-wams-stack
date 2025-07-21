@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -47,7 +48,6 @@ public abstract class CrudTenantService<I extends Serializable,
     private static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1];
-    private final boolean isTenantAssignable = ITenantAssignable.class.isAssignableFrom(persistentClass);
 
     /**
      * Validates that an object is not null.
@@ -82,24 +82,11 @@ public abstract class CrudTenantService<I extends Serializable,
      * @throws OperationNotSupportedException if the entity or repository is not tenant-aware
      */
     private JpaPagingAndSortingTenantAssignableRepository getTenantAssignableRepository() {
-        if (!isTenantAssignable || !(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
+        if (!(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
             log.error("Entity {} is not tenant assignable", persistentClass.getSimpleName());
             throw new OperationNotSupportedException("Entity is not tenant assignable: " + persistentClass.getSimpleName());
         }
         return (JpaPagingAndSortingTenantAssignableRepository) repository();
-    }
-
-    /**
-     * Validates that the operation is not tenant-specific.
-     *
-     * @param operationName the name of the operation
-     * @throws OperationNotAllowedException if the operation requires tenant-specific handling
-     */
-    private void validateNotTenantSpecific(String operationName) {
-        if (isTenantAssignable) {
-            log.error("{} operation on {} requires tenant-specific method", operationName, persistentClass.getSimpleName());
-            throw new OperationNotAllowedException(operationName + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
-        }
     }
 
     /**
@@ -224,6 +211,7 @@ public abstract class CrudTenantService<I extends Serializable,
             var jpaRepo = getTenantAssignableRepository();
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
+            validateObjectExists(object);
             log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
 
             // Validate tenant access
@@ -626,17 +614,26 @@ public abstract class CrudTenantService<I extends Serializable,
         repository().findById(object.getId()).ifPresent(existing -> {
             log.debug("Preserving attributes for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
             applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
-                t.setType(s.getType());
-                t.setFileName(s.getFileName());
-                t.setOriginalFileName(s.getOriginalFileName());
-                t.setPath(s.getPath());
-                t.setExtension(s.getExtension());
+                if (StringUtils.hasText(s.getPath())) {
+                    t.setType(s.getType());
+                    t.setFileName(s.getFileName());
+                    t.setOriginalFileName(s.getOriginalFileName());
+                    t.setPath(s.getPath());
+                    t.setExtension(s.getExtension());
+                }
             });
             applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
-                t.setImagePath(s.getImagePath());
+                if (StringUtils.hasText(s.getImagePath())) {
+                    t.setImagePath(s.getImagePath());
+                }
             });
         });
         return object;
+    }
+
+    @Override
+    public List<T> getByIdIn(List<I> ids) {
+        return repository().findByIdIn(ids);
     }
 
     /**
@@ -654,6 +651,12 @@ public abstract class CrudTenantService<I extends Serializable,
         }
     }
 
+    private void validateObjectExists(T object) {
+        if (!repository().existsById(object.getId())) {
+            throw new ObjectNotFoundException("with id: " + object.getId());
+        }
+    }
+
     /**
      * Validates tenant access for an entity.
      *
@@ -662,7 +665,6 @@ public abstract class CrudTenantService<I extends Serializable,
      * @throws TenantNotAllowedException if the tenant has no access
      */
     private Optional<T> validateTenantAccess(String tenant, I id) {
-        if (isTenantAssignable) {
             Optional<T> optional = repository().findById(id);
             if (optional.isPresent()) {
                 if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant) && !tenant.equals(((ITenantAssignable) optional.get()).getTenant())) {
@@ -671,7 +673,6 @@ public abstract class CrudTenantService<I extends Serializable,
                 }
                 return optional;
             }
-        }
 
         return Optional.empty();
     }

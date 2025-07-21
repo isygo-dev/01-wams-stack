@@ -37,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 class MultiTenancyDiscriminatorPostgresTests {
 
+    private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
     private static final String INVALID_TENANT = "unknown";
@@ -100,7 +101,7 @@ class MultiTenancyDiscriminatorPostgresTests {
         var dto = buildDto("Tenant1 Tutorial");
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
@@ -115,7 +116,7 @@ class MultiTenancyDiscriminatorPostgresTests {
     @Order(2)
     void shouldRejectAccessToOtherTenantData() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNotFound());
     }
 
@@ -123,7 +124,7 @@ class MultiTenancyDiscriminatorPostgresTests {
     @Order(3)
     void shouldRetrieveOwnDataForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Tenant1 Tutorial"))
                 .andExpect(jsonPath("$.tenant").value(TENANT_1));
@@ -135,7 +136,7 @@ class MultiTenancyDiscriminatorPostgresTests {
         var dto = buildDto("Tenant2 Tutorial");
 
         mockMvc.perform(post(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_2)
+                        .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
@@ -146,7 +147,7 @@ class MultiTenancyDiscriminatorPostgresTests {
     @Order(5)
     void shouldReturnOnlyTenant1TutorialsForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))))
                 .andExpect(jsonPath("$[*].title", hasItem("Tenant1 Tutorial")))
@@ -157,7 +158,7 @@ class MultiTenancyDiscriminatorPostgresTests {
     @Order(6)
     void shouldReturnOnlyTenant2TutorialsForTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_2))
+                        .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_2))))
                 .andExpect(jsonPath("$[*].title", hasItem("Tenant2 Tutorial")))
@@ -171,7 +172,7 @@ class MultiTenancyDiscriminatorPostgresTests {
         updated.setId(tenant1TutorialId);
 
         mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
-                        .header("X-Tenant-ID", TENANT_1)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
                 .andExpect(status().isOk())
@@ -185,7 +186,7 @@ class MultiTenancyDiscriminatorPostgresTests {
         updated.setId(tenant1TutorialId);
 
         mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
-                        .header("X-Tenant-ID", TENANT_2)
+                        .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
                 .andExpect(status().isNotFound());
@@ -195,11 +196,11 @@ class MultiTenancyDiscriminatorPostgresTests {
     @Order(9)
     void shouldDeleteTenant1Tutorial() throws Exception {
         mockMvc.perform(delete(BASE_URL + "/" + tenant1TutorialId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
-                        .header("X-Tenant-ID", TENANT_1))
+                        .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
     }
 
@@ -214,7 +215,7 @@ class MultiTenancyDiscriminatorPostgresTests {
     @Order(11)
     void shouldRejectUnknownTenant() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", INVALID_TENANT))
+                        .header(TENANT_HEADER, INVALID_TENANT))
                 .andExpect(status().isBadRequest()); // Or 403 if your logic throws custom exception
     }
 }

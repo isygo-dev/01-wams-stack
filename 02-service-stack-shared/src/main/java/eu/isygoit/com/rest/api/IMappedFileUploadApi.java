@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +44,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     @PutMapping(path = "/file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                  @RequestParam(name = RestApiConstants.ID) I id,
-                                 @Valid @RequestBody MultipartFile file);
+                                 @RequestPart MultipartFile file);
 
     /**
      * Create with file response entity.

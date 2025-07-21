@@ -23,6 +23,7 @@ public interface TokenServiceApi {
     /**
      * Create token by tenant response entity.
      *
+     * @param requestContext  the request context
      * @param tenant          the tenant
      * @param application     the application
      * @param tokenType       the token type
@@ -38,7 +39,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = TokenDto.class))})
     })
     @PostMapping(path = "/builder")
-    ResponseEntity<TokenDto> buildTokenByTenant(//@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<TokenDto> buildTokenByTenant(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                                 @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                                 @RequestParam(name = RestApiConstants.APPLICATION) String application,
                                                 @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,

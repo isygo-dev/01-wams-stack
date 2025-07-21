@@ -67,7 +67,7 @@ public final class FileServiceDmsStaticMethods {
                 .build();
 
         // Call linked file api to upload
-        ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(requestDto);
+        ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(RequestContextDto.builder().build(), requestDto);
 
         // Return body if successful, else null
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {

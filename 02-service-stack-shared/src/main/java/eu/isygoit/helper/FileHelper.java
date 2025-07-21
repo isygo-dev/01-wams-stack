@@ -260,4 +260,12 @@ public interface FileHelper {
         logger.debug("Generated file paths: {}", filePaths);
         return filePaths;
     }
+
+    static boolean isImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return false;
+        }
+        String contentType = file.getContentType();
+        return contentType != null && contentType.toLowerCase().startsWith("image/");
+    }
 }

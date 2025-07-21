@@ -14,6 +14,7 @@ import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +55,7 @@ public abstract class ImageTenantService<I extends Serializable,
         // Save the file and return the path as string
         return FileHelper.saveMultipartFile(target,
                         file.getOriginalFilename() + "_" + entity.getCode(),
-                        file, "png",
+                        file, FilenameUtils.getExtension(file.getOriginalFilename()),
                         StandardOpenOption.CREATE,
                         StandardOpenOption.WRITE,
                         StandardOpenOption.TRUNCATE_EXISTING,
@@ -66,7 +67,7 @@ public abstract class ImageTenantService<I extends Serializable,
     @Transactional
     public T uploadImage(String tenant, I id, MultipartFile file) throws IOException {
         // Validate input file
-        if (file == null || file.isEmpty()) {
+        if (!FileHelper.isImage(file)) {
             log.warn(LogConstants.EMPTY_FILE_PROVIDED);
             throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
@@ -103,44 +104,43 @@ public abstract class ImageTenantService<I extends Serializable,
     @Override
     @Transactional
     public T createWithImage(String tenant, T entity, MultipartFile file) throws IOException {
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
+            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
+        }
+
         // Enforce tenant if applicable and not super tenant
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            ((ITenantAssignable) entity).setTenant(tenant);
+        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+            entity.setTenant(tenant);
         }
 
         // Assign code if empty
         assignCodeIfEmpty(entity);
 
         // Save image if provided
-        if (file != null && !file.isEmpty()) {
-            entity.setImagePath(saveImageFile(entity, file));
-        } else {
-            log.warn("File is null or empty");
-        }
+        entity.setImagePath(saveImageFile(entity, file));
+
         return create(tenant, entity);
     }
 
     @Override
     @Transactional
     public T updateWithImage(String tenant, T entity, MultipartFile file) throws IOException {
-        // Enforce tenant if applicable and not super tenant
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            ((ITenantAssignable) entity).setTenant(tenant);
+        // Validate input file
+        if (!FileHelper.isImage(file)) {
+            log.warn(LogConstants.EMPTY_FILE_PROVIDED);
+            throw new BadArgumentException(LogConstants.EMPTY_FILE_PROVIDED);
         }
 
-        if (file != null && !file.isEmpty()) {
-            // Save new image and update path
-            entity.setImagePath(saveImageFile(entity, file));
-        } else {
-            // Keep existing image path if no new file provided
-            String existingPath = findById(tenant, entity.getId())
-                    .map(T::getImagePath)
-                    .orElse(null);
-            entity.setImagePath(existingPath);
-            log.warn("File is null or empty");
+        // Enforce tenant if applicable and not super tenant
+        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
+            entity.setTenant(tenant);
         }
+
+        // Save new image and update path
+        entity.setImagePath(saveImageFile(entity, file));
+
         return update(tenant, entity);
     }
 

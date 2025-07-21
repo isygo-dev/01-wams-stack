@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 class BasicCrudIntegrationTests {
 
+    private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_ID = "tenants";
     private static final String BASE_URL = "/api/v1/account";
     @Container
@@ -86,7 +88,7 @@ class BasicCrudIntegrationTests {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -108,7 +110,7 @@ class BasicCrudIntegrationTests {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDto)))
                 .andExpect(status().isBadRequest());
     }
@@ -140,7 +142,7 @@ class BasicCrudIntegrationTests {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDto)))
                 .andExpect(status().isBadRequest());
     }
@@ -165,7 +167,7 @@ class BasicCrudIntegrationTests {
 
         mockMvc.perform(post(BASE_URL + "/batch")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDtos)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -194,7 +196,7 @@ class BasicCrudIntegrationTests {
 
                     mockMvc.perform(post(BASE_URL)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .header("X-Tenant-ID", TENANT_ID)
+                                    .header(TENANT_HEADER, TENANT_ID)
                                     .content(objectMapper.writeValueAsString(accountDto)))
                             .andExpect(status().isCreated());
                 } catch (Exception e) {
@@ -209,7 +211,7 @@ class BasicCrudIntegrationTests {
         executor.shutdown();
 
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(8)); // 1 + 2 + 5
     }
@@ -218,7 +220,7 @@ class BasicCrudIntegrationTests {
     @Order(7)
     void testFindAllAccounts() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(8));
@@ -227,18 +229,20 @@ class BasicCrudIntegrationTests {
     @Test
     @Order(8)
     void testFindAllAccountsPaged() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/0/3")
-                        .header("X-Tenant-ID", TENANT_ID))
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .param("page", "0")
+                        .param("size", "3"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(3));
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$").isArray());
     }
 
     @Test
     @Order(10)
     void testFindAllFullAccounts() throws Exception {
         mockMvc.perform(get(BASE_URL + "/full")
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(8));
@@ -256,7 +260,7 @@ class BasicCrudIntegrationTests {
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -265,7 +269,7 @@ class BasicCrudIntegrationTests {
                 result.getResponse().getContentAsString(), AccountDto.class);
 
         mockMvc.perform(get(BASE_URL + "/" + createdAccount.getId())
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(createdAccount.getId()))
                 .andExpect(jsonPath("$.login").value("finduser"));
@@ -275,7 +279,7 @@ class BasicCrudIntegrationTests {
     @Order(12)
     void testFindAccountByInvalidId() throws Exception {
         mockMvc.perform(get(BASE_URL + "/999999")
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isNotFound());
     }
 
@@ -291,7 +295,7 @@ class BasicCrudIntegrationTests {
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -308,7 +312,7 @@ class BasicCrudIntegrationTests {
 
         mockMvc.perform(put(BASE_URL + "/" + createdAccount.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("updateduser@example.com"))
@@ -319,7 +323,7 @@ class BasicCrudIntegrationTests {
     @Order(15)
     void testGetCount() throws Exception {
         mockMvc.perform(get(BASE_URL + "/count")
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(10)); // Accounts from previous tests
     }
@@ -328,7 +332,7 @@ class BasicCrudIntegrationTests {
     @Order(16)
     void testFindAllFilteredByMultipleCriteria() throws Exception {
         mockMvc.perform(get(BASE_URL + "/filter")
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .param("criteria", "login='testuser' | login='batchuser1'"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -340,12 +344,14 @@ class BasicCrudIntegrationTests {
     @Test
     @Order(17)
     void testFindAllFilteredByCriteriaPaged() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/filter/0/1")
-                        .header("X-Tenant-ID", TENANT_ID)
+        mockMvc.perform(get(BASE_URL + "/filter")
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .param("page", "0")
+                        .param("size", "1")
                         .param("criteria", "login='testuser' | login='batchuser1'"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$").isArray());
     }
 
     @Test
@@ -360,7 +366,7 @@ class BasicCrudIntegrationTests {
 
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Tenant-ID", TENANT_ID)
+                        .header(TENANT_HEADER, TENANT_ID)
                         .content(objectMapper.writeValueAsString(accountDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -369,11 +375,11 @@ class BasicCrudIntegrationTests {
                 result.getResponse().getContentAsString(), AccountDto.class);
 
         mockMvc.perform(delete(BASE_URL + "/" + createdAccount.getId())
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get(BASE_URL + "/" + createdAccount.getId())
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isNotFound());
     }
 
@@ -381,7 +387,7 @@ class BasicCrudIntegrationTests {
     @Order(21)
     void testDeleteNonExistentAccount() throws Exception {
         mockMvc.perform(delete(BASE_URL + "/999999")
-                        .header("X-Tenant-ID", TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isNotFound());
     }
 }
