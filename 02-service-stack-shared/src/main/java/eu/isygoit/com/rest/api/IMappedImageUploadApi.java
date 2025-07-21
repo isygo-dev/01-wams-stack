@@ -45,7 +45,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @RequestPart MultipartFile file,
+                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @RequestPart D dto);
 
     /**
@@ -66,7 +66,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @RequestPart MultipartFile file,
+                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @RequestPart D dto);
 
     /**
@@ -88,5 +88,5 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     @PostMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                   @PathVariable(name = RestApiConstants.ID) I id,
-                                  @RequestPart MultipartFile file);
+                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

@@ -68,5 +68,5 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<List<L>> uploadAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                 @RequestPart(name = RestApiConstants.FILES) MultipartFile file);
+                                                 @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

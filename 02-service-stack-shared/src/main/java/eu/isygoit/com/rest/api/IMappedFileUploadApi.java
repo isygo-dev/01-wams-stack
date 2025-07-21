@@ -44,7 +44,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     @PutMapping(path = "/file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                  @RequestParam(name = RestApiConstants.ID) I id,
-                                 @RequestPart MultipartFile file);
+                                 @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 
     /**
      * Create with file response entity.

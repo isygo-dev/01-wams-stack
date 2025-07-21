@@ -1,5 +1,6 @@
 package eu.isygoit.openai.controller;
 
+import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.openai.dto.GeminiResponse;
 import eu.isygoit.openai.exception.GeminiApiException;
 import eu.isygoit.openai.service.GeminiApiService;
@@ -113,7 +114,7 @@ public class ChatController {
      */
     @PostMapping(value = "/ai/ollama/analyze-bill", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> analyzeBill(
-            @RequestPart("file") MultipartFile file,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
             @RequestParam(required = false) Double temperature,
             @RequestParam(required = false) Integer maxTokens) {
 
@@ -154,7 +155,7 @@ public class ChatController {
      */
     @PostMapping(value = "/ai/ollama/analyze-cv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> analyzeCV(
-            @RequestPart("file") MultipartFile file,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
             @RequestParam(required = false) Double temperature,
             @RequestParam(required = false) Integer maxTokens) {
 
