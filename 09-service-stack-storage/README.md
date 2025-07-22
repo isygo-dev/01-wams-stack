@@ -130,7 +130,7 @@ This repository includes Java service implementations for four S3-compatible sto
    ```java
    CephApiService cephService = new MyCephApiService(s3ClientMap);
    cephService.makeBucket(config, "my-bucket");
-   cephService.uploadFile(config, "my-bucket", "path/to", "file.txt", multipartFile, Map.of("key", "value"));
+   cephService.uploadFile(config, "my-bucket", "path/to", "file.txt", file, Map.of("key", "value"));
    byte[] fileContent = cephService.getObject(config, "my-bucket", "path/to/file.txt", null);
    ```
    

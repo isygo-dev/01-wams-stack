@@ -124,8 +124,8 @@ public abstract class MinIOApiService implements IMinIOApiService {
 
     @Override
     public void uploadFile(S3Config config, String bucketName, String path, String objectName,
-                           MultipartFile multipartFile, Map<String, String> tags) {
-        validateUploadParams(bucketName, path, objectName, multipartFile);
+                           MultipartFile file, Map<String, String> tags) {
+        validateUploadParams(bucketName, path, objectName, file);
         executeWithRetry(() -> {
             try {
                 makeBucket(config, bucketName);
@@ -135,8 +135,8 @@ public abstract class MinIOApiService implements IMinIOApiService {
                         .bucket(bucketName)
                         .object(fullPath)
                         .tags(tags)
-                        .contentType(multipartFile.getContentType())
-                        .stream(multipartFile.getInputStream(), multipartFile.getSize(), -1)
+                        .contentType(file.getContentType())
+                        .stream(file.getInputStream(), file.getSize(), -1)
                         .build());
                 log.info("Uploaded file: {} to bucket: {}", fullPath, bucketName);
             } catch (Exception e) {
@@ -396,9 +396,9 @@ public abstract class MinIOApiService implements IMinIOApiService {
         }
     }
 
-    private void validateUploadParams(String bucketName, String path, String objectName, MultipartFile multipartFile) {
+    private void validateUploadParams(String bucketName, String path, String objectName, MultipartFile file) {
         validateObjectParams(bucketName, objectName);
-        if (multipartFile == null || multipartFile.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Multipart file cannot be null or empty");
         }
     }

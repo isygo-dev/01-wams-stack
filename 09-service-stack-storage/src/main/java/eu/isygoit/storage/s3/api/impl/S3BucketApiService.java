@@ -152,8 +152,8 @@ public abstract class S3BucketApiService implements IAWSS3ApiService {
 
     @Override
     public void uploadFile(S3Config config, String bucketName, String path, String objectName,
-                           MultipartFile multipartFile, Map<String, String> tags) {
-        validateUploadParams(bucketName, path, objectName, multipartFile);
+                           MultipartFile file, Map<String, String> tags) {
+        validateUploadParams(bucketName, path, objectName, file);
         executeWithRetry(() -> {
             try {
                 makeBucket(config, bucketName);
@@ -165,9 +165,9 @@ public abstract class S3BucketApiService implements IAWSS3ApiService {
                 client.putObject(PutObjectRequest.builder()
                         .bucket(bucketName)
                         .key(fullPath)
-                        .contentType(multipartFile.getContentType())
+                        .contentType(file.getContentType())
                         .tagging(s3Tags != null ? Tagging.builder().tagSet(s3Tags).build() : null)
-                        .build(), RequestBody.fromInputStream(multipartFile.getInputStream(), multipartFile.getSize()));
+                        .build(), RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
                 log.info("Uploaded file: {} to bucket: {}", fullPath, bucketName);
             } catch (Exception e) {
                 throw new S3BuketException("Error uploading file: " + objectName, e);
@@ -441,9 +441,9 @@ public abstract class S3BucketApiService implements IAWSS3ApiService {
         }
     }
 
-    private void validateUploadParams(String bucketName, String path, String objectName, MultipartFile multipartFile) {
+    private void validateUploadParams(String bucketName, String path, String objectName, MultipartFile file) {
         validateObjectParams(bucketName, objectName);
-        if (multipartFile == null || multipartFile.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Multipart file cannot be null or empty");
         }
     }

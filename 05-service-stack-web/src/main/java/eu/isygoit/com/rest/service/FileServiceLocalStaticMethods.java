@@ -7,6 +7,7 @@ import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
@@ -45,12 +46,12 @@ public final class FileServiceLocalStaticMethods {
         Files.createDirectories(directory);
 
         // Determine the target path using the entity's code
-        Path targetPath = directory.resolve(entity.getCode());
+        Path targetPath = directory.resolve(entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
 
         // Copy the uploaded file to the target location, replacing any existing file
         Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-        return entity.getCode();
+        return entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename());
     }
 
     /**

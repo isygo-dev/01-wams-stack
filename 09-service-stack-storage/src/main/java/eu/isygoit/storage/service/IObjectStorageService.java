@@ -22,9 +22,9 @@ public interface IObjectStorageService {
      * @param bucketName    the bucket name
      * @param path          the path
      * @param tags          the tags
-     * @param multipartFile the multipart file
+     * @param file the multipart file
      */
-    void upload(S3Config config, String bucketName, String path, Map<String, String> tags, MultipartFile multipartFile);
+    void upload(S3Config config, String bucketName, String path, Map<String, String> tags, MultipartFile file);
 
     /**
      * Download byte [ ].

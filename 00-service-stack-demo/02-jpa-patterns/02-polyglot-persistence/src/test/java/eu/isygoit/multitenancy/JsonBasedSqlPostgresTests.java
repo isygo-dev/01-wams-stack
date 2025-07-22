@@ -78,6 +78,7 @@ class JsonBasedSqlPostgresTests {
         // Configure database connection properties for PostgreSQL
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
         String tenants = baseUrl.replace("/postgres", "/tenants");

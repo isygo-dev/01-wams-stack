@@ -10,9 +10,11 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -91,13 +93,19 @@ public abstract class FileServiceSubMethods<I extends Serializable,
      * @param entity  the entity
      * @param version the version
      * @return the resource
+     * @throws IOException the io exception
      */
-    final Resource subDownloadFile(T entity, Long version) {
-        return executeWithFallback(
+    final Resource subDownloadFile(T entity, Long version) throws IOException {
+        return new ByteArrayResource(executeWithFallback(
                 dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
                 () -> FileServiceLocalStaticMethods.download(entity, version),
                 "download"
-        );
+        ).getContentAsByteArray()) {
+            @Override
+            public String getFilename() {
+                return entity.getOriginalFileName();
+            }
+        };
     }
 
     /**

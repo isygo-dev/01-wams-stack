@@ -66,6 +66,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+                                      @RequestParam(name = RestApiConstants.ID) I id,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @RequestPart D dto);
 

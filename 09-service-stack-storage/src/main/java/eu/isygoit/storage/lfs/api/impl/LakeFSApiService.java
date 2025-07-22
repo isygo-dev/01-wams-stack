@@ -536,9 +536,9 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         }
     }
 
-    private void validateUploadParams(String repositoryName, String branchName, String objectName, MultipartFile multipartFile) {
+    private void validateUploadParams(String repositoryName, String branchName, String objectName, MultipartFile file) {
         validateObjectParams(repositoryName, branchName, objectName);
-        if (multipartFile == null || multipartFile.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Multipart file cannot be null or empty");
         }
     }
@@ -603,8 +603,8 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
     @Override
     public void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
-                           MultipartFile multipartFile) {
-        validateUploadParams(repositoryName, branchName, objectName, multipartFile);
+                           MultipartFile file) {
+        validateUploadParams(repositoryName, branchName, objectName, file);
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
@@ -614,7 +614,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                 MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
                 // Use ByteArrayResource instead of InputStreamResource
-                body.add("content", new ByteArrayResource(multipartFile.getBytes()) {
+                body.add("content", new ByteArrayResource(file.getBytes()) {
                     @Override
                     public String getFilename() {
                         return objectName;

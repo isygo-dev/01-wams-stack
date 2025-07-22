@@ -20,7 +20,7 @@ import java.util.List;
 public class LinkedFileRequestDto extends AbstractAuditableDto<Long> implements IFileUploadDto {
 
     private String tenant;
-    private String code;    //Unique file name
+    private String code;                //Unique file name
     private String originalFileName;    //original file name
     private String path;
     private List<String> tags;

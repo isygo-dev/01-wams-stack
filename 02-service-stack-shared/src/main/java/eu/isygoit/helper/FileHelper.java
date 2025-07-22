@@ -73,22 +73,22 @@ public interface FileHelper {
      *
      * @param targetDirectory the directory where the file will be saved
      * @param fileName        the desired filename
-     * @param multipartFile   the file to save
+     * @param file   the file to save
      * @param fileExtension   the file extension (optional)
      * @param options         the options
      * @return the Path of the saved file
      * @throws IOException if an I/O error occurs
      */
-    public static Path saveMultipartFile(Path targetDirectory, String fileName, MultipartFile multipartFile, String fileExtension, OpenOption... options) throws IOException {
-        if (multipartFile != null && !multipartFile.isEmpty()) {
+    public static Path saveMultipartFile(Path targetDirectory, String fileName, MultipartFile file, String fileExtension, OpenOption... options) throws IOException {
+        if (file != null && !file.isEmpty()) {
             createDirectoryIfAbsent(targetDirectory);
 
             String finalFileName = StringUtils.hasText(fileName)
-                    ? fileName + "." + (StringUtils.hasText(fileExtension) ? fileExtension : FilenameUtils.getExtension(multipartFile.getOriginalFilename()))
-                    : multipartFile.getOriginalFilename();
+                    ? fileName + "." + (StringUtils.hasText(fileExtension) ? fileExtension : FilenameUtils.getExtension(file.getOriginalFilename()))
+                    : file.getOriginalFilename();
 
             Path filePath = targetDirectory.resolve(finalFileName);
-            Files.write(filePath, multipartFile.getBytes(), options);
+            Files.write(filePath, file.getBytes(), options);
 
             logger.info("File saved at: {}", filePath);
             return filePath;

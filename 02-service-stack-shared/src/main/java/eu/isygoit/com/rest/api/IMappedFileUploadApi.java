@@ -46,13 +46,6 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                                  @RequestParam(name = RestApiConstants.ID) I id,
                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 
-    /**
-     * Create with file response entity.
-     *
-     * @param requestContext the request context
-     * @param fileUpload     the file upload
-     * @return the response entity
-     */
     @Operation(summary = "Create a new object and upload linked file",
             description = "Create a new object and upload linked file")
     @ApiResponses(value = {
@@ -63,18 +56,10 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     })
     @PostMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> createWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                     //@RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                     @ModelAttribute(RestApiConstants.FILE_UPLOAD) D fileUpload);
+                                     @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+                                     @RequestPart D dto);
 
 
-    /**
-     * Update with file response entity.
-     *
-     * @param requestContext the request context
-     * @param id             the id
-     * @param fileUpload     the file upload
-     * @return the response entity
-     */
     @Operation(summary = "Upload a new file and update the linked object",
             description = "Upload a new file and update the linked object")
     @ApiResponses(value = {
@@ -86,6 +71,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     @PutMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> updateWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                      @RequestParam(name = RestApiConstants.ID) I id,
-                                     @ModelAttribute(RestApiConstants.FILE_UPLOAD) D fileUpload);
+                                     @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+                                     @RequestPart D dto);
 
 }

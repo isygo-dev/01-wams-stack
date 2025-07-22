@@ -179,7 +179,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public ResponseEntity<?> subDelete(RequestContextDto context, I id) {
+    public ResponseEntity<Void> subDelete(RequestContextDto context, I id) {
         return executeWithMonitoring("subDelete", () -> {
             log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -204,7 +204,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<?> subDelete(RequestContextDto context, List<F> dtos) {
+    public ResponseEntity<Void> subDelete(RequestContextDto context, List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
             log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
             validateBulkOperation(dtos);

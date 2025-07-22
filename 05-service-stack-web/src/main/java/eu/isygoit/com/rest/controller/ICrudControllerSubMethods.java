@@ -70,7 +70,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param id             the id
      * @return the response entity
      */
-    ResponseEntity<?> subDelete(RequestContextDto requestContext, I id);
+    ResponseEntity<Void> subDelete(RequestContextDto requestContext, I id);
 
     /**
      * Sub delete response entity.
@@ -79,7 +79,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<?> subDelete(RequestContextDto requestContext, List<F> objects);
+    ResponseEntity<Void> subDelete(RequestContextDto requestContext, List<F> objects);
 
     /**
      * Sub find all full response entity.

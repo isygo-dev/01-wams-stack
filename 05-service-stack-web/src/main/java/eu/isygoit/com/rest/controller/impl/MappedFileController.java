@@ -70,6 +70,7 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<F> createWithFile(RequestContextDto requestContext,
+                                            MultipartFile file,
                                             F dto) {
         log.info("Create with file request received");
         try {
@@ -78,8 +79,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
             }
             dto = this.beforeCreate(dto);
             F savedResume = mapper().entityToDto(this.afterCreate(
-                    crudService().createWithFile(mapper().dtoToEntity(dto), dto.getFile())));
-            return ResponseFactory.responseOk(savedResume);
+                    crudService().createWithFile(mapper().dtoToEntity(dto), file)));
+            return ResponseFactory.responseCreated(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
         }
@@ -88,12 +89,13 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
     @Override
     public ResponseEntity<F> updateWithFile(RequestContextDto requestContext,
                                             I id,
+                                            MultipartFile file,
                                             F dto) {
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);
             F saved = mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithFile(id, mapper().dtoToEntity(dto), dto.getFile())));
+                    this.afterUpdate(crudService().updateWithFile(id, mapper().dtoToEntity(dto), file)));
             return ResponseFactory.responseOk(saved);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);

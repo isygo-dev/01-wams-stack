@@ -152,7 +152,13 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     @Override
     public Resource downloadFile(I id, Long version) throws IOException {
         return findById(id)
-                .map(entity -> subDownloadFile(entity, version))
+                .map(entity -> {
+                    try {
+                        return subDownloadFile(entity, version);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
     }
 
@@ -170,6 +176,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                 .resolve(persistentClass.getSimpleName().toLowerCase());
 
         entity.setPath(path.toString());
+        entity.setFileName(entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
         entity.setOriginalFileName(file.getOriginalFilename());
         entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
     }

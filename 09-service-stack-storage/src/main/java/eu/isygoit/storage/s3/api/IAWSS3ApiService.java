@@ -64,11 +64,11 @@ public interface IAWSS3ApiService {
      * @param bucketName    the bucket name
      * @param path          the path
      * @param objectName    the object name
-     * @param multipartFile the multipart file
+     * @param file the multipart file
      * @param tags          the tags
      */
     void uploadFile(S3Config config, String bucketName, String path, String objectName,
-                    MultipartFile multipartFile, Map<String, String> tags);
+                    MultipartFile file, Map<String, String> tags);
 
     /**
      * Get object byte [ ].

@@ -85,10 +85,10 @@ public interface ILakeFSApiService {
      * @param branchName     the branch name
      * @param path           the path
      * @param objectName     the object name
-     * @param multipartFile  the multipart file
+     * @param file  the multipart file
      */
     void uploadFile(LFSConfig config, String repositoryName, String branchName, String path, String objectName,
-                    MultipartFile multipartFile);
+                    MultipartFile file);
 
     /**
      * Get object byte [ ].

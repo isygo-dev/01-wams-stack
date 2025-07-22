@@ -93,6 +93,7 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> updateWithImage(RequestContextDto requestContext,
+                                             I id,
                                              MultipartFile file,
                                              F dto) {
         log.info("Update with image request received");
