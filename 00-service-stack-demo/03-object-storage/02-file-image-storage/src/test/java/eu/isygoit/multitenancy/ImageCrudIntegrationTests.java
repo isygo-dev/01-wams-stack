@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -48,8 +49,8 @@ class ImageCrudIntegrationTests {
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_ID = "tenants";
     private static final String BASE_URL = "/api/v1/user";
-
-    private static final int MAX_FIELD_LENGTH = 255; // Assumed max length for firstName/lastName
+    private static final String IMAGE_URL = BASE_URL + "/image";
+    private static final int MAX_FIELD_LENGTH = 255;
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
@@ -72,9 +73,8 @@ class ImageCrudIntegrationTests {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
-        String baseUrl = postgres.getJdbcUrl();
-        registry.add("spring.datasource.url", () -> baseUrl);
-        String tenants = baseUrl.replace("/postgres", "/tenants");
+        registry.add("spring.datasource.url", () -> postgres.getJdbcUrl());
+        String tenants = postgres.getJdbcUrl().replace("/postgres", "/tenants");
         registry.add("multitenancy.tenants[0].id", () -> "tenants");
         registry.add("multitenancy.tenants[0].url", () -> tenants);
         registry.add("multitenancy.tenants[0].username", postgres::getUsername);
@@ -88,10 +88,9 @@ class ImageCrudIntegrationTests {
 
     @BeforeEach
     void cleanUp() throws Exception {
-        // Fetch all users and delete them individually
         MvcResult result = mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().is(anyOf(is(HttpStatus.OK.value()), is(HttpStatus.NO_CONTENT.value()))))
                 .andReturn();
 
@@ -102,7 +101,7 @@ class ImageCrudIntegrationTests {
             for (UserDto user : users) {
                 mockMvc.perform(delete(BASE_URL + "/{id}", user.getId())
                                 .header(TENANT_HEADER, TENANT_ID))
-                        .andDo(print()) // For debugging
+                        .andDo(print())
                         .andExpect(status().isNoContent());
             }
         }
@@ -110,17 +109,17 @@ class ImageCrudIntegrationTests {
 
     private MockMultipartFile createMockImage() {
         byte[] imageContent = "mock image content".getBytes();
-        return new MockMultipartFile("file", "test.png", "image/png", imageContent);
+        return new MockMultipartFile("file", "test.png", MediaType.IMAGE_PNG_VALUE, imageContent);
     }
 
     private MockMultipartFile createLargeImage() {
-        byte[] largeContent = new byte[1024 * 1024 * 15]; // 15MB image
-        return new MockMultipartFile("file", "large.png", "image/png", largeContent);
+        byte[] largeContent = new byte[1024 * 1024 * 15];
+        return new MockMultipartFile("file", "large.png", MediaType.IMAGE_PNG_VALUE, largeContent);
     }
 
     private MockMultipartFile createInvalidImage() {
         byte[] invalidContent = "invalid content".getBytes();
-        return new MockMultipartFile("file", "test.txt", "text/plain", invalidContent);
+        return new MockMultipartFile("file", "test.txt", MediaType.TEXT_PLAIN_VALUE, invalidContent);
     }
 
     private UserDto createUser(String firstName, String lastName, boolean withImage) throws Exception {
@@ -136,12 +135,12 @@ class ImageCrudIntegrationTests {
             MockMultipartFile userPart = new MockMultipartFile(
                     "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
             MockMultipartFile imagePart = createMockImage();
-            MockMultipartHttpServletRequestBuilder builder = MockMvcRequestBuilders.multipart(BASE_URL + "/image");
+            MockMultipartHttpServletRequestBuilder builder = MockMvcRequestBuilders.multipart(IMAGE_URL);
             builder.file(userPart).file(imagePart);
 
             MvcResult result = mockMvc.perform(builder
                             .header(TENANT_HEADER, TENANT_ID))
-                    .andDo(print()) // For debugging
+                    .andDo(print())
                     .andExpect(status().isOk())
                     .andReturn();
             return objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
@@ -211,9 +210,9 @@ class ImageCrudIntegrationTests {
                 "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
         MockMultipartFile imagePart = createMockImage();
 
-        mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "POST", userPart, imagePart)
+        mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -243,10 +242,9 @@ class ImageCrudIntegrationTests {
                 "dto", "", "application/json", objectMapper.writeValueAsString(updatedUserDto).getBytes());
         MockMultipartFile imagePart = createMockImage();
 
-        mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "PUT", userPart, imagePart)
-                        .header(TENANT_HEADER, TENANT_ID)
-                        .param("id", userId.toString()))
-                .andDo(print()) // For debugging
+        mockMvc.perform(buildMultipartRequest(IMAGE_URL + "/" + userId, "PUT", userPart, imagePart)
+                        .header(TENANT_HEADER, TENANT_ID))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -265,9 +263,9 @@ class ImageCrudIntegrationTests {
         UserDto updatedUserDto = UserDto.builder()
                 .id(createdUser.getId())
                 .tenant(TENANT_ID)
-                .firstName(createdUser.getFirstName()) // Unchanged
+                .firstName(createdUser.getFirstName())
                 .lastName("Smith")
-                .active(true) // Unchanged
+                .active(true)
                 .imagePath("")
                 .build();
 
@@ -293,10 +291,14 @@ class ImageCrudIntegrationTests {
 
         MockMultipartFile imagePart = createMockImage();
 
-        mockMvc.perform(multipart(BASE_URL + "/image/upload/{id}", userId)
+        mockMvc.perform(multipart(IMAGE_URL + "/upload/" + userId)
                         .file(imagePart)
-                        .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        }))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -310,17 +312,17 @@ class ImageCrudIntegrationTests {
         UserDto createdUser = createUser("David", "Miller", true);
         Long userId = createdUser.getId();
 
-        MvcResult result = mockMvc.perform(get(BASE_URL + "/image/download/{id}", userId)
+        MvcResult result = mockMvc.perform(get(IMAGE_URL + "/download/" + userId)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("attachment; filename=")))
-                .andExpect(content().contentType("image/png"))
+                .andExpect(content().contentType(MediaType.IMAGE_PNG))
                 .andReturn();
 
         byte[] downloadedContent = result.getResponse().getContentAsByteArray();
         byte[] expectedContent = "mock image content".getBytes();
-        Assertions.assertArrayEquals(expectedContent, downloadedContent, "Downloaded image content should match uploaded content");
+        assertArrayEquals(expectedContent, downloadedContent, "Downloaded image content should match uploaded content");
     }
 
     @Test
@@ -332,7 +334,7 @@ class ImageCrudIntegrationTests {
 
         mockMvc.perform(get(BASE_URL + "/{id}", userId)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -350,7 +352,7 @@ class ImageCrudIntegrationTests {
 
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
                 .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_ID))));
@@ -365,12 +367,12 @@ class ImageCrudIntegrationTests {
 
         mockMvc.perform(delete(BASE_URL + "/{id}", userId)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get(BASE_URL + "/{id}", userId)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -381,12 +383,16 @@ class ImageCrudIntegrationTests {
         UserDto createdUser = createUser("Henry", "Adams", false);
         Long userId = createdUser.getId();
 
-        MockMultipartFile emptyImage = new MockMultipartFile("file", "empty.png", "image/png", new byte[0]);
+        MockMultipartFile emptyImage = new MockMultipartFile("file", "empty.png", MediaType.IMAGE_PNG_VALUE, new byte[0]);
 
-        mockMvc.perform(multipart(BASE_URL + "/image/upload/{id}", userId)
+        mockMvc.perform(multipart(IMAGE_URL + "/upload/" + userId)
                         .file(emptyImage)
-                        .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        }))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -394,7 +400,7 @@ class ImageCrudIntegrationTests {
     @Order(12)
     @DisplayName("Concurrent create with image - should handle correctly")
     void testConcurrentCreateWithImage() throws Exception {
-        int threadCount = 3; // Reduced for efficiency
+        int threadCount = 3;
         CountDownLatch latch = new CountDownLatch(threadCount);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
@@ -414,9 +420,9 @@ class ImageCrudIntegrationTests {
                             "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
                     MockMultipartFile imagePart = createMockImage();
 
-                    mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "POST", userPart, imagePart)
+                    mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
                                     .header(TENANT_HEADER, TENANT_ID))
-                            .andDo(print()) // For debugging
+                            .andDo(print())
                             .andExpect(status().isOk())
                             .andExpect(jsonPath("$.id").exists())
                             .andExpect(jsonPath("$.imagePath").isNotEmpty());
@@ -433,7 +439,7 @@ class ImageCrudIntegrationTests {
 
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(threadCount))));
     }
@@ -443,7 +449,7 @@ class ImageCrudIntegrationTests {
     @DisplayName("Create user with invalid DTO - should fail")
     void testCreateUserWithInvalidDto() throws Exception {
         UserDto userDto = UserDto.builder()
-                .tenant(null) // Missing required field
+                .tenant(null)
                 .firstName("")
                 .lastName("")
                 .active(false)
@@ -473,9 +479,9 @@ class ImageCrudIntegrationTests {
                 "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
         MockMultipartFile invalidImage = createInvalidImage();
 
-        mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "POST", userPart, invalidImage)
+        mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, invalidImage)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -542,9 +548,9 @@ class ImageCrudIntegrationTests {
                             "dto", "", "application/json", objectMapper.writeValueAsString(updatedUserDto).getBytes());
                     MockMultipartFile imagePart = createMockImage();
 
-                    mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "PUT", userPart, imagePart)
+                    mockMvc.perform(buildMultipartRequest(IMAGE_URL + "/" + userId, "PUT", userPart, imagePart)
                                     .header(TENANT_HEADER, TENANT_ID))
-                            .andDo(print()) // For debugging
+                            .andDo(print())
                             .andExpect(status().isOk());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -559,7 +565,7 @@ class ImageCrudIntegrationTests {
 
         mockMvc.perform(get(BASE_URL + "/{id}", userId)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.imagePath").isNotEmpty());
     }
@@ -607,7 +613,7 @@ class ImageCrudIntegrationTests {
         for (Long userId : userIds) {
             mockMvc.perform(get(BASE_URL + "/{id}", userId)
                             .header(TENANT_HEADER, TENANT_ID))
-                    .andDo(print()) // For debugging
+                    .andDo(print())
                     .andExpect(status().isNotFound());
         }
     }
@@ -616,9 +622,9 @@ class ImageCrudIntegrationTests {
     @Order(20)
     @DisplayName("Download image from non-existent user - should fail")
     void testDownloadImageFromNonExistentUser() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/image/download/{id}", 999L)
+        mockMvc.perform(get(IMAGE_URL + "/download/999")
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -639,9 +645,9 @@ class ImageCrudIntegrationTests {
                 "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
         MockMultipartFile imagePart = createMockImage();
 
-        mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "PUT", userPart, imagePart)
+        mockMvc.perform(buildMultipartRequest(IMAGE_URL + "/999", "PUT", userPart, imagePart)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
@@ -653,9 +659,9 @@ class ImageCrudIntegrationTests {
                 "dto", "", "application/json", "invalid json".getBytes());
         MockMultipartFile imagePart = createMockImage();
 
-        mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "POST", userPart, imagePart)
+        mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -673,16 +679,16 @@ class ImageCrudIntegrationTests {
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
-                    MvcResult result = mockMvc.perform(get(BASE_URL + "/image/download/{id}", userId)
+                    MvcResult result = mockMvc.perform(get(IMAGE_URL + "/download/" + userId)
                                     .header(TENANT_HEADER, TENANT_ID))
-                            .andDo(print()) // For debugging
+                            .andDo(print())
                             .andExpect(status().isOk())
-                            .andExpect(content().contentType("image/png"))
+                            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE))
                             .andReturn();
 
                     byte[] downloadedContent = result.getResponse().getContentAsByteArray();
                     byte[] expectedContent = "mock image content".getBytes();
-                    Assertions.assertArrayEquals(expectedContent, downloadedContent, "Downloaded image content should match");
+                    assertArrayEquals(expectedContent, downloadedContent, "Downloaded image content should match");
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -721,9 +727,9 @@ class ImageCrudIntegrationTests {
     void testMultipartWithoutDto() throws Exception {
         MockMultipartFile imagePart = createMockImage();
 
-        mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "POST", imagePart)
+        mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", imagePart)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 

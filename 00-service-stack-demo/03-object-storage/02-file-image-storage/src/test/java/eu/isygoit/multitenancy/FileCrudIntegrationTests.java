@@ -17,7 +17,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -46,8 +45,7 @@ class FileCrudIntegrationTests {
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_ID = "tenants";
     private static final String BASE_URL = "/api/v1/contract";
-    private static final String FILE_UPLOAD_URL = BASE_URL + "/file";
-    private static final String FILE_DOWNLOAD_URL = BASE_URL + "/file/download";
+    private static final String FILE_URL = BASE_URL + "/file";
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
@@ -86,10 +84,9 @@ class FileCrudIntegrationTests {
 
     @BeforeEach
     void cleanUp() throws Exception {
-        // Fetch all contracts and delete them individually
         MvcResult result = mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID))
-                .andDo(print()) // For debugging
+                .andDo(print())
                 .andExpect(status().is(anyOf(is(HttpStatus.OK.value()), is(HttpStatus.NO_CONTENT.value()))))
                 .andReturn();
 
@@ -100,7 +97,7 @@ class FileCrudIntegrationTests {
             for (ContractDto contract : contracts) {
                 mockMvc.perform(delete(BASE_URL + "/{id}", contract.getId())
                                 .header(TENANT_HEADER, TENANT_ID))
-                        .andDo(print()) // For debugging
+                        .andDo(print())
                         .andExpect(status().isNoContent());
             }
         }
@@ -157,7 +154,7 @@ class FileCrudIntegrationTests {
                 MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsString(contractDto).getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(multipart(FILE_UPLOAD_URL)
+        mockMvc.perform(multipart(FILE_URL)
                         .file(file)
                         .file(dtoPart)
                         .header(TENANT_HEADER, TENANT_ID))
@@ -172,7 +169,6 @@ class FileCrudIntegrationTests {
     @Test
     @Order(3)
     void testUpdateContract() throws Exception {
-        // First, create a contract
         ContractDto contractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON003")
@@ -193,7 +189,6 @@ class FileCrudIntegrationTests {
         ContractDto createdContract = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ContractDto.class);
 
-        // Update the contract
         ContractDto updatedContractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON003")
@@ -218,7 +213,6 @@ class FileCrudIntegrationTests {
     @Test
     @Order(4)
     void testUpdateContractWithFile() throws Exception {
-        // First, create a contract
         ContractDto contractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON004")
@@ -239,7 +233,6 @@ class FileCrudIntegrationTests {
         ContractDto createdContract = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ContractDto.class);
 
-        // Update with file
         ContractDto updatedContractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON004")
@@ -262,16 +255,14 @@ class FileCrudIntegrationTests {
                 MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsString(updatedContractDto).getBytes(StandardCharsets.UTF_8));
 
-        MockHttpServletRequestBuilder builder = multipart(FILE_UPLOAD_URL)
-                .file(file)
-                .file(dtoPart)
-                .param("id", createdContract.getId().toString())
-                .header(TENANT_HEADER, TENANT_ID);
-
-        mockMvc.perform(builder.with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                }))
+        mockMvc.perform(multipart(FILE_URL + "/" + createdContract.getId())
+                        .file(file)
+                        .file(dtoPart)
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        }))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Contract with File"))
@@ -281,7 +272,6 @@ class FileCrudIntegrationTests {
     @Test
     @Order(5)
     void testFindContractById() throws Exception {
-        // First, create a contract
         ContractDto contractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON005")
@@ -302,7 +292,6 @@ class FileCrudIntegrationTests {
         ContractDto createdContract = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ContractDto.class);
 
-        // Find by ID
         mockMvc.perform(get(BASE_URL + "/" + createdContract.getId())
                         .header(TENANT_HEADER, TENANT_ID))
                 .andDo(print())
@@ -315,7 +304,6 @@ class FileCrudIntegrationTests {
     @Test
     @Order(6)
     void testFindAllContracts() throws Exception {
-        // Create multiple contracts
         ContractDto contract1 = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON006")
@@ -348,7 +336,6 @@ class FileCrudIntegrationTests {
                         .content(objectMapper.writeValueAsString(contract2)))
                 .andExpect(status().isCreated());
 
-        // Find all
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .param("page", "0")
@@ -362,7 +349,6 @@ class FileCrudIntegrationTests {
     @Test
     @Order(7)
     void testDeleteContract() throws Exception {
-        // First, create a contract
         ContractDto contractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON008")
@@ -383,13 +369,11 @@ class FileCrudIntegrationTests {
         ContractDto createdContract = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ContractDto.class);
 
-        // Delete the contract
         mockMvc.perform(delete(BASE_URL + "/" + createdContract.getId())
                         .header(TENANT_HEADER, TENANT_ID))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        // Verify it no longer exists
         mockMvc.perform(get(BASE_URL + "/" + createdContract.getId())
                         .header(TENANT_HEADER, TENANT_ID))
                 .andExpect(status().isNotFound());
@@ -398,7 +382,6 @@ class FileCrudIntegrationTests {
     @Test
     @Order(8)
     void testUploadFileToExistingContract() throws Exception {
-        // First, create a contract
         ContractDto contractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON009")
@@ -419,22 +402,19 @@ class FileCrudIntegrationTests {
         ContractDto createdContract = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ContractDto.class);
 
-        // Upload file
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "contract.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
                 "Contract file content".getBytes(StandardCharsets.UTF_8));
 
-        MockHttpServletRequestBuilder builder = multipart(BASE_URL + "/file/upload")
-                .file(file)
-                .param("id", createdContract.getId().toString())
-                .header(TENANT_HEADER, TENANT_ID);
-
-        mockMvc.perform(builder.with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                }))
+        mockMvc.perform(multipart(FILE_URL + "/upload/" + createdContract.getId())
+                        .file(file)
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        }))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.originalFileName").value("contract.pdf"));
@@ -443,12 +423,11 @@ class FileCrudIntegrationTests {
     @Test
     @Order(9)
     void testDownloadFile() throws Exception {
-        // First, create a contract with a file
         ContractDto contractDto = ContractDto.builder()
                 .tenant(TENANT_ID)
                 .code("CON010")
                 .title("Contract for File Download")
-                .description("Contract for file download test")
+                .description(" договор для теста скачивания файла")
                 .startDate(LocalDate.now().toString())
                 .endDate(LocalDate.now().plusDays(30).toString())
                 .active(true)
@@ -466,7 +445,7 @@ class FileCrudIntegrationTests {
                 MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsString(contractDto).getBytes(StandardCharsets.UTF_8));
 
-        MvcResult result = mockMvc.perform(multipart(FILE_UPLOAD_URL)
+        MvcResult result = mockMvc.perform(multipart(FILE_URL)
                         .file(file)
                         .file(dtoPart)
                         .header(TENANT_HEADER, TENANT_ID))
@@ -476,21 +455,17 @@ class FileCrudIntegrationTests {
         ContractDto createdContract = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ContractDto.class);
 
-        // Store the uploaded file size
         long uploadedFileSize = file.getSize();
 
-        // Download the file
-        MvcResult downloadResult = mockMvc.perform(get(FILE_DOWNLOAD_URL)
+        MvcResult downloadResult = mockMvc.perform(get(FILE_URL + "/download/" + createdContract.getId())
                         .header(TENANT_HEADER, TENANT_ID)
-                        .param("id", createdContract.getId().toString())
                         .param("version", "0"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("attachment; filename=\"download.pdf\"")))
-                .andExpect(content().contentType("multipart/form-data"))
+                .andExpect(content().contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
                 .andReturn();
 
-        // Verify the downloaded file size matches the uploaded file size
         byte[] downloadedContent = downloadResult.getResponse().getContentAsByteArray();
         assertThat("Downloaded file size should match uploaded file size", Long.valueOf(downloadedContent.length), is(uploadedFileSize));
     }
