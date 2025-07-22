@@ -244,7 +244,8 @@ class ImageCrudIntegrationTests {
         MockMultipartFile imagePart = createMockImage();
 
         mockMvc.perform(buildMultipartRequest(BASE_URL + "/image", "PUT", userPart, imagePart)
-                        .header(TENANT_HEADER, TENANT_ID))
+                        .header(TENANT_HEADER, TENANT_ID)
+                        .param("id", userId.toString()))
                 .andDo(print()) // For debugging
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))

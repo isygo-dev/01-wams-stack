@@ -41,9 +41,9 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
-    @PutMapping(path = "/file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/file/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                 @RequestParam(name = RestApiConstants.ID) I id,
+                                 @PathVariable(name = RestApiConstants.ID) I id,
                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 
     @Operation(summary = "Create a new object and upload linked file",
@@ -68,9 +68,9 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
-    @PutMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/file/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> updateWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                     @RequestParam(name = RestApiConstants.ID) I id,
+                                     @PathVariable(name = RestApiConstants.ID) I id,
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                      @RequestPart D dto);
 

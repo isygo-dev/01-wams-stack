@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -42,9 +43,9 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Resource.class))})
     })
-    @GetMapping(path = "/file/download")
+    @GetMapping(path = "/file/download/{id}")
     ResponseEntity<Resource> downloadFile(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-            @RequestParam(name = RestApiConstants.ID) I id,
+            @PathVariable(name = RestApiConstants.ID) I id,
             @RequestParam(name = RestApiConstants.VERSION) Long version);
 }

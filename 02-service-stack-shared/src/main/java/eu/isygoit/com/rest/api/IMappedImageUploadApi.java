@@ -64,9 +64,9 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
-    @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @RequestParam(name = RestApiConstants.ID) I id,
+                                      @PathVariable(name = RestApiConstants.ID) I id,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @RequestPart D dto);
 
@@ -86,7 +86,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
-    @PostMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
                                   @PathVariable(name = RestApiConstants.ID) I id,
                                   @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
