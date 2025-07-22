@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-multitenancy-schema</artifactId>
-    <version>WC-1.0.250707-T0839</version>
+    <version>WC-1.0.250722-T0122</version>
     <packaging>jar</packaging>
     <name>poc-multitenancy-schema</name>
     <description>poc-multitenancy-schema</description>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
-            <version>WS-1.0.250707-T0839</version>
+            <version>WS-1.0.250722-T0122</version>
         </dependency>
 
         <dependency>

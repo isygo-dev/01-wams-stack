@@ -10,7 +10,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack</artifactId>
-    <version>WS-1.0.250707-T0839</version>
+    <version>WS-1.0.250722-T0122</version>
 
     <name>service-stack</name>
     <description>service-stack</description>

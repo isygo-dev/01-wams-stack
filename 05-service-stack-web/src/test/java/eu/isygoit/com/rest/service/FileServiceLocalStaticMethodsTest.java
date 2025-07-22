@@ -86,7 +86,7 @@ class FileServiceLocalStaticMethodsTest {
     void upload_shouldCreateDirectoryAndStoreFile() throws IOException {
         var fileContent = "Upload test content";
         var file = new MockMultipartFile("file", "upload.txt", "text/plain", fileContent.getBytes());
-        var resume = createResume(TEMP_DIR.resolve("nested").toString(), "upload.txt", "upload.txt");
+        var resume = createResume(TEMP_DIR.resolve("nested").toString(), "upload", "upload.txt");
 
         String returnedCode = FileServiceLocalStaticMethods.upload(file, resume);
 
@@ -94,12 +94,12 @@ class FileServiceLocalStaticMethodsTest {
         assertTrue(Files.exists(Path.of(resume.getPath())));
 
         // File should exist and content should match
-        Path uploadedFilePath = Path.of(resume.getPath()).resolve(resume.getCode());
+        Path uploadedFilePath = Path.of(resume.getPath()).resolve(resume.getCode() + ".txt");
         assertTrue(Files.exists(uploadedFilePath));
         assertEquals(fileContent, Files.readString(uploadedFilePath));
 
         // Returned code should be the file code
-        assertEquals(resume.getCode(), returnedCode);
+        assertEquals(resume.getCode()+ ".txt", returnedCode);
 
         Files.deleteIfExists(uploadedFilePath);
     }
@@ -195,7 +195,7 @@ class FileServiceLocalStaticMethodsTest {
         Path filePath = TEMP_DIR.resolve("overwrite.txt");
         Files.writeString(filePath, "Old content");
 
-        var oldFile = createResume(TEMP_DIR.toString(), "overwrite.txt", "overwrite.txt");
+        var oldFile = createResume(TEMP_DIR.toString(), "overwrite", "overwrite.txt");
         var newFileContent = "New content";
         var newFile = new MockMultipartFile("file", "overwrite.txt", "text/plain", newFileContent.getBytes());
 
