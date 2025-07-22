@@ -1,11 +1,11 @@
-package eu.isygoit.multitenancy.controller;
+package eu.isygoit.multitenancy.controller.file;
 
 import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectService;
 import eu.isygoit.com.rest.controller.impl.tenancy.MappedCrudTenantController;
 import eu.isygoit.multitenancy.dto.ContractDto;
 import eu.isygoit.multitenancy.mapper.ContractMapper;
-import eu.isygoit.multitenancy.model.ContractEntity;
+import eu.isygoit.multitenancy.model.file.ContractEntity;
 import eu.isygoit.multitenancy.service.ContractService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;

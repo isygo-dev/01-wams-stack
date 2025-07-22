@@ -31,7 +31,7 @@ public interface IMappedCrudDeleteApi<I> {
      * Deletes a single object by its identifier.
      *
      * @param requestContext User context from JWT token
-     * @param id Object identifier
+     * @param id             Object identifier
      * @return ResponseEntity with no content on success
      */
     @Operation(summary = "Delete object by ID",

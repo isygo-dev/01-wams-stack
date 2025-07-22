@@ -38,8 +38,8 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
      * Retrieves all objects with minimal data by page.
      *
      * @param requestContext User context from JWT token
-     * @param page Page number for pagination (0-based)
-     * @param size Number of items per page
+     * @param page           Page number for pagination (0-based)
+     * @param size           Number of items per page
      * @return List of minimal DTO objects
      */
     @Operation(summary = "Find all objects with pagination",
@@ -69,8 +69,8 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
      * Retrieves all objects with full data.
      *
      * @param requestContext User context from JWT token
-     * @param page Page number for pagination (0-based)
-     * @param size Number of items per page
+     * @param page           Page number for pagination (0-based)
+     * @param size           Number of items per page
      * @return List of full DTO objects
      */
     @Operation(summary = "Find all objects with full data",
@@ -100,7 +100,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
      * Retrieves a single object by its identifier.
      *
      * @param requestContext User context from JWT token
-     * @param id Object identifier
+     * @param id             Object identifier
      * @return Single full DTO object
      */
     @Operation(summary = "Find object by ID",
@@ -150,9 +150,9 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
      * Retrieves objects filtered by criteria with pagination.
      *
      * @param requestContext User context from JWT token
-     * @param criteria Filter criteria string
-     * @param page Page number for pagination (0-based)
-     * @param size Number of items per page
+     * @param criteria       Filter criteria string
+     * @param page           Page number for pagination (0-based)
+     * @param size           Number of items per page
      * @return List of full DTO objects matching criteria
      */
     @Operation(summary = "Find objects by filter criteria",

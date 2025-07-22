@@ -141,7 +141,7 @@ class ImageCrudIntegrationTests {
             MvcResult result = mockMvc.perform(builder
                             .header(TENANT_HEADER, TENANT_ID))
                     .andDo(print())
-                    .andExpect(status().isOk())
+                    .andExpect(status().isCreated())
                     .andReturn();
             return objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
         } else {
@@ -213,7 +213,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
                         .header(TENANT_HEADER, TENANT_ID))
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
                 .andExpect(jsonPath("$.firstName").value("Jane"))

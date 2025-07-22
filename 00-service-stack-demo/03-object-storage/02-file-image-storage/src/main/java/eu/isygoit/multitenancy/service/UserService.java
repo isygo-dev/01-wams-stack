@@ -6,7 +6,7 @@ import eu.isygoit.com.rest.service.tenancy.ImageTenantService;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.multitenancy.model.AppNextCode;
-import eu.isygoit.multitenancy.model.UserEntity;
+import eu.isygoit.multitenancy.model.image.UserEntity;
 import eu.isygoit.multitenancy.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

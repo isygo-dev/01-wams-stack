@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy.dto;
 
 import eu.isygoit.dto.IFileUploadDto;
+import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ContractDto extends AbstractAuditableDto<Long> implements IFileUploadDto {
+public class ResumeDto extends AbstractAuditableDto<Long> implements IFileUploadDto, IImageUploadDto {
 
     private String tenant;
 
@@ -28,4 +29,7 @@ public class ContractDto extends AbstractAuditableDto<Long> implements IFileUplo
 
     //IFileUploadDto fields
     private String originalFileName;
+
+    //IImageUploadDto fields
+    private String imagePath;
 }

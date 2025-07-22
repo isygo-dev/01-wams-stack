@@ -25,5 +25,6 @@ public class UserDto extends AbstractAuditableDto<Long> implements IImageUploadD
     @Builder.Default
     private boolean active = Boolean.FALSE;
 
+    //IImageUploadDto fields
     private String imagePath;
 }

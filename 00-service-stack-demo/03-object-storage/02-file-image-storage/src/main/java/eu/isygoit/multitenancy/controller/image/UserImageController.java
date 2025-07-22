@@ -1,11 +1,11 @@
-package eu.isygoit.multitenancy.controller;
+package eu.isygoit.multitenancy.controller.image;
 
 import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectService;
 import eu.isygoit.com.rest.controller.impl.tenancy.MappedImageTenantController;
 import eu.isygoit.multitenancy.dto.UserDto;
 import eu.isygoit.multitenancy.mapper.UserMapper;
-import eu.isygoit.multitenancy.model.UserEntity;
+import eu.isygoit.multitenancy.model.image.UserEntity;
 import eu.isygoit.multitenancy.service.UserService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;

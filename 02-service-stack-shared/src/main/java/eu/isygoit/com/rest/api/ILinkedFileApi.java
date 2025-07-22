@@ -28,7 +28,8 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     /**
      * Upload response entity.
      *
-     * @param linkedFile the linked file
+     * @param requestContext the request context
+     * @param linkedFile     the linked file
      * @return the response entity
      * @throws IOException the io exception
      */

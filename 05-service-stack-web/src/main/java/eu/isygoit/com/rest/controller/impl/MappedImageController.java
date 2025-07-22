@@ -80,7 +80,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
                 ITenantAssignableDto.setTenant(requestContext.getSenderTenant());
             }
             dto = this.beforeCreate(dto);
-            return ResponseFactory.responseOk(mapper().entityToDto(
+            return ResponseFactory.responseCreated(mapper().entityToDto(
                     this.afterCreate(crudService().createWithImage(mapper().dtoToEntity(dto), file))));
         } catch (Throwable e) {
             log.error("<Error>: create with image : {} ", e);

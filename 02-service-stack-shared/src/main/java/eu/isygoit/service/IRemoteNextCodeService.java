@@ -44,6 +44,7 @@ public interface IRemoteNextCodeService {
     /**
      * Subscribe next code response entity.
      *
+     * @param requestContext    the request context
      * @param tenant            the tenant
      * @param incrementalConfig the incremental config
      * @return the response entity

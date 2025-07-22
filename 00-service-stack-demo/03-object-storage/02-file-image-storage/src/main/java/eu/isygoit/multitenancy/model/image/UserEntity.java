@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.model;
+package eu.isygoit.multitenancy.model.image;
 
 import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.ICodeAssignable;

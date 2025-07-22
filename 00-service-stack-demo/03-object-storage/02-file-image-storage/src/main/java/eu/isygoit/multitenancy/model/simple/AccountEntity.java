@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.model;
+package eu.isygoit.multitenancy.model.simple;
 
 import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.ITenantAssignable;

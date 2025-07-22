@@ -46,6 +46,14 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                                  @PathVariable(name = RestApiConstants.ID) I id,
                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 
+    /**
+     * Create with file response entity.
+     *
+     * @param requestContext the request context
+     * @param file           the file
+     * @param dto            the dto
+     * @return the response entity
+     */
     @Operation(summary = "Create a new object and upload linked file",
             description = "Create a new object and upload linked file")
     @ApiResponses(value = {
@@ -60,6 +68,15 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                                      @RequestPart D dto);
 
 
+    /**
+     * Update with file response entity.
+     *
+     * @param requestContext the request context
+     * @param id             the id
+     * @param file           the file
+     * @param dto            the dto
+     * @return the response entity
+     */
     @Operation(summary = "Upload a new file and update the linked object",
             description = "Upload a new file and update the linked object")
     @ApiResponses(value = {

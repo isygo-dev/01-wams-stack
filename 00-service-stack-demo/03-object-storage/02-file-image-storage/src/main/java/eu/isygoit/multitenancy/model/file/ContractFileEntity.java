@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.model;
+package eu.isygoit.multitenancy.model.file;
 
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.extendable.FileEntity;

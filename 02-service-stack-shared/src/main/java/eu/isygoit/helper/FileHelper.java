@@ -73,7 +73,7 @@ public interface FileHelper {
      *
      * @param targetDirectory the directory where the file will be saved
      * @param fileName        the desired filename
-     * @param file   the file to save
+     * @param file            the file to save
      * @param fileExtension   the file extension (optional)
      * @param options         the options
      * @return the Path of the saved file
@@ -261,6 +261,12 @@ public interface FileHelper {
         return filePaths;
     }
 
+    /**
+     * Is image boolean.
+     *
+     * @param file the file
+     * @return the boolean
+     */
     static boolean isImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return false;

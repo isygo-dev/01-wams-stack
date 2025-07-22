@@ -34,7 +34,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
      * Creates a new object.
      *
      * @param requestContext User context from JWT token
-     * @param object The object to create
+     * @param object         The object to create
      * @return ResponseEntity containing the created object with its assigned ID
      */
     @Operation(summary = "Create a new object",
@@ -65,7 +65,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
      * Creates multiple objects in a single request.
      *
      * @param requestContext User context from JWT token
-     * @param objects List of objects to create
+     * @param objects        List of objects to create
      * @return ResponseEntity containing the list of created objects with their assigned IDs
      */
     @Operation(summary = "Batch create objects",
@@ -96,8 +96,8 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
      * Updates an existing object.
      *
      * @param requestContext User context from JWT token
-     * @param id Object identifier
-     * @param object The updated object data
+     * @param id             Object identifier
+     * @param object         The updated object data
      * @return ResponseEntity containing the updated object
      */
     @Operation(summary = "Update an existing object",

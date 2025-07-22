@@ -52,6 +52,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
      * Update with image response entity.
      *
      * @param requestContext the request context
+     * @param id             the id
      * @param file           the file
      * @param dto            the dto
      * @return the response entity

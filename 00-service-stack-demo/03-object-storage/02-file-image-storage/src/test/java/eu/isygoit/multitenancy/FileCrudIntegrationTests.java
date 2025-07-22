@@ -22,7 +22,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -111,8 +111,8 @@ class FileCrudIntegrationTests {
                 .code("CON001")
                 .title("Test Contract")
                 .description("Test contract description")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(90))
                 .active(true)
                 .build();
 
@@ -137,8 +137,8 @@ class FileCrudIntegrationTests {
                 .code("CON002")
                 .title("Contract with File")
                 .description("Contract with file upload")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now())
                 .active(true)
                 .build();
 
@@ -174,8 +174,8 @@ class FileCrudIntegrationTests {
                 .code("CON003")
                 .title("Original Contract")
                 .description("Original description")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -194,8 +194,8 @@ class FileCrudIntegrationTests {
                 .code("CON003")
                 .title("Updated Contract")
                 .description("Updated description")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(60).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(60))
                 .active(false)
                 .build();
 
@@ -218,8 +218,8 @@ class FileCrudIntegrationTests {
                 .code("CON004")
                 .title("Contract for Update")
                 .description("Contract for file update")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -238,8 +238,8 @@ class FileCrudIntegrationTests {
                 .code("CON004")
                 .title("Updated Contract with File")
                 .description("Updated with file")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(60).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(60))
                 .active(true)
                 .build();
 
@@ -277,8 +277,8 @@ class FileCrudIntegrationTests {
                 .code("CON005")
                 .title("Contract to Find")
                 .description("Contract for find by ID")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -309,8 +309,8 @@ class FileCrudIntegrationTests {
                 .code("CON006")
                 .title("Contract 1")
                 .description("First contract")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -319,8 +319,8 @@ class FileCrudIntegrationTests {
                 .code("CON007")
                 .title("Contract 2")
                 .description("Second contract")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -354,8 +354,8 @@ class FileCrudIntegrationTests {
                 .code("CON008")
                 .title("Contract to Delete")
                 .description("Contract for deletion")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -387,8 +387,8 @@ class FileCrudIntegrationTests {
                 .code("CON009")
                 .title("Contract for File Upload")
                 .description("Contract for file upload test")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
@@ -428,8 +428,8 @@ class FileCrudIntegrationTests {
                 .code("CON010")
                 .title("Contract for File Download")
                 .description(" договор для теста скачивания файла")
-                .startDate(LocalDate.now().toString())
-                .endDate(LocalDate.now().plusDays(30).toString())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .active(true)
                 .build();
 
