@@ -32,7 +32,7 @@ public class ContractService extends FileTenantService<Long, ContractEntity, Con
                 .attribute(ComSchemaColumnConstantName.C_CODE)
                 .prefix("CTR")
                 .valueLength(6L)
-                .value(1L)
+                .codeValue(1L)
                 .increment(1)
                 .build();
     }

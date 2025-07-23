@@ -32,7 +32,7 @@ public class ResumeService extends FileImageTenantService<Long, ResumeEntity, Re
                 .attribute(ComSchemaColumnConstantName.C_CODE)
                 .prefix("RES")
                 .valueLength(6L)
-                .value(1L)
+                .codeValue(1L)
                 .increment(1)
                 .build();
     }

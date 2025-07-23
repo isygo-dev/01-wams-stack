@@ -32,7 +32,7 @@ public class UserService extends ImageTenantService<Long, UserEntity, UserReposi
                 .attribute(ComSchemaColumnConstantName.C_CODE)
                 .prefix("USR")
                 .valueLength(6L)
-                .value(1L)
+                .codeValue(1L)
                 .increment(1)
                 .build();
     }

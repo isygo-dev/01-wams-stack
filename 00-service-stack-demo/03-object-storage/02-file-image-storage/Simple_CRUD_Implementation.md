@@ -103,7 +103,7 @@ cover various scenarios, including concurrent operations and filtering.
 - **Database**: PostgreSQL 15 (configured via Testcontainers).
 - **Multitenancy**: Uses GDM mode with tenant-specific schemas.
 - **Properties**:
-    - `spring.jpa.hibernate.ddl-auto=update`
+    - `spring.jpa.hibernate.ddl-auto=create`
     - `multitenancy.mode=GDM`
     - Dynamic datasource configuration for tenants.
 

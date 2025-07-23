@@ -38,7 +38,7 @@ public class ResumeMultiFileService extends MultiFileTenantService<Long, ResumeE
                 .attribute(ComSchemaColumnConstantName.C_CODE)
                 .prefix("RLF")
                 .valueLength(6L)
-                .value(1L)
+                .codeValue(1L)
                 .increment(1)
                 .build();
     }

@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests focus on CRUD operations, edge cases, and data integrity in a multitenant environment.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=update",
+        "spring.jpa.hibernate.ddl-auto=create",
         "multitenancy.mode=GDM"
 })
 @ActiveProfiles("postgres")

@@ -1,16 +1,9 @@
 server:
   port: 8081
 
-#logging:
-#  level:
-#    root: DEBUG
-#    org.springframework.web: DEBUG
-#    org.springframework.boot.autoconfigure: DEBUG
-
 spring:
   application:
-    name: multitenancy - discriminator tenant demo
-
+    name: Poc Entity with attachments
   h2:
     console:
       enabled: true
@@ -26,7 +19,7 @@ spring:
     show-sql: true
     format_sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect

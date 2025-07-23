@@ -1,9 +1,9 @@
 server:
-  port: 8081  # ? Set your custom server port
+  port: 8081
 
 spring:
   application:
-    name: Multi tenancy - discriminator tenant demo
+    name: Poc Entity with attachments
 
   datasource:
     url: jdbc:postgresql://localhost:5432/tenants?currentSchema=public
@@ -15,14 +15,14 @@ spring:
     show-sql: true
     format_sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       properties:
         hibernate:
           dialect: org.hibernate.dialect.PostgreSQLDialect
 
 multitenancy:
   filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+  mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
   tenants:
     - id: tenants
       url: jdbc:postgresql://localhost:5432/tenants

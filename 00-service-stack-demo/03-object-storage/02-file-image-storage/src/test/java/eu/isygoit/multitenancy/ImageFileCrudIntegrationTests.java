@@ -32,9 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=update",
-        "multitenancy.mode=GDM",
-        "spring.jpa.hibernate.ddl-auto=create"
+        "spring.jpa.hibernate.ddl-auto=create",
+        "multitenancy.mode=GDM"
 })
 @ActiveProfiles("postgres")
 @AutoConfigureMockMvc
