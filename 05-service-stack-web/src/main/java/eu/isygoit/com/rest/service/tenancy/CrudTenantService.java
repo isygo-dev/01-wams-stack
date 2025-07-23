@@ -45,7 +45,6 @@ public abstract class CrudTenantService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudTenantServiceMethods<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
-    private static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1];
 
@@ -89,6 +88,18 @@ public abstract class CrudTenantService<I extends Serializable,
         return (JpaPagingAndSortingTenantAssignableRepository) repository();
     }
 
+    private static void validateTenantNotNull(String tenant) {
+        if (!StringUtils.hasText(tenant)) {
+            throw new BadArgumentException("tenant is null or empty");
+        }
+    }
+
+    private static <I extends Serializable> void validateIdNotNull(I id) {
+        if (id == null) {
+            throw new BadArgumentException("id is null");
+        }
+    }
+
     /**
      * Counts entities for a specific tenant.
      *
@@ -99,6 +110,8 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional(readOnly = true)
     public Long count(String tenant) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
+
         log.info("Counting {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
         var count = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.count()
@@ -119,6 +132,9 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional(readOnly = true)
     public boolean existsById(String tenant, I id) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
+        validateIdNotNull(id);
+
         log.info("Checking existence of {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
         var exists = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.existsById(id)
@@ -140,7 +156,10 @@ public abstract class CrudTenantService<I extends Serializable,
     public T create(String tenant, T object) {
         try {
             var jpaRepo = getTenantAssignableRepository();
+            validateTenantNotNull(tenant);
             validateObjectNotNull(object);
+
+
             log.info("Creating {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
             log.debug("Input entity: {}", object);
 
@@ -176,7 +195,9 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional
     public List<T> createBatch(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
+
         log.info("Creating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
         // Process bulk creation in batch
@@ -209,6 +230,7 @@ public abstract class CrudTenantService<I extends Serializable,
     public T update(String tenant, T object) {
         try {
             var jpaRepo = getTenantAssignableRepository();
+            validateTenantNotNull(tenant);
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
             validateObjectExists(object);
@@ -245,6 +267,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional
     public List<T> updateBatch(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
         log.info("Updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
@@ -276,11 +299,8 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     @Transactional
     public void delete(String tenant, I id) {
-        var jpaRepo = getTenantAssignableRepository();
-        if (id == null) {
-            log.error("Null ID provided for delete operation");
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_ID_PROVIDED);
-        }
+        validateTenantNotNull(tenant);
+        validateIdNotNull(id);
         log.info("Deleting {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
 
         // Process deletion
@@ -306,6 +326,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional
     public void deleteBatch(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
         log.info("Deleting {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
@@ -329,6 +350,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional(readOnly = true)
     public List<T> findAll(String tenant) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         log.info("Retrieving all {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
         var list = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findAll()
@@ -349,6 +371,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional(readOnly = true)
     public List<T> findAll(String tenant, Pageable pageable) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         log.info("Retrieving paginated {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Pageable: {}", pageable);
         var page = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
@@ -373,10 +396,8 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional(readOnly = true)
     public Optional<T> findById(String tenant, I id) {
         var jpaRepo = getTenantAssignableRepository();
-        if (id == null) {
-            log.error("Null ID provided for findById operation");
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
-        }
+        validateTenantNotNull(tenant);
+        validateIdNotNull(id);
         log.info("Retrieving {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
         var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findById(id)
@@ -400,6 +421,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional
     public T saveOrUpdate(String tenant, T object) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         validateObjectNotNull(object);
         log.info("Saving or updating {} entity with ID: {} for tenant: {}",
                 persistentClass.getSimpleName(), object.getId(), tenant);
@@ -421,6 +443,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Transactional
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
         var jpaRepo = getTenantAssignableRepository();
+        validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
         log.info("Saving or updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
@@ -447,6 +470,8 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
+        validateTenantNotNull(tenant);
+        validateListNotEmpty(criteria);
         var jpaRepo = getTenantAssignableRepository();
         if (CollectionUtils.isEmpty(criteria)) {
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
@@ -474,11 +499,9 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     @Transactional(readOnly = true)
     public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+        validateTenantNotNull(tenant);
+        validateListNotEmpty(criteria);
         var jpaRepo = getTenantAssignableRepository();
-        if (CollectionUtils.isEmpty(criteria)) {
-            log.error("Null or empty criteria provided for findAllByCriteriaFilter");
-            throw new EmptyCriteriaFilterException("Criteria filter list is null or empty");
-        }
         log.info("Retrieving paginated {} entities by criteria for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Criteria: {}, PageRequest: {}", criteria, pageRequest);
         var specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);

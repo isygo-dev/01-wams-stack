@@ -1,7 +1,6 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.constants.LogConstants;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.jwt.filter.QueryCriteria;
@@ -11,7 +10,6 @@ import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
-import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -73,20 +71,6 @@ public abstract class CrudService<I extends Serializable,
             log.error("Null ID provided for object: {}", object.getClass().getSimpleName());
             throw new NullIdentifierException(object.getClass().getSimpleName() + ": with id null");
         }
-    }
-
-    /**
-     * Retrieves the tenant-aware repository, throwing an exception if not applicable.
-     *
-     * @return the tenant-aware repository
-     * @throws OperationNotSupportedException if the entity or repository is not tenant-aware
-     */
-    private JpaPagingAndSortingTenantAssignableRepository getTenantAssignableRepository() {
-        if (!isTenantAssignable || !(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
-            log.error("Entity {} is not tenant assignable", persistentClass.getSimpleName());
-            throw new OperationNotSupportedException("Entity is not tenant assignable: " + persistentClass.getSimpleName());
-        }
-        return (JpaPagingAndSortingTenantAssignableRepository) repository();
     }
 
     /**
@@ -608,28 +592,6 @@ public abstract class CrudService<I extends Serializable,
             log.debug("Applying {} attributes for entity", type.getSimpleName());
             action.accept(type.cast(target), type.cast(source));
         }
-    }
-
-    /**
-     * Validates tenant access for an entity.
-     *
-     * @param tenant the tenant identifier
-     * @param id     the entity ID
-     * @throws TenantNotAllowedException if the tenant has no access
-     */
-    private Optional<T> validateTenantAccess(String tenant, I id) {
-        if (isTenantAssignable) {
-            Optional<T> optional = repository().findById(id);
-            if (optional.isPresent()) {
-                if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant) && !tenant.equals(((ITenantAssignable) optional.get()).getTenant())) {
-                    log.error("Tenant {} has no access to entity with ID: {}", tenant, id);
-                    throw new TenantNotAllowedException("Tenant has no access to the object");
-                }
-                return optional;
-            }
-        }
-
-        return Optional.empty();
     }
 
     /**
