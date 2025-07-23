@@ -39,8 +39,8 @@ public abstract class NextCodeModel<I extends Serializable> implements IIdAssign
     @Column(name = ComSchemaColumnConstantName.C_SUFFIX, length = ComSchemaConstantSize.CODE)
     private String suffix;
     @Builder.Default
-    @Column(name = ComSchemaColumnConstantName.C_VALUE, nullable = false)
-    private Long value = 0L;
+    @Column(name = ComSchemaColumnConstantName.C_CODE_VALUE, nullable = false)
+    private Long codeValue = 0L;
     @Builder.Default
     @Column(name = ComSchemaColumnConstantName.C_VALUE_LENGTH, nullable = false)
     private Long valueLength = 6L;
@@ -55,7 +55,7 @@ public abstract class NextCodeModel<I extends Serializable> implements IIdAssign
      */
     public String getCode() {
         return ((prefix != null ? prefix.trim() : "")
-                + String.format("%1$" + (valueLength != null ? valueLength : 6L) + "s", (value != null ? value : 0L))
+                + String.format("%1$" + (valueLength != null ? valueLength : 6L) + "s", (codeValue != null ? codeValue : 0L))
                 + (suffix != null ? suffix.trim() : ""))
                 .replace(" ", "0");
     }
@@ -66,7 +66,7 @@ public abstract class NextCodeModel<I extends Serializable> implements IIdAssign
      * @return the next code model
      */
     public NextCodeModel nextCode() {
-        value += (increment != null ? increment : 1);
+        codeValue += (increment != null ? increment : 1);
         return this;
     }
 }

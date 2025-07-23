@@ -690,4 +690,8 @@ public interface ComSchemaColumnConstantName {
      * The constant C_INDUSTRY.
      */
     String C_INDUSTRY = "INDUSTRY";
+    /**
+     * The constant C_CODE_VALUE.
+     */
+    String C_CODE_VALUE = "CODE_VALUE";
 }

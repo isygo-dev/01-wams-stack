@@ -22,7 +22,7 @@ public class NextCodeDto extends AbstractAuditableDto<Long> {
     private String prefix;
     private String suffix;
     @Builder.Default
-    private Long value = 0L;
+    private Long codeValue = 0L;
     @Builder.Default
     private Long valueLength = 6L;
     @Builder.Default
@@ -35,7 +35,7 @@ public class NextCodeDto extends AbstractAuditableDto<Long> {
      */
     public String getCode() {
         return ((prefix != null ? prefix.trim() : "")
-                + String.format("%1$" + (valueLength != null ? valueLength : 6L) + "s", (value != null ? value : 0L))
+                + String.format("%1$" + (valueLength != null ? valueLength : 6L) + "s", (codeValue != null ? codeValue : 0L))
                 + (suffix != null ? suffix.trim() : ""))
                 .replace(" ", "0");
     }
@@ -46,7 +46,7 @@ public class NextCodeDto extends AbstractAuditableDto<Long> {
      * @return the next code dto
      */
     public NextCodeDto nextCode() {
-        value += (increment != null ? increment : 1);
+        codeValue += (increment != null ? increment : 1);
         return this;
     }
 }

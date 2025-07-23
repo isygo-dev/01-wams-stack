@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The type Tenant to context filter.
@@ -21,7 +22,10 @@ import java.util.Map;
 @Component
 public class TenantToContextFilter extends OncePerRequestFilter {
 
+    private static final String SWAGGER_PATTERN = "/swagger-ui";
+    private static final String API_DOCS_PATTERN = "/v3/api-docs";
     private static final String TENANT_HEADER = "X-Tenant-ID";
+    private static final Map<String, Boolean> URI_FILTER_CACHE = new ConcurrentHashMap<>();
 
     private final ITenantValidator tenantValidator;
 
@@ -32,6 +36,19 @@ public class TenantToContextFilter extends OncePerRequestFilter {
      */
     public TenantToContextFilter(ITenantValidator tenantValidator) {
         this.tenantValidator = tenantValidator;
+    }
+
+    private boolean shouldSkipUri(String uri) {
+        return  uri.contains(SWAGGER_PATTERN)||
+                uri.contains(API_DOCS_PATTERN);
+    }
+
+    @Override
+    public boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        // Check cache first to avoid string operations for frequent requests
+        return URI_FILTER_CACHE.computeIfAbsent(uri, this::shouldSkipUri);
     }
 
     @Override

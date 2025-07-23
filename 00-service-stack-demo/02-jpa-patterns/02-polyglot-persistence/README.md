@@ -94,7 +94,7 @@ data. The `UserLoginEventTenantService` orchestrates tenant-aware operations usi
       spring.datasource.url=jdbc:postgresql://localhost:5432/demo_db
       spring.datasource.username=your_username
       spring.datasource.password=your_password
-      spring.jpa.hibernate.ddl-auto=update
+      spring.jpa.hibernate.ddl-auto=create
       ```
 
 4. **Build and Run**:

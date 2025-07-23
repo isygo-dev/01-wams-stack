@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * This test suite verifies tenant isolation at the database level by simulating HTTP calls using MockMvc.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=update",
+        "spring.jpa.hibernate.ddl-auto=create",
         "multitenancy.mode=DATABASE"
 })
 @ActiveProfiles("h2")

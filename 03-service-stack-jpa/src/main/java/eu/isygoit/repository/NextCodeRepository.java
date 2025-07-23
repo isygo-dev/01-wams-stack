@@ -49,7 +49,7 @@ public interface NextCodeRepository<T extends NextCodeModel<I> & ITenantAssignab
      * @param increment the increment
      */
     @Modifying
-    @Query("update AppNextCode set value = value + :increment where tenant = :tenant and entity = :entity")
+    @Query("update AppNextCode set codeValue = codeValue + :increment where tenant = :tenant and entity = :entity")
     void increment(@Param("tenant") String tenant,
                    @Param("entity") String entity,
                    @Param("increment") Integer increment);

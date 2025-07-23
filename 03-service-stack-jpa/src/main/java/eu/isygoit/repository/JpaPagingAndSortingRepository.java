@@ -20,5 +20,11 @@ import java.util.List;
 public interface JpaPagingAndSortingRepository<T extends IIdAssignable<I>, I extends Serializable>
         extends JpaRepository<T, I>, JpaSpecificationExecutor<T> {
 
+    /**
+     * Find by id in list.
+     *
+     * @param ids the ids
+     * @return the list
+     */
     List<T> findByIdIn(List<I> ids);
 }

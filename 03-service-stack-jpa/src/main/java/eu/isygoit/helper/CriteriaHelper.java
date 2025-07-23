@@ -67,6 +67,12 @@ public final class CriteriaHelper {
         return sqlWhere.replaceAll("(?i)^\\s*WHERE\\s*", "").trim();
     }
 
+    /**
+     * Has balanced parentheses boolean.
+     *
+     * @param whereClause the where clause
+     * @return the boolean
+     */
     public static boolean hasBalancedParentheses(String whereClause) {
         long openCount = whereClause.chars().filter(c -> c == '(').count();
         long closeCount = whereClause.chars().filter(c -> c == ')').count();
@@ -385,6 +391,14 @@ public final class CriteriaHelper {
         return specification;
     }
 
+    /**
+     * Like specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     public static <T extends IIdAssignable> Specification<T> like(String fieldName, String value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.like(root.get(fieldName), "%" + value + "%");
@@ -392,39 +406,95 @@ public final class CriteriaHelper {
 
     // Enhanced specification methods with better type handling
 
+    /**
+     * Not like specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     public static <T extends IIdAssignable> Specification<T> notLike(String fieldName, String value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.notLike(root.get(fieldName), "%" + value + "%");
     }
 
+    /**
+     * Equal specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     public static <T extends IIdAssignable> Specification<T> equal(String fieldName, Object value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get(fieldName), value);
     }
 
+    /**
+     * Not equal specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     public static <T extends IIdAssignable> Specification<T> notEqual(String fieldName, Object value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.notEqual(root.get(fieldName), value);
     }
 
+    /**
+     * Less than specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IIdAssignable> Specification<T> lessThan(String fieldName, Object value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.lessThan(root.get(fieldName), (Comparable<Object>) value);
     }
 
+    /**
+     * Less than or equal to specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IIdAssignable> Specification<T> lessThanOrEqualTo(String fieldName, Object value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.lessThanOrEqualTo(root.get(fieldName), (Comparable<Object>) value);
     }
 
+    /**
+     * Greater than specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IIdAssignable> Specification<T> greaterThan(String fieldName, Object value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.greaterThan(root.get(fieldName), (Comparable<Object>) value);
     }
 
+    /**
+     * Greater than or equal to specification.
+     *
+     * @param <T>       the type parameter
+     * @param fieldName the field name
+     * @param value     the value
+     * @return the specification
+     */
     @SuppressWarnings("unchecked")
     public static <T extends IIdAssignable> Specification<T> greaterThanOrEqualTo(String fieldName, Object value) {
         return (root, query, criteriaBuilder) ->
@@ -440,6 +510,8 @@ public final class CriteriaHelper {
 
     /**
      * Gets the size of the criteria cache.
+     *
+     * @return the cache size
      */
     public static int getCacheSize() {
         return CRITERIA_CACHE.size();

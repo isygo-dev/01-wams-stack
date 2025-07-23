@@ -17,11 +17,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * The type Json based entity helper.
+ */
 @Slf4j
 public class JsonBasedEntityHelper {
 
     /**
      * Evaluates a list of criteria against an entity.
+     *
+     * @param <T>      the type parameter
+     * @param entity   the entity
+     * @param criteria the criteria
+     * @return the boolean
      */
     public static <T> boolean evaluateCriteria(T entity, List<QueryCriteria> criteria) {
         boolean result = true; // Default for first criterion
@@ -45,6 +53,11 @@ public class JsonBasedEntityHelper {
 
     /**
      * Evaluates a single criterion against an entity.
+     *
+     * @param <T>       the type parameter
+     * @param entity    the entity
+     * @param criterion the criterion
+     * @return the boolean
      */
     public static <T> boolean evaluateSingleCriterion(T entity, QueryCriteria criterion) {
         try {
@@ -125,6 +138,10 @@ public class JsonBasedEntityHelper {
 
     /**
      * Validates criteria against the fields of a given JSON element class.
+     *
+     * @param <T>              the type parameter
+     * @param jsonElementClass the json element class
+     * @param criteria         the criteria
      */
     public static <T> void validateCriteriaAgainstJsonElement(Class<T> jsonElementClass, List<QueryCriteria> criteria) {
         var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
@@ -137,6 +154,9 @@ public class JsonBasedEntityHelper {
 
     /**
      * Assigns a random UUID to the object if its ID is null.
+     *
+     * @param <T>    the type parameter
+     * @param object the object
      */
     public static <T extends IIdAssignable<UUID>> void assignIdIfNull(T object) {
         if (object.getId() == null) {
@@ -146,6 +166,14 @@ public class JsonBasedEntityHelper {
 
     /**
      * Converts a JSON element to a JSON entity.
+     *
+     * @param <T>             the type parameter
+     * @param <E>             the type parameter
+     * @param element         the element
+     * @param elementType     the element type
+     * @param jsonEntityClass the json entity class
+     * @param objectMapper    the object mapper
+     * @return the e
      */
     public static <T extends IIdAssignable<UUID> & JsonElement<UUID>, E extends JsonBasedEntity<?> & IIdAssignable<?>>
     E toJsonEntity(T element, String elementType, Class<E> jsonEntityClass, ObjectMapper objectMapper) {
@@ -162,6 +190,13 @@ public class JsonBasedEntityHelper {
 
     /**
      * Converts a JSON entity to a JSON element.
+     *
+     * @param <T>              the type parameter
+     * @param <E>              the type parameter
+     * @param jsonEntity       the json entity
+     * @param jsonElementClass the json element class
+     * @param objectMapper     the object mapper
+     * @return the t
      */
     public static <T extends IIdAssignable<UUID> & JsonElement<UUID>, E extends JsonBasedEntity<?>>
     T toJsonElement(E jsonEntity, Class<T> jsonElementClass, ObjectMapper objectMapper) {
@@ -170,6 +205,11 @@ public class JsonBasedEntityHelper {
 
     /**
      * Applies pagination to a list of entities.
+     *
+     * @param <T>         the type parameter
+     * @param entities    the entities
+     * @param pageRequest the page request
+     * @return the list
      */
     public static <T> List<T> applyPagination(List<T> entities, PageRequest pageRequest) {
         int start = (int) pageRequest.getOffset();
@@ -179,6 +219,12 @@ public class JsonBasedEntityHelper {
 
     /**
      * Applies criteria filtering to a list of entities.
+     *
+     * @param <T>         the type parameter
+     * @param entities    the entities
+     * @param criteria    the criteria
+     * @param elementType the element type
+     * @return the list
      */
     public static <T> List<T> applyCriteriaFilter(List<T> entities, List<QueryCriteria> criteria, String elementType) {
         if (criteria == null || criteria.isEmpty()) {

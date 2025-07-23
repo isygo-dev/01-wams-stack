@@ -69,7 +69,7 @@ public abstract class CodeAssignableService<I extends Serializable,
                                             .suffix(code.getSuffix())
                                             .increment(code.getIncrement())
                                             .valueLength(code.getValueLength())
-                                            .value(code.getValue())
+                                            .codeValue(code.getCodeValue())
                                             .build());
 
                             if (result.getStatusCode().is2xxSuccessful()) {

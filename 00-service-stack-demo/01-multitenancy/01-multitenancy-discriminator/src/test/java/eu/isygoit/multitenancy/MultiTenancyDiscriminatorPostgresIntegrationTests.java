@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifies tenant isolation via tenant ID filtering on a shared table.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=update",
+        "spring.jpa.hibernate.ddl-auto=create",
         "multitenancy.mode=DISCRIMINATOR"
 })
 @ActiveProfiles("postgres")
