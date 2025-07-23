@@ -162,7 +162,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     @Override
     public void afterDelete(String tenant, List<T> objects) {
     }
-    
+
 
     @Override
     public List<T> findAll(String tenant) {
@@ -224,6 +224,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     public List<T> getByIdIn(List<I> ids) {
         return null;
     }
+
     /**
      * Handles entity deletion, supporting soft deletion for CancelableEntity.
      *

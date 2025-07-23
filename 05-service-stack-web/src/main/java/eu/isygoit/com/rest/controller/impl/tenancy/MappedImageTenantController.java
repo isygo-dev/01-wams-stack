@@ -59,7 +59,7 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadImage(RequestContextDto requestContext,
-                                                     I id) throws IOException {
+                                                  I id) throws IOException {
         log.info("Download image request received");
         try {
             ResourceDto resource = crudService().downloadImage(requestContext.getSenderTenant(), id);

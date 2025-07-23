@@ -18,31 +18,29 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Integration tests for DISCRIMINATOR multitenancy strategy.
- * Verifies tenant isolation via tenant ID filtering on a shared table.
+ * Integration tests for the TutorialController with DATABASE multitenancy strategy.
+ * This test suite verifies tenant isolation at the database level by simulating HTTP calls using MockMvc.
  */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=update",
-        "multitenancy.mode=DISCRIMINATOR"
+        "multitenancy.mode=DATABASE"
 })
 @ActiveProfiles("postgres")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-class MultiTenancyDiscriminatorPostgresTests {
+class MultiTenancyDatabasePostgresIntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
-    private static final String INVALID_TENANT = "unknown";
-
-    private static final String BASE_URL = "/api/tutorials";
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("postgres") // initial database
@@ -50,6 +48,7 @@ class MultiTenancyDiscriminatorPostgresTests {
             .withPassword("root")
             .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
     private static Long tenant1TutorialId;
+    private final String BASE_URL = "/api/tutorials";
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -66,36 +65,50 @@ class MultiTenancyDiscriminatorPostgresTests {
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
 
-        String tenants = baseUrl.replace("/postgres", "/tenants");
+        String tenant1Url = baseUrl.replace("/postgres", "/tenant1");
+        String tenant2Url = baseUrl.replace("/postgres", "/tenant2");
 
-        registry.add("multitenancy.tenants[0].id", () -> "tenants");
-        registry.add("multitenancy.tenants[0].url", () -> tenants);
+        registry.add("multitenancy.tenants[0].id", () -> "tenant1");
+        registry.add("multitenancy.tenants[0].url", () -> tenant1Url);
         registry.add("multitenancy.tenants[0].username", postgres::getUsername);
         registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+
+        registry.add("multitenancy.tenants[1].id", () -> "tenant2");
+        registry.add("multitenancy.tenants[1].url", () -> tenant2Url);
+        registry.add("multitenancy.tenants[1].username", postgres::getUsername);
+        registry.add("multitenancy.tenants[1].password", postgres::getPassword);
     }
 
     /**
      * Initialize database schema for tenant1 and tenant2 before all tests.
      */
     @BeforeAll
-    static void initSharedSchema(@Autowired ITenantService tenantService) {
-        tenantService.initializeTenantSchema("public");
+    static void initTenants(@Autowired ITenantService PGTenantService) {
+        PGTenantService.initializeTenantSchema(TENANT_1);
+        PGTenantService.initializeTenantSchema(TENANT_2);
     }
 
+    /**
+     * Utility method to build a standard TutorialDto object.
+     */
     private TutorialDto buildDto(String title) {
         return TutorialDto.builder()
                 .title(title)
-                .description("Learn Spring Boot with Discriminator strategy")
+                .description("Learn Spring Boot with DB-per-tenant")
                 .published(true)
                 .build();
     }
 
     @Test
     @Order(0)
-    void shouldValidateDiscriminatorMode() {
-        Assertions.assertEquals("DISCRIMINATOR", multiTenancyProperty);
+    void shouldValidateMultiTenancyProperty() {
+        Assertions.assertEquals("DATABASE", multiTenancyProperty,
+                "Expected multitenancy mode to be DATABASE");
     }
 
+    /**
+     * Create a tutorial for tenant1 and store its ID.
+     */
     @Test
     @Order(1)
     void shouldCreateTutorialForTenant1() throws Exception {
@@ -106,24 +119,32 @@ class MultiTenancyDiscriminatorPostgresTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.title").value(dto.getTitle()))
                 .andExpect(jsonPath("$.tenant").value(TENANT_1))
                 .andReturn();
 
-        tenant1TutorialId = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class).getId();
-        Assertions.assertNotNull(tenant1TutorialId);
+        var response = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class);
+        tenant1TutorialId = response.getId();
     }
 
+    /**
+     * Ensure that tenant2 cannot access tenant1's data.
+     */
     @Test
     @Order(2)
-    void shouldRejectAccessToOtherTenantData() throws Exception {
+    void shouldNotFindTenant1TutorialFromTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Ensure that tenant1 can retrieve its own tutorial.
+     */
     @Test
     @Order(3)
-    void shouldRetrieveOwnDataForTenant1() throws Exception {
+    void shouldGetTutorialByIdForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
@@ -131,9 +152,12 @@ class MultiTenancyDiscriminatorPostgresTests {
                 .andExpect(jsonPath("$.tenant").value(TENANT_1));
     }
 
+    /**
+     * Create a separate tutorial for tenant2.
+     */
     @Test
     @Order(4)
-    void shouldCreateTutorialForTenant2() throws Exception {
+    void shouldCreateSeparateTutorialForTenant2() throws Exception {
         var dto = buildDto("Tenant2 Tutorial");
 
         mockMvc.perform(post(BASE_URL)
@@ -141,82 +165,51 @@ class MultiTenancyDiscriminatorPostgresTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.title").value(dto.getTitle()))
                 .andExpect(jsonPath("$.tenant").value(TENANT_2));
     }
 
+    /**
+     * Verify tenant1 only sees its own tutorial(s).
+     */
     @Test
     @Order(5)
     void shouldReturnOnlyTenant1TutorialsForTenant1() throws Exception {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))))
                 .andExpect(jsonPath("$[*].title", hasItem("Tenant1 Tutorial")))
                 .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))));
     }
 
+    /**
+     * Verify tenant2 only sees its own tutorial(s).
+     */
     @Test
     @Order(6)
     void shouldReturnOnlyTenant2TutorialsForTenant2() throws Exception {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_2))))
                 .andExpect(jsonPath("$[*].title", hasItem("Tenant2 Tutorial")))
                 .andExpect(jsonPath("$[*].title", not(hasItem("Tenant1 Tutorial"))));
     }
 
+    /**
+     * Delete tenant1's tutorial and verify it no longer exists.
+     */
     @Test
     @Order(7)
-    void shouldUpdateTutorialForTenant1() throws Exception {
-        var updated = buildDto("Updated Title");
-        updated.setId(tenant1TutorialId);
-
-        mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
-                        .header(TENANT_HEADER, TENANT_1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updated)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Title"));
-    }
-
-    @Test
-    @Order(8)
-    void shouldRejectUpdateByOtherTenant() throws Exception {
-        var updated = buildDto("Hacked Title");
-        updated.setId(tenant1TutorialId);
-
-        mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
-                        .header(TENANT_HEADER, TENANT_2)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updated)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Order(9)
-    void shouldDeleteTenant1Tutorial() throws Exception {
+    void shouldDeleteTutorialFromTenant1Only() throws Exception {
+        // Delete tutorial
         mockMvc.perform(delete(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNoContent());
 
+        // Confirm deletion
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Order(10)
-    void shouldRejectMissingTenantHeader() throws Exception {
-        mockMvc.perform(get(BASE_URL))
-                .andExpect(status().isBadRequest()); // Ensure your TenantFilter enforces this
-    }
-
-    @Test
-    @Order(11)
-    void shouldRejectUnknownTenant() throws Exception {
-        mockMvc.perform(get(BASE_URL)
-                        .header(TENANT_HEADER, INVALID_TENANT))
-                .andExpect(status().isBadRequest()); // Or 403 if your logic throws custom exception
     }
 }

@@ -57,7 +57,7 @@ public abstract class MappedImageController<I extends Serializable, T extends II
 
     @Override
     public ResponseEntity<Resource> downloadImage(RequestContextDto requestContext,
-                                                     I id) throws IOException {
+                                                  I id) throws IOException {
         log.info("Download image request received");
         try {
             ResourceDto resource = crudService().downloadImage(id);

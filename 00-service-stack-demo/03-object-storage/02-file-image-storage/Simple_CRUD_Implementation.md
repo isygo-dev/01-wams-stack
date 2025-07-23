@@ -1,68 +1,86 @@
 # Simple CRUD Implementation
 
-This document provides an overview of a simple CRUD (Create, Read, Update, Delete) implementation for a multitenant account management system using Spring Boot, JPA, and Testcontainers for integration testing. The example includes key components such as the controller, entity, repository, service, DTO, mapper, and integration tests.
+This document provides an overview of a simple CRUD (Create, Read, Update, Delete) implementation for a multitenant
+account management system using Spring Boot, JPA, and Testcontainers for integration testing. The example includes key
+components such as the controller, entity, repository, service, DTO, mapper, and integration tests.
 
 ## Overview
 
-The implementation demonstrates a RESTful API for managing accounts in a multitenant environment. It uses Spring Boot for the backend, PostgreSQL as the database (managed via Testcontainers for testing), and MapStruct for mapping between entities and DTOs. The system enforces tenant isolation and includes comprehensive integration tests to validate CRUD operations, edge cases, and data integrity.
+The implementation demonstrates a RESTful API for managing accounts in a multitenant environment. It uses Spring Boot
+for the backend, PostgreSQL as the database (managed via Testcontainers for testing), and MapStruct for mapping between
+entities and DTOs. The system enforces tenant isolation and includes comprehensive integration tests to validate CRUD
+operations, edge cases, and data integrity.
 
 ## Components
 
 ### 1. AccountController.java
-The `AccountController` is a REST controller that handles HTTP requests for account-related operations. It extends `MappedCrudTenantController` to provide standard CRUD endpoints with tenant awareness.
+
+The `AccountController` is a REST controller that handles HTTP requests for account-related operations. It extends
+`MappedCrudTenantController` to provide standard CRUD endpoints with tenant awareness.
 
 - **Key Features**:
-  - Handles CRUD operations for accounts.
-  - Supports tenant isolation via the `X-Tenant-ID` header.
-  - Uses `@CrossOrigin` for local development (CORS).
-  - Injects `AccountMapper` and `AccountService` using custom annotations.
+    - Handles CRUD operations for accounts.
+    - Supports tenant isolation via the `X-Tenant-ID` header.
+    - Uses `@CrossOrigin` for local development (CORS).
+    - Injects `AccountMapper` and `AccountService` using custom annotations.
 
 ### 2. AccountEntity.java
-The `AccountEntity` represents the account table in the database. It extends `AuditableEntity` for audit fields and implements `ITenantAssignable` for multitenancy.
+
+The `AccountEntity` represents the account table in the database. It extends `AuditableEntity` for audit fields and
+implements `ITenantAssignable` for multitenancy.
 
 - **Key Features**:
-  - Fields: `id`, `tenant`, `login`, `email`, `passkey`.
-  - `@Id` with sequence-based ID generation.
-  - `@Criteria` annotation on `login` for filtering.
-  - Enforces constraints like non-nullable fields and unique login.
+    - Fields: `id`, `tenant`, `login`, `email`, `passkey`.
+    - `@Id` with sequence-based ID generation.
+    - `@Criteria` annotation on `login` for filtering.
+    - Enforces constraints like non-nullable fields and unique login.
 
 ### 3. AccountRepository.java
-The `AccountRepository` is a JPA repository interface extending `JpaPagingAndSortingTenantAssignableRepository` to support tenant-aware queries with pagination and sorting.
+
+The `AccountRepository` is a JPA repository interface extending `JpaPagingAndSortingTenantAssignableRepository` to
+support tenant-aware queries with pagination and sorting.
 
 - **Key Features**:
-  - Provides default CRUD operations.
-  - Supports tenant-specific data retrieval.
+    - Provides default CRUD operations.
+    - Supports tenant-specific data retrieval.
 
 ### 4. AccountService.java
-The `AccountService` handles business logic for account operations. It extends `CrudTenantService` and uses the `AccountRepository` for database interactions.
+
+The `AccountService` handles business logic for account operations. It extends `CrudTenantService` and uses the
+`AccountRepository` for database interactions.
 
 - **Key Features**:
-  - Transactional operations with `@Transactional`.
-  - Injects `AccountRepository` using a custom annotation.
-  - Logs operations using SLF4J.
+    - Transactional operations with `@Transactional`.
+    - Injects `AccountRepository` using a custom annotation.
+    - Logs operations using SLF4J.
 
 ### 5. AccountDto.java
-The `AccountDto` is a data transfer object for transferring account data between layers. It extends `AbstractAuditableDto` and includes validation annotations.
+
+The `AccountDto` is a data transfer object for transferring account data between layers. It extends
+`AbstractAuditableDto` and includes validation annotations.
 
 - **Key Features**:
-  - Fields: `tenant`, `login`, `email`, `passkey`.
-  - Validation: `@NotNull` and `@Email` for data integrity.
+    - Fields: `tenant`, `login`, `email`, `passkey`.
+    - Validation: `@NotNull` and `@Email` for data integrity.
 
 ### 6. AccountMapper.java
+
 The `AccountMapper` is a MapStruct interface for mapping between `AccountEntity` and `AccountDto`.
 
 - **Key Features**:
-  - Uses Spring component model.
-  - Handles null checks with `NullValueCheckStrategy.ALWAYS`.
+    - Uses Spring component model.
+    - Handles null checks with `NullValueCheckStrategy.ALWAYS`.
 
 ### 7. SimpleCrudIntegrationTests.java
-The integration tests validate the CRUD operations using Testcontainers to spin up a PostgreSQL database. The tests cover various scenarios, including concurrent operations and filtering.
+
+The integration tests validate the CRUD operations using Testcontainers to spin up a PostgreSQL database. The tests
+cover various scenarios, including concurrent operations and filtering.
 
 - **Key Features**:
-  - Uses Testcontainers to manage a PostgreSQL instance.
-  - Tests CRUD operations, edge cases (e.g., invalid email, duplicate login), and pagination.
-  - Simulates concurrent account creation with multiple threads.
-  - Validates tenant isolation and data integrity.
+    - Uses Testcontainers to manage a PostgreSQL instance.
+    - Tests CRUD operations, edge cases (e.g., invalid email, duplicate login), and pagination.
+    - Simulates concurrent account creation with multiple threads.
+    - Validates tenant isolation and data integrity.
 
 ## Setup and Dependencies
 
@@ -75,17 +93,19 @@ The integration tests validate the CRUD operations using Testcontainers to spin 
 - **PostgreSQL**: Database for storing account data.
 
 ### Prerequisites
+
 - Java 17 or later.
 - Maven for dependency management.
 - Docker for Testcontainers.
 
 ### Configuration
+
 - **Database**: PostgreSQL 15 (configured via Testcontainers).
 - **Multitenancy**: Uses GDM mode with tenant-specific schemas.
 - **Properties**:
-  - `spring.jpa.hibernate.ddl-auto=update`
-  - `multitenancy.mode=GDM`
-  - Dynamic datasource configuration for tenants.
+    - `spring.jpa.hibernate.ddl-auto=update`
+    - `multitenancy.mode=GDM`
+    - Dynamic datasource configuration for tenants.
 
 ## Running the Application
 
@@ -119,11 +139,13 @@ The integration tests validate the CRUD operations using Testcontainers to spin 
 - **DELETE /api/v1/account/{id}**: Delete an account.
 
 **Headers**:
+
 - `X-Tenant-ID`: Specifies the tenant (e.g., `tenants`).
 
 ## Testing Scenarios
 
 The integration tests cover:
+
 1. Creating accounts with valid and invalid data.
 2. Handling duplicate logins.
 3. Concurrent account creation.
@@ -134,6 +156,7 @@ The integration tests cover:
 ## Example Usage
 
 ### Create an Account
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/account \
 -H "Content-Type: application/json" \
@@ -147,12 +170,14 @@ curl -X POST http://localhost:8080/api/v1/account \
 ```
 
 ### Retrieve All Accounts
+
 ```bash
 curl -X GET http://localhost:8080/api/v1/account \
 -H "X-Tenant-ID: tenants"
 ```
 
 ### Filter Accounts
+
 ```bash
 curl -X GET "http://localhost:8080/api/v1/account/filter?criteria=login='testuser'" \
 -H "X-Tenant-ID: tenants"
@@ -160,7 +185,8 @@ curl -X GET "http://localhost:8080/api/v1/account/filter?criteria=login='testuse
 
 ## Notes
 
-- The implementation ensures tenant isolation by including the `tenant` field in entities and using the `X-Tenant-ID` header.
+- The implementation ensures tenant isolation by including the `tenant` field in entities and using the `X-Tenant-ID`
+  header.
 - The tests use a PostgreSQL container to avoid dependencies on an external database.
 - The system is designed to be extensible for additional features like advanced filtering or authentication.
 

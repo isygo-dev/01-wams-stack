@@ -14,8 +14,6 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -101,10 +99,10 @@ public abstract class FileTenantServiceSubMethods<I extends Serializable,
      */
     final ResourceDto subDownloadFile(T entity, Long version) throws IOException {
         return executeWithFallback(
-                        dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
-                        () -> FileServiceLocalStaticMethods.download(entity, version),
-                        "download"
-                );
+                dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
+                () -> FileServiceLocalStaticMethods.download(entity, version),
+                "download"
+        );
     }
 
     /**

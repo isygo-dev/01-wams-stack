@@ -91,9 +91,9 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
 
     @Override
     public ResponseEntity<Resource> download(RequestContextDto requestContext,
-                                                I parentId,
-                                                I fileId,
-                                                Long version
+                                             I parentId,
+                                             I fileId,
+                                             Long version
     ) {
         try {
             log.info("download file ");

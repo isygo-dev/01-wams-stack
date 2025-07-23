@@ -60,12 +60,12 @@ public interface IAWSS3ApiService {
     /**
      * Upload file.
      *
-     * @param config        the config
-     * @param bucketName    the bucket name
-     * @param path          the path
-     * @param objectName    the object name
-     * @param file the multipart file
-     * @param tags          the tags
+     * @param config     the config
+     * @param bucketName the bucket name
+     * @param path       the path
+     * @param objectName the object name
+     * @param file       the multipart file
+     * @param tags       the tags
      */
     void uploadFile(S3Config config, String bucketName, String path, String objectName,
                     MultipartFile file, Map<String, String> tags);

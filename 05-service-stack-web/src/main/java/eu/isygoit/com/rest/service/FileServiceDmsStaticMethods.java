@@ -11,7 +11,6 @@ import eu.isygoit.exception.LinkedFileServiceNullException;
 import eu.isygoit.exception.MultiPartFileNullException;
 import eu.isygoit.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 

@@ -1,88 +1,113 @@
 # Entity with File Attached
 
-This document outlines a Spring Boot implementation for managing entities with attached files in a multitenant environment. The example focuses on a `Contract` entity with support for CRUD operations and file handling (upload and download). It uses Spring Boot, JPA, Testcontainers for integration testing, and MapStruct for entity-DTO mapping. The system ensures tenant isolation and includes comprehensive integration tests.
+This document outlines a Spring Boot implementation for managing entities with attached files in a multitenant
+environment. The example focuses on a `Contract` entity with support for CRUD operations and file handling (upload and
+download). It uses Spring Boot, JPA, Testcontainers for integration testing, and MapStruct for entity-DTO mapping. The
+system ensures tenant isolation and includes comprehensive integration tests.
 
 ## Overview
 
-The implementation provides a RESTful API for managing contract entities, including the ability to attach and retrieve files (e.g., PDFs). It leverages Spring Boot for the backend, PostgreSQL (via Testcontainers) for data persistence, and MapStruct for mapping between entities and DTOs. The system supports multitenancy and includes tests for CRUD operations, file handling, and edge cases.
+The implementation provides a RESTful API for managing contract entities, including the ability to attach and retrieve
+files (e.g., PDFs). It leverages Spring Boot for the backend, PostgreSQL (via Testcontainers) for data persistence, and
+MapStruct for mapping between entities and DTOs. The system supports multitenancy and includes tests for CRUD
+operations, file handling, and edge cases.
 
 ## Components
 
 ### 1. ContractController.java
-The `ContractController` is a REST controller handling standard CRUD operations for contracts. It extends `MappedCrudTenantController` to provide tenant-aware endpoints.
+
+The `ContractController` is a REST controller handling standard CRUD operations for contracts. It extends
+`MappedCrudTenantController` to provide tenant-aware endpoints.
 
 - **Key Features**:
-  - Manages contract creation, retrieval, update, and deletion.
-  - Enforces tenant isolation using the `X-Tenant-ID` header.
-  - Uses `@CrossOrigin` for local development (CORS).
-  - Injects `ContractMapper` and `ContractService` via custom annotations.
+    - Manages contract creation, retrieval, update, and deletion.
+    - Enforces tenant isolation using the `X-Tenant-ID` header.
+    - Uses `@CrossOrigin` for local development (CORS).
+    - Injects `ContractMapper` and `ContractService` via custom annotations.
 
 ### 2. ContractFileController.java
-The `ContractFileController` extends `MappedFileTenantController` to handle file-specific operations (upload and download) for contracts.
+
+The `ContractFileController` extends `MappedFileTenantController` to handle file-specific operations (upload and
+download) for contracts.
 
 - **Key Features**:
-  - Supports file upload and download endpoints.
-  - Integrates with `ContractService` for file storage and retrieval.
-  - Maintains tenant isolation.
+    - Supports file upload and download endpoints.
+    - Integrates with `ContractService` for file storage and retrieval.
+    - Maintains tenant isolation.
 
 ### 3. ContractEntity.java
-The `ContractEntity` represents the contract table (`CONTRACT`) in the database, with file metadata stored in a secondary table (`CONTRACT_FILE`). It extends `AuditableEntity` and implements `ITenantAssignable`, `IFileEntity`, and `ICodeAssignable`.
+
+The `ContractEntity` represents the contract table (`CONTRACT`) in the database, with file metadata stored in a
+secondary table (`CONTRACT_FILE`). It extends `AuditableEntity` and implements `ITenantAssignable`, `IFileEntity`, and
+`ICodeAssignable`.
 
 - **Key Features**:
-  - Fields: `id`, `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `fileName`, `originalFileName`, `path`, `extension`, `type`, `tags`.
-  - `@Id` with sequence-based ID generation.
-  - `@Criteria` on `title`, `description`, `startDate`, and `endDate` for filtering.
-  - File metadata stored in `CONTRACT_FILE` secondary table.
-  - Supports code generation for unique identifiers (e.g., `CTR000001`).
-  - Includes a list of tags for file categorization.
+    - Fields: `id`, `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `fileName`,
+      `originalFileName`, `path`, `extension`, `type`, `tags`.
+    - `@Id` with sequence-based ID generation.
+    - `@Criteria` on `title`, `description`, `startDate`, and `endDate` for filtering.
+    - File metadata stored in `CONTRACT_FILE` secondary table.
+    - Supports code generation for unique identifiers (e.g., `CTR000001`).
+    - Includes a list of tags for file categorization.
 
 ### 4. ContractFileEntity.java
-The `ContractFileEntity` extends `FileEntity` and implements `IFileEntity` to represent file-specific data in the `CONTRACT_FILE` table.
+
+The `ContractFileEntity` extends `FileEntity` and implements `IFileEntity` to represent file-specific data in the
+`CONTRACT_FILE` table.
 
 - **Key Features**:
-  - Fields: `id`, `tags`.
-  - Uses sequence-based ID generation.
-  - Stores file tags in a separate `CONTRACT_FILE_TAGS` table.
+    - Fields: `id`, `tags`.
+    - Uses sequence-based ID generation.
+    - Stores file tags in a separate `CONTRACT_FILE_TAGS` table.
 
 ### 5. ContractRepository.java
-The `ContractRepository` is a JPA repository extending `JpaPagingAndSortingTenantAndCodeAssignableRepository` to support tenant-aware and code-aware queries with pagination and sorting.
+
+The `ContractRepository` is a JPA repository extending `JpaPagingAndSortingTenantAndCodeAssignableRepository` to support
+tenant-aware and code-aware queries with pagination and sorting.
 
 - **Key Features**:
-  - Provides CRUD operations for `ContractEntity`.
-  - Supports tenant and code-based filtering.
+    - Provides CRUD operations for `ContractEntity`.
+    - Supports tenant and code-based filtering.
 
 ### 6. ContractService.java
-The `ContractService` handles business logic for contract and file operations. It extends `FileTenantService` and uses `ContractRepository` for persistence.
+
+The `ContractService` handles business logic for contract and file operations. It extends `FileTenantService` and uses
+`ContractRepository` for persistence.
 
 - **Key Features**:
-  - Transactional operations with `@Transactional`.
-  - Injects `ContractRepository` and code generator via custom annotations.
-  - Configures file storage directory (`/contract`).
-  - Initializes code generation for unique contract codes (e.g., `CTR000001`).
-  - Logs operations using SLF4J.
+    - Transactional operations with `@Transactional`.
+    - Injects `ContractRepository` and code generator via custom annotations.
+    - Configures file storage directory (`/contract`).
+    - Initializes code generation for unique contract codes (e.g., `CTR000001`).
+    - Logs operations using SLF4J.
 
 ### 7. ContractDto.java
-The `ContractDto` is a data transfer object for contract data, extending `AbstractAuditableDto` and implementing `IFileUploadDto`.
+
+The `ContractDto` is a data transfer object for contract data, extending `AbstractAuditableDto` and implementing
+`IFileUploadDto`.
 
 - **Key Features**:
-  - Fields: `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `originalFileName`.
-  - Supports file upload via `originalFileName`.
+    - Fields: `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `originalFileName`.
+    - Supports file upload via `originalFileName`.
 
 ### 8. ContractMapper.java
+
 The `ContractMapper` is a MapStruct interface for mapping between `ContractEntity` and `ContractDto`.
 
 - **Key Features**:
-  - Uses Spring component model.
-  - Applies null checks with `NullValueCheckStrategy.ALWAYS`.
+    - Uses Spring component model.
+    - Applies null checks with `NullValueCheckStrategy.ALWAYS`.
 
 ### 9. FileCrudIntegrationTests.java
-The integration tests validate contract and file operations using Testcontainers with a PostgreSQL database. Tests cover CRUD, file upload/download, and edge cases.
+
+The integration tests validate contract and file operations using Testcontainers with a PostgreSQL database. Tests cover
+CRUD, file upload/download, and edge cases.
 
 - **Key Features**:
-  - Uses Testcontainers for PostgreSQL setup.
-  - Tests contract creation with and without files.
-  - Validates file upload/download and pagination.
-  - Ensures data integrity and tenant isolation.
+    - Uses Testcontainers for PostgreSQL setup.
+    - Tests contract creation with and without files.
+    - Validates file upload/download and pagination.
+    - Ensures data integrity and tenant isolation.
 
 ## Setup and Dependencies
 
@@ -95,17 +120,19 @@ The integration tests validate contract and file operations using Testcontainers
 - **PostgreSQL**: Database for contract and file data.
 
 ### Prerequisites
+
 - Java 17 or later.
 - Maven for dependency management.
 - Docker for Testcontainers.
 
 ### Configuration
+
 - **Database**: PostgreSQL 15 (via Testcontainers).
 - **Multitenancy**: Uses GDM mode with tenant-specific schemas.
 - **Properties**:
-  - `spring.jpa.hibernate.ddl-auto=create`
-  - `multitenancy.mode=GDM`
-  - Dynamic datasource configuration for tenants.
+    - `spring.jpa.hibernate.ddl-auto=create`
+    - `multitenancy.mode=GDM`
+    - Dynamic datasource configuration for tenants.
 
 ## Running the Application
 
@@ -139,11 +166,13 @@ The integration tests validate contract and file operations using Testcontainers
 - **DELETE /api/v1/contract/{id}**: Delete a contract.
 
 **Headers**:
+
 - `X-Tenant-ID`: Specifies the tenant (e.g., `tenants`).
 
 ## Testing Scenarios
 
 The integration tests cover:
+
 1. Creating contracts with and without files.
 2. Updating contracts (with and without files).
 3. Uploading and downloading files.
@@ -154,6 +183,7 @@ The integration tests cover:
 ## Example Usage
 
 ### Create a Contract Without File
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/contract \
 -H "Content-Type: application/json" \
@@ -170,6 +200,7 @@ curl -X POST http://localhost:8080/api/v1/contract \
 ```
 
 ### Create a Contract With File
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/contract/file \
 -H "X-Tenant-ID: tenants" \
@@ -178,6 +209,7 @@ curl -X POST http://localhost:8080/api/v1/contract/file \
 ```
 
 ### Download a Contract’s File
+
 ```bash
 curl -X GET http://localhost:8080/api/v1/contract/file/download/1?version=0 \
 -H "X-Tenant-ID: tenants" \
@@ -185,6 +217,7 @@ curl -X GET http://localhost:8080/api/v1/contract/file/download/1?version=0 \
 ```
 
 ### List Contracts (Paginated)
+
 ```bash
 curl -X GET "http://localhost:8080/api/v1/contract?page=0&size=10" \
 -H "X-Tenant-ID: tenants"

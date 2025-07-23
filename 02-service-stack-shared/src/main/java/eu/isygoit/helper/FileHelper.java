@@ -1,6 +1,5 @@
 package eu.isygoit.helper;
 
-import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import org.apache.commons.io.FilenameUtils;

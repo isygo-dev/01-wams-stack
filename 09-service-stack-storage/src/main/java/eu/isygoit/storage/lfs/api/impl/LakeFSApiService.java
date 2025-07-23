@@ -200,7 +200,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
 
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("name", repositoryName);
-                    requestBody.put("storage_namespace", config.getS3Config() != null? "s3://" + storageNamespace: "local://" + storageNamespace);
+                    requestBody.put("storage_namespace", config.getS3Config() != null ? "s3://" + storageNamespace : "local://" + storageNamespace);
                     requestBody.put("default_branch", StringUtils.hasText(defaultBranch) ? defaultBranch : DEFAULT_BRANCH);
 
                     HttpHeaders headers = new HttpHeaders();
@@ -208,7 +208,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
                     client.postForEntity(url, request, Map.class);
-                    log.info("Created repository: {} with namespace: {}", repositoryName, config.getS3Config() != null? "s3://" + storageNamespace: "local://" + storageNamespace);
+                    log.info("Created repository: {} with namespace: {}", repositoryName, config.getS3Config() != null ? "s3://" + storageNamespace : "local://" + storageNamespace);
                 }
             } catch (Exception e) {
                 throw new LakeFSException("Error creating repository: " + repositoryName, e);
@@ -293,7 +293,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         return executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", sourceBranchName , "merge", destinationBranchName}, null);
+                String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName, "refs", sourceBranchName, "merge", destinationBranchName}, null);
 
                 Map<String, Object> requestBody = new HashMap<>();
                 requestBody.put("message", message);
@@ -470,7 +470,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
         executeWithRetry(() -> {
             try {
                 RestTemplate client = getConnection(config);
-                Map<String, String> queryParams = Map.of( "force", String.valueOf(Boolean.TRUE));
+                Map<String, String> queryParams = Map.of("force", String.valueOf(Boolean.TRUE));
                 String url = buildLakeFSUrl(config, new String[]{"repositories", repositoryName}, queryParams);
                 client.delete(url);
                 log.info("Deleted repository: {}", repositoryName);
@@ -801,7 +801,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
                     fileObject.size = item.get("size_bytes") != null ? ((Number) item.get("size_bytes")).longValue() : 0L;
                     fileObject.etag = (String) item.get("checksum");
                     fileObject.lastModified = item.get("mtime") != null ?
-                            Instant.ofEpochSecond((Integer) item.get("mtime")).atZone(ZoneId.systemDefault()): null;
+                            Instant.ofEpochSecond((Integer) item.get("mtime")).atZone(ZoneId.systemDefault()) : null;
                     fileObject.metadata = (Map<String, String>) item.get("metadata");
                     fileObject.pathType = (String) item.get("path_type");
                     fileStorageList.add(fileObject);
@@ -1134,7 +1134,6 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
             return null;
         });
     }
-
 
 
     @Override

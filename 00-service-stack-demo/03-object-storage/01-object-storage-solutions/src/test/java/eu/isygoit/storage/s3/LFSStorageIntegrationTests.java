@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Testcontainers
 @ActiveProfiles(profiles = {"LakeFS", "MinIO"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class LFSStorageApplicationTest {
+public class LFSStorageIntegrationTests {
 
     private static final String ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE";
     private static final String SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";

@@ -19,14 +19,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for the TutorialController with DATABASE multitenancy strategy.
+ * This test suite verifies tenant isolation at the database level by simulating HTTP calls using MockMvc.
+ */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=update",
-        "multitenancy.mode=SCHEMA"
+        "multitenancy.mode=DATABASE"
 })
 @ActiveProfiles("h2")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class MultiTenancySchemaH2Tests {
+class MultiTenancyDatabaseH2IntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
@@ -45,12 +49,18 @@ class MultiTenancySchemaH2Tests {
     @Value("${multitenancy.mode}")
     private String multiTenancyProperty;
 
+    /**
+     * Initialize database schema for tenant1 and tenant2 before all tests.
+     */
     @BeforeAll
-    static void initTenants(@Autowired ITenantService h2TenantService) {
-        h2TenantService.initializeTenantSchema(TENANT_1);
-        h2TenantService.initializeTenantSchema(TENANT_2);
+    static void initTenants(@Autowired ITenantService PGTenantService) {
+        PGTenantService.initializeTenantSchema(TENANT_1);
+        PGTenantService.initializeTenantSchema(TENANT_2);
     }
 
+    /**
+     * Utility method to build a standard TutorialDto object.
+     */
     private TutorialDto buildDto(String title) {
         return TutorialDto.builder()
                 .title(title)
@@ -62,10 +72,13 @@ class MultiTenancySchemaH2Tests {
     @Test
     @Order(0)
     void shouldValidateMultiTenancyProperty() {
-        Assertions.assertEquals("SCHEMA", multiTenancyProperty,
-                "Expected multitenancy mode to be SCHEMA");
+        Assertions.assertEquals("DATABASE", multiTenancyProperty,
+                "Expected multitenancy mode to be DATABASE");
     }
 
+    /**
+     * Create a tutorial for tenant1 and store its ID.
+     */
     @Test
     @Order(1)
     void shouldCreateTutorialForTenant1() throws Exception {
@@ -85,6 +98,9 @@ class MultiTenancySchemaH2Tests {
         tenant1TutorialId = response.getId();
     }
 
+    /**
+     * Ensure that tenant2 cannot access tenant1's data.
+     */
     @Test
     @Order(2)
     void shouldNotFindTenant1TutorialFromTenant2() throws Exception {
@@ -93,6 +109,9 @@ class MultiTenancySchemaH2Tests {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Ensure that tenant1 can retrieve its own tutorial.
+     */
     @Test
     @Order(3)
     void shouldGetTutorialByIdForTenant1() throws Exception {
@@ -103,6 +122,9 @@ class MultiTenancySchemaH2Tests {
                 .andExpect(jsonPath("$.tenant").value(TENANT_1));
     }
 
+    /**
+     * Create a separate tutorial for tenant2.
+     */
     @Test
     @Order(4)
     void shouldCreateSeparateTutorialForTenant2() throws Exception {
@@ -118,6 +140,9 @@ class MultiTenancySchemaH2Tests {
                 .andExpect(jsonPath("$.tenant").value(TENANT_2));
     }
 
+    /**
+     * Verify tenant1 only sees its own tutorial(s).
+     */
     @Test
     @Order(5)
     void shouldReturnOnlyTenant1TutorialsForTenant1() throws Exception {
@@ -128,6 +153,9 @@ class MultiTenancySchemaH2Tests {
                 .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))));
     }
 
+    /**
+     * Verify tenant2 only sees its own tutorial(s).
+     */
     @Test
     @Order(6)
     void shouldReturnOnlyTenant2TutorialsForTenant2() throws Exception {
@@ -138,13 +166,18 @@ class MultiTenancySchemaH2Tests {
                 .andExpect(jsonPath("$[*].title", not(hasItem("Tenant1 Tutorial"))));
     }
 
+    /**
+     * Delete tenant1's tutorial and verify it no longer exists.
+     */
     @Test
     @Order(7)
     void shouldDeleteTutorialFromTenant1Only() throws Exception {
+        // Delete tutorial
         mockMvc.perform(delete(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNoContent());
 
+        // Confirm deletion
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());

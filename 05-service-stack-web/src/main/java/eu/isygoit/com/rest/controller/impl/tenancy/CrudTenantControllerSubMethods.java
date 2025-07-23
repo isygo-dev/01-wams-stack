@@ -46,11 +46,11 @@ public abstract class CrudTenantControllerSubMethods<
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
-    private final Class<T> entityClass;
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 100;
     private static final int DEFAULT_PAGE = 0;
     private static final String CREATE_DATE_FIELD = "createDate";
+    private final Class<T> entityClass;
 
     /**
      * Instantiates a new Crud tenant controller sub methods.
@@ -380,8 +380,8 @@ public abstract class CrudTenantControllerSubMethods<
     /**
      * Hook called before entity update.
      *
-     * @param id   ID of the entity to update
-     * @param dto  DTO containing update data
+     * @param id  ID of the entity to update
+     * @param dto DTO containing update data
      * @return Processed DTO
      */
     @Override

@@ -9,7 +9,6 @@ import eu.isygoit.model.ResumeLinkedFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
@@ -100,7 +99,7 @@ class FileServiceLocalStaticMethodsTest {
         assertEquals(fileContent, Files.readString(uploadedFilePath));
 
         // Returned code should be the file code
-        assertEquals(resume.getCode()+ ".txt", returnedCode);
+        assertEquals(resume.getCode() + ".txt", returnedCode);
 
         Files.deleteIfExists(uploadedFilePath);
     }

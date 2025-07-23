@@ -32,6 +32,21 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
 
     private R repository;
 
+    /**
+     * Validates that a list is not empty.
+     *
+     * @param <I>     the type parameter
+     * @param <T>     the type parameter
+     * @param objects the list to validate
+     * @throws EmptyListException if the list is empty
+     */
+    protected static <I extends Serializable, T extends IIdAssignable<I>> void validateListNotEmpty(List<T> objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            log.error("Empty or null list provided for operation");
+            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
+        }
+    }
+
     @Override
     public final R repository() throws JpaRepositoryNotDefinedException {
         if (this.repository == null) {
@@ -46,21 +61,6 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
         }
 
         return this.repository;
-    }
-
-    /**
-     * Validates that a list is not empty.
-     *
-     * @param <I>     the type parameter
-     * @param <T>     the type parameter
-     * @param objects the list to validate
-     * @throws EmptyListException if the list is empty
-     */
-    protected static <I extends Serializable, T extends IIdAssignable<I>> void validateListNotEmpty(List<T> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            log.error("Empty or null list provided for operation");
-            throw new EmptyListException(LogConstants.EMPTY_OBJECT_LIST_PROVIDED);
-        }
     }
 
     /**

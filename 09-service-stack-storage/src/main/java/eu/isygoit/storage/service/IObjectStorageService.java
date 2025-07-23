@@ -18,11 +18,11 @@ public interface IObjectStorageService {
     /**
      * Upload.
      *
-     * @param config        the config
-     * @param bucketName    the bucket name
-     * @param path          the path
-     * @param tags          the tags
-     * @param file the multipart file
+     * @param config     the config
+     * @param bucketName the bucket name
+     * @param path       the path
+     * @param tags       the tags
+     * @param file       the multipart file
      */
     void upload(S3Config config, String bucketName, String path, Map<String, String> tags, MultipartFile file);
 

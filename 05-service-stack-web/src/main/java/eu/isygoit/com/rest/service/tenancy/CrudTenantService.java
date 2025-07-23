@@ -665,14 +665,14 @@ public abstract class CrudTenantService<I extends Serializable,
      * @throws TenantNotAllowedException if the tenant has no access
      */
     private Optional<T> validateTenantAccess(String tenant, I id) {
-            Optional<T> optional = repository().findById(id);
-            if (optional.isPresent()) {
-                if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant) && !tenant.equals(((ITenantAssignable) optional.get()).getTenant())) {
-                    log.error("Tenant {} has no access to entity with ID: {}", tenant, id);
-                    throw new TenantNotAllowedException("Tenant has no access to the object");
-                }
-                return optional;
+        Optional<T> optional = repository().findById(id);
+        if (optional.isPresent()) {
+            if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant) && !tenant.equals(((ITenantAssignable) optional.get()).getTenant())) {
+                log.error("Tenant {} has no access to entity with ID: {}", tenant, id);
+                throw new TenantNotAllowedException("Tenant has no access to the object");
             }
+            return optional;
+        }
 
         return Optional.empty();
     }

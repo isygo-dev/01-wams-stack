@@ -30,13 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=update",
-        "multitenancy.mode=DATABASE"
+        "multitenancy.mode=SCHEMA"
 })
 @ActiveProfiles("postgres")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-class MultiTenancyDatabasePostgresTests {
+class MultiTenancySchemaPostgresIntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
@@ -65,8 +65,10 @@ class MultiTenancyDatabasePostgresTests {
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
 
-        String tenant1Url = baseUrl.replace("/postgres", "/tenant1");
-        String tenant2Url = baseUrl.replace("/postgres", "/tenant2");
+        String tenant1Url = baseUrl.replace("/postgres", "/tenants")
+                .replace("public", "tenant1");
+        String tenant2Url = baseUrl.replace("/postgres", "/tenants")
+                .replace("public", "tenant2");
 
         registry.add("multitenancy.tenants[0].id", () -> "tenant1");
         registry.add("multitenancy.tenants[0].url", () -> tenant1Url);
@@ -102,7 +104,7 @@ class MultiTenancyDatabasePostgresTests {
     @Test
     @Order(0)
     void shouldValidateMultiTenancyProperty() {
-        Assertions.assertEquals("DATABASE", multiTenancyProperty,
+        Assertions.assertEquals("SCHEMA", multiTenancyProperty,
                 "Expected multitenancy mode to be DATABASE");
     }
 

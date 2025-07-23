@@ -34,6 +34,14 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         implements ICrudControllerUtils<I, T, M, F, S> {
 
     /**
+     * The constant ERROR_BEAN_NOT_FOUND.
+     */
+    public static final String ERROR_BEAN_NOT_FOUND = "<Error>: bean {} not found";
+    /**
+     * The constant CONTROLLER_SERVICE.
+     */
+    public static final String CONTROLLER_SERVICE = "controller api";
+    /**
      * The constant DEFAULT_PAGE_SIZE.
      */
     protected static final int DEFAULT_PAGE_SIZE = 50;
@@ -45,15 +53,6 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
      * The constant CREATE_DATE_FIELD.
      */
     protected static final String CREATE_DATE_FIELD = "createDate";
-
-    /**
-     * The constant ERROR_BEAN_NOT_FOUND.
-     */
-    public static final String ERROR_BEAN_NOT_FOUND = "<Error>: bean {} not found";
-    /**
-     * The constant CONTROLLER_SERVICE.
-     */
-    public static final String CONTROLLER_SERVICE = "controller api";
     @Getter
     private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
     @Getter
@@ -61,6 +60,22 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     private EntityMapper<T, F> fullEntityMapper;
     private EntityMapper<T, M> minEntityMapper;
     private S crudService;
+
+    /**
+     * Validates a bulk operation list.
+     *
+     * @param objects List to validate
+     * @throws BadArgumentException if list is empty or exceeds max size
+     */
+    protected static void validateBulkOperation(List objects) {
+        if (CollectionUtils.isEmpty(objects)) {
+            throw new EmptyListException("Bulk operation list cannot be empty or null");
+        }
+        if (objects.size() > MAX_PAGE_SIZE) {
+            throw new BadArgumentException(
+                    String.format("Bulk operation size %d exceeds maximum %d", objects.size(), MAX_PAGE_SIZE));
+        }
+    }
 
     @Override
     public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
@@ -113,21 +128,5 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         }
 
         return this.minEntityMapper;
-    }
-
-    /**
-     * Validates a bulk operation list.
-     *
-     * @param objects List to validate
-     * @throws BadArgumentException if list is empty or exceeds max size
-     */
-    protected static void validateBulkOperation(List objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new EmptyListException("Bulk operation list cannot be empty or null");
-        }
-        if (objects.size() > MAX_PAGE_SIZE) {
-            throw new BadArgumentException(
-                    String.format("Bulk operation size %d exceeds maximum %d", objects.size(), MAX_PAGE_SIZE));
-        }
     }
 }

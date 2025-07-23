@@ -12,7 +12,6 @@ import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableR
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.core.io.Resource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,8 +48,8 @@ public abstract class MultiFileTenantService<I extends Serializable,
 
     @Override
     public List<L> uploadAdditionalFiles(String tenant, I parentId, MultipartFile[] files) throws IOException {
-        if(files == null || files.length == 0){
-            throw new EmptyFileListException("for tenant " + tenant +  " and parent id " + parentId);
+        if (files == null || files.length == 0) {
+            throw new EmptyFileListException("for tenant " + tenant + " and parent id " + parentId);
         }
 
         var entity = getEntityOrThrow(tenant, parentId);
@@ -63,7 +62,7 @@ public abstract class MultiFileTenantService<I extends Serializable,
     @Override
     public List<L> uploadAdditionalFile(String tenant, I parentId, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
-            throw new EmptyFileException("for tenant " + tenant +  " and parent id " + parentId);
+            throw new EmptyFileException("for tenant " + tenant + " and parent id " + parentId);
         }
 
         var entity = getEntityOrThrow(tenant, parentId);

@@ -18,9 +18,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class LFSConfig {
 
-    private String tenant;
     @Builder.Default
     private final IEnumStorage.Types type = IEnumStorage.Types.LAKEFS_STORAGE;
+    private String tenant;
     private String userName;
     private String password;
     private String url;

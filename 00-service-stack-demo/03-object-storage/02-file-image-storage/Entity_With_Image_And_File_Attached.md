@@ -1,97 +1,125 @@
 # Entity with Image and File Attached
 
-This document describes a Spring Boot implementation for managing entities with both attached images and files in a multitenant environment. The example focuses on a `Resume` entity with support for CRUD operations, image handling (e.g., JPEG), and file handling (e.g., PDF). It uses Spring Boot, JPA, Testcontainers for integration testing, and MapStruct for entity-DTO mapping. The system ensures tenant isolation and includes comprehensive integration tests.
+This document describes a Spring Boot implementation for managing entities with both attached images and files in a
+multitenant environment. The example focuses on a `Resume` entity with support for CRUD operations, image handling (
+e.g., JPEG), and file handling (e.g., PDF). It uses Spring Boot, JPA, Testcontainers for integration testing, and
+MapStruct for entity-DTO mapping. The system ensures tenant isolation and includes comprehensive integration tests.
 
 ## Overview
 
-The implementation provides a RESTful API for managing resume entities, including the ability to attach and retrieve images and files. It leverages Spring Boot for the backend, PostgreSQL (via Testcontainers) for data persistence, and MapStruct for mapping between entities and DTOs. The system supports multitenancy and includes tests for CRUD operations, image and file handling, and edge cases.
+The implementation provides a RESTful API for managing resume entities, including the ability to attach and retrieve
+images and files. It leverages Spring Boot for the backend, PostgreSQL (via Testcontainers) for data persistence, and
+MapStruct for mapping between entities and DTOs. The system supports multitenancy and includes tests for CRUD
+operations, image and file handling, and edge cases.
 
 ## Components
 
 ### 1. ResumeController.java
-The `ResumeController` is a REST controller handling standard CRUD operations for resumes. It extends `MappedCrudTenantController` to provide tenant-aware endpoints.
+
+The `ResumeController` is a REST controller handling standard CRUD operations for resumes. It extends
+`MappedCrudTenantController` to provide tenant-aware endpoints.
 
 - **Key Features**:
-  - Manages resume creation, retrieval, update, and deletion.
-  - Enforces tenant isolation using the `X-Tenant-ID` header.
-  - Uses `@CrossOrigin` for local development (CORS).
-  - Injects `ResumeMapper` and `ResumeService` via custom annotations.
+    - Manages resume creation, retrieval, update, and deletion.
+    - Enforces tenant isolation using the `X-Tenant-ID` header.
+    - Uses `@CrossOrigin` for local development (CORS).
+    - Injects `ResumeMapper` and `ResumeService` via custom annotations.
 
 ### 2. ResumeFileController.java
-The `ResumeFileController` extends `MappedFileTenantController` to handle file-specific operations (upload and download) for resumes.
+
+The `ResumeFileController` extends `MappedFileTenantController` to handle file-specific operations (upload and download)
+for resumes.
 
 - **Key Features**:
-  - Supports file upload and download endpoints (e.g., PDFs).
-  - Integrates with `ResumeService` for file storage and retrieval.
-  - Maintains tenant isolation.
+    - Supports file upload and download endpoints (e.g., PDFs).
+    - Integrates with `ResumeService` for file storage and retrieval.
+    - Maintains tenant isolation.
 
 ### 3. ResumeImageController.java
-The `ResumeImageController` extends `MappedImageTenantController` to handle image-specific operations (upload and download) for resumes.
+
+The `ResumeImageController` extends `MappedImageTenantController` to handle image-specific operations (upload and
+download) for resumes.
 
 - **Key Features**:
-  - Supports image upload and download endpoints (e.g., JPEG).
-  - Integrates with `ResumeService` for image storage and retrieval.
-  - Maintains tenant isolation.
+    - Supports image upload and download endpoints (e.g., JPEG).
+    - Integrates with `ResumeService` for image storage and retrieval.
+    - Maintains tenant isolation.
 
 ### 4. ResumeEntity.java
-The `ResumeEntity` represents the resume table (`RESUME`) in the database, with file metadata stored in a secondary table (`RESUME_FILE`). It extends `AuditableEntity` and implements `ITenantAssignable`, `IImageEntity`, `IFileEntity`, and `ICodeAssignable`.
+
+The `ResumeEntity` represents the resume table (`RESUME`) in the database, with file metadata stored in a secondary
+table (`RESUME_FILE`). It extends `AuditableEntity` and implements `ITenantAssignable`, `IImageEntity`, `IFileEntity`,
+and `ICodeAssignable`.
 
 - **Key Features**:
-  - Fields: `id`, `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `imagePath`, `fileName`, `originalFileName`, `path`, `extension`, `type`, `tags`.
-  - `@Id` with sequence-based ID generation.
-  - `@Criteria` on `title`, `description`, `startDate`, and `endDate` for filtering.
-  - Image storage via `imagePath`.
-  - File metadata stored in `RESUME_FILE` secondary table.
-  - Supports code generation for unique identifiers (e.g., `RES000001`).
-  - Includes a list of tags for file categorization.
+    - Fields: `id`, `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `imagePath`, `fileName`,
+      `originalFileName`, `path`, `extension`, `type`, `tags`.
+    - `@Id` with sequence-based ID generation.
+    - `@Criteria` on `title`, `description`, `startDate`, and `endDate` for filtering.
+    - Image storage via `imagePath`.
+    - File metadata stored in `RESUME_FILE` secondary table.
+    - Supports code generation for unique identifiers (e.g., `RES000001`).
+    - Includes a list of tags for file categorization.
 
 ### 5. ResumeFileEntity.java
-The `ResumeFileEntity` extends `FileEntity` and implements `IFileEntity` to represent file-specific data in the `RESUME_FILE` table.
+
+The `ResumeFileEntity` extends `FileEntity` and implements `IFileEntity` to represent file-specific data in the
+`RESUME_FILE` table.
 
 - **Key Features**:
-  - Fields: `id`, `tags`.
-  - Uses sequence-based ID generation.
-  - Stores file tags in a separate `RESUME_FILE_TAGS` table.
+    - Fields: `id`, `tags`.
+    - Uses sequence-based ID generation.
+    - Stores file tags in a separate `RESUME_FILE_TAGS` table.
 
 ### 6. ResumeRepository.java
-The `ResumeRepository` is a JPA repository extending `JpaPagingAndSortingTenantAndCodeAssignableRepository` to support tenant-aware and code-aware queries with pagination and sorting.
+
+The `ResumeRepository` is a JPA repository extending `JpaPagingAndSortingTenantAndCodeAssignableRepository` to support
+tenant-aware and code-aware queries with pagination and sorting.
 
 - **Key Features**:
-  - Provides CRUD operations for `ResumeEntity`.
-  - Supports tenant and code-based filtering.
+    - Provides CRUD operations for `ResumeEntity`.
+    - Supports tenant and code-based filtering.
 
 ### 7. ResumeService.java
-The `ResumeService` handles business logic for resume, image, and file operations. It extends `FileImageTenantService` and uses `ResumeRepository` for persistence.
+
+The `ResumeService` handles business logic for resume, image, and file operations. It extends `FileImageTenantService`
+and uses `ResumeRepository` for persistence.
 
 - **Key Features**:
-  - Transactional operations with `@Transactional`.
-  - Injects `ResumeRepository` and code generator via custom annotations.
-  - Configures storage directory (`/resume`).
-  - Initializes code generation for unique resume codes (e.g., `RES000001`).
-  - Logs operations using SLF4J.
+    - Transactional operations with `@Transactional`.
+    - Injects `ResumeRepository` and code generator via custom annotations.
+    - Configures storage directory (`/resume`).
+    - Initializes code generation for unique resume codes (e.g., `RES000001`).
+    - Logs operations using SLF4J.
 
 ### 8. ResumeDto.java
-The `ResumeDto` is a data transfer object for resume data, extending `AbstractAuditableDto` and implementing `IFileUploadDto` and `IImageUploadDto`.
+
+The `ResumeDto` is a data transfer object for resume data, extending `AbstractAuditableDto` and implementing
+`IFileUploadDto` and `IImageUploadDto`.
 
 - **Key Features**:
-  - Fields: `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `originalFileName`, `imagePath`.
-  - Supports both file and image uploads.
+    - Fields: `tenant`, `code`, `title`, `description`, `startDate`, `endDate`, `active`, `originalFileName`,
+      `imagePath`.
+    - Supports both file and image uploads.
 
 ### 9. ResumeMapper.java
+
 The `ResumeMapper` is a MapStruct interface for mapping between `ResumeEntity` and `ResumeDto`.
 
 - **Key Features**:
-  - Uses Spring component model.
-  - Applies null checks with `NullValueCheckStrategy.ALWAYS`.
+    - Uses Spring component model.
+    - Applies null checks with `NullValueCheckStrategy.ALWAYS`.
 
 ### 10. ImageFileCrudIntegrationTests.java
-The integration tests validate resume, image, and file operations using Testcontainers with a PostgreSQL database. Tests cover CRUD, image/file upload/download, and edge cases.
+
+The integration tests validate resume, image, and file operations using Testcontainers with a PostgreSQL database. Tests
+cover CRUD, image/file upload/download, and edge cases.
 
 - **Key Features**:
-  - Uses Testcontainers for PostgreSQL setup.
-  - Tests resume creation with images and files.
-  - Validates image/file upload and download.
-  - Ensures data integrity and tenant isolation.
+    - Uses Testcontainers for PostgreSQL setup.
+    - Tests resume creation with images and files.
+    - Validates image/file upload and download.
+    - Ensures data integrity and tenant isolation.
 
 ## Setup and Dependencies
 
@@ -104,17 +132,19 @@ The integration tests validate resume, image, and file operations using Testcont
 - **PostgreSQL**: Database for resume, image, and file data.
 
 ### Prerequisites
+
 - Java 17 or later.
 - Maven for dependency management.
 - Docker for Testcontainers.
 
 ### Configuration
+
 - **Database**: PostgreSQL 15 (via Testcontainers).
 - **Multitenancy**: Uses GDM mode with tenant-specific schemas.
 - **Properties**:
-  - `spring.jpa.hibernate.ddl-auto=create`
-  - `multitenancy.mode=GDM`
-  - Dynamic datasource configuration for tenants.
+    - `spring.jpa.hibernate.ddl-auto=create`
+    - `multitenancy.mode=GDM`
+    - Dynamic datasource configuration for tenants.
 
 ## Running the Application
 
@@ -152,11 +182,13 @@ The integration tests validate resume, image, and file operations using Testcont
 - **DELETE /api/v1/resume/{id}**: Delete a resume.
 
 **Headers**:
+
 - `X-Tenant-ID`: Specifies the tenant (e.g., `tenants`).
 
 ## Testing Scenarios
 
 The integration tests cover:
+
 1. Creating resumes with images and files.
 2. Updating resumes with images and files.
 3. Uploading and downloading images and files.
@@ -165,6 +197,7 @@ The integration tests cover:
 ## Example Usage
 
 ### Create a Resume Without Image or File
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/resume \
 -H "Content-Type: application/json" \
@@ -181,6 +214,7 @@ curl -X POST http://localhost:8080/api/v1/resume \
 ```
 
 ### Create a Resume With File
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/resume/file \
 -H "X-Tenant-ID: tenants" \
@@ -189,6 +223,7 @@ curl -X POST http://localhost:8080/api/v1/resume/file \
 ```
 
 ### Create a Resume With Image
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/resume/image \
 -H "X-Tenant-ID: tenants" \
@@ -197,6 +232,7 @@ curl -X POST http://localhost:8080/api/v1/resume/image \
 ```
 
 ### Download a Resume’s File
+
 ```bash
 curl -X GET http://localhost:8080/api/v1/resume/file/download/1?version=0 \
 -H "X-Tenant-ID: tenants" \
@@ -204,6 +240,7 @@ curl -X GET http://localhost:8080/api/v1/resume/file/download/1?version=0 \
 ```
 
 ### Download a Resume’s Image
+
 ```bash
 curl -X GET http://localhost:8080/api/v1/resume/image/download/1 \
 -H "X-Tenant-ID: tenants" \
@@ -211,6 +248,7 @@ curl -X GET http://localhost:8080/api/v1/resume/image/download/1 \
 ```
 
 ### List Resumes (Paginated)
+
 ```bash
 curl -X GET "http://localhost:8080/api/v1/resume?page=0&size=10" \
 -H "X-Tenant-ID: tenants"

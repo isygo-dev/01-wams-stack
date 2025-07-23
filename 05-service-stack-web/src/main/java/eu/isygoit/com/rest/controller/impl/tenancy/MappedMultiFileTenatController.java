@@ -4,9 +4,7 @@ import eu.isygoit.com.rest.api.IMappedMultiFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.com.rest.service.tenancy.IMultiFileTenantServiceMethods;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -96,9 +94,9 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> download(RequestContextDto requestContext,
-                                                I parentId,
-                                                I fileId,
-                                                Long version
+                                             I parentId,
+                                             I fileId,
+                                             Long version
     ) {
         try {
             log.info("download file ");

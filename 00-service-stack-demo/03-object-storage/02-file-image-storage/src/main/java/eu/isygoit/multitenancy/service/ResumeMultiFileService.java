@@ -3,7 +3,6 @@ package eu.isygoit.multitenancy.service;
 import eu.isygoit.annotation.InjectCodeGen;
 import eu.isygoit.annotation.InjectLinkedFileRepository;
 import eu.isygoit.annotation.InjectRepository;
-import eu.isygoit.com.rest.service.MultiFileService;
 import eu.isygoit.com.rest.service.tenancy.MultiFileTenantService;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;

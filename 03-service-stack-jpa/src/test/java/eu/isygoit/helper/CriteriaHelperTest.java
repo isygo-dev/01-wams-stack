@@ -10,14 +10,10 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import lombok.Data;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -39,6 +35,44 @@ class CriteriaHelperTest {
     void tearDown() {
         // Clean up after each test
         CriteriaHelper.clearCache();
+    }
+
+    // Test entities
+    @Data
+    static class TestEntity implements IIdAssignable<Long> {
+        private Long id;
+
+        @Criteria
+        private String name;
+
+        @Criteria
+        private Integer age;
+
+        @Criteria
+        private String status;
+
+        @Criteria
+        private Boolean active;
+
+        @Criteria
+        private String department;
+
+        @Criteria
+        private Double salary;
+
+        @Criteria
+        private Long score;
+
+        private String nonCriteriaField;
+
+        @Criteria
+        private String tenant;
+    }
+
+    @Data
+    static class EmptyTestEntity implements IIdAssignable<Long> {
+        private Long id;
+        private String someField;
     }
 
     @Nested
@@ -629,43 +663,5 @@ class CriteriaHelperTest {
 
             assertNotNull(spec);
         }
-    }
-
-    // Test entities
-    @Data
-    static class TestEntity implements IIdAssignable<Long> {
-        private Long id;
-
-        @Criteria
-        private String name;
-
-        @Criteria
-        private Integer age;
-
-        @Criteria
-        private String status;
-
-        @Criteria
-        private Boolean active;
-
-        @Criteria
-        private String department;
-
-        @Criteria
-        private Double salary;
-
-        @Criteria
-        private Long score;
-
-        private String nonCriteriaField;
-
-        @Criteria
-        private String tenant;
-    }
-
-    @Data
-    static class EmptyTestEntity implements IIdAssignable<Long> {
-        private Long id;
-        private String someField;
     }
 }

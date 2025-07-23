@@ -55,8 +55,8 @@ public abstract class MappedFileController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext,
-                                                    I id,
-                                                    Long version) {
+                                                 I id,
+                                                 Long version) {
         log.info("Download file request received");
         try {
             ResourceDto resource = crudService().downloadFile(id, version);

@@ -10,17 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
  * Enhanced criteria helper for building dynamic JPA specifications from SQL-like WHERE clauses.
  * Supports complex conditions with logical operators and parentheses grouping.
- *
+ * <p>
  * Example usage: "name = 'John' & age > 25 | (status = 'active' & role != 'admin')"
  */
 @Slf4j
@@ -41,11 +39,6 @@ public final class CriteriaHelper {
     private CriteriaHelper() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
-
-    /**
-     * Record to hold field information for better type safety and performance.
-     */
-    private record FieldInfo(String name, Class<?> type, String typeSimpleName) {}
 
     /**
      * Converts SQL WHERE clause to criteria list with enhanced error handling and validation.
@@ -392,12 +385,12 @@ public final class CriteriaHelper {
         return specification;
     }
 
-    // Enhanced specification methods with better type handling
-
     public static <T extends IIdAssignable> Specification<T> like(String fieldName, String value) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.like(root.get(fieldName), "%" + value + "%");
     }
+
+    // Enhanced specification methods with better type handling
 
     public static <T extends IIdAssignable> Specification<T> notLike(String fieldName, String value) {
         return (root, query, criteriaBuilder) ->
@@ -450,5 +443,11 @@ public final class CriteriaHelper {
      */
     public static int getCacheSize() {
         return CRITERIA_CACHE.size();
+    }
+
+    /**
+     * Record to hold field information for better type safety and performance.
+     */
+    private record FieldInfo(String name, Class<?> type, String typeSimpleName) {
     }
 }

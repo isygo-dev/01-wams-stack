@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.service.tenancy;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;

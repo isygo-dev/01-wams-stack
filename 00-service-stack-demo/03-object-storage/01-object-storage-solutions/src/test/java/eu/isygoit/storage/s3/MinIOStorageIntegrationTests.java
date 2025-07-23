@@ -1,10 +1,15 @@
 package eu.isygoit.storage.s3;
 
 import eu.isygoit.enums.IEnumLogicalOperator;
-import eu.isygoit.storage.exception.S3BuketException;
+import eu.isygoit.storage.exception.MinIoS3BucketException;
 import eu.isygoit.storage.s3.config.S3Config;
 import eu.isygoit.storage.s3.object.FileStorage;
-import eu.isygoit.storage.s3.service.GarageService;
+import eu.isygoit.storage.s3.service.MinIOService;
+import io.minio.GetBucketVersioningArgs;
+import io.minio.MinioClient;
+import io.minio.messages.Bucket;
+import io.minio.messages.DeleteObject;
+import io.minio.messages.VersioningConfiguration;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,8 +21,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -26,14 +29,14 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * The type Garage storage application test.
+ * The type Min io storage application test.
  */
-@ActiveProfiles("Garage")
+@ActiveProfiles("MinIO")
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class GarageStorageApplicationTest {
+class MinIOStorageIntegrationTests {
 
     @Container
     private static final MinIOContainer minioContainer = new MinIOContainer("minio/minio:latest")
@@ -43,7 +46,7 @@ class GarageStorageApplicationTest {
     private static final String OBJECT_NAME = "test-object.txt";
     private static final String TENANT = "test-tenant";
     @Autowired
-    private GarageService garageService;
+    private MinIOService minIOService;
     private S3Config s3Config;
 
     /**
@@ -76,8 +79,8 @@ class GarageStorageApplicationTest {
     @Test
     @Order(1)
     void testCreateAndCheckBucket() {
-        garageService.makeBucket(s3Config, BUCKET_NAME);
-        assertTrue(garageService.bucketExists(s3Config, BUCKET_NAME));
+        minIOService.makeBucket(s3Config, BUCKET_NAME);
+        assertTrue(minIOService.bucketExists(s3Config, BUCKET_NAME));
     }
 
     /**
@@ -86,23 +89,23 @@ class GarageStorageApplicationTest {
     @Test
     @Order(2)
     void testSetVersioning() {
-        garageService.makeBucket(s3Config, BUCKET_NAME);
+        minIOService.makeBucket(s3Config, BUCKET_NAME);
 
-        garageService.setVersioningBucket(s3Config, BUCKET_NAME, true);
-        S3Client client = garageService.getConnection(s3Config);
+        minIOService.setVersioningBucket(s3Config, BUCKET_NAME, true);
+        MinioClient client = minIOService.getConnection(s3Config);
         try {
-            GetBucketVersioningResponse config = client.getBucketVersioning(
-                    GetBucketVersioningRequest.builder().bucket(BUCKET_NAME).build());
-            assertEquals(BucketVersioningStatus.ENABLED, config.status());
+            VersioningConfiguration config = client.getBucketVersioning(
+                    GetBucketVersioningArgs.builder().bucket(BUCKET_NAME).build());
+            assertEquals(VersioningConfiguration.Status.ENABLED, config.status());
         } catch (Exception e) {
             fail("Failed to check versioning: " + e.getMessage());
         }
 
-        garageService.setVersioningBucket(s3Config, BUCKET_NAME, false);
+        minIOService.setVersioningBucket(s3Config, BUCKET_NAME, false);
         try {
-            GetBucketVersioningResponse config = client.getBucketVersioning(
-                    GetBucketVersioningRequest.builder().bucket(BUCKET_NAME).build());
-            assertEquals(BucketVersioningStatus.SUSPENDED, config.status());
+            VersioningConfiguration config = client.getBucketVersioning(
+                    GetBucketVersioningArgs.builder().bucket(BUCKET_NAME).build());
+            assertEquals(VersioningConfiguration.Status.SUSPENDED, config.status());
         } catch (Exception e) {
             fail("Failed to check versioning: " + e.getMessage());
         }
@@ -116,8 +119,8 @@ class GarageStorageApplicationTest {
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Test content".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
-        byte[] data = garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        byte[] data = minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
 
@@ -129,8 +132,8 @@ class GarageStorageApplicationTest {
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content for presigned".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
-        String url = garageService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        String url = minIOService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertNotNull(url);
         assertTrue(url.contains(OBJECT_NAME));
     }
@@ -144,10 +147,10 @@ class GarageStorageApplicationTest {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Tagged content".getBytes(StandardCharsets.UTF_8));
         Map<String, String> tags = Map.of("type", "document", "env", "test");
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
 
         Map<String, String> searchTags = Map.of("type", "document");
-        List<FileStorage> results = garageService.getObjectByTags(
+        List<FileStorage> results = minIOService.getObjectByTags(
                 s3Config, BUCKET_NAME, searchTags, IEnumLogicalOperator.Types.AND);
         assertFalse(results.isEmpty());
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
@@ -161,11 +164,11 @@ class GarageStorageApplicationTest {
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to tag".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
 
-        garageService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
+        minIOService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
 
-        List<FileStorage> results = garageService.getObjectByTags(
+        List<FileStorage> results = minIOService.getObjectByTags(
                 s3Config, BUCKET_NAME, Map.of("updated", "yes"), IEnumLogicalOperator.Types.AND);
         assertFalse(results.isEmpty());
         assertTrue(results.stream().anyMatch(f -> f.getObjectName().equals(OBJECT_NAME)));
@@ -179,10 +182,10 @@ class GarageStorageApplicationTest {
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
-        garageService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
-        assertThrows(S3BuketException.class, () ->
-                garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        minIOService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
+        assertThrows(MinIoS3BucketException.class, () ->
+                minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
     }
 
     /**
@@ -194,17 +197,16 @@ class GarageStorageApplicationTest {
         MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
         MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2".getBytes());
 
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
 
-        garageService.deleteObjects(s3Config, BUCKET_NAME,
-                List.of(DeleteObjectRequest.builder().key("file1.txt").build(),
-                        DeleteObjectRequest.builder().key("file2.txt").build()));
+        minIOService.deleteObjects(s3Config, BUCKET_NAME,
+                List.of(new DeleteObject("file1.txt"), new DeleteObject("file2.txt")));
 
-        assertThrows(S3BuketException.class, () ->
-                garageService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
-        assertThrows(S3BuketException.class, () ->
-                garageService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
+        assertThrows(MinIoS3BucketException.class, () ->
+                minIOService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
+        assertThrows(MinIoS3BucketException.class, () ->
+                minIOService.getObject(s3Config, BUCKET_NAME, "file2.txt", null));
     }
 
     /**
@@ -213,7 +215,7 @@ class GarageStorageApplicationTest {
     @Test
     @Order(9)
     void testListBuckets() {
-        List<Bucket> buckets = garageService.getBuckets(s3Config);
+        List<Bucket> buckets = minIOService.getBuckets(s3Config);
         assertFalse(buckets.isEmpty());
         assertTrue(buckets.stream().anyMatch(b -> b.name().equals(BUCKET_NAME)));
     }
@@ -224,9 +226,9 @@ class GarageStorageApplicationTest {
     @Test
     @Order(10)
     void testDeleteBucket() {
-        garageService.makeBucket(s3Config, "bucket-delete");
-        garageService.deleteBucket(s3Config, "bucket-delete");
-        assertFalse(garageService.bucketExists(s3Config, "bucket-delete"));
+        minIOService.makeBucket(s3Config, "bucket-delete");
+        minIOService.deleteBucket(s3Config, "bucket-delete");
+        assertFalse(minIOService.bucketExists(s3Config, "bucket-delete"));
     }
 
     /**
@@ -236,7 +238,7 @@ class GarageStorageApplicationTest {
     @Order(11)
     void testInvalidConfig() {
         S3Config invalid = new S3Config();
-        assertThrows(IllegalArgumentException.class, () -> garageService.getConnection(invalid));
+        assertThrows(IllegalArgumentException.class, () -> minIOService.getConnection(invalid));
     }
 
     /**
@@ -245,7 +247,7 @@ class GarageStorageApplicationTest {
     @Test
     @Order(12)
     void testInvalidBucketName() {
-        assertThrows(IllegalArgumentException.class, () -> garageService.bucketExists(s3Config, ""));
+        assertThrows(IllegalArgumentException.class, () -> minIOService.bucketExists(s3Config, ""));
     }
 
     /**
@@ -255,7 +257,7 @@ class GarageStorageApplicationTest {
     @Order(13)
     void testInvalidObjectName() {
         assertThrows(IllegalArgumentException.class,
-                () -> garageService.getObject(s3Config, BUCKET_NAME, "", null));
+                () -> minIOService.getObject(s3Config, BUCKET_NAME, "", null));
     }
 
     /**
@@ -265,7 +267,7 @@ class GarageStorageApplicationTest {
     @Order(14)
     void testInvalidUploadParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
+                () -> minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
     }
 
     /**
@@ -274,7 +276,7 @@ class GarageStorageApplicationTest {
     @Test
     @Order(15)
     void testUpdateConnection() {
-        assertDoesNotThrow(() -> garageService.updateConnection(s3Config));
+        assertDoesNotThrow(() -> minIOService.updateConnection(s3Config));
     }
 
     /**
@@ -287,8 +289,8 @@ class GarageStorageApplicationTest {
         String objectName = "path-object.txt";
         MockMultipartFile file = new MockMultipartFile("file", objectPath, "text/plain",
                 "Path content".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
-        byte[] retrieved = garageService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
+        byte[] retrieved = minIOService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
         assertEquals("Path content", new String(retrieved));
     }
 
@@ -299,8 +301,8 @@ class GarageStorageApplicationTest {
     @Order(17)
     void testListObjectsInBucket() {
         MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
-        List<FileStorage> files = garageService.getObjects(s3Config, BUCKET_NAME);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
+        List<FileStorage> files = minIOService.getObjects(s3Config, BUCKET_NAME);
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
 
@@ -312,8 +314,8 @@ class GarageStorageApplicationTest {
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "With empty version".getBytes());
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         assertDoesNotThrow(() ->
-                garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));
+                minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));
     }
 }

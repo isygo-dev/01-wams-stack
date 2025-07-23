@@ -71,7 +71,7 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
      * @param entity the entity
      * @return the json based entity
      */
-    public JsonBasedEntity afterToJsonEntity(JsonBasedEntity entity){
+    public JsonBasedEntity afterToJsonEntity(JsonBasedEntity entity) {
         return entity;
     }
 
@@ -82,7 +82,7 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
      * @param element the element
      * @return the t
      */
-    public <T extends IIdAssignable<UUID> & JsonElement<UUID>> T afterToJsonElement(T element){
+    public <T extends IIdAssignable<UUID> & JsonElement<UUID>> T afterToJsonElement(T element) {
         return element;
     }
 }

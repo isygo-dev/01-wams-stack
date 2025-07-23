@@ -13,7 +13,6 @@ import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.core.io.Resource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,7 +49,7 @@ public abstract class MultiFileService<I extends Serializable,
 
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException {
-        if(files == null || files.length == 0){
+        if (files == null || files.length == 0) {
             throw new EmptyFileListException("for parent id " + parentId);
         }
 

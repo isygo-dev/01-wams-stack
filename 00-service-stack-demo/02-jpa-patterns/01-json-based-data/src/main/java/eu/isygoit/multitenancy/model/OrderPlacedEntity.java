@@ -1,9 +1,9 @@
 package eu.isygoit.multitenancy.model;
 
 import eu.isygoit.annotation.Criteria;
+import eu.isygoit.annotation.JsonEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.json.JsonElement;
-import eu.isygoit.annotation.JsonEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

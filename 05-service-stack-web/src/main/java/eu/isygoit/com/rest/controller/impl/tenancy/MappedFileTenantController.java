@@ -58,8 +58,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext,
-                                                    I id,
-                                                    Long version) {
+                                                 I id,
+                                                 Long version) {
         log.info("Download file request received");
         try {
             ResourceDto resource = crudService().downloadFile(requestContext.getSenderTenant(), id, version);

@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-class JsonBasedSqlPostgresTests {
+class JsonBasedSqlPostgresIntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
@@ -110,8 +110,9 @@ class JsonBasedSqlPostgresTests {
 
     /**
      * Builds a UserLoginEventDto with specified values for testing.
+     *
      * @param userId The user ID for the JSON entity.
-     * @param ip The IP address for the JSON entity.
+     * @param ip     The IP address for the JSON entity.
      * @param device The device name for the JSON entity.
      * @return Configured UserLoginEventDto.
      */

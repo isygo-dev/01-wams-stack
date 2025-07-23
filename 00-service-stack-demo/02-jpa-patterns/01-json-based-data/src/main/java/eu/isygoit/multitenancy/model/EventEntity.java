@@ -1,5 +1,6 @@
 package eu.isygoit.multitenancy.model;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
 import jakarta.persistence.*;
@@ -7,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import eu.isygoit.annotation.Criteria;
 
 @Data
 @SuperBuilder

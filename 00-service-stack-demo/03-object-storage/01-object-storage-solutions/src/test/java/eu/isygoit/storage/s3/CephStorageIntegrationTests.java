@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class CephStorageApplicationTest {
+class CephStorageIntegrationTests {
 
     @Container
     private static final MinIOContainer minioContainer = new MinIOContainer("minio/minio:latest")
