@@ -20,131 +20,197 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-
+import java.util.Objects;
 
 /**
- * The type Mapped file controller.
+ * Abstract controller class for handling file-related operations via REST API.
+ * Provides endpoints for uploading, downloading, creating, and updating entities with associated files
+ * for entities implementing {@link IFileEntity} and {@link IIdAssignable}.
  *
- * @param <I> the type parameter
- * @param <T> the type parameter
- * @param <M> the type parameter
- * @param <F> the type parameter
- * @param <S> the type parameter
+ * @param <I> the type of the identifier, extending {@link Serializable}
+ * @param <T> the entity type, extending {@link IIdAssignable} and {@link IFileEntity}
+ * @param <M> the main DTO type, extending {@link IIdAssignableDto} and {@link IFileUploadDto}
+ * @param <F> the full DTO type, extending {@link M}
+ * @param <S> the service type, implementing {@link IFileServiceMethods}, {@link ICrudServiceMethods}, and {@link ICrudServiceUtils}
  */
 @Slf4j
-public abstract class MappedFileController<I extends Serializable, T extends IIdAssignable<I> & IFileEntity,
+public abstract class MappedFileController<
+        I extends Serializable,
+        T extends IIdAssignable<I> & IFileEntity,
         M extends IIdAssignableDto<I> & IFileUploadDto,
         F extends M,
-        S extends IFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerUtils<I, T, M, F, S>
-        implements IMappedFileApi<I, F> {
+        S extends IFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>
+        > extends CrudControllerUtils<I, T, M, F, S> implements IMappedFileApi<I, F> {
 
+    /**
+     * Uploads a file for the specified entity.
+     *
+     * @param requestContext the request context containing metadata
+     * @param id            the ID of the entity
+     * @param file          the multipart file to upload
+     * @return a response entity containing the updated entity DTO
+     * @throws IOException if an I/O error occurs during file upload
+     */
     @Override
-    public ResponseEntity<F> uploadFile(RequestContextDto requestContext,
-                                        I id, MultipartFile file) {
-        log.info("Upload file request received");
+    public ResponseEntity<F> uploadFile(RequestContextDto requestContext, I id, MultipartFile file) {
+        Objects.requireNonNull(requestContext, "Request context must not be null");
+        Objects.requireNonNull(id, "Entity ID must not be null");
+        Objects.requireNonNull(file, "File must not be null");
+        log.debug("Uploading file for entityId: {}", id);
         try {
-            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(id, file)));
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+            var entity = crudService().uploadFile(id, file);
+            var dto = mapper().entityToDto(entity);
+            log.info("Successfully uploaded file for entityId: {}", id);
+            return ResponseFactory.responseOk(dto);
+        } catch (IOException e) {
+            log.error("Failed to upload file for entityId: {}", id, e);
             return getBackExceptionResponse(e);
         }
     }
 
+    /**
+     * Downloads a file associated with the specified entity and version.
+     *
+     * @param requestContext the request context containing metadata
+     * @param id            the ID of the entity
+     * @param version       the version of the file to download
+     * @return a response entity containing the file resource
+     * @throws IOException if an I/O error occurs during file download
+     */
     @Override
-    public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext,
-                                                 I id,
-                                                 Long version) {
-        log.info("Download file request received");
+    public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext, I id, Long version) {
+        Objects.requireNonNull(requestContext, "Request context must not be null");
+        Objects.requireNonNull(id, "Entity ID must not be null");
+        Objects.requireNonNull(version, "Version must not be null");
+        log.debug("Downloading file for entityId: {}, version: {}", id, version);
         try {
-            ResourceDto resource = crudService().downloadFile(id, version);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
-                    .body(resource.getResource());
-        } catch (Throwable e) {
-            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
-            return getBackExceptionResponse(e);
-        }
-    }
-
-    @Override
-    public ResponseEntity<F> createWithFile(RequestContextDto requestContext,
-                                            MultipartFile file,
-                                            F dto) {
-        log.info("Create with file request received");
-        try {
-            if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
-                ITenantAssignableDto.setTenant(requestContext.getSenderTenant());
+            var resource = crudService().downloadFile(id, version);
+            if (resource != null && resource.getResource() != null) {
+                var file = resource.getResource().getFile();
+                var contentType = Files.probeContentType(file.toPath());
+                log.info("Successfully downloaded file: {} for entityId: {}, version: {}",
+                        resource.getOriginalFileName(), id, version);
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_TYPE, contentType != null ? contentType : "application/octet-stream")
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
+                        .body(resource.getResource());
             }
-            dto = this.beforeCreate(dto);
-            F savedResume = mapper().entityToDto(this.afterCreate(
-                    crudService().createWithFile(mapper().dtoToEntity(dto), file)));
-            return ResponseFactory.responseCreated(savedResume);
-        } catch (Exception ex) {
-            return getBackExceptionResponse(ex);
+            log.warn("File not found for entityId: {}, version: {}", id, version);
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            log.error("Failed to download file for entityId: {}, version: {}", id, version, e);
+            return getBackExceptionResponse(e);
         }
     }
 
+    /**
+     * Creates an entity with an associated file.
+     *
+     * @param requestContext the request context containing metadata
+     * @param file          the multipart file to upload
+     * @param dto           the DTO containing entity data
+     * @return a response entity containing the created entity DTO
+     * @throws IOException if an I/O error occurs during creation or file upload
+     */
     @Override
-    public ResponseEntity<F> updateWithFile(RequestContextDto requestContext,
-                                            I id,
-                                            MultipartFile file,
-                                            F dto) {
-        log.info("Update with file request received");
+    public ResponseEntity<F> createWithFile(RequestContextDto requestContext, MultipartFile file, F dto) {
+        Objects.requireNonNull(requestContext, "Request context must not be null");
+        Objects.requireNonNull(file, "File must not be null");
+        Objects.requireNonNull(dto, "DTO must not be null");
+        log.debug("Creating entity with file for tenant: {}", requestContext.getSenderTenant());
         try {
-            dto = this.beforeUpdate(dto);
-            F saved = mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithFile(id, mapper().dtoToEntity(dto), file)));
-            return ResponseFactory.responseOk(saved);
-        } catch (Exception ex) {
-            return getBackExceptionResponse(ex);
+            if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
+                tenantAssignableDto.setTenant(requestContext.getSenderTenant());
+                log.debug("Assigned tenant {} to DTO", requestContext.getSenderTenant());
+            }
+            var processedDto = beforeCreate(dto);
+            var entity = crudService().createWithFile(mapper().dtoToEntity(processedDto), file);
+            var result = afterCreate(entity);
+            log.info("Successfully created entity with file for tenant: {}", requestContext.getSenderTenant());
+            return ResponseFactory.responseCreated(mapper().entityToDto(result));
+        } catch (IOException e) {
+            log.error("Failed to create entity with file for tenant: {}", requestContext.getSenderTenant(), e);
+            return getBackExceptionResponse(e);
         }
     }
 
     /**
-     * Before create fulld.
+     * Updates an entity with an associated file.
      *
-     * @param object the object
-     * @return the fulld
-     * @throws Exception the exception
+     * @param requestContext the request context containing metadata
+     * @param id            the ID of the entity to update
+     * @param file          the multipart file to upload
+     * @param dto           the DTO containing updated entity data
+     * @return a response entity containing the updated entity DTO
+     * @throws IOException if an I/O error occurs during update or file upload
      */
-    public F beforeCreate(F object) throws Exception {
+    @Override
+    public ResponseEntity<F> updateWithFile(RequestContextDto requestContext, I id, MultipartFile file, F dto) {
+        Objects.requireNonNull(requestContext, "Request context must not be null");
+        Objects.requireNonNull(id, "Entity ID must not be null");
+        Objects.requireNonNull(file, "File must not be null");
+        Objects.requireNonNull(dto, "DTO must not be null");
+        log.debug("Updating entity with file for entityId: {}", id);
+        try {
+            var processedDto = beforeUpdate(dto);
+            var entity = crudService().updateWithFile(id, mapper().dtoToEntity(processedDto), file);
+            var result = afterUpdate(entity);
+            log.info("Successfully updated entity with file for entityId: {}", id);
+            return ResponseFactory.responseOk(mapper().entityToDto(result));
+        } catch (IOException e) {
+            log.error("Failed to update entity with file for entityId: {}", id, e);
+            return getBackExceptionResponse(e);
+        }
+    }
+
+    /**
+     * Hook method called before creating an entity, allowing customization.
+     *
+     * @param object the DTO to process
+     * @return the processed DTO
+     * @throws IOException if an I/O error occurs
+     */
+    protected F beforeCreate(F object) throws IOException {
+        log.debug("Executing beforeCreate for DTO with ID: {}", object.getId());
         return object;
     }
 
     /**
-     * After create t.
+     * Hook method called after creating an entity, allowing customization.
      *
-     * @param object the object
-     * @return the t
-     * @throws Exception the exception
+     * @param object the created entity
+     * @return the processed entity
+     * @throws IOException if an I/O error occurs
      */
-    public T afterCreate(T object) throws Exception {
+    protected T afterCreate(T object) throws IOException {
+        log.debug("Executing afterCreate for entity with ID: {}", object.getId());
         return object;
     }
 
     /**
-     * Before update fulld.
+     * Hook method called before updating an entity, allowing customization.
      *
-     * @param object the object
-     * @return the fulld
-     * @throws Exception the exception
+     * @param object the DTO to process
+     * @return the processed DTO
+     * @throws IOException if an I/O error occurs
      */
-    public F beforeUpdate(F object) throws Exception {
+    protected F beforeUpdate(F object) throws IOException {
+        log.debug("Executing beforeUpdate for DTO with ID: {}", object.getId());
         return object;
     }
 
     /**
-     * After update t.
+     * Hook method called after updating an entity, allowing customization.
      *
-     * @param object the object
-     * @return the t
-     * @throws Exception the exception
+     * @param object the updated entity
+     * @return the processed entity
+     * @throws IOException if an I/O error occurs
      */
-    public T afterUpdate(T object) throws Exception {
+    protected T afterUpdate(T object) throws IOException {
+        log.debug("Executing afterUpdate for entity with ID: {}", object.getId());
         return object;
     }
 }

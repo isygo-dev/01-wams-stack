@@ -1,6 +1,5 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyFileException;
 import eu.isygoit.exception.EmptyFileListException;
@@ -8,7 +7,10 @@ import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
-import eu.isygoit.model.*;
+import eu.isygoit.model.ICodeAssignable;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ILinkedFile;
+import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -18,157 +20,215 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 /**
- * The type Multi file api.
+ * Abstract service class for handling multiple file operations for entities.
+ * Supports uploading, downloading, and deleting additional files associated with entities implementing
+ * {@link IMultiFileEntity}, {@link IIdAssignable}, and {@link ICodeAssignable}.
  *
- * @param <I>  the type parameter
- * @param <T>  the type parameter
- * @param <L>  the type parameter
- * @param <R>  the type parameter
- * @param <RL> the type parameter
+ * @param <I>  the type of the identifier, extending {@link Serializable}
+ * @param <T>  the entity type, extending {@link IMultiFileEntity}, {@link IIdAssignable}, and {@link ICodeAssignable}
+ * @param <L>  the linked file type, extending {@link ILinkedFile}, {@link ICodeAssignable}, and {@link IIdAssignable}
+ * @param <R>  the repository type for the entity, extending {@link JpaPagingAndSortingCodeAssingnableRepository}
+ * @param <RL> the repository type for linked files, extending {@link JpaPagingAndSortingRepository}
  */
 @Slf4j
-public abstract class MultiFileService<I extends Serializable,
+public abstract class MultiFileService<
+        I extends Serializable,
         T extends IMultiFileEntity<L> & IIdAssignable<I> & ICodeAssignable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
-        RL extends JpaPagingAndSortingRepository<L, I>>
-        extends MultiFileServiceSubMethods<I, T, L, R, RL>
-        implements IMultiFileServiceMethods<I, T> {
+        RL extends JpaPagingAndSortingRepository<L, I>
+        > extends MultiFileServiceSubMethods<I, T, L, R, RL> implements IMultiFileServiceMethods<I, T> {
 
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1];
-    private final Class<L> linkedFileClass = (Class<L>) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[2];
+    private final Class<T> persistentClass;
+    private final Class<L> linkedFileClass;
 
+    /**
+     * Constructor that initializes the persistent and linked file classes using reflection.
+     */
+    @SuppressWarnings("unchecked")
+    protected MultiFileService() {
+        var parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
+        this.persistentClass = (Class<T>) parameterizedType.getActualTypeArguments()[1];
+        this.linkedFileClass = (Class<L>) parameterizedType.getActualTypeArguments()[2];
+        log.debug("Initialized MultiFileService with persistentClass: {}, linkedFileClass: {}",
+                persistentClass.getSimpleName(), linkedFileClass.getSimpleName());
+    }
+
+    /**
+     * Uploads multiple additional files for the specified parent entity.
+     *
+     * @param parentId the ID of the parent entity
+     * @param files    the array of multipart files to upload
+     * @return the list of linked files associated with the parent entity
+     * @throws IOException            if an I/O error occurs during file upload
+     * @throws EmptyFileListException if the files array is null or empty
+     */
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException {
+        Objects.requireNonNull(parentId, "Parent ID must not be null");
         if (files == null || files.length == 0) {
-            throw new EmptyFileListException("for parent id " + parentId);
+            log.error("Empty or null file list provided for parentId: {}", parentId);
+            throw new EmptyFileListException("Empty file list for parent ID: " + parentId);
         }
 
         var entity = getEntityOrThrow(parentId);
+        log.debug("Uploading {} files for parentId: {}", files.length, parentId);
         for (var file : files) {
             uploadAdditionalFile(parentId, file);
         }
+        log.info("Successfully uploaded {} files for parentId: {}", files.length, parentId);
         return entity.getAdditionalFiles();
     }
 
+    /**
+     * Uploads a single additional file for the specified parent entity.
+     *
+     * @param parentId the ID of the parent entity
+     * @param file     the multipart file to upload
+     * @return the list of linked files associated with the parent entity
+     * @throws IOException        if an I/O error occurs during file upload
+     * @throws EmptyFileException if the file is null or empty
+     */
     @Override
     public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
+        Objects.requireNonNull(parentId, "Parent ID must not be null");
         if (file == null || file.isEmpty()) {
-            throw new EmptyFileException("for and parent id " + parentId);
+            log.error("Null or empty file provided for parentId: {}", parentId);
+            throw new EmptyFileException("Empty file for parent ID: " + parentId);
         }
 
         var entity = getEntityOrThrow(parentId);
-        var tenant = extractTenant(entity);
+        log.debug("Uploading file for parentId: {}", parentId);
 
-        L linkedFile;
         try {
-            linkedFile = linkedFileClass.getDeclaredConstructor().newInstance();
-            assignCodeIfEmpty(linkedFile);
+            var linkedFile = createLinkedFile(file);
 
-            if (entity instanceof ITenantAssignable tenantAssignableEntity
-                    && linkedFile instanceof ITenantAssignable tenantAssignableFile) {
-                tenantAssignableFile.setTenant(tenantAssignableEntity.getTenant());
-            }
-
-            //linkedFile.setFileName(linkedFile.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
-            var originalFilename = file.getOriginalFilename();
-            linkedFile.setOriginalFileName(originalFilename);
-            linkedFile.setExtension(FilenameUtils.getExtension(originalFilename));
-            linkedFile.setPath(Path.of(getUploadDirectory())
-                    .resolve(tenant)
-                    .resolve(persistentClass.getSimpleName().toLowerCase())
-                    .resolve("additional").toString());
-            linkedFile.setMimetype(file.getContentType());
-            var bytes = file.getBytes();
-            linkedFile.setCrc16(CRC16Helper.calculate(bytes));
-            linkedFile.setCrc32(CRC32Helper.calculate(bytes));
-            linkedFile.setSize(file.getSize());
-            linkedFile.setVersion(1L);
-
-            linkedFile = beforeUpload(tenant, linkedFile, file);
+            linkedFile = beforeUpload(linkedFile, file);
             linkedFile = subUploadFile(file, linkedFile);
-            linkedFile = afterUpload(tenant, linkedFile, file);
+            linkedFile = afterUpload(linkedFile, file);
 
             if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
                 entity.setAdditionalFiles(new ArrayList<>());
+                log.debug("Initialized empty additional files list for entity: {}", parentId);
             }
             entity.getAdditionalFiles().add(linkedFile);
             update(entity);
 
+            log.info("Successfully uploaded file for parentId: {}, fileName: {}", parentId, linkedFile.getFileName());
+            return entity.getAdditionalFiles();
         } catch (Exception e) {
-            log.error("Update additional files failed: ", e);
-            throw new IOException("Failed to upload additional file", e);
+            log.error("Failed to upload file for parentId: {}", parentId, e);
+            throw new IOException("Failed to upload additional file for parent ID: " + parentId, e);
         }
-
-        return entity.getAdditionalFiles();
     }
 
+    private L createLinkedFile(MultipartFile file) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IOException {
+        var linkedFile = linkedFileClass.getDeclaredConstructor().newInstance();
+        assignCodeIfEmpty(linkedFile);
+
+        var originalFilename = file.getOriginalFilename();
+        linkedFile.setOriginalFileName(originalFilename);
+        linkedFile.setExtension(FilenameUtils.getExtension(originalFilename));
+        linkedFile.setPath(Path.of(getUploadDirectory())
+                .resolve(persistentClass.getSimpleName().toLowerCase())
+                .resolve("additional")
+                .toString());
+        linkedFile.setMimetype(file.getContentType());
+        var bytes = file.getBytes();
+        linkedFile.setCrc16(CRC16Helper.calculate(bytes));
+        linkedFile.setCrc32(CRC32Helper.calculate(bytes));
+        linkedFile.setSize(file.getSize());
+        linkedFile.setVersion(1L);
+        return linkedFile;
+    }
+
+    /**
+     * Downloads a file associated with the specified parent and file IDs.
+     *
+     * @param parentId the ID of the parent entity
+     * @param fileId   the ID of the linked file
+     * @param version  the version of the file to download
+     * @return the resource DTO containing the file data
+     * @throws IOException             if an I/O error occurs during file download
+     * @throws ObjectNotFoundException if the parent entity or linked file is not found
+     */
     @Override
     public ResourceDto downloadFile(I parentId, I fileId, Long version) throws IOException {
+        Objects.requireNonNull(parentId, "Parent ID must not be null");
+        Objects.requireNonNull(fileId, "File ID must not be null");
         var entity = getEntityOrThrow(parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {
-            throw new ObjectNotFoundException(linkedFileClass.getSimpleName() + " with id " + fileId);
+            log.error("Linked file not found for fileId: {}, parentId: {}", fileId, parentId);
+            throw new ObjectNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
+        log.debug("Downloading file for parentId: {}, fileId: {}, version: {}", parentId, fileId, version);
         return subDownloadFile(linkedFile, version);
     }
 
+    /**
+     * Deletes an additional file associated with the specified parent and file IDs.
+     *
+     * @param parentId the ID of the parent entity
+     * @param fileId   the ID of the linked file to delete
+     * @return true if the file was deleted successfully
+     * @throws IOException             if an I/O error occurs during file deletion
+     * @throws FileNotFoundException  if the linked file is not found
+     */
     @Override
     public boolean deleteAdditionalFile(I parentId, I fileId) throws IOException {
+        Objects.requireNonNull(parentId, "Parent ID must not be null");
+        Objects.requireNonNull(fileId, "File ID must not be null");
         var entity = getEntityOrThrow(parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {
-            throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with id " + fileId);
+            log.error("Linked file not found for fileId: {}, parentId: {}", fileId, parentId);
+            throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
         entity.getAdditionalFiles().removeIf(file -> file.getId().equals(fileId));
         subDeleteFile(linkedFile);
         update(entity);
+        log.info("Successfully deleted file for parentId: {}, fileId: {}", parentId, fileId);
         return true;
     }
 
     /**
-     * Gets entity or throw.
+     * Retrieves the entity by ID or throws an exception if not found.
      *
-     * @param id the id
-     * @return the entity or throw
+     * @param id the ID of the entity
+     * @return the entity
+     * @throws ObjectNotFoundException if the entity is not found
      */
     protected T getEntityOrThrow(I id) {
-        Optional<T> optional = findById(id);
-        return optional.orElseThrow(() ->
-                new ObjectNotFoundException(persistentClass.getSimpleName() + " with id: " + id));
+        Objects.requireNonNull(id, "Entity ID must not be null");
+        return findById(id).orElseThrow(() -> {
+            log.error("Entity not found for ID: {}", id);
+            return new ObjectNotFoundException(persistentClass.getSimpleName() + " with ID: " + id);
+        });
     }
 
     /**
-     * Extract tenant string.
+     * Finds a linked file by ID within the entity's additional files.
      *
      * @param entity the entity
-     * @return the string
-     */
-    protected String extractTenant(T entity) {
-        if (entity instanceof ITenantAssignable tenantAssignable) {
-            return tenantAssignable.getTenant();
-        }
-        return TenantConstants.DEFAULT_TENANT_NAME;
-    }
-
-    /**
-     * Find linked file l.
-     *
-     * @param entity the entity
-     * @param fileId the file id
-     * @return the l
+     * @param fileId the ID of the linked file
+     * @return the linked file, or null if not found
      */
     protected L findLinkedFile(T entity, I fileId) {
-        if (entity.getAdditionalFiles() == null) return null;
+        Objects.requireNonNull(entity, "Entity must not be null");
+        Objects.requireNonNull(fileId, "File ID must not be null");
+        if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
+            log.debug("No additional files found for entity: {}", entity.getCode());
+            return null;
+        }
         return entity.getAdditionalFiles().stream()
                 .filter(file -> file.getId().equals(fileId))
                 .findFirst()
@@ -176,35 +236,35 @@ public abstract class MultiFileService<I extends Serializable,
     }
 
     /**
-     * Before upload l.
+     * Hook method called before file upload, allowing customization.
      *
-     * @param tenant the tenant
-     * @param entity the entity
-     * @param file   the file
-     * @return the l
-     * @throws IOException the io exception
+     * @param entity the linked file entity
+     * @param file   the multipart file
+     * @return the modified linked file entity
+     * @throws IOException if an I/O error occurs
      */
-    public L beforeUpload(String tenant, L entity, MultipartFile file) throws IOException {
+    protected L beforeUpload(L entity, MultipartFile file) throws IOException {
+        log.debug("Executing beforeUpload for entity: {}", entity.getCode());
         return entity;
     }
 
     /**
-     * After upload l.
+     * Hook method called after file upload, allowing customization.
      *
-     * @param tenant the tenant
-     * @param entity the entity
-     * @param file   the file
-     * @return the l
-     * @throws IOException the io exception
+     * @param entity the linked file entity
+     * @param file   the multipart file
+     * @return the modified linked file entity
+     * @throws IOException if an I/O error occurs
      */
-    public L afterUpload(String tenant, L entity, MultipartFile file) throws IOException {
+    protected L afterUpload(L entity, MultipartFile file) throws IOException {
+        log.debug("Executing afterUpload for entity: {}", entity.getCode());
         return entity;
     }
 
     /**
-     * Gets upload directory.
+     * Gets the base upload directory for storing files.
      *
-     * @return the upload directory
+     * @return the upload directory path
      */
     protected abstract String getUploadDirectory();
 }
