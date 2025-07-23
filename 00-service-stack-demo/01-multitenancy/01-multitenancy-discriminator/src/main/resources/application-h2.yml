@@ -3,9 +3,7 @@ server:
 
 spring:
   application:
-    name: multitenancy - discriminator tenant demo
-
-
+    name: Poc Multitenancy - discriminator tenant
   h2:
     console:
       enabled: true

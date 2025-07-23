@@ -7,7 +7,7 @@ server:
 
 spring:
   application:
-    name: gemini-ai-service
+    name: Poc AI Integration
 
   jackson:
     serialization:

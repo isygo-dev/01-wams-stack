@@ -1,16 +1,9 @@
 server:
   port: 8081
 
-#logging:
-#  level:
-#    root: DEBUG
-#    org.springframework.web: DEBUG
-#    org.springframework.boot.autoconfigure: DEBUG
-
 spring:
   application:
-    name: multitenancy - discriminator tenant demo
-
+    name: Poc Multitenancy - GDM
   h2:
     console:
       enabled: true

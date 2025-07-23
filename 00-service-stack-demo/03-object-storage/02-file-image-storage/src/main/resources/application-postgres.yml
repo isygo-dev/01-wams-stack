@@ -22,7 +22,7 @@ spring:
 
 multitenancy:
   filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+  mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
   tenants:
     - id: tenants
       url: jdbc:postgresql://localhost:5432/tenants

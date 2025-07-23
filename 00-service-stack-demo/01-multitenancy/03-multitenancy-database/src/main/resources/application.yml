@@ -1,29 +1,30 @@
 server:
-  port: 8081  # You can override this in tests if needed
+  port: 8081
 
 spring:
+  profiles:
+    active: h2
   application:
-    name: multitenancy - H2 test profile
-
-
+    name: Poc Multitenancy - database per tenant
   h2:
     console:
       enabled: true
       path: /h2-console #http://localhost:8081/h2-console
 
   datasource:
-    url: jdbc:h2:mem:masterdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
     username: sa
     password:
-    driver-class-name: org.h2.Driver
 
   jpa:
     show-sql: true
+    format_sql: true
+    hibernate:
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create
 
 multitenancy:
   filter: TENANT # TENANT | CONTEXT

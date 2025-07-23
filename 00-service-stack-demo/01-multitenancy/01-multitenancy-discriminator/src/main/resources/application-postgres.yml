@@ -1,9 +1,9 @@
 server:
-  port: 8081  # ? Set your custom server port
+  port: 8081
 
 spring:
   application:
-    name: Multi tenancy - discriminator tenant demo
+    name: Poc Multitenancy - discriminator tenant
 
   datasource:
     url: jdbc:postgresql://localhost:5432/tenants?currentSchema=public

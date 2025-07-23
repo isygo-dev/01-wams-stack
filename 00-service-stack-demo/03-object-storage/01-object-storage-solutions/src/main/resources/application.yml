@@ -3,6 +3,5 @@ server:
 
 spring:
   application:
-    name: storage solution demo
-
+    name: Poc Storage solutions
 

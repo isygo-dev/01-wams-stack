@@ -20,10 +20,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @OpenAPIDefinition(info =
 @Info(title = "Poc multitenancy discriminator-tenant", version = "1.0", description = "Poc multitenancy discriminator-tenant")
 )
-public class MultiTenancyApplication {
+public class TenancyGDMApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MultiTenancyApplication.class, args);
+        SpringApplication.run(TenancyGDMApplication.class, args);
     }
 
 }

@@ -2,9 +2,10 @@ server:
   port: 8081
 
 spring:
+  profiles:
+    active: h2
   application:
-    name: multitenancy - discriminator tenant demo
-
+    name: Poc Multitenancy - discriminator tenant
   h2:
     console:
       enabled: true
