@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedImageApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
@@ -10,7 +9,6 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -49,16 +47,13 @@ public abstract class MappedImageController<
      * Uploads an image for the specified entity.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity
-     * @param file          the multipart file containing the image
+     * @param id             the ID of the entity
+     * @param file           the multipart file containing the image
      * @return a response entity containing the updated entity DTO
      * @throws IOException if an I/O error occurs during image upload
      */
     @Override
     public ResponseEntity<F> uploadImage(RequestContextDto requestContext, I id, MultipartFile file) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
-        Objects.requireNonNull(file, "File must not be null");
         log.debug("Uploading image for entityId: {}", id);
         try {
             var entity = crudService().uploadImage(id, file);
@@ -75,14 +70,12 @@ public abstract class MappedImageController<
      * Downloads the image associated with the specified entity.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity
+     * @param id             the ID of the entity
      * @return a response entity containing the image resource
      * @throws IOException if an I/O error occurs during image download
      */
     @Override
     public ResponseEntity<Resource> downloadImage(RequestContextDto requestContext, I id) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
         log.debug("Downloading image for entityId: {}", id);
         try {
             var resource = crudService().downloadImage(id);
@@ -107,16 +100,13 @@ public abstract class MappedImageController<
      * Creates an entity with an associated image.
      *
      * @param requestContext the request context containing metadata
-     * @param file          the multipart file containing the image
-     * @param dto           the DTO containing entity data
+     * @param file           the multipart file containing the image
+     * @param dto            the DTO containing entity data
      * @return a response entity containing the created entity DTO
      * @throws IOException if an I/O error occurs during creation or image upload
      */
     @Override
     public ResponseEntity<F> createWithImage(RequestContextDto requestContext, MultipartFile file, F dto) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(file, "File must not be null");
-        Objects.requireNonNull(dto, "DTO must not be null");
         log.debug("Creating entity with image for tenant: {}", requestContext.getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -138,18 +128,14 @@ public abstract class MappedImageController<
      * Updates an entity with an associated image.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity to update
-     * @param file          the multipart file containing the image
-     * @param dto           the DTO containing updated entity data
+     * @param id             the ID of the entity to update
+     * @param file           the multipart file containing the image
+     * @param dto            the DTO containing updated entity data
      * @return a response entity containing the updated entity DTO
      * @throws IOException if an I/O error occurs during update or image upload
      */
     @Override
     public ResponseEntity<F> updateWithImage(RequestContextDto requestContext, I id, MultipartFile file, F dto) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
-        Objects.requireNonNull(file, "File must not be null");
-        Objects.requireNonNull(dto, "DTO must not be null");
         log.debug("Updating entity with image for entityId: {}", id);
         try {
             var processedDto = beforeUpdate(dto);

@@ -39,7 +39,7 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     }
 
     private boolean shouldSkipUri(String uri) {
-        return  uri.contains(SWAGGER_PATTERN)||
+        return uri.contains(SWAGGER_PATTERN) ||
                 uri.contains(API_DOCS_PATTERN);
     }
 

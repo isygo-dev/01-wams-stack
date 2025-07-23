@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
@@ -10,7 +9,6 @@ import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -49,16 +47,13 @@ public abstract class MappedFileController<
      * Uploads a file for the specified entity.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity
-     * @param file          the multipart file to upload
+     * @param id             the ID of the entity
+     * @param file           the multipart file to upload
      * @return a response entity containing the updated entity DTO
      * @throws IOException if an I/O error occurs during file upload
      */
     @Override
     public ResponseEntity<F> uploadFile(RequestContextDto requestContext, I id, MultipartFile file) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
-        Objects.requireNonNull(file, "File must not be null");
         log.debug("Uploading file for entityId: {}", id);
         try {
             var entity = crudService().uploadFile(id, file);
@@ -75,16 +70,13 @@ public abstract class MappedFileController<
      * Downloads a file associated with the specified entity and version.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity
-     * @param version       the version of the file to download
+     * @param id             the ID of the entity
+     * @param version        the version of the file to download
      * @return a response entity containing the file resource
      * @throws IOException if an I/O error occurs during file download
      */
     @Override
     public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext, I id, Long version) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
-        Objects.requireNonNull(version, "Version must not be null");
         log.debug("Downloading file for entityId: {}, version: {}", id, version);
         try {
             var resource = crudService().downloadFile(id, version);
@@ -110,16 +102,13 @@ public abstract class MappedFileController<
      * Creates an entity with an associated file.
      *
      * @param requestContext the request context containing metadata
-     * @param file          the multipart file to upload
-     * @param dto           the DTO containing entity data
+     * @param file           the multipart file to upload
+     * @param dto            the DTO containing entity data
      * @return a response entity containing the created entity DTO
      * @throws IOException if an I/O error occurs during creation or file upload
      */
     @Override
     public ResponseEntity<F> createWithFile(RequestContextDto requestContext, MultipartFile file, F dto) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(file, "File must not be null");
-        Objects.requireNonNull(dto, "DTO must not be null");
         log.debug("Creating entity with file for tenant: {}", requestContext.getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -141,18 +130,14 @@ public abstract class MappedFileController<
      * Updates an entity with an associated file.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity to update
-     * @param file          the multipart file to upload
-     * @param dto           the DTO containing updated entity data
+     * @param id             the ID of the entity to update
+     * @param file           the multipart file to upload
+     * @param dto            the DTO containing updated entity data
      * @return a response entity containing the updated entity DTO
      * @throws IOException if an I/O error occurs during update or file upload
      */
     @Override
     public ResponseEntity<F> updateWithFile(RequestContextDto requestContext, I id, MultipartFile file, F dto) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
-        Objects.requireNonNull(file, "File must not be null");
-        Objects.requireNonNull(dto, "DTO must not be null");
         log.debug("Updating entity with file for entityId: {}", id);
         try {
             var processedDto = beforeUpdate(dto);

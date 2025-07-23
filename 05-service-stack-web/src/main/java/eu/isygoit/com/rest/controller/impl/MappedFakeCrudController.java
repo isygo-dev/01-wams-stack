@@ -37,14 +37,12 @@ public abstract class MappedFakeCrudController<
      * Deletes an entity by ID. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity to delete
+     * @param id             the ID of the entity to delete
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<?> delete(RequestContextDto requestContext, I id) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(id, "Entity ID must not be null");
         log.warn("Attempted to call delete on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
@@ -53,14 +51,12 @@ public abstract class MappedFakeCrudController<
      * Deletes multiple entities by their IDs. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param ids           the list of entity IDs to delete
+     * @param ids            the list of entity IDs to delete
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<?> batchDelete(RequestContextDto requestContext, List<I> ids) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(ids, "IDs list must not be null");
         log.warn("Attempted to call batchDelete on fake controller for {} IDs", ids.size());
         throw UNSUPPORTED_OPERATION;
     }
@@ -69,16 +65,13 @@ public abstract class MappedFakeCrudController<
      * Retrieves all entities with pagination. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param page          the page number for pagination
-     * @param size          the page size for pagination
+     * @param page           the page number for pagination
+     * @param size           the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<List<M>> findAll(RequestContextDto requestContext, Integer page, Integer size) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(page, "Page number must not be null");
-        //Objects.requireNonNull(size, "Page size must not be null");
         log.warn("Attempted to call findAll on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
@@ -87,16 +80,13 @@ public abstract class MappedFakeCrudController<
      * Retrieves all entities with full details and pagination. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param page          the page number for pagination
-     * @param size          the page size for pagination
+     * @param page           the page number for pagination
+     * @param size           the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext, Integer page, Integer size) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(page, "Page number must not be null");
-        //Objects.requireNonNull(size, "Page size must not be null");
         log.warn("Attempted to call findAllFull on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
@@ -105,14 +95,12 @@ public abstract class MappedFakeCrudController<
      * Retrieves an entity by ID. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity
+     * @param id             the ID of the entity
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<F> findById(RequestContextDto requestContext, I id) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(id, "Entity ID must not be null");
         log.warn("Attempted to call findById on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
@@ -126,7 +114,6 @@ public abstract class MappedFakeCrudController<
      */
     @Override
     public ResponseEntity<Long> getCount(RequestContextDto requestContext) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
         log.warn("Attempted to call getCount on fake controller");
         throw UNSUPPORTED_OPERATION;
     }
@@ -135,14 +122,12 @@ public abstract class MappedFakeCrudController<
      * Creates a new entity. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param object        the DTO containing entity data
+     * @param object         the DTO containing entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<F> create(RequestContextDto requestContext, F object) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(object, "DTO must not be null");
         log.warn("Attempted to call create on fake controller for DTO with ID: {}", object.getId());
         throw UNSUPPORTED_OPERATION;
     }
@@ -151,14 +136,12 @@ public abstract class MappedFakeCrudController<
      * Creates multiple entities in a batch. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param objects       the list of DTOs containing entity data
+     * @param objects        the list of DTOs containing entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<List<F>> createBatch(RequestContextDto requestContext, List<F> objects) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(objects, "Objects list must not be null");
         log.warn("Attempted to call createBatch on fake controller for {} objects", objects.size());
         throw UNSUPPORTED_OPERATION;
     }
@@ -167,16 +150,13 @@ public abstract class MappedFakeCrudController<
      * Updates an entity by ID. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param id            the ID of the entity to update
-     * @param object        the DTO containing updated entity data
+     * @param id             the ID of the entity to update
+     * @param object         the DTO containing updated entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<F> update(RequestContextDto requestContext, I id, F object) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(id, "Entity ID must not be null");
-        //Objects.requireNonNull(object, "DTO must not be null");
         log.warn("Attempted to call update on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
@@ -185,18 +165,14 @@ public abstract class MappedFakeCrudController<
      * Retrieves entities filtered by criteria with pagination. This operation is not supported.
      *
      * @param requestContext the request context containing metadata
-     * @param criteria      the filtering criteria
-     * @param page          the page number for pagination
-     * @param size          the page size for pagination
+     * @param criteria       the filtering criteria
+     * @param page           the page number for pagination
+     * @param size           the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
     public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
-        //Objects.requireNonNull(requestContext, "Request context must not be null");
-        //Objects.requireNonNull(criteria, "Criteria must not be null");
-        //Objects.requireNonNull(page, "Page number must not be null");
-        //Objects.requireNonNull(size, "Page size must not be null");
         log.warn("Attempted to call findAllFilteredByCriteria on fake controller with criteria: {}, page: {}, size: {}", criteria, page, size);
         throw UNSUPPORTED_OPERATION;
     }

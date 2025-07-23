@@ -56,16 +56,13 @@ public abstract class MappedMultiFileController<
      * Uploads multiple additional files for the specified parent entity.
      *
      * @param requestContext the request context containing metadata
-     * @param parentId      the ID of the parent entity
-     * @param files         the array of multipart files to upload
+     * @param parentId       the ID of the parent entity
+     * @param files          the array of multipart files to upload
      * @return a response entity containing the list of uploaded file DTOs
      * @throws IOException if an I/O error occurs during file upload
      */
     @Override
     public ResponseEntity<List<L>> uploadAdditionalFiles(RequestContextDto requestContext, I parentId, MultipartFile[] files) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(files, "Files array must not be null");
         log.debug("Uploading {} files for parentId: {}", files.length, parentId);
         try {
             var uploadedFiles = crudService().uploadAdditionalFiles(parentId, files);
@@ -82,16 +79,13 @@ public abstract class MappedMultiFileController<
      * Uploads a single additional file for the specified parent entity.
      *
      * @param requestContext the request context containing metadata
-     * @param parentId      the ID of the parent entity
-     * @param file          the multipart file to upload
+     * @param parentId       the ID of the parent entity
+     * @param file           the multipart file to upload
      * @return a response entity containing the list of uploaded file DTOs
      * @throws IOException if an I/O error occurs during file upload
      */
     @Override
     public ResponseEntity<List<L>> uploadAdditionalFile(RequestContextDto requestContext, I parentId, MultipartFile file) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(file, "File must not be null");
         log.debug("Uploading file for parentId: {}", parentId);
         try {
             var uploadedFiles = crudService().uploadAdditionalFile(parentId, file);
@@ -108,16 +102,13 @@ public abstract class MappedMultiFileController<
      * Deletes an additional file associated with the specified parent and file IDs.
      *
      * @param requestContext the request context containing metadata
-     * @param parentId      the ID of the parent entity
-     * @param fileId        the ID of the file to delete
+     * @param parentId       the ID of the parent entity
+     * @param fileId         the ID of the file to delete
      * @return a response entity indicating whether the deletion was successful
      * @throws IOException if an I/O error occurs during file deletion
      */
     @Override
     public ResponseEntity<Boolean> deleteAdditionalFile(RequestContextDto requestContext, I parentId, I fileId) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         log.debug("Deleting file with fileId: {} for parentId: {}", fileId, parentId);
         try {
             boolean deleted = crudService().deleteAdditionalFile(parentId, fileId);
@@ -133,18 +124,14 @@ public abstract class MappedMultiFileController<
      * Downloads a file associated with the specified parent and file IDs.
      *
      * @param requestContext the request context containing metadata
-     * @param parentId      the ID of the parent entity
-     * @param fileId        the ID of the file to download
-     * @param version       the version of the file to download
+     * @param parentId       the ID of the parent entity
+     * @param fileId         the ID of the file to download
+     * @param version        the version of the file to download
      * @return a response entity containing the file resource
      * @throws IOException if an I/O error occurs during file download
      */
     @Override
     public ResponseEntity<Resource> download(RequestContextDto requestContext, I parentId, I fileId, Long version) {
-        Objects.requireNonNull(requestContext, "Request context must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
-        Objects.requireNonNull(version, "Version must not be null");
         log.debug("Downloading file with fileId: {}, parentId: {}, version: {}", fileId, parentId, version);
         try {
             var resource = crudService().downloadFile(parentId, fileId, version);

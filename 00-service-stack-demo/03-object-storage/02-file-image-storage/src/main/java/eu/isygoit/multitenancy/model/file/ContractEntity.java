@@ -26,7 +26,7 @@ import java.util.List;
 @SecondaryTable(name = "CONTRACT_FILE",
         pkJoinColumns = @PrimaryKeyJoinColumn(name = ComSchemaColumnConstantName.C_ID,
                 referencedColumnName = ComSchemaColumnConstantName.C_ID
-        , foreignKey = @ForeignKey(name = "FK_CONTRACT_FILE_REF_CONTRACT"))
+                , foreignKey = @ForeignKey(name = "FK_CONTRACT_FILE_REF_CONTRACT"))
 )
 public class ContractEntity extends AuditableEntity<Long> implements ITenantAssignable, IFileEntity, ICodeAssignable {
 

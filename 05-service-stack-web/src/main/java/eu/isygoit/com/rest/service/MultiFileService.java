@@ -73,7 +73,6 @@ public abstract class MultiFileService<
      */
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException {
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
         if (files == null || files.length == 0) {
             log.error("Empty or null file list provided for parentId: {}", parentId);
             throw new EmptyFileListException("Empty file list for parent ID: " + parentId);
@@ -99,7 +98,6 @@ public abstract class MultiFileService<
      */
     @Override
     public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
         if (file == null || file.isEmpty()) {
             log.error("Null or empty file provided for parentId: {}", parentId);
             throw new EmptyFileException("Empty file for parent ID: " + parentId);
@@ -162,8 +160,6 @@ public abstract class MultiFileService<
      */
     @Override
     public ResourceDto downloadFile(I parentId, I fileId, Long version) throws IOException {
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         var entity = getEntityOrThrow(parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {
@@ -180,13 +176,11 @@ public abstract class MultiFileService<
      * @param parentId the ID of the parent entity
      * @param fileId   the ID of the linked file to delete
      * @return true if the file was deleted successfully
-     * @throws IOException             if an I/O error occurs during file deletion
-     * @throws FileNotFoundException  if the linked file is not found
+     * @throws IOException           if an I/O error occurs during file deletion
+     * @throws FileNotFoundException if the linked file is not found
      */
     @Override
     public boolean deleteAdditionalFile(I parentId, I fileId) throws IOException {
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         var entity = getEntityOrThrow(parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {
@@ -208,7 +202,6 @@ public abstract class MultiFileService<
      * @throws ObjectNotFoundException if the entity is not found
      */
     protected T getEntityOrThrow(I id) {
-        Objects.requireNonNull(id, "Entity ID must not be null");
         return findById(id).orElseThrow(() -> {
             log.error("Entity not found for ID: {}", id);
             return new ObjectNotFoundException(persistentClass.getSimpleName() + " with ID: " + id);
@@ -223,8 +216,6 @@ public abstract class MultiFileService<
      * @return the linked file, or null if not found
      */
     protected L findLinkedFile(T entity, I fileId) {
-        Objects.requireNonNull(entity, "Entity must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
             log.debug("No additional files found for entity: {}", entity.getCode());
             return null;

@@ -71,8 +71,6 @@ public abstract class MultiFileTenantService<
      */
     @Override
     public List<L> uploadAdditionalFiles(String tenant, I parentId, MultipartFile[] files) throws IOException {
-        Objects.requireNonNull(tenant, "Tenant must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
         if (files == null || files.length == 0) {
             log.error("Empty or null file list provided for tenant: {}, parentId: {}", tenant, parentId);
             throw new EmptyFileListException("Empty file list for tenant: " + tenant + ", parent ID: " + parentId);
@@ -99,8 +97,6 @@ public abstract class MultiFileTenantService<
      */
     @Override
     public List<L> uploadAdditionalFile(String tenant, I parentId, MultipartFile file) throws IOException {
-        Objects.requireNonNull(tenant, "Tenant must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
         if (file == null || file.isEmpty()) {
             log.error("Null or empty file provided for tenant: {}, parentId: {}", tenant, parentId);
             throw new EmptyFileException("Empty file for tenant: " + tenant + ", parent ID: " + parentId);
@@ -167,9 +163,6 @@ public abstract class MultiFileTenantService<
      */
     @Override
     public ResourceDto downloadFile(String tenant, I parentId, I fileId, Long version) throws IOException {
-        Objects.requireNonNull(tenant, "Tenant must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         var entity = getEntityOrThrow(tenant, parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {
@@ -187,14 +180,11 @@ public abstract class MultiFileTenantService<
      * @param parentId the ID of the parent entity
      * @param fileId   the ID of the linked file to delete
      * @return true if the file was deleted successfully
-     * @throws IOException             if an I/O error occurs during file deletion
-     * @throws FileNotFoundException  if the linked file is not found
+     * @throws IOException           if an I/O error occurs during file deletion
+     * @throws FileNotFoundException if the linked file is not found
      */
     @Override
     public boolean deleteAdditionalFile(String tenant, I parentId, I fileId) throws IOException {
-        Objects.requireNonNull(tenant, "Tenant must not be null");
-        Objects.requireNonNull(parentId, "Parent ID must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         var entity = getEntityOrThrow(tenant, parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {
@@ -217,8 +207,6 @@ public abstract class MultiFileTenantService<
      * @throws ObjectNotFoundException if the entity is not found
      */
     protected T getEntityOrThrow(String tenant, I id) {
-        Objects.requireNonNull(tenant, "Tenant must not be null");
-        Objects.requireNonNull(id, "Entity ID must not be null");
         return findById(tenant, id).orElseThrow(() -> {
             log.error("Entity not found for ID: {}, tenant: {}", id, tenant);
             return new ObjectNotFoundException(persistentClass.getSimpleName() + " with ID: " + id);
@@ -233,8 +221,6 @@ public abstract class MultiFileTenantService<
      * @return the linked file, or null if not found
      */
     protected L findLinkedFile(T entity, I fileId) {
-        Objects.requireNonNull(entity, "Entity must not be null");
-        Objects.requireNonNull(fileId, "File ID must not be null");
         if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
             log.debug("No additional files found for entity: {}, tenant: {}", entity.getCode(), entity.getTenant());
             return null;
