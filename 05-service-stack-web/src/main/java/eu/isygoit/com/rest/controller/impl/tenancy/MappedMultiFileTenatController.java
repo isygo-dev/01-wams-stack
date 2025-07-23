@@ -1,11 +1,14 @@
-package eu.isygoit.com.rest.controller.impl;
+package eu.isygoit.com.rest.controller.impl.tenancy;
 
 import eu.isygoit.com.rest.api.IMappedMultiFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
+import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.IMultiFileTenantServiceMethods;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.RequestContextDto;
@@ -13,6 +16,7 @@ import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
+import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -35,11 +39,12 @@ import java.util.List;
  * @param <S> the type parameter
  */
 @Slf4j
-public abstract class MappedMultiFileController<I extends Serializable, T extends IIdAssignable<I> & IMultiFileEntity,
+public abstract class MappedMultiFileTenatController<I extends Serializable,
+        T extends IIdAssignable<I> & IMultiFileEntity & ITenantAssignable,
         L extends LinkedFileMinDto,
         M extends IIdAssignableDto<I>,
         F extends M,
-        S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>>
+        S extends IMultiFileTenantServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedMultiFileApi<L, I> {
 
@@ -56,7 +61,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
                                                          MultipartFile[] files) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(parentId, files)));
+            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(requestContext.getSenderTenant(), parentId, files)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -69,7 +74,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
                                                         MultipartFile file) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(parentId, file)));
+            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(requestContext.getSenderTenant(), parentId, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -82,7 +87,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
                                                         I fileId) {
         log.info("delete additional file");
         try {
-            return ResponseFactory.responseOk(crudService().deleteAdditionalFile(parentId, fileId));
+            return ResponseFactory.responseOk(crudService().deleteAdditionalFile(requestContext.getSenderTenant(), parentId, fileId));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -98,7 +103,7 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
         try {
             log.info("download file ");
             try {
-                ResourceDto resource = crudService().downloadFile(parentId, fileId, version);
+                ResourceDto resource = crudService().downloadFile(requestContext.getSenderTenant(), parentId, fileId, version);
                 if (resource != null) {
                     log.info("File downloaded successfully {}", resource.getResource().getFilename());
                     return ResponseEntity.ok()

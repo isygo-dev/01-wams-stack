@@ -1,5 +1,6 @@
 package eu.isygoit.helper;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import org.apache.commons.io.FilenameUtils;
@@ -114,7 +115,7 @@ public interface FileHelper {
 
         // Using URI instead of File.toUri for cleaner code
         URI fileUri = filePath.toUri();
-        Resource fileResource = new UrlResource(fileUri);
+        Resource resource = new UrlResource(fileUri);
 
         // Use Files API to check for file existence and readability
         if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
@@ -124,7 +125,7 @@ public interface FileHelper {
         }
 
         logger.info("File '{}' successfully loaded", filePath);
-        return fileResource;
+        return resource;
     }
 
     /**

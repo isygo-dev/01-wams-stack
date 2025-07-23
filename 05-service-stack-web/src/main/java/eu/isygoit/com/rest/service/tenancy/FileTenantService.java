@@ -2,6 +2,7 @@ package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
@@ -180,7 +181,7 @@ public abstract class FileTenantService<I extends Serializable,
     }
 
     @Override
-    public Resource downloadFile(String tenant, I id, Long version) throws IOException {
+    public ResourceDto downloadFile(String tenant, I id, Long version) throws IOException {
         return findById(tenant, id)
                 .map(entity -> {
                     try {

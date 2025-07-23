@@ -1,6 +1,9 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ResourceDto;
+import eu.isygoit.exception.EmptyFileException;
+import eu.isygoit.exception.EmptyFileListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
@@ -47,6 +50,10 @@ public abstract class MultiFileService<I extends Serializable,
 
     @Override
     public List<L> uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException {
+        if(files == null || files.length == 0){
+            throw new EmptyFileListException("for parent id " + parentId);
+        }
+
         var entity = getEntityOrThrow(parentId);
         for (var file : files) {
             uploadAdditionalFile(parentId, file);
@@ -57,8 +64,7 @@ public abstract class MultiFileService<I extends Serializable,
     @Override
     public List<L> uploadAdditionalFile(I parentId, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
-            log.warn("Upload file ({}): file is null or empty", persistentClass.getSimpleName());
-            return getEntityOrThrow(parentId).getAdditionalFiles();
+            throw new EmptyFileException("for and parent id " + parentId);
         }
 
         var entity = getEntityOrThrow(parentId);
@@ -74,6 +80,7 @@ public abstract class MultiFileService<I extends Serializable,
                 tenantAssignableFile.setTenant(tenantAssignableEntity.getTenant());
             }
 
+            //linkedFile.setFileName(linkedFile.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
             var originalFilename = file.getOriginalFilename();
             linkedFile.setOriginalFileName(originalFilename);
             linkedFile.setExtension(FilenameUtils.getExtension(originalFilename));
@@ -107,7 +114,7 @@ public abstract class MultiFileService<I extends Serializable,
     }
 
     @Override
-    public Resource downloadFile(I parentId, I fileId, Long version) throws IOException {
+    public ResourceDto downloadFile(I parentId, I fileId, Long version) throws IOException {
         var entity = getEntityOrThrow(parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {

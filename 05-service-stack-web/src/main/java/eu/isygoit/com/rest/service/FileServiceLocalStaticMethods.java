@@ -1,6 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
@@ -63,7 +64,7 @@ public final class FileServiceLocalStaticMethods {
      * @return the resource
      * @throws MalformedURLException the malformed url exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(T entity, Long version) throws MalformedURLException {
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> ResourceDto download(T entity, Long version) throws MalformedURLException {
         String path = entity.getPath();
 
         // Ensure the path is not null or empty
@@ -79,7 +80,12 @@ public final class FileServiceLocalStaticMethods {
             throw new ResourceNotFoundException(buildErrorMessage(entity, version, "Resource not found"));
         }
 
-        return resource;
+        return ResourceDto.builder()
+                .originalFileName(entity.getOriginalFileName())
+                .fileName(entity.getFileName())
+                .fileType(entity.getType())
+                .resource(resource)
+                .build();
     }
 
     /**

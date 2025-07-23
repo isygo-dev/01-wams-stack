@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service.tenancy;
 import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceMethods;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.ObjectNotFoundException;
@@ -82,7 +83,7 @@ public abstract class ImageTenantService<I extends Serializable,
     }
 
     @Override
-    public Resource downloadImage(String tenant, I id) throws IOException {
+    public ResourceDto downloadImage(String tenant, I id) throws IOException {
         // Retrieve entity or throw exception if not found
         T entity = findById(tenant, id).orElseThrow(() ->
                 new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
@@ -98,7 +99,13 @@ public abstract class ImageTenantService<I extends Serializable,
         if (!resource.exists()) {
             throw new ResourceNotFoundException("Resource not found for path " + entity.getImagePath());
         }
-        return resource;
+
+        return ResourceDto.builder()
+                .originalFileName(resource.getFilename())
+                .fileName(resource.getFilename())
+                .fileType(FilenameUtils.getExtension(resource.getFilename()))
+                .resource(resource)
+                .build();
     }
 
     @Override

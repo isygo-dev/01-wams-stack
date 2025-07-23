@@ -6,6 +6,7 @@ import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.com.rest.service.FileServiceDmsStaticMethods;
 import eu.isygoit.com.rest.service.FileServiceLocalStaticMethods;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.*;
@@ -88,9 +89,9 @@ public abstract class MultiFileTenantServiceSubMethods<I extends Serializable,
         return executeSafely(() -> {
             ILinkedFileApi service = linkedFileService();
             if (service != null) {
-                entity.setCode(FileServiceDmsStaticMethods.upload(file, entity, service).getCode());
+                entity.setFileName(FileServiceDmsStaticMethods.upload(file, entity, service).getCode());
             } else {
-                entity.setCode(FileServiceLocalStaticMethods.upload(file, entity));
+                entity.setFileName(FileServiceLocalStaticMethods.upload(file, entity));
             }
             return entity;
         }, entity);
@@ -112,7 +113,7 @@ public abstract class MultiFileTenantServiceSubMethods<I extends Serializable,
      * @param version the version
      * @return the resource
      */
-    final Resource subDownloadFile(L entity, Long version) {
+    final ResourceDto subDownloadFile(L entity, Long version) {
         return executeSafely(() -> {
             ILinkedFileApi service = linkedFileService();
             if (service != null) {

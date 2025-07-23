@@ -1,5 +1,8 @@
 package eu.isygoit.com.rest.service.tenancy;
 
+import eu.isygoit.dto.common.ResourceDto;
+import eu.isygoit.exception.EmptyFileException;
+import eu.isygoit.exception.EmptyFileListException;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
@@ -46,6 +49,10 @@ public abstract class MultiFileTenantService<I extends Serializable,
 
     @Override
     public List<L> uploadAdditionalFiles(String tenant, I parentId, MultipartFile[] files) throws IOException {
+        if(files == null || files.length == 0){
+            throw new EmptyFileListException("for tenant " + tenant +  " and parent id " + parentId);
+        }
+
         var entity = getEntityOrThrow(tenant, parentId);
         for (var file : files) {
             uploadAdditionalFile(tenant, parentId, file);
@@ -56,8 +63,7 @@ public abstract class MultiFileTenantService<I extends Serializable,
     @Override
     public List<L> uploadAdditionalFile(String tenant, I parentId, MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
-            log.warn("Upload file ({}): file is null or empty", persistentClass.getSimpleName());
-            return getEntityOrThrow(tenant, parentId).getAdditionalFiles();
+            throw new EmptyFileException("for tenant " + tenant +  " and parent id " + parentId);
         }
 
         var entity = getEntityOrThrow(tenant, parentId);
@@ -67,6 +73,7 @@ public abstract class MultiFileTenantService<I extends Serializable,
             linkedFile = linkedFileClass.getDeclaredConstructor().newInstance();
             assignCodeIfEmpty(linkedFile);
             linkedFile.setTenant(tenant);
+            //linkedFile.setFileName(linkedFile.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
             var originalFilename = file.getOriginalFilename();
             linkedFile.setOriginalFileName(originalFilename);
             linkedFile.setExtension(FilenameUtils.getExtension(originalFilename));
@@ -99,7 +106,7 @@ public abstract class MultiFileTenantService<I extends Serializable,
     }
 
     @Override
-    public Resource downloadFile(String tenant, I parentId, I fileId, Long version) throws IOException {
+    public ResourceDto downloadFile(String tenant, I parentId, I fileId, Long version) throws IOException {
         var entity = getEntityOrThrow(tenant, parentId);
         var linkedFile = findLinkedFile(entity, fileId);
         if (linkedFile == null) {

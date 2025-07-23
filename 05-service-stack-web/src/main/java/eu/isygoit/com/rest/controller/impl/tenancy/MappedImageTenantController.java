@@ -10,6 +10,7 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
@@ -58,14 +59,14 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadImage(RequestContextDto requestContext,
-                                                  I id) throws IOException {
+                                                     I id) throws IOException {
         log.info("Download image request received");
         try {
-            Resource imageResource = crudService().downloadImage(requestContext.getSenderTenant(), id);
+            ResourceDto resource = crudService().downloadImage(requestContext.getSenderTenant(), id);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(imageResource.getFile().toPath()))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + imageResource.getFilename() + "\"")
-                    .body(imageResource);
+                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
+                    .body(resource.getResource());
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);

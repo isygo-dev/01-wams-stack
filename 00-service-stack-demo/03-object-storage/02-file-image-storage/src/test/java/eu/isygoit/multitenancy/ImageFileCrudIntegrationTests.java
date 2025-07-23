@@ -477,7 +477,7 @@ class ImageFileCrudIntegrationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("attachment; filename=\"download_resume.pdf\"")))
-                .andExpect(content().contentTypeCompatibleWith(MediaType.MULTIPART_FORM_DATA_VALUE));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PDF));
     }
 
     @Test

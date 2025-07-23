@@ -5,6 +5,7 @@ import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EntityNullException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
 import eu.isygoit.exception.MultiPartFileNullException;
@@ -89,7 +90,7 @@ public final class FileServiceDmsStaticMethods {
      * @return the resource
      * @throws IOException the io exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> Resource download(
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> ResourceDto download(
             T entity,
             Long version,
             ILinkedFileApi linkedFileService) throws IOException {
@@ -109,7 +110,7 @@ public final class FileServiceDmsStaticMethods {
                 : TenantConstants.DEFAULT_TENANT_NAME;
 
         // Perform the download request
-        ResponseEntity<Resource> response = linkedFileService.download(RequestContextDto.builder().build(), tenant, entity.getCode());
+        ResponseEntity<ResourceDto> response = linkedFileService.download(RequestContextDto.builder().build(), tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
             log.info("File downloaded successfully with tenant {} and code {}", tenant, entity.getCode());

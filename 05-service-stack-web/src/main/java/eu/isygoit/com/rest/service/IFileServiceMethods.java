@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import org.springframework.core.io.Resource;
@@ -60,5 +61,5 @@ public interface IFileServiceMethods<I extends Serializable,
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadFile(I id, Long version) throws IOException;
+    ResourceDto downloadFile(I id, Long version) throws IOException;
 }

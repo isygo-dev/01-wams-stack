@@ -463,7 +463,7 @@ class FileCrudIntegrationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("attachment; filename=\"download.pdf\"")))
-                .andExpect(content().contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
                 .andReturn();
 
         byte[] downloadedContent = downloadResult.getResponse().getContentAsByteArray();
