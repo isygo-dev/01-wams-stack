@@ -5,6 +5,7 @@ import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.com.rest.service.FileServiceDmsStaticMethods;
 import eu.isygoit.com.rest.service.FileServiceLocalStaticMethods;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
@@ -98,17 +99,12 @@ public abstract class FileTenantServiceSubMethods<I extends Serializable,
      * @return the resource
      * @throws IOException the io exception
      */
-    final Resource subDownloadFile(T entity, Long version) throws IOException {
-        return new ByteArrayResource(executeWithFallback(
-                dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
-                () -> FileServiceLocalStaticMethods.download(entity, version),
-                "download"
-        ).getContentAsByteArray()) {
-            @Override
-            public String getFilename() {
-                return entity.getOriginalFileName();
-            }
-        };
+    final ResourceDto subDownloadFile(T entity, Long version) throws IOException {
+        return executeWithFallback(
+                        dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
+                        () -> FileServiceLocalStaticMethods.download(entity, version),
+                        "download"
+                );
     }
 
     /**

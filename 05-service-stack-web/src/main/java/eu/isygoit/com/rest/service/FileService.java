@@ -1,6 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
@@ -150,7 +151,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     }
 
     @Override
-    public Resource downloadFile(I id, Long version) throws IOException {
+    public ResourceDto downloadFile(I id, Long version) throws IOException {
         return findById(id)
                 .map(entity -> {
                     try {

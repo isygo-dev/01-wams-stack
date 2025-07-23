@@ -11,6 +11,7 @@ import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
+import java.nio.file.Files;
 
 
 /**
@@ -56,15 +58,15 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext,
-                                                 I id,
-                                                 Long version) {
+                                                    I id,
+                                                    Long version) {
         log.info("Download file request received");
         try {
-            Resource resource = crudService().downloadFile(requestContext.getSenderTenant(), id, version);
+            ResourceDto resource = crudService().downloadFile(requestContext.getSenderTenant(), id, version);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, "multipart/form-data")
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
+                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
+                    .body(resource.getResource());
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);

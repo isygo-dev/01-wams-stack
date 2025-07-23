@@ -2,6 +2,7 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.ObjectNotFoundException;
@@ -65,7 +66,7 @@ public abstract class FileImageService<I extends Serializable,
     }
 
     @Override
-    public Resource downloadImage(I id) throws IOException {
+    public ResourceDto downloadImage(I id) throws IOException {
         T entity = findEntityByIdOrThrow(id);
 
         if (!StringUtils.hasText(entity.getImagePath())) {
@@ -77,7 +78,12 @@ public abstract class FileImageService<I extends Serializable,
             throw new ResourceNotFoundException("Image not found at path: " + entity.getImagePath());
         }
 
-        return resource;
+        return ResourceDto.builder()
+                .originalFileName(resource.getFilename())
+                .fileName(resource.getFilename())
+                .fileType(FilenameUtils.getExtension(resource.getFilename()))
+                .resource(resource)
+                .build();
     }
 
     @Override

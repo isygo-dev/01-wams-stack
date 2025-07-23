@@ -1,12 +1,13 @@
 package eu.isygoit.exception;
 
 import eu.isygoit.annotation.MsgLocale;
+import org.springframework.http.HttpStatus;
 
 
 /**
  * The type File not found exception.
  */
-@MsgLocale(value = "file.not.found.exception")
+@MsgLocale(httpStatus = HttpStatus.NOT_FOUND, value = "file.not.found.exception")
 public class FileNotFoundException extends ManagedException {
 
     /**

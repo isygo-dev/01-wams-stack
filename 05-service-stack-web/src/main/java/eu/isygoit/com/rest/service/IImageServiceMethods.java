@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import org.springframework.core.io.Resource;
@@ -33,7 +34,7 @@ public interface IImageServiceMethods<I extends Serializable, T extends IIdAssig
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadImage(I id) throws IOException;
+    ResourceDto downloadImage(I id) throws IOException;
 
     /**
      * Create with image t.

@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
 import org.springframework.core.io.Resource;
@@ -46,7 +47,7 @@ public interface IMultiFileServiceMethods<I extends Serializable, T extends IIdA
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadFile(I parentId, I fileId, Long version) throws IOException;
+    ResourceDto downloadFile(I parentId, I fileId, Long version) throws IOException;
 
     /**
      * Delete additional file boolean.

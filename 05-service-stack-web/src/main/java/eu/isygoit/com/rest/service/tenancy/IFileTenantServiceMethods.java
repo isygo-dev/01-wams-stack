@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service.tenancy;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -65,5 +66,5 @@ public interface IFileTenantServiceMethods<I extends Serializable,
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadFile(String tenant, I id, Long version) throws IOException;
+    ResourceDto downloadFile(String tenant, I id, Long version) throws IOException;
 }

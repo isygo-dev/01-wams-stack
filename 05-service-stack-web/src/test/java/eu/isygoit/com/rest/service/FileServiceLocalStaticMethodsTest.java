@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
@@ -117,12 +118,12 @@ class FileServiceLocalStaticMethodsTest {
 
         var resume = createResume(TEMP_DIR.toString(), "download.txt", "download.txt");
 
-        Resource resource = FileServiceLocalStaticMethods.download(resume, 1L);
+        ResourceDto resource = FileServiceLocalStaticMethods.download(resume, 1L);
 
         assertNotNull(resource);
-        assertTrue(resource.exists());
-        assertEquals(filePath.toUri(), resource.getURI());
-        assertEquals(content, new String(resource.getInputStream().readAllBytes()));
+        assertTrue(resource.getResource().exists());
+        assertEquals(filePath.toUri(), resource.getResource().getURI());
+        assertEquals(content, new String(resource.getResource().getInputStream().readAllBytes()));
     }
 
     /**

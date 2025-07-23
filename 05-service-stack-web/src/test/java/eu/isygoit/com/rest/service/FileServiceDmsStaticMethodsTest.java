@@ -4,6 +4,7 @@ import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EntityNullException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
 import eu.isygoit.exception.MultiPartFileNullException;
@@ -155,11 +156,13 @@ class FileServiceDmsStaticMethodsTest {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
         Resume entity = createResume("resume", "code123", "file.txt");
         Resource resource = mock(Resource.class);
-        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, HttpStatus.OK);
+        ResponseEntity<ResourceDto> responseEntity = new ResponseEntity<>(ResourceDto.builder()
+                .resource(resource)
+                .build(), HttpStatus.OK);
 
         when(linkedFileService.download(any(), anyString(), anyString())).thenReturn(responseEntity);
 
-        Resource result = FileServiceDmsStaticMethods.download(entity, 1L, linkedFileService);
+        ResourceDto result = FileServiceDmsStaticMethods.download(entity, 1L, linkedFileService);
 
         assertNotNull(result);
         verify(linkedFileService, times(1)).download(any(), anyString(), anyString());

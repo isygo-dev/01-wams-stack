@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.controller.impl.tenancy;
 
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import org.springframework.core.io.Resource;
@@ -35,7 +36,7 @@ public interface IImageTenantServiceMethods<I extends Serializable, T extends II
      * @return the resource
      * @throws IOException the io exception
      */
-    Resource downloadImage(String tenant, I id) throws IOException;
+    ResourceDto downloadImage(String tenant, I id) throws IOException;
 
     /**
      * Create with image t.

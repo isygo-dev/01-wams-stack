@@ -5,6 +5,7 @@ import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ResourceDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -64,8 +65,8 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     })
     @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                      @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                      @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
+                                         @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+                                         @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
 
     /**
      * Delete file response entity.

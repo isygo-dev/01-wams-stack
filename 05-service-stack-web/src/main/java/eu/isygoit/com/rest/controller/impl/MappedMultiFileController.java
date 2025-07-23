@@ -9,6 +9,7 @@ import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.List;
 
 
@@ -89,20 +91,20 @@ public abstract class MappedMultiFileController<I extends Serializable, T extend
 
     @Override
     public ResponseEntity<Resource> download(RequestContextDto requestContext,
-                                             I parentId,
-                                             I fileId,
-                                             Long version
+                                                I parentId,
+                                                I fileId,
+                                                Long version
     ) {
         try {
             log.info("download file ");
             try {
-                Resource resource = crudService().downloadFile(parentId, fileId, version);
+                ResourceDto resource = crudService().downloadFile(parentId, fileId, version);
                 if (resource != null) {
-                    log.info("File downloaded successfully {}", resource.getFilename());
+                    log.info("File downloaded successfully {}", resource.getResource().getFilename());
                     return ResponseEntity.ok()
-                            .header(HttpHeaders.CONTENT_TYPE, "multipart/form-data")
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                            .body(resource);
+                            .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
+                            .body(resource.getResource());
                 }
             } catch (Exception e) {
                 log.error("Remote feign call failed : ", e);

@@ -1,12 +1,10 @@
 package eu.isygoit.multitenancy.model.imagefile;
 
 import eu.isygoit.annotation.Criteria;
-import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IImageEntity;
-import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.*;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
+import eu.isygoit.multitenancy.model.multifile.ResumeLinkedFile;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +26,11 @@ import java.util.List;
         pkJoinColumns = @PrimaryKeyJoinColumn(name = ComSchemaColumnConstantName.C_ID,
                 referencedColumnName = ComSchemaColumnConstantName.C_ID)
 )
-public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssignable, IImageEntity, IFileEntity, ICodeAssignable {
+public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssignable,
+        IImageEntity,
+        IFileEntity,
+        IMultiFileEntity<ResumeLinkedFile>,
+        ICodeAssignable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_seq_generator")
@@ -90,4 +92,10 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
     @Column(name = ComSchemaColumnConstantName.C_TAG_OWNER)
     private List<String> tags;
     //END IFileEntity : SecondaryTable
+
+    //Multi file join
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "RESUME", referencedColumnName = ComSchemaColumnConstantName.C_ID
+            , foreignKey = @ForeignKey(name = "FK_ADDITIONAL_FILE_REF_RESUME"))
+    private List<ResumeLinkedFile> additionalFiles;
 }
