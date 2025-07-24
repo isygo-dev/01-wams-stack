@@ -17,7 +17,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class LinkedFileDto<T extends Serializable> extends FileEntityDto<T> {
+public abstract class LinkedFileDto<T extends Serializable> extends FileEntityDto<T> {
 
     private String code;
     private String originalFileName;

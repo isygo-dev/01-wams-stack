@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.ContractDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -118,7 +119,7 @@ class FileCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contractDto)))
+                        .content(JsonHelper.toJson(contractDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
@@ -151,7 +152,7 @@ class FileCrudIntegrationTests {
                 "dto",
                 "contract.json",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(contractDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(contractDto).getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart(FILE_URL)
                         .file(file)
@@ -181,7 +182,7 @@ class FileCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contractDto)))
+                        .content(JsonHelper.toJson(contractDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -201,7 +202,7 @@ class FileCrudIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/" + createdContract.getId())
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedContractDto)))
+                        .content(JsonHelper.toJson(updatedContractDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Contract"))
@@ -225,7 +226,7 @@ class FileCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contractDto)))
+                        .content(JsonHelper.toJson(contractDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -252,7 +253,7 @@ class FileCrudIntegrationTests {
                 "dto",
                 "contract.json",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(updatedContractDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(updatedContractDto).getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart(FILE_URL + "/" + createdContract.getId())
                         .file(file)
@@ -284,7 +285,7 @@ class FileCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contractDto)))
+                        .content(JsonHelper.toJson(contractDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -326,13 +327,13 @@ class FileCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contract1)))
+                        .content(JsonHelper.toJson(contract1)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contract2)))
+                        .content(JsonHelper.toJson(contract2)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(get(BASE_URL)
@@ -361,7 +362,7 @@ class FileCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contractDto)))
+                        .content(JsonHelper.toJson(contractDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -394,7 +395,7 @@ class FileCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contractDto)))
+                        .content(JsonHelper.toJson(contractDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -442,7 +443,7 @@ class FileCrudIntegrationTests {
                 "dto",
                 "contract.json",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(contractDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(contractDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(FILE_URL)
                         .file(file)

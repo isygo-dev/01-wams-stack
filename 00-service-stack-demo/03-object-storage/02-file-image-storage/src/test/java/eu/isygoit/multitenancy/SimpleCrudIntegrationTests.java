@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.AccountDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -90,7 +91,7 @@ class SimpleCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -112,7 +113,7 @@ class SimpleCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -127,7 +128,7 @@ class SimpleCrudIntegrationTests {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -144,7 +145,7 @@ class SimpleCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -169,7 +170,7 @@ class SimpleCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL + "/batch")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDtos)))
+                        .content(JsonHelper.toJson(accountDtos)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -198,7 +199,7 @@ class SimpleCrudIntegrationTests {
                     mockMvc.perform(post(BASE_URL)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .header(TENANT_HEADER, TENANT_ID)
-                                    .content(objectMapper.writeValueAsString(accountDto)))
+                                    .content(JsonHelper.toJson(accountDto)))
                             .andExpect(status().isCreated());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -262,7 +263,7 @@ class SimpleCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -297,7 +298,7 @@ class SimpleCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -314,7 +315,7 @@ class SimpleCrudIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/" + createdAccount.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(updatedDto)))
+                        .content(JsonHelper.toJson(updatedDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("updateduser@example.com"))
                 .andExpect(jsonPath("$.passkey").value("newpass"));
@@ -368,7 +369,7 @@ class SimpleCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TENANT_HEADER, TENANT_ID)
-                        .content(objectMapper.writeValueAsString(accountDto)))
+                        .content(JsonHelper.toJson(accountDto)))
                 .andExpect(status().isCreated())
                 .andReturn();
 

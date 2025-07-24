@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.ResumeDto;
 import eu.isygoit.multitenancy.dto.ResumeLinkedFileDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
@@ -122,7 +123,7 @@ class MultiFileCrudIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resumeDto)))
+                        .content(JsonHelper.toJson(resumeDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Test Resume"))

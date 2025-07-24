@@ -1,53 +1,46 @@
 package eu.isygoit.multitenancy.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.multitenancy.model.EventType;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PostPersist;
-import jakarta.persistence.PreRemove;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
-// JPA Entity Listener
-public class TimelineEventListener {
-    private static final ThreadLocal<Object> previousState = new ThreadLocal<>();
+@Component
+public class TimelineEventListener implements ApplicationContextAware {
+
+    private static ApplicationContext applicationContext;
     private static TimelineEventService timelineEventService;
 
-    // Static setter for dependency injection
-    public static void setTimelineEventService(TimelineEventService service) {
-        TimelineEventListener.timelineEventService = service;
+    @Override
+    public void setApplicationContext(ApplicationContext context) {
+        TimelineEventListener.applicationContext = context;
     }
 
-    @PostPersist
-    public void onPostPersist(Object entity) {
-        timelineEventService.recordEvent(entity, EventType.CREATED);
+    // No-arg constructor required by Hibernate
+    public TimelineEventListener() {
     }
 
-    @PostLoad
-    public void onPostLoad(Object entity) {
-        // Store deep copy of entity state for diffing
-        previousState.set(deepCopy(entity));
+    @PrePersist
+    public void onCreate(Object entity) {
+        getTimelineEventService().recordEvent(entity, EventType.CREATED);
     }
 
     @PreUpdate
-    public void onPreUpdate(Object entity) {
-        Object prev = previousState.get();
-        if (prev != null) {
-            timelineEventService.recordEvent(entity, EventType.UPDATED, prev);
-            previousState.remove();
-        }
+    public void onUpdate(Object entity) {
+        getTimelineEventService().recordEvent(entity, EventType.UPDATED);
     }
 
     @PreRemove
-    public void onPreRemove(Object entity) {
-        timelineEventService.recordEvent(entity, EventType.DELETED);
+    public void onDelete(Object entity) {
+        getTimelineEventService().recordEvent(entity, EventType.DELETED);
     }
 
-    private Object deepCopy(Object entity) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(mapper.writeValueAsString(entity), entity.getClass());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to deep copy entity", e);
+    private TimelineEventService getTimelineEventService() {
+        if (timelineEventService == null) {
+            timelineEventService = applicationContext.getBean(TimelineEventService.class);
         }
+        return timelineEventService;
     }
 }

@@ -14,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UserLoginEventDto extends IdAssignableDto<UUID> {
 
+    private UUID id;
     private String userId;
     private String ip;
     private String device;

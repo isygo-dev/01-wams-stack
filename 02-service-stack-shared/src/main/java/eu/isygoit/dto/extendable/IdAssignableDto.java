@@ -14,7 +14,6 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

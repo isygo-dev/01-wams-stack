@@ -1,6 +1,7 @@
 package eu.isygoit.openai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -108,7 +109,7 @@ public class OllamaApiService {
                 requestBody.put("options", options);
             }
 
-            String requestJson = objectMapper.writeValueAsString(requestBody);
+            String requestJson = JsonHelper.toJson(requestBody);
             HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
 
             // Make API call

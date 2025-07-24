@@ -2,6 +2,7 @@ package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class LinkedFileRequestDto extends AbstractAuditableDto<Long> implements IFileUploadDto {
+public class LinkedFileRequestDto  extends AbstractDto implements IFileUploadDto {
 
     private String tenant;
     private String code;                //Unique file name

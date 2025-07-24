@@ -1,6 +1,7 @@
 package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class UserContextDto extends AbstractAuditableDto<Long> {
+public class UserContextDto extends AbstractDto {
 
     @NotEmpty
     private String tenant;

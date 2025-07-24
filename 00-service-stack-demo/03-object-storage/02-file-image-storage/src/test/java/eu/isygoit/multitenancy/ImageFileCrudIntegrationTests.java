@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.ResumeDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -126,7 +127,7 @@ class ImageFileCrudIntegrationTests {
                 "dto",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(resumeDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(resumeDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(FILE_URL)
                         .file(file)
@@ -169,7 +170,7 @@ class ImageFileCrudIntegrationTests {
                 "dto",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(resumeDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(resumeDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(IMAGE_URL)
                         .file(file)
@@ -206,7 +207,7 @@ class ImageFileCrudIntegrationTests {
         MvcResult createResult = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resumeDto)))
+                        .content(JsonHelper.toJson(resumeDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -236,7 +237,7 @@ class ImageFileCrudIntegrationTests {
                 "dto",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(updatedDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(updatedDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(FILE_URL + "/{id}", createdResume.getId())
                         .file(file)
@@ -276,7 +277,7 @@ class ImageFileCrudIntegrationTests {
         MvcResult createResult = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resumeDto)))
+                        .content(JsonHelper.toJson(resumeDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -306,7 +307,7 @@ class ImageFileCrudIntegrationTests {
                 "dto",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(updatedDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(updatedDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(IMAGE_URL + "/{id}", createdResume.getId())
                         .file(file)
@@ -346,7 +347,7 @@ class ImageFileCrudIntegrationTests {
         MvcResult createResult = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resumeDto)))
+                        .content(JsonHelper.toJson(resumeDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -397,7 +398,7 @@ class ImageFileCrudIntegrationTests {
         MvcResult createResult = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resumeDto)))
+                        .content(JsonHelper.toJson(resumeDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -455,7 +456,7 @@ class ImageFileCrudIntegrationTests {
                 "dto",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(resumeDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(resumeDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult createResult = mockMvc.perform(multipart(FILE_URL)
                         .file(file)
@@ -503,7 +504,7 @@ class ImageFileCrudIntegrationTests {
                 "dto",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(resumeDto).getBytes(StandardCharsets.UTF_8));
+                JsonHelper.toJson(resumeDto).getBytes(StandardCharsets.UTF_8));
 
         MvcResult createResult = mockMvc.perform(multipart(IMAGE_URL)
                         .file(file)

@@ -1,6 +1,7 @@
 package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class BoardItemModelDto extends AbstractAuditableDto<Long> {
+public class BoardItemModelDto extends AbstractDto {
 
     private String code;
     private String state;

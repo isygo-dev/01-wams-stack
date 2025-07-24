@@ -2,6 +2,7 @@ package eu.isygoit.dto.common;
 
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class LinkedFileResponseDto extends AbstractAuditableDto<Long> {
+public class LinkedFileResponseDto extends AbstractDto {
 
     private String code;
 }

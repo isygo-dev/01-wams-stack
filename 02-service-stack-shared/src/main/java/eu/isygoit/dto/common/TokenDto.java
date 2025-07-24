@@ -2,6 +2,7 @@ package eu.isygoit.dto.common;
 
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import eu.isygoit.enums.IEnumWebToken;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +20,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class TokenDto extends AbstractAuditableDto<Long> {
+public class TokenDto extends AbstractDto {
 
     @NotNull
     private IEnumWebToken.Types type;

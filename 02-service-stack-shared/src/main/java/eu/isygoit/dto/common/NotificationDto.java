@@ -2,6 +2,7 @@ package eu.isygoit.dto.common;
 
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import eu.isygoit.enums.IEnumNotification;
 import eu.isygoit.enums.IEnumTarget;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationDto extends AbstractAuditableDto<Long> {
+public class NotificationDto extends AbstractDto {
 
     private IEnumTarget.Types targetType;
     private IEnumNotification.Types notificationType;

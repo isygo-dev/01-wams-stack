@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.UserDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -132,7 +133,7 @@ class ImageCrudIntegrationTests {
 
         if (withImage) {
             MockMultipartFile userPart = new MockMultipartFile(
-                    "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
+                    "dto", "", "application/json", JsonHelper.toJson(userDto).getBytes());
             MockMultipartFile imagePart = createMockImage();
             MockMultipartHttpServletRequestBuilder builder = MockMvcRequestBuilders.multipart(IMAGE_URL);
             builder.file(userPart).file(imagePart);
@@ -147,7 +148,7 @@ class ImageCrudIntegrationTests {
             MvcResult result = mockMvc.perform(post(BASE_URL)
                             .header(TENANT_HEADER, TENANT_ID)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(userDto)))
+                            .content(JsonHelper.toJson(userDto)))
                     .andExpect(status().isCreated())
                     .andReturn();
             return objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
@@ -183,7 +184,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
+                        .content(JsonHelper.toJson(userDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -206,7 +207,7 @@ class ImageCrudIntegrationTests {
                 .build();
 
         MockMultipartFile userPart = new MockMultipartFile(
-                "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
+                "dto", "", "application/json", JsonHelper.toJson(userDto).getBytes());
         MockMultipartFile imagePart = createMockImage();
 
         mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
@@ -238,7 +239,7 @@ class ImageCrudIntegrationTests {
                 .build();
 
         MockMultipartFile userPart = new MockMultipartFile(
-                "dto", "", "application/json", objectMapper.writeValueAsString(updatedUserDto).getBytes());
+                "dto", "", "application/json", JsonHelper.toJson(updatedUserDto).getBytes());
         MockMultipartFile imagePart = createMockImage();
 
         mockMvc.perform(buildMultipartRequest(IMAGE_URL + "/" + userId, "PUT", userPart, imagePart)
@@ -271,7 +272,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/{id}", createdUser.getId())
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedUserDto)))
+                        .content(JsonHelper.toJson(updatedUserDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(createdUser.getId()))
                 .andExpect(jsonPath("$.tenant").value(TENANT_ID))
@@ -416,7 +417,7 @@ class ImageCrudIntegrationTests {
                             .build();
 
                     MockMultipartFile userPart = new MockMultipartFile(
-                            "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
+                            "dto", "", "application/json", JsonHelper.toJson(userDto).getBytes());
                     MockMultipartFile imagePart = createMockImage();
 
                     mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
@@ -458,7 +459,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
+                        .content(JsonHelper.toJson(userDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -475,7 +476,7 @@ class ImageCrudIntegrationTests {
                 .build();
 
         MockMultipartFile userPart = new MockMultipartFile(
-                "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
+                "dto", "", "application/json", JsonHelper.toJson(userDto).getBytes());
         MockMultipartFile invalidImage = createInvalidImage();
 
         mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, invalidImage)
@@ -498,7 +499,7 @@ class ImageCrudIntegrationTests {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
+                        .content(JsonHelper.toJson(userDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -544,7 +545,7 @@ class ImageCrudIntegrationTests {
                             .build();
 
                     MockMultipartFile userPart = new MockMultipartFile(
-                            "dto", "", "application/json", objectMapper.writeValueAsString(updatedUserDto).getBytes());
+                            "dto", "", "application/json", JsonHelper.toJson(updatedUserDto).getBytes());
                     MockMultipartFile imagePart = createMockImage();
 
                     mockMvc.perform(buildMultipartRequest(IMAGE_URL + "/" + userId, "PUT", userPart, imagePart)
@@ -587,7 +588,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL + "/batch")
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(users)))
+                        .content(JsonHelper.toJson(users)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_ID))));
@@ -606,7 +607,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(delete(BASE_URL + "/batch")
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userIds)))
+                        .content(JsonHelper.toJson(userIds)))
                 .andExpect(status().isNoContent());
 
         for (Long userId : userIds) {
@@ -641,7 +642,7 @@ class ImageCrudIntegrationTests {
                 .build();
 
         MockMultipartFile userPart = new MockMultipartFile(
-                "dto", "", "application/json", objectMapper.writeValueAsString(userDto).getBytes());
+                "dto", "", "application/json", JsonHelper.toJson(userDto).getBytes());
         MockMultipartFile imagePart = createMockImage();
 
         mockMvc.perform(buildMultipartRequest(IMAGE_URL + "/999", "PUT", userPart, imagePart)
@@ -716,7 +717,7 @@ class ImageCrudIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
+                        .content(JsonHelper.toJson(userDto)))
                 .andExpect(status().isBadRequest());
     }
 

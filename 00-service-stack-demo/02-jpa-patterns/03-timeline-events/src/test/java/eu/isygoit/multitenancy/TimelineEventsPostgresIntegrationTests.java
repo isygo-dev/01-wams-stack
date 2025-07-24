@@ -1,7 +1,9 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -108,7 +110,7 @@ class TimelineEventsPostgresIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(JsonHelper.toJson(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.tenant").value(TENANT_1))
                 .andReturn();
@@ -143,7 +145,7 @@ class TimelineEventsPostgresIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(JsonHelper.toJson(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.tenant").value(TENANT_2));
     }
@@ -173,7 +175,7 @@ class TimelineEventsPostgresIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updated)))
+                        .content(JsonHelper.toJson(updated)))
                 .andExpect(status().isInternalServerError());
     }
 
@@ -216,7 +218,7 @@ class TimelineEventsPostgresIntegrationTests {
         mockMvc.perform(post(BASE_URL + "/batch")
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(tutorials)))
+                        .content(JsonHelper.toJson(tutorials)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3));
     }

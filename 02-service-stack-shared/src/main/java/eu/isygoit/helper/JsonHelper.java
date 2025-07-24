@@ -6,16 +6,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.util.*;
@@ -28,6 +32,11 @@ import java.util.*;
 public interface JsonHelper {
 
     /**
+     * The constant EXCLUDED_KEYS.
+     */
+    static final Set<String> EXCLUDED_KEYS = Set.of("id", "version");
+
+    /**
      * The constant logger.
      */
     Logger logger = LoggerFactory.getLogger(JsonHelper.class);
@@ -35,7 +44,12 @@ public interface JsonHelper {
     /**
      * The constant mapper.
      */
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper objectMapper = new ObjectMapper() {
+        {
+            registerModule(new JavaTimeModule());
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        }
+    };
     /**
      * The constant xmlMapper.
      */
@@ -158,7 +172,7 @@ public interface JsonHelper {
      */
     public static String prettyPrintJson(JsonNode jsonNode) throws JsonProcessingException {
         logger.debug("Pretty printing JsonNode");
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
     }
 
     // --- Reverse Methods for Converting Other Formats Back to JSON ---
@@ -176,6 +190,31 @@ public interface JsonHelper {
     }
 
     /**
+     * Object to node json node.
+     *
+     * @param object the object
+     * @return the json node
+     */
+    public static JsonNode objectToNode(Object object) {
+        logger.debug("Converting Object to JsonNode");
+        return objectMapper.valueToTree(object);
+    }
+
+    /**
+     * Node to object t.
+     *
+     * @param <T>       the type parameter
+     * @param node      the node
+     * @param valueType the value type
+     * @return the t
+     * @throws JsonProcessingException the json processing exception
+     */
+    public static <T> T nodeToObject(JsonNode node, Class<T> valueType) throws JsonProcessingException {
+        logger.debug("Converting Object to JsonNode");
+        return objectMapper.treeToValue(node, valueType);
+    }
+
+    /**
      * Converts a CSV string to a JsonNode.
      * Assumes the first line is a header row.
      *
@@ -188,7 +227,7 @@ public interface JsonHelper {
         CsvSchema schema = csvMapper.schemaFor(Map.class).withHeader().withColumnSeparator(',');
         List<Object> records = csvMapper.readerFor(Map.class).with(schema).readValues(csv).readAll();
 
-        return mapper.valueToTree(records);
+        return objectMapper.valueToTree(records);
     }
 
     /**
@@ -225,7 +264,7 @@ public interface JsonHelper {
             currentMap.put(keys[keys.length - 1], props.getProperty(key));
         }
 
-        return mapper.valueToTree(map);
+        return objectMapper.valueToTree(map);
     }
 
     /**
@@ -237,7 +276,7 @@ public interface JsonHelper {
      */
     public static JsonNode prettyPrintJsonToJsonNode(String json) throws JsonProcessingException {
         logger.debug("Converting Pretty Printed JSON string back to JsonNode");
-        return mapper.readTree(json);
+        return objectMapper.readTree(json);
     }
 
     // --- JSON (De)Serialization Methods ---
@@ -255,7 +294,7 @@ public interface JsonHelper {
      */
     public static <T> T fromJson(String json, Class<T> valueType) throws JsonParseException, JsonMappingException, IOException {
         logger.debug("Converting JSON string to object of type {}", valueType.getName());
-        return mapper.readValue(json, valueType);
+        return objectMapper.readValue(json, valueType);
     }
 
     /**
@@ -269,7 +308,7 @@ public interface JsonHelper {
      */
     public static String toJson(Object obj) throws JsonGenerationException, JsonMappingException, IOException {
         logger.debug("Converting object to JSON string");
-        return mapper.writeValueAsString(obj);
+        return objectMapper.writeValueAsString(obj);
     }
 
     // --- JSON File Methods ---
@@ -287,7 +326,7 @@ public interface JsonHelper {
      */
     public static <T> T fromJsonFile(FileReader jsonReader, Class<T> valueType) throws JsonParseException, JsonMappingException, IOException {
         logger.debug("Converting JSON file to object of type {}", valueType.getName());
-        return mapper.readValue(jsonReader, valueType);
+        return objectMapper.readValue(jsonReader, valueType);
     }
 
     /**
@@ -301,7 +340,7 @@ public interface JsonHelper {
      */
     public static void toJsonFile(FileWriter jsonWriter, Object obj) throws JsonParseException, JsonMappingException, IOException {
         logger.debug("Writing object to JSON file");
-        mapper.writeValue(jsonWriter, obj);
+        objectMapper.writeValue(jsonWriter, obj);
     }
 
     // --- JSON Schema Validation Methods ---
@@ -330,9 +369,134 @@ public interface JsonHelper {
         }
 
         JsonSchema jsonSchema = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(new FileInputStream(schemaFile));
-        JsonNode jsonNode = mapper.readTree(new FileInputStream(jsonFile));
+        JsonNode jsonNode = objectMapper.readTree(new FileInputStream(jsonFile));
 
         logger.debug("Validating JSON against schema: {}", schemaFilePath);
         return jsonSchema.validate(jsonNode);
+    }
+
+    /**
+     * Computes the difference between two object states, returning an ObjectNode
+     * containing only the changed fields with their old and new values.
+     *
+     * @param previousState The previous state object
+     * @param currentState  The current state object
+     * @return ObjectNode containing the differences
+     * @throws IllegalArgumentException if conversion to Map fails
+     */
+    public static ObjectNode computeDiff(Object previousState, Object currentState) {
+        // Handle null cases efficiently
+        if (previousState == null && currentState == null) {
+            return objectMapper.createObjectNode();
+        }
+        if (previousState == null || currentState == null) {
+            return createFullDiff(previousState, currentState);
+        }
+
+        try {
+            // Convert objects to maps with type safety
+            Map<String, Object> prevMap = convertToMap(previousState);
+            Map<String, Object> currMap = convertToMap(currentState);
+
+            ObjectNode diff = objectMapper.createObjectNode();
+
+            // Process all keys from both maps to handle additions and removals
+            Set<String> allKeys = new HashSet<>(prevMap.keySet());
+            allKeys.addAll(currMap.keySet());
+
+            for (String key : allKeys) {
+                if (EXCLUDED_KEYS.contains(key)) {
+                    continue;
+                }
+
+                Object prevValue = prevMap.get(key);
+                Object currValue = currMap.get(key);
+
+                if (!deepEquals(prevValue, currValue)) {
+                    ObjectNode change = objectMapper.createObjectNode();
+                    change.putPOJO("old", prevValue);
+                    change.putPOJO("new", currValue);
+                    diff.set(key, change);
+                }
+            }
+
+            return diff;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to compute diff: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Converts an object to a Map with proper error handling.
+     */
+    private static Map<String, Object> convertToMap(Object obj) {
+        if (obj instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = (Map<String, Object>) obj;
+            return map;
+        }
+        try {
+            return objectMapper.convertValue(obj, Map.class);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Failed to convert object to Map: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Creates a diff when one of the states is null.
+     */
+    private static ObjectNode createFullDiff(Object previousState, Object currentState) {
+        ObjectNode diff = objectMapper.createObjectNode();
+        ObjectNode change = objectMapper.createObjectNode();
+        change.putPOJO("old", previousState);
+        change.putPOJO("new", currentState);
+        diff.set("state", change);
+        return diff;
+    }
+
+    /**
+     * Performs a deep comparison of two objects, handling collections and nested objects.
+     */
+    private static boolean deepEquals(Object a, Object b) {
+        if (a == b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.getClass() != b.getClass()) {
+            return false;
+        }
+
+        if (a instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> mapA = (Map<String, Object>) a;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> mapB = (Map<String, Object>) b;
+            if (!mapA.keySet().equals(mapB.keySet())) {
+                return false;
+            }
+            for (String key : mapA.keySet()) {
+                if (!deepEquals(mapA.get(key), mapB.get(key))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (a instanceof Iterable) {
+            Iterable<?> iterA = (Iterable<?>) a;
+            Iterable<?> iterB = (Iterable<?>) b;
+            java.util.Iterator<?> itA = iterA.iterator();
+            java.util.Iterator<?> itB = iterB.iterator();
+            while (itA.hasNext() && itB.hasNext()) {
+                if (!deepEquals(itA.next(), itB.next())) {
+                    return false;
+                }
+            }
+            return !itA.hasNext() && !itB.hasNext();
+        }
+
+        return Objects.equals(a, b);
     }
 }

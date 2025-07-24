@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 public class ResumeDto extends AbstractAuditableDto<Long> implements IFileUploadDto, IImageUploadDto {
 
+    private Long id;
     private String tenant;
 
     //ICodeAssignable fields (should implement setCode & getCode)

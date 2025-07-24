@@ -1,31 +1,35 @@
 package eu.isygoit.multitenancy.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.multitenancy.dto.TimelineEventMessage;
 import eu.isygoit.multitenancy.model.EventType;
-import eu.isygoit.multitenancy.model.TimeLineEvent;
 import eu.isygoit.multitenancy.repository.TimelineEventRepository;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
-class TimelineEventService {
+public class TimelineEventService {
+
     private final TimelineEventRepository timelineEventRepository;
     private final ObjectMapper objectMapper;
-    private final DiffService diffService;
+    private final ProducerTemplate producerTemplate;
 
     @Autowired
-    public TimelineEventService(TimelineEventRepository repository, ObjectMapper mapper, DiffService diffService) {
+    public TimelineEventService(TimelineEventRepository repository, ObjectMapper mapper,
+                                ProducerTemplate producerTemplate) {
         this.timelineEventRepository = repository;
         this.objectMapper = mapper;
-        this.diffService = diffService;
-        TimelineEventListener.setTimelineEventService(this); // Inject into listener
+        this.producerTemplate = producerTemplate;
     }
 
     @Transactional
@@ -35,28 +39,37 @@ class TimelineEventService {
 
     @Transactional
     public void recordEvent(Object entity, EventType eventType, Object previousState) {
-        TimeLineEvent event = TimeLineEvent.builder()
-                .eventType(eventType)
-                .elementType(entity.getClass().getSimpleName())
-                .elementId(getElementId(entity))
-                .timestamp(LocalDateTime.now())
-                .tenant(getTenant(entity))
-                .build();
+        TimelineEventMessage message = new TimelineEventMessage();
+        message.setEventType(eventType);
+        message.setElementType(entity.getClass().getSimpleName());
+        message.setElementId(getElementId(entity));
+        message.setTimestamp(LocalDateTime.now());
+        message.setTenant(getTenant(entity));
+        message.setModifiedBy(getModifiedBy(entity));
+        message.setAttributes(createAttributes(entity, previousState, eventType));
 
-        ObjectNode attributes = objectMapper.createObjectNode();
-        String modifiedBy = getCurrentUser();
-        if (modifiedBy != null) {
-            attributes.put("modifiedBy", modifiedBy);
+        sendToQueue(message);
+    }
+
+    private void sendToQueue(TimelineEventMessage message) {
+        try {
+            producerTemplate.sendBody("seda:timelineEvents", JsonHelper.toJson(message));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send timeline event to queue", e);
         }
+    }
 
+    private JsonNode createAttributes(Object newEntity, Object oldEntity, EventType eventType) {
         switch (eventType) {
-            case CREATED -> attributes.set("data", objectMapper.valueToTree(entity));
-            case UPDATED -> attributes.set("data", diffService.computeDiff(previousState, entity));
-            case DELETED -> attributes.set("data", objectMapper.createObjectNode()); // Empty object for minimal data
+            case CREATED:
+                return objectMapper.createObjectNode().set("data", JsonHelper.objectToNode(newEntity));
+            case UPDATED:
+                return objectMapper.createObjectNode().set("data", JsonHelper.computeDiff(oldEntity, newEntity));
+            case DELETED:
+                return objectMapper.createObjectNode().set("data", null);
+            default:
+                return objectMapper.createObjectNode().set("data", null);
         }
-
-        event.setAttributes(attributes);
-        timelineEventRepository.save(event);
     }
 
     private String getElementId(Object entity) {
@@ -73,8 +86,12 @@ class TimelineEventService {
         throw new IllegalArgumentException("Entity must implement ITenantAssignable");
     }
 
-    private String getCurrentUser() {
-        return SecurityContextHolder.getContext().getAuthentication() != null ?
-                SecurityContextHolder.getContext().getAuthentication().getName() : "system";
+    private String getModifiedBy(Object entity) {
+        if (entity instanceof AuditableEntity auditableEntity) {
+            return auditableEntity.getUpdatedBy() != null
+                    ? auditableEntity.getUpdatedBy()
+                    : (auditableEntity.getCreatedBy() != null ? auditableEntity.getCreatedBy() : "test_user");
+        }
+        throw new IllegalArgumentException("Entity must implement ITenantAssignable");
     }
 }

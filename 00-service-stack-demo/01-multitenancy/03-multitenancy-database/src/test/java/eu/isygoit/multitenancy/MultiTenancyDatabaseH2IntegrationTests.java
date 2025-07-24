@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -87,7 +88,7 @@ class MultiTenancyDatabaseH2IntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(JsonHelper.toJson(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.title").value(dto.getTitle()))
@@ -133,7 +134,7 @@ class MultiTenancyDatabaseH2IntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(JsonHelper.toJson(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.title").value(dto.getTitle()))

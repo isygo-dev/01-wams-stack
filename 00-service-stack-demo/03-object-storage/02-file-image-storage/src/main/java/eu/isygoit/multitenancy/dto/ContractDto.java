@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 public class ContractDto extends AbstractAuditableDto<Long> implements IFileUploadDto {
 
+    private Long id;
     private String tenant;
 
     //ICodeAssignable fields (should implement setCode & getCode)

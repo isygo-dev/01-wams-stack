@@ -20,7 +20,8 @@ import java.time.LocalDateTime;
 public abstract class TimelineEventEntity extends AbstractEntity<Long> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "timeline_event_seq", sequenceName = "timeline_event_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "timeline_event_seq")
     private Long id;
 
     @Enumerated(EnumType.STRING)

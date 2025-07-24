@@ -18,7 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class FileEntityDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class FileEntityDto<T extends Serializable> extends AbstractAuditableDto<T> {
 
     private String fileName;
     private String originalFileName;

@@ -2,6 +2,7 @@ package eu.isygoit.dto.common;
 
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ import java.io.Serializable;
 @SuperBuilder
 public class LinkedFileMinDto<T extends Serializable> extends AbstractAuditableDto<T> {
 
+    private T id;
     private String code;
     private String originalFileName;
     private Long size;

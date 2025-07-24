@@ -1,6 +1,7 @@
 package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class NextCodeDto extends AbstractAuditableDto<Long> {
+public class NextCodeDto extends AbstractDto {
 
     private String tenant;
     private String entity;

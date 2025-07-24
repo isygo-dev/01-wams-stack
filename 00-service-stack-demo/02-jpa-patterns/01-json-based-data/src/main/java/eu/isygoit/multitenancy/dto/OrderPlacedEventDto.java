@@ -15,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class OrderPlacedEventDto extends IdAssignableDto<UUID> {
 
+    private UUID id;
     private String orderId;
     private String customerId;
     private BigDecimal amount;

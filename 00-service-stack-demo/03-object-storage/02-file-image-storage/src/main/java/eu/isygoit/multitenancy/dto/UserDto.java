@@ -15,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class UserDto extends AbstractAuditableDto<Long> implements IImageUploadDto {
 
+    private Long id;
     @NotNull
     private String tenant;
     @NotNull

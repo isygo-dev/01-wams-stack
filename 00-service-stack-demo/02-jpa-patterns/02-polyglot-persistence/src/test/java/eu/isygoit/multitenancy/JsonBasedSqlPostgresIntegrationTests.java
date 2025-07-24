@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.multitenancy.dto.UserLoginEventDto;
 import eu.isygoit.multitenancy.utils.ITenantService;
@@ -151,7 +152,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(tenant1_userLogin)))
+                        .content(JsonHelper.toJson(tenant1_userLogin)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.userId").value(tenant1_userLogin.getUserId()))
                 .andExpect(jsonPath("$.ip").value(tenant1_userLogin.getIp()))
@@ -175,7 +176,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(tenant2_userLogin)))
+                        .content(JsonHelper.toJson(tenant2_userLogin)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.userId").value(tenant2_userLogin.getUserId()))
                 .andExpect(jsonPath("$.ip").value(tenant2_userLogin.getIp()))
@@ -204,7 +205,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL + "/batch")
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(batchEvents)))
+                        .content(JsonHelper.toJson(batchEvents)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(3))
@@ -237,7 +238,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         MvcResult result = mockMvc.perform(post(BASE_URL + "/batch")
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(batchEvents)))
+                        .content(JsonHelper.toJson(batchEvents)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -418,7 +419,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/" + tenant1_userLoginId)
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedDto)))
+                        .content(JsonHelper.toJson(updatedDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(tenant1_userLoginId.toString()))
                 .andExpect(jsonPath("$.userId").value("user_one_updated"))
@@ -439,7 +440,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/" + tenant1_userLoginId)
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedDto)))
+                        .content(JsonHelper.toJson(updatedDto)))
                 .andExpect(status().isNotFound());
     }
 
@@ -456,7 +457,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(put(BASE_URL + "/" + tenant2_userLoginId)
                         .header(TENANT_HEADER, TENANT_2)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedDto)))
+                        .content(JsonHelper.toJson(updatedDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(tenant2_userLoginId.toString()))
                 .andExpect(jsonPath("$.userId").value("user_two_updated"))
@@ -543,7 +544,7 @@ class JsonBasedSqlPostgresIntegrationTests {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newDto)))
+                        .content(JsonHelper.toJson(newDto)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -559,7 +560,7 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, INVALID_TENANT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newDto)))
+                        .content(JsonHelper.toJson(newDto)))
                 .andExpect(status().isBadRequest());
     }
 

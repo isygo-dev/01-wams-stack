@@ -2,6 +2,7 @@ package eu.isygoit.dto.common;
 
 
 import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AbstractDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import org.springframework.core.io.Resource;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ResourceDto extends AbstractAuditableDto<Long> {
+public class ResourceDto extends AbstractDto {
 
     @NotNull
     private String originalFileName;
