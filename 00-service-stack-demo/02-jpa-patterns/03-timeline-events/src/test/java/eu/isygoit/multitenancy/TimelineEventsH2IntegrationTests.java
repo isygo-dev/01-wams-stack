@@ -81,6 +81,12 @@ class TimelineEventsH2IntegrationTests {
     }
 
     @Test
+    @Order(0)
+    void shouldValidateDiscriminatorMode() {
+        Assertions.assertEquals("GDM", multiTenancyProperty);
+    }
+
+    @Test
     @Order(1)
     @DisplayName("Should create tutorial and record CREATED timeline event with full entity attributes")
     void testCreateTutorial_ShouldRecordCreatedEventWithFullAttributes() throws Exception {

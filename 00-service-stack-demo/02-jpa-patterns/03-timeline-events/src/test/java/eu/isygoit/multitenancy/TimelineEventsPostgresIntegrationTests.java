@@ -1,9 +1,11 @@
 package eu.isygoit.multitenancy;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.constants.TenantConstants;
-import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.TutorialDto;
+import eu.isygoit.multitenancy.model.EventType;
+import eu.isygoit.multitenancy.model.TimeLineEvent;
+import eu.isygoit.multitenancy.repository.TimelineEventRepository;
 import eu.isygoit.multitenancy.utils.ITenantService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,22 +48,26 @@ class TimelineEventsPostgresIntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
-    private static final String TENANT_2 = "tenant2";
-    private static final String INVALID_TENANT = "unknown";
-    private static final String SUPER_TENANT = TenantConstants.SUPER_TENANT_NAME;
-
     private static final String BASE_URL = "/api/tutorials";
+
+    private static Long tutorialId;
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("postgres") // initial database
             .withUsername("postgres")
             .withPassword("root")
             .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
-    private static Long tenant1TutorialId;
+
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private TimelineEventRepository timelineEventRepository;
+
     @Value("${multitenancy.mode}")
     private String multiTenancyProperty;
 
@@ -87,13 +96,27 @@ class TimelineEventsPostgresIntegrationTests {
         tenantService.initializeTenantSchema("public");
     }
 
-    private TutorialDto buildDto(String title) {
-        return TutorialDto.builder()
-                .tenant(TENANT_1)
-                .title(title)
-                .description("Learn Spring Boot with Discriminator strategy")
-                .published(true)
-                .build();
+    @AfterAll
+    static void cleanUp() {
+        // Any final cleanup if needed
+    }
+
+    @BeforeEach
+    void setUp() {
+        tutorialId = null; // Reset tutorialId for each test
+    }
+
+    private List<TimeLineEvent> waitForEvents(String elementType, String elementId, String tenant, int expectedCount, long timeoutMs) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        List<TimeLineEvent> events;
+        do {
+            events = timelineEventRepository.findByElementTypeAndElementIdAndTenant(elementType, elementId, tenant);
+            if (events.size() >= expectedCount) {
+                return events;
+            }
+            TimeUnit.MILLISECONDS.sleep(100);
+        } while (System.currentTimeMillis() - startTime < timeoutMs);
+        return events;
     }
 
     @Test
@@ -104,143 +127,398 @@ class TimelineEventsPostgresIntegrationTests {
 
     @Test
     @Order(1)
-    void shouldCreateTutorialForTenant1() throws Exception {
-        var dto = buildDto("Tenant1 Tutorial");
+    @DisplayName("Should create tutorial and record CREATED timeline event with full entity attributes")
+    void testCreateTutorial_ShouldRecordCreatedEventWithFullAttributes() throws Exception {
+        // Given
+        TutorialDto tutorial = TutorialDto.builder()
+                .tenant(TENANT_1)
+                .title("Spring Boot Tutorial")
+                .description("Learn Spring Boot basics")
+                .published(false)
+                .build();
 
+        // When
         MvcResult result = mockMvc.perform(post(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonHelper.toJson(dto)))
+                        .content(objectMapper.writeValueAsString(tutorial)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.tenant").value(TENANT_1))
+                .andExpect(jsonPath("$.title").value("Spring Boot Tutorial"))
+                .andExpect(jsonPath("$.description").value("Learn Spring Boot basics"))
+                .andExpect(jsonPath("$.published").value(false))
                 .andReturn();
 
-        tenant1TutorialId = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class).getId();
-        Assertions.assertNotNull(tenant1TutorialId);
+        // Extract created tutorial ID
+        TutorialDto createdTutorial = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class);
+        tutorialId = createdTutorial.getId();
+
+        // Wait for async timeline event
+        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 1, 2000);
+
+        // Then
+        assertEquals(1, events.size(), "Should have exactly one CREATED event");
+        TimeLineEvent event = events.get(0);
+
+        assertEquals(EventType.CREATED, event.getEventType(), "Event type should be CREATED");
+        assertEquals("Tutorial", event.getElementType(), "Element type should be Tutorial");
+        assertEquals(tutorialId.toString(), event.getElementId(), "Element ID should match");
+        assertNotNull(event.getTimestamp(), "Timestamp should not be null");
+        assertNotNull(event.getAttributes(), "Attributes should not be null");
+
+        // Verify attributes structure
+        JsonNode attributes = objectMapper.readTree(event.getAttributes().toString());
+        JsonNode dataNode = attributes.path("data");
+
+        assertFalse(dataNode.isMissingNode(), "Attributes should have 'data' field");
+        assertEquals(tutorialId.longValue(), dataNode.path("id").asLong(), "ID should match");
+        assertEquals("Spring Boot Tutorial", dataNode.path("title").asText(), "Title should match");
+        assertEquals("Learn Spring Boot basics", dataNode.path("description").asText(), "Description should match");
+        assertEquals(false, dataNode.path("published").asBoolean(), "Published should match");
+        assertEquals(TENANT_1, dataNode.path("tenant").asText(), "Tenant should match");
+
+        // Verify audit fields
+        assertTrue(dataNode.has("createDate"), "createDate should be present");
+        assertTrue(dataNode.has("createdBy"), "createdBy should be present");
+        assertTrue(dataNode.has("updateDate"), "updateDate should be present");
+        assertTrue(dataNode.has("updatedBy"), "updatedBy should be present");
+
+        System.out.println("CREATED event attributes: " + attributes.toPrettyString());
     }
 
     @Test
     @Order(2)
-    void shouldRejectAccessToOtherTenantData() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
-                        .header(TENANT_HEADER, TENANT_2))
-                .andExpect(status().isNotFound());
+    @DisplayName("Should update tutorial and record UPDATED timeline event with diff attributes")
+    void testUpdateTutorial_ShouldRecordUpdatedEventWithDiffAttributes() throws Exception {
+        // Given - Create a tutorial first
+        testCreateTutorial_ShouldRecordCreatedEventWithFullAttributes();
+
+        TutorialDto updatedTutorial = TutorialDto.builder()
+                .id(tutorialId)
+                .tenant(TENANT_1)
+                .title("Spring Boot Tutorial v1.0")
+                .description("Learn Spring Boot basics") // Unchanged
+                .published(true)
+                .build();
+
+        // When
+        mockMvc.perform(put(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedTutorial)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Spring Boot Tutorial v1.0"))
+                .andExpect(jsonPath("$.description").value("Learn Spring Boot basics"))
+                .andExpect(jsonPath("$.published").value(true));
+
+        // Wait for async timeline event
+        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 2, 2000);
+
+        // Then
+        assertEquals(2, events.size(), "Should have CREATED and UPDATED events");
+        TimeLineEvent updateEvent = events.stream()
+                .filter(e -> e.getEventType() == EventType.UPDATED)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("UPDATE event not found"));
+
+        assertEquals(EventType.UPDATED, updateEvent.getEventType(), "Event type should be UPDATED");
+        assertEquals("Tutorial", updateEvent.getElementType(), "Element type should be Tutorial");
+        assertEquals(tutorialId.toString(), updateEvent.getElementId(), "Element ID should match");
+        assertNotNull(updateEvent.getTimestamp(), "Timestamp should not be null");
+
+        // Verify attributes structure
+        JsonNode attributes = objectMapper.readTree(updateEvent.getAttributes().toString());
+        JsonNode dataNode = attributes.path("data");
+
+        assertFalse(dataNode.isMissingNode(), "Attributes should have 'data' field");
+        assertEquals("Spring Boot Tutorial v1.0", dataNode.path("title").asText(), "Title should be updated");
+        assertEquals(true, dataNode.path("published").asBoolean(), "Published should be updated");
+        assertFalse(dataNode.has("description"), "Unchanged description should not be in diff");
+        assertFalse(dataNode.has("id"), "Unchanged ID should not be in diff");
+        assertFalse(dataNode.has("tenant"), "Unchanged tenant should not be in diff");
+        assertFalse(dataNode.has("createDate"), "Audit fields should not be in diff");
+        assertFalse(dataNode.has("createdBy"), "Audit fields should not be in diff");
+        assertFalse(dataNode.has("updateDate"), "Audit fields should not be in diff");
+        assertFalse(dataNode.has("updatedBy"), "Audit fields should not be in diff");
+
+        System.out.println("UPDATED event attributes: " + attributes.toPrettyString());
     }
 
     @Test
     @Order(3)
-    void shouldRetrieveOwnDataForTenant1() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
+    @DisplayName("Should delete tutorial and record DELETED timeline event with empty attributes")
+    void testDeleteTutorial_ShouldRecordDeletedEventWithEmptyAttributes() throws Exception {
+        // Given - Create a tutorial first
+        testCreateTutorial_ShouldRecordCreatedEventWithFullAttributes();
+
+        // When
+        mockMvc.perform(delete(BASE_URL + "/" + tutorialId)
                         .header(TENANT_HEADER, TENANT_1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Tenant1 Tutorial"))
-                .andExpect(jsonPath("$.tenant").value(TENANT_1));
+                .andExpect(status().isNoContent());
+
+        // Wait for async timeline event
+        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 2, 2000);
+
+        // Then
+        assertEquals(2, events.size(), "Should have CREATED and DELETED events");
+        TimeLineEvent deleteEvent = events.stream()
+                .filter(e -> e.getEventType() == EventType.DELETED)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("DELETE event not found"));
+
+        assertEquals(EventType.DELETED, deleteEvent.getEventType(), "Event type should be DELETED");
+        assertEquals("Tutorial", deleteEvent.getElementType(), "Element type should be Tutorial");
+        assertEquals(tutorialId.toString(), deleteEvent.getElementId(), "Element ID should match");
+        assertNotNull(deleteEvent.getTimestamp(), "Timestamp should not be null");
+
+        // Verify attributes structure
+        JsonNode attributes = objectMapper.readTree(deleteEvent.getAttributes().toString());
+        JsonNode dataNode = attributes.path("data");
+
+        assertFalse(dataNode.isMissingNode(), "Attributes should have 'data' field");
+        assertTrue(dataNode.isObject(), "Data node should be an object");
+        assertEquals(0, dataNode.size(), "Data node should be empty for DELETE event");
+
+        System.out.println("DELETED event attributes: " + attributes.toPrettyString());
     }
 
     @Test
     @Order(4)
-    void shouldCreateTutorialForTenant2() throws Exception {
-        var dto = buildDto("Tenant2 Tutorial");
+    @DisplayName("Should handle multiple updates and verify diff attributes")
+    void testMultipleUpdates_ShouldRecordDiffAttributes() throws Exception {
+        // Given - Create a tutorial
+        TutorialDto tutorial = TutorialDto.builder()
+                .tenant(TENANT_1)
+                .title("Multi-Update Test")
+                .description("Initial description")
+                .published(false)
+                .build();
 
-        mockMvc.perform(post(BASE_URL)
-                        .header(TENANT_HEADER, TENANT_2)
+        MvcResult createResult = mockMvc.perform(post(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonHelper.toJson(dto)))
+                        .content(objectMapper.writeValueAsString(tutorial)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.tenant").value(TENANT_2));
+                .andReturn();
+
+        TutorialDto createdTutorial = objectMapper.readValue(createResult.getResponse().getContentAsString(), TutorialDto.class);
+        tutorialId = createdTutorial.getId();
+
+        // First update: Change title
+        TutorialDto firstUpdate = TutorialDto.builder()
+                .id(tutorialId)
+                .tenant(TENANT_1)
+                .title("Updated Title")
+                .description("Initial description")
+                .published(false)
+                .build();
+
+        mockMvc.perform(put(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(firstUpdate)))
+                .andExpect(status().isOk());
+
+        // Second update: Change description and published
+        TutorialDto secondUpdate = TutorialDto.builder()
+                .id(tutorialId)
+                .tenant(TENANT_1)
+                .title("Updated Title")
+                .description("Updated description")
+                .published(true)
+                .build();
+
+        mockMvc.perform(put(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(secondUpdate)))
+                .andExpect(status().isOk());
+
+        // Wait for async timeline events
+        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 3, 2000);
+
+        // Then
+        assertEquals(3, events.size(), "Should have CREATED and two UPDATED events");
+        events.sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
+
+        // Verify first UPDATE event
+        TimeLineEvent firstUpdateEvent = events.get(1);
+        assertEquals(EventType.UPDATED, firstUpdateEvent.getEventType(), "First event should be UPDATED");
+        JsonNode firstUpdateAttributes = objectMapper.readTree(firstUpdateEvent.getAttributes().toString());
+        JsonNode firstDataNode = firstUpdateAttributes.path("data");
+
+        assertFalse(firstDataNode.isMissingNode(), "First UPDATE should have 'data' field");
+        assertEquals("Updated Title", firstDataNode.path("title").asText(), "Title should be updated");
+        assertFalse(firstDataNode.has("description"), "Unchanged description should not be in diff");
+        assertFalse(firstDataNode.has("published"), "Unchanged published should not be in diff");
+        assertFalse(firstDataNode.has("id"), "Unchanged ID should not be in diff");
+        assertFalse(firstDataNode.has("tenant"), "Unchanged tenant should not be in diff");
+
+        // Verify second UPDATE event
+        TimeLineEvent secondUpdateEvent = events.get(2);
+        assertEquals(EventType.UPDATED, secondUpdateEvent.getEventType(), "Second event should be UPDATED");
+        JsonNode secondUpdateAttributes = objectMapper.readTree(secondUpdateEvent.getAttributes().toString());
+        JsonNode secondDataNode = secondUpdateAttributes.path("data");
+
+        assertFalse(secondDataNode.isMissingNode(), "Second UPDATE should have 'data' field");
+        assertEquals("Updated description", secondDataNode.path("description").asText(), "Description should be updated");
+        assertEquals(true, secondDataNode.path("published").asBoolean(), "Published should be updated");
+        assertFalse(secondDataNode.has("title"), "Unchanged title should not be in diff");
+        assertFalse(secondDataNode.has("id"), "Unchanged ID should not be in diff");
+        assertFalse(secondDataNode.has("tenant"), "Unchanged tenant should not be in diff");
+
+        System.out.println("First UPDATE event attributes: " + firstUpdateAttributes.toPrettyString());
+        System.out.println("Second UPDATE event attributes: " + secondUpdateAttributes.toPrettyString());
     }
 
     @Test
     @Order(5)
-    void shouldNotLeakDataToOtherTenants() throws Exception {
-        mockMvc.perform(get(BASE_URL)
-                        .header(TENANT_HEADER, TENANT_1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))))
-                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))));
+    @DisplayName("Should handle complete lifecycle and verify chronological order")
+    void testCompleteLifecycle_ShouldRecordAllEvents() throws Exception {
+        // Given
+        TutorialDto tutorial = TutorialDto.builder()
+                .tenant(TENANT_1)
+                .title("Lifecycle Test")
+                .description("Testing CRUD lifecycle")
+                .published(false)
+                .build();
 
-        mockMvc.perform(get(BASE_URL)
-                        .header(TENANT_HEADER, TENANT_2))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_2))))
-                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant1 Tutorial"))));
+        // When - Complete lifecycle: CREATE -> UPDATE -> DELETE
+        MvcResult createResult = mockMvc.perform(post(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(tutorial)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        TutorialDto createdTutorial = objectMapper.readValue(createResult.getResponse().getContentAsString(), TutorialDto.class);
+        tutorialId = createdTutorial.getId();
+
+        TutorialDto updatedTutorial = TutorialDto.builder()
+                .id(tutorialId)
+                .tenant(TENANT_1)
+                .title("Lifecycle Test Updated")
+                .description("Updated CRUD lifecycle")
+                .published(true)
+                .build();
+
+        mockMvc.perform(put(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedTutorial)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
+
+        // Wait for async timeline events
+        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 3, 2000);
+
+        // Then
+        assertEquals(3, events.size(), "Should have CREATED, UPDATED, and DELETED events");
+        events.sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
+
+        // Verify event types and order
+        assertEquals(EventType.CREATED, events.get(0).getEventType(), "First event should be CREATED");
+        assertEquals(EventType.UPDATED, events.get(1).getEventType(), "Second event should be UPDATED");
+        assertEquals(EventType.DELETED, events.get(2).getEventType(), "Third event should be DELETED");
+
+        // Verify timestamp ordering
+        assertTrue(events.get(0).getTimestamp().isBefore(events.get(1).getTimestamp()), "CREATED should be before UPDATED");
+        assertTrue(events.get(1).getTimestamp().isBefore(events.get(2).getTimestamp()), "UPDATED should be before DELETED");
+
+        // Verify CREATED event attributes
+        JsonNode createAttributes = objectMapper.readTree(events.get(0).getAttributes().toString());
+        JsonNode createData = createAttributes.path("data");
+        assertEquals("Lifecycle Test", createData.path("title").asText(), "CREATED title should match");
+        assertEquals("Testing CRUD lifecycle", createData.path("description").asText(), "CREATED description should match");
+        assertEquals(false, createData.path("published").asBoolean(), "CREATED published should match");
+        assertEquals(TENANT_1, createData.path("tenant").asText(), "CREATED tenant should match");
+
+        // Verify UPDATED event attributes
+        JsonNode updateAttributes = objectMapper.readTree(events.get(1).getAttributes().toString());
+        JsonNode updateData = updateAttributes.path("data");
+        assertEquals("Lifecycle Test Updated", updateData.path("title").asText(), "UPDATED title should match");
+        assertEquals("Updated CRUD lifecycle", updateData.path("description").asText(), "UPDATED description should match");
+        assertEquals(true, updateData.path("published").asBoolean(), "UPDATED published should match");
+        assertFalse(updateData.has("id"), "Unchanged ID should not be in diff");
+        assertFalse(updateData.has("tenant"), "Unchanged tenant should not be in diff");
+
+        // Verify DELETED event attributes
+        JsonNode deleteAttributes = objectMapper.readTree(events.get(2).getAttributes().toString());
+        JsonNode deleteData = deleteAttributes.path("data");
+        assertEquals(0, deleteData.size(), "DELETED data node should be empty");
+
+        System.out.println("CREATED event attributes: " + createAttributes.toPrettyString());
+        System.out.println("UPDATED event attributes: " + updateAttributes.toPrettyString());
+        System.out.println("DELETED event attributes: " + deleteAttributes.toPrettyString());
     }
 
     @Test
     @Order(6)
-    void shouldRejectUpdateByOtherTenant() throws Exception {
-        var updated = buildDto("Hacked Title");
-        updated.setId(tenant1TutorialId);
+    @DisplayName("Should handle update with no changes and not record UPDATE event")
+    void testUpdateWithNoChanges_ShouldNotRecordEvent() throws Exception {
+        // Given - Create a tutorial
+        TutorialDto tutorial = TutorialDto.builder()
+                .tenant(TENANT_1)
+                .title("No Change Test")
+                .description("Testing no changes")
+                .published(false)
+                .build();
 
-        mockMvc.perform(put(BASE_URL + "/" + tenant1TutorialId)
-                        .header(TENANT_HEADER, TENANT_2)
+        MvcResult createResult = mockMvc.perform(post(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonHelper.toJson(updated)))
-                .andExpect(status().isInternalServerError());
+                        .content(objectMapper.writeValueAsString(tutorial)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        TutorialDto createdTutorial = objectMapper.readValue(createResult.getResponse().getContentAsString(), TutorialDto.class);
+        tutorialId = createdTutorial.getId();
+
+        // When - Perform update with no changes
+        mockMvc.perform(put(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(tutorial)))
+                .andExpect(status().isOk());
+
+        // Wait briefly to ensure no new events are created
+        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 1, 1000);
+
+        // Then
+        assertEquals(1, events.size(), "Should only have CREATED event");
+        assertEquals(EventType.CREATED, events.get(0).getEventType(), "Only CREATED event should exist");
     }
 
     @Test
     @Order(7)
-    void shouldHandlePaginationForTenant1() throws Exception {
-        mockMvc.perform(get(BASE_URL)
-                        .header(TENANT_HEADER, TENANT_1)
-                        .param("page", "0")
-                        .param("size", "2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))));
-    }
+    @DisplayName("Should fail to create tutorial without tenant header")
+    void testCreateWithoutTenantHeader_ShouldFail() throws Exception {
+        // Given
+        TutorialDto tutorial = TutorialDto.builder()
+                .title("No Tenant Test")
+                .description("Testing without tenant")
+                .published(false)
+                .build();
 
-    @Test
-    @Order(8)
-    void shouldRejectMissingTenantHeader() throws Exception {
-        mockMvc.perform(get(BASE_URL))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(9)
-    void shouldRejectUnknownTenant() throws Exception {
-        mockMvc.perform(get(BASE_URL)
-                        .header(TENANT_HEADER, INVALID_TENANT))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(10)
-    void shouldCreateMultipleTutorialsForTenant1() throws Exception {
-        List<TutorialDto> tutorials = List.of(
-                buildDto("Bulk 1"),
-                buildDto("Bulk 2"),
-                buildDto("Bulk 3")
-        );
-
-        mockMvc.perform(post(BASE_URL + "/batch")
-                        .header(TENANT_HEADER, TENANT_1)
+        // When/Then
+        mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonHelper.toJson(tutorials)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(3));
+                        .content(objectMapper.writeValueAsString(tutorial)))
+                .andExpect(status().isBadRequest());
     }
 
-    @Test
-    @Order(11)
-    void shouldSupportFilteringByCriteria() throws Exception {
-        //cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5
-        String criteria = "title = 'Bulk 1'";
-
-        mockMvc.perform(get(BASE_URL + "/filter?criteria=" + criteria)
-                        .header(TENANT_HEADER, TENANT_1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].title", everyItem(containsString("Bulk"))));
-    }
-
-    @Test
-    @Order(12)
-    void superTenantShouldAccessAllData() throws Exception {
-        mockMvc.perform(get(BASE_URL)
-                        .header(TENANT_HEADER, SUPER_TENANT))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", hasItems(TENANT_1, TENANT_2)));
+    @AfterEach
+    void tearDown() {
+        // Clean up test data if needed
+        if (tutorialId != null) {
+            try {
+                mockMvc.perform(delete(BASE_URL + "/" + tutorialId)
+                        .header(TENANT_HEADER, TENANT_1));
+            } catch (Exception ignored) {
+                // Ignore cleanup failures
+            }
+        }
     }
 }
