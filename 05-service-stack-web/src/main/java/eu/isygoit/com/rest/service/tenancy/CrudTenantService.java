@@ -74,6 +74,18 @@ public abstract class CrudTenantService<I extends Serializable,
         }
     }
 
+    private static void validateTenantNotNull(String tenant) {
+        if (!StringUtils.hasText(tenant)) {
+            throw new BadArgumentException("tenant is null or empty");
+        }
+    }
+
+    private static <I extends Serializable> void validateIdNotNull(I id) {
+        if (id == null) {
+            throw new BadArgumentException("id is null");
+        }
+    }
+
     /**
      * Retrieves the tenant-aware repository, throwing an exception if not applicable.
      *
@@ -86,18 +98,6 @@ public abstract class CrudTenantService<I extends Serializable,
             throw new OperationNotSupportedException("Entity is not tenant assignable: " + persistentClass.getSimpleName());
         }
         return (JpaPagingAndSortingTenantAssignableRepository) repository();
-    }
-
-    private static void validateTenantNotNull(String tenant) {
-        if (!StringUtils.hasText(tenant)) {
-            throw new BadArgumentException("tenant is null or empty");
-        }
-    }
-
-    private static <I extends Serializable> void validateIdNotNull(I id) {
-        if (id == null) {
-            throw new BadArgumentException("id is null");
-        }
     }
 
     /**

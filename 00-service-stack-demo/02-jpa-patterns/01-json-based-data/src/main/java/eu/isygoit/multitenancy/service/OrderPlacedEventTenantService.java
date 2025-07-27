@@ -1,7 +1,6 @@
 package eu.isygoit.multitenancy.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.jpa.json.JsonBasedTenantService;
 import eu.isygoit.multitenancy.model.EventEntity;

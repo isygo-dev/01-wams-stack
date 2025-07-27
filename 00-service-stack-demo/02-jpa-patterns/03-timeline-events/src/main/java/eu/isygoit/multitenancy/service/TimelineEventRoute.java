@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.TimelineEventMessage;
-import eu.isygoit.multitenancy.model.EventType;
 import eu.isygoit.multitenancy.model.TimeLineEvent;
 import eu.isygoit.multitenancy.repository.TimelineEventRepository;
 import org.apache.camel.builder.RouteBuilder;

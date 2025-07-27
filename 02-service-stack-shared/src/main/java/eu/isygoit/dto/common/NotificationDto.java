@@ -1,7 +1,6 @@
 package eu.isygoit.dto.common;
 
 
-import eu.isygoit.dto.extendable.AbstractAuditableDto;
 import eu.isygoit.dto.extendable.AbstractDto;
 import eu.isygoit.enums.IEnumNotification;
 import eu.isygoit.enums.IEnumTarget;

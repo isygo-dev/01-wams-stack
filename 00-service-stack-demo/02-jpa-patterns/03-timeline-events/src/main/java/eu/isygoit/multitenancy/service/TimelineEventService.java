@@ -1,10 +1,5 @@
 package eu.isygoit.multitenancy.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -12,9 +7,7 @@ import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.multitenancy.dto.TimelineEventMessage;
 import eu.isygoit.multitenancy.model.EventType;
 import eu.isygoit.multitenancy.repository.TimelineEventRepository;
-import eu.isygoit.repository.GenericRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class TimelineEventService {
@@ -42,7 +34,7 @@ public class TimelineEventService {
 
     @Transactional
     public void recordEvent(IIdAssignable entity, EventType eventType) {
-        TimelineEventMessage message= TimelineEventMessage.builder()
+        TimelineEventMessage message = TimelineEventMessage.builder()
                 .tenant(getTenant(entity))
                 .eventType(eventType)
                 .elementType(entity.getClass().getSimpleName())
@@ -64,7 +56,7 @@ public class TimelineEventService {
     }
 
     private String getElementId(IIdAssignable entity) {
-        return entity.getId()!=null?entity.getId().toString():null;
+        return entity.getId() != null ? entity.getId().toString() : null;
     }
 
     private String getTenant(IIdAssignable entity) {

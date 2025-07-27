@@ -1,6 +1,5 @@
 package eu.isygoit.dto.common;
 
-import eu.isygoit.dto.extendable.AbstractAuditableDto;
 import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;

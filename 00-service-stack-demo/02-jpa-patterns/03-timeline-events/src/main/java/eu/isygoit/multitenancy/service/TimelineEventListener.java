@@ -1,9 +1,10 @@
 package eu.isygoit.multitenancy.service;
 
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.multitenancy.model.EventType;
-import jakarta.persistence.*;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostRemove;
+import jakarta.persistence.PostUpdate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -14,13 +15,13 @@ public class TimelineEventListener implements ApplicationContextAware {
     private static ApplicationContext applicationContext;
     private static TimelineEventService timelineEventService;
 
+    // No-arg constructor required by Hibernate
+    public TimelineEventListener() {
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext context) {
         TimelineEventListener.applicationContext = context;
-    }
-
-    // No-arg constructor required by Hibernate
-    public TimelineEventListener() {
     }
 
     @PostPersist

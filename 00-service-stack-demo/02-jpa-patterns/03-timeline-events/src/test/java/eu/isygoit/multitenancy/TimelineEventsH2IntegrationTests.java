@@ -17,13 +17,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=create",
@@ -55,6 +55,11 @@ class TimelineEventsH2IntegrationTests {
     @BeforeAll
     static void initSharedSchema(@Autowired ITenantService tenantService) {
         tenantService.initializeTenantSchema("public");
+    }
+
+    @AfterAll
+    static void cleanUp() {
+        // Any final cleanup if needed
     }
 
     @BeforeEach
@@ -470,10 +475,5 @@ class TimelineEventsH2IntegrationTests {
                 // Ignore cleanup failures
             }
         }
-    }
-
-    @AfterAll
-    static void cleanUp() {
-        // Any final cleanup if needed
     }
 }

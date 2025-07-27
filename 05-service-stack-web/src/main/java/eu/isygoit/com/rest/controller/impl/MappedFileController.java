@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.util.Objects;
 
 /**
  * Abstract controller class for handling file-related operations via REST API.

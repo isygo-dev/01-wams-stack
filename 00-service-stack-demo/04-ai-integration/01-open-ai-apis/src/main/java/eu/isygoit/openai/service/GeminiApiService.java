@@ -1,7 +1,6 @@
 package eu.isygoit.openai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.openai.dto.GeminiRequest;
 import eu.isygoit.openai.dto.GeminiResponse;
 import eu.isygoit.openai.exception.GeminiApiException;

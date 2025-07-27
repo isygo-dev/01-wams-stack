@@ -3,7 +3,6 @@ package eu.isygoit.dto.extendable;
 
 import eu.isygoit.dto.IIdAssignableDto;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
