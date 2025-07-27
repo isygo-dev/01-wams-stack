@@ -10,4 +10,6 @@ public interface TimelineEventRepository extends JpaRepository<TimeLineEvent, Lo
     List<TimeLineEvent> findByElementTypeAndElementIdAndTenant(String elementType, String elementId, String tenant);
 
     Optional<TimeLineEvent> findFirstByElementIdAndElementTypeOrderByTimestampDesc(String elementId, String elementType);
+
+    List<TimeLineEvent> findByElementIdAndElementTypeOrderByTimestampAsc(String elementId, String elementType);
 }

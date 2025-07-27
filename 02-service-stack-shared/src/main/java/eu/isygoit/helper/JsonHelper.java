@@ -418,8 +418,8 @@ public interface JsonHelper {
                 Object currValue = entry.getValue();
                 Object prevValue = prevMap.get(key);
 
-                if (!prevMap.containsKey(key)) {
-                    // Field added in current state
+                if (!prevMap.containsKey(key) && currValue != null) {
+                    // Field added in current state if not null
                     diff.putPOJO(key, currValue);
                 } else if (!deepEquals(prevValue, currValue)) {
                     // Field changed

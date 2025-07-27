@@ -1,9 +1,11 @@
 package eu.isygoit.multitenancy.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.multitenancy.dto.TimelineEventMessage;
+import eu.isygoit.multitenancy.model.EventType;
 import eu.isygoit.multitenancy.model.TimeLineEvent;
 import eu.isygoit.multitenancy.repository.TimelineEventRepository;
 import org.apache.camel.builder.RouteBuilder;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -42,12 +45,6 @@ public class TimelineEventRoute extends RouteBuilder {
                     // Create a wrapper object with "data" field
                     ObjectNode wrapperNode = objectMapper.createObjectNode();
 
-                    // Find the most recent previous event for this element
-                    Optional<TimeLineEvent> previousEvent = timelineEventRepository
-                            .findFirstByElementIdAndElementTypeOrderByTimestampDesc(
-                                    message.getElementId(),
-                                    message.getElementType());
-
                     // Handle attributes based on event type
                     switch (message.getEventType()) {
                         case CREATED:
@@ -56,31 +53,48 @@ public class TimelineEventRoute extends RouteBuilder {
                             event.setAttributes(wrapperNode);
                             break;
                         case UPDATED:
-                            if (previousEvent.isPresent() && previousEvent.get().getAttributes() != null) {
-                                // Extract previous attributes from "data" field
-                                event.setTenant(previousEvent.get().getTenant());
-                                ObjectNode previousAttributes = (ObjectNode) objectMapper.readTree(previousEvent.get().getAttributes().asText());
-                                //(ObjectNode) previousEvent.get().getAttributes().get("data");
-                                if (previousAttributes != null) {
-                                    // Calculate diff between old and new attributes
-                                    ObjectNode diff = JsonHelper.computeDiff(
-                                            previousAttributes.get("data"),
-                                            message.getAttributes());
-                                    wrapperNode.set("data", diff);
-                                    event.setAttributes(wrapperNode);
-                                } else {
-                                    // If no previous data, wrap full attributes in "data"
-                                    wrapperNode.set("data", message.getAttributes());
-                                    event.setAttributes(wrapperNode);
+                            // Find all previous events for this element, ordered by timestamp
+                            List<TimeLineEvent> previousEvents = timelineEventRepository
+                                    .findByElementIdAndElementTypeOrderByTimestampAsc(
+                                            message.getElementId(),
+                                            message.getElementType());
+
+                            ObjectNode reconstructedState = objectMapper.createObjectNode();
+                            if (!previousEvents.isEmpty()) {
+                                // Reconstruct the previous state from all prior events
+                                for (TimeLineEvent prevEvent : previousEvents) {
+                                    if (prevEvent.getAttributes() != null) {
+                                        ObjectNode previousAttributes = (ObjectNode) objectMapper.readTree(prevEvent.getAttributes().asText());
+                                        JsonNode prevData = previousAttributes.get("data");
+                                        if (prevData != null && prevData.isObject()) {
+                                            // Merge fields, keeping the last non-null value
+                                            prevData.fields().forEachRemaining(field -> {
+                                                if (!field.getValue().isNull()) {
+                                                    reconstructedState.set(field.getKey(), field.getValue());
+                                                } else {
+                                                    reconstructedState.remove(field.getKey());
+                                                }
+                                            });
+                                        }
+                                    }
+                                    // Set tenant from the most recent event
+                                    event.setTenant(prevEvent.getTenant());
                                 }
-                            } else {
-                                // If no previous event, wrap full attributes in "data"
-                                wrapperNode.set("data", message.getAttributes());
-                                event.setAttributes(wrapperNode);
                             }
+
+                            // Calculate diff between reconstructed state and current attributes
+                            ObjectNode diff = JsonHelper.computeDiff(
+                                    reconstructedState.size() > 0 ? reconstructedState : null,
+                                    message.getAttributes());
+                            wrapperNode.set("data", diff);
+                            event.setAttributes(wrapperNode);
                             break;
                         case DELETED:
-                            // Find the most recent previous event for this element
+                            // Find the most recent previous event to set tenant
+                            Optional<TimeLineEvent> previousEvent = timelineEventRepository
+                                    .findFirstByElementIdAndElementTypeOrderByTimestampDesc(
+                                            message.getElementId(),
+                                            message.getElementType());
                             if (previousEvent.isPresent() && previousEvent.get().getAttributes() != null) {
                                 event.setTenant(previousEvent.get().getTenant());
                             }
