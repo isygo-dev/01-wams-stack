@@ -90,6 +90,7 @@ class TimelineEventsPostgresIntegrationTests {
 
     private TutorialDto buildDto(String title) {
         return TutorialDto.builder()
+                .tenant(TENANT_1)
                 .title(title)
                 .description("Learn Spring Boot with Discriminator strategy")
                 .published(true)

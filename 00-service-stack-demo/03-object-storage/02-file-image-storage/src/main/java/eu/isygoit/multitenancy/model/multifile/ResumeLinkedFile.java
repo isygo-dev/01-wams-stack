@@ -25,6 +25,6 @@ public class ResumeLinkedFile extends LinkedFileModel<Long> implements ICodeAssi
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_multi_file_sequence_generator")
     private Long id;
 
-    @Column(name = "TENANT_ID", nullable = false)
+    @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 }

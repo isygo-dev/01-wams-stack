@@ -1,5 +1,6 @@
 package eu.isygoit.multitenancy.service;
 
+import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.multitenancy.model.EventType;
 import jakarta.persistence.*;
@@ -22,18 +23,18 @@ public class TimelineEventListener implements ApplicationContextAware {
     public TimelineEventListener() {
     }
 
-    @PrePersist
-    public void onCreate(Object entity) {
+    @PostPersist
+    public void onCreate(IIdAssignable entity) {
         getTimelineEventService().recordEvent(entity, EventType.CREATED);
     }
 
-    @PreUpdate
-    public void onUpdate(Object entity) {
+    @PostUpdate
+    public void onUpdate(IIdAssignable entity) {
         getTimelineEventService().recordEvent(entity, EventType.UPDATED);
     }
 
-    @PreRemove
-    public void onDelete(Object entity) {
+    @PostRemove
+    public void onDelete(IIdAssignable entity) {
         getTimelineEventService().recordEvent(entity, EventType.DELETED);
     }
 

@@ -35,7 +35,7 @@ public class ContractEntity extends AuditableEntity<Long> implements ITenantAssi
     @SequenceGenerator(name = "contract_seq_generator", sequenceName = "contract_seq", allocationSize = 1)
     private Long id;
 
-    @Column(name = "TENANT_ID", nullable = false)
+    @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 
     //ICodeAssignable fields (should implement setCode & getCode)

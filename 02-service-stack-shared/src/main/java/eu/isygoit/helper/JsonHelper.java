@@ -19,7 +19,6 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.util.*;
@@ -242,6 +241,10 @@ public interface JsonHelper {
         return yamlMapper.readTree(yaml);
     }
 
+    public static JsonNode createEmptyNode() {
+        return objectMapper.createObjectNode();
+    }
+
     /**
      * Converts a Properties file string to a JsonNode.
      *
@@ -377,7 +380,7 @@ public interface JsonHelper {
 
     /**
      * Computes the difference between two object states, returning an ObjectNode
-     * containing only the changed fields with their old and new values.
+     * containing only the changed fields with their new values.
      *
      * @param previousState The previous state object
      * @param currentState  The current state object
@@ -389,8 +392,13 @@ public interface JsonHelper {
         if (previousState == null && currentState == null) {
             return objectMapper.createObjectNode();
         }
-        if (previousState == null || currentState == null) {
-            return createFullDiff(previousState, currentState);
+        if (previousState == null) {
+            // If no previous state, return all fields from current state
+            return objectMapper.valueToTree(convertToMap(currentState));
+        }
+        if (currentState == null) {
+            // If no current state, return empty node (no fields to report)
+            return objectMapper.createObjectNode();
         }
 
         try {
@@ -400,23 +408,33 @@ public interface JsonHelper {
 
             ObjectNode diff = objectMapper.createObjectNode();
 
-            // Process all keys from both maps to handle additions and removals
-            Set<String> allKeys = new HashSet<>(prevMap.keySet());
-            allKeys.addAll(currMap.keySet());
-
-            for (String key : allKeys) {
+            // Process fields in current state (for changes and additions)
+            for (Map.Entry<String, Object> entry : currMap.entrySet()) {
+                String key = entry.getKey();
                 if (EXCLUDED_KEYS.contains(key)) {
                     continue;
                 }
 
+                Object currValue = entry.getValue();
                 Object prevValue = prevMap.get(key);
-                Object currValue = currMap.get(key);
 
-                if (!deepEquals(prevValue, currValue)) {
-                    ObjectNode change = objectMapper.createObjectNode();
-                    change.putPOJO("old", prevValue);
-                    change.putPOJO("new", currValue);
-                    diff.set(key, change);
+                if (!prevMap.containsKey(key)) {
+                    // Field added in current state
+                    diff.putPOJO(key, currValue);
+                } else if (!deepEquals(prevValue, currValue)) {
+                    // Field changed
+                    diff.putPOJO(key, currValue);
+                }
+            }
+
+            // Process fields in previous state that were removed
+            for (String key : prevMap.keySet()) {
+                if (EXCLUDED_KEYS.contains(key)) {
+                    continue;
+                }
+                if (!currMap.containsKey(key)) {
+                    // Field removed, add null to indicate removal
+                    diff.putNull(key);
                 }
             }
 

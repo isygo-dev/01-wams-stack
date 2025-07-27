@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
- * The interface Jpa paging and sorting saas codeAssignable repository.
+ * The interface Jpa paging and sorting tenant and code assignable repository.
  *
  * @param <T> the type parameter
  * @param <I> the type parameter

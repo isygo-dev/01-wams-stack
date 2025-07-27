@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The interface Jpa paging and sorting codeAssignable repository.
+ * The interface Jpa paging and sorting code assingnable repository.
  *
  * @param <T> the type parameter
  * @param <I> the type parameter

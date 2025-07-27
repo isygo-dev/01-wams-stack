@@ -35,15 +35,15 @@ public class GenericRepository {
     /**
      * Gets repository.
      *
-     * @param tenantClass the tenant class
+     * @param entityClass the entity class
      * @return the repository
      */
-    public JpaRepository getRepository(Class<?> tenantClass) {
-        Optional<Object> optional = repositories.getRepositoryFor(tenantClass);
+    public JpaRepository getRepository(Class<?> entityClass) {
+        Optional<Object> optional = repositories.getRepositoryFor(entityClass);
         if (optional.isPresent()) {
             return (JpaRepository) optional.get();
         }
-        throw new JpaRepositoryNotDefinedException("for entity " + tenantClass.getSimpleName());
+        throw new JpaRepositoryNotDefinedException("for entity " + entityClass.getSimpleName());
     }
 
     /**
@@ -59,23 +59,33 @@ public class GenericRepository {
     }
 
     /**
-     * Save object.
+     * Save id assignable.
      *
      * @param entity the entity
-     * @return the object
+     * @return the id assignable
      */
-    public Object save(IIdAssignable entity) {
-        return getRepository(entity.getClass()).save(entity);
+    public IIdAssignable save(IIdAssignable entity) {
+        return (IIdAssignable) getRepository(entity.getClass()).save(entity);
     }
 
     /**
-     * Find all object.
+     * Find by id optional.
      *
      * @param entity the entity
-     * @return the object
+     * @return the optional
      */
-    public Object findAll(IIdAssignable entity) {
-        return getRepository(entity.getClass()).findAll();
+    public Optional<IIdAssignable> findById(IIdAssignable entity) {
+        return getRepository(entity.getClass()).findById(entity.getId());
+    }
+
+    /**
+     * Find all id assignable.
+     *
+     * @param entity the entity
+     * @return the id assignable
+     */
+    public IIdAssignable findAll(IIdAssignable entity) {
+        return (IIdAssignable) getRepository(entity.getClass()).findAll();
     }
 
     /**

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication(scanBasePackages = {
+        "eu.isygoit.repository",
         "eu.isygoit.multitenancy",        // additional package where api resides
         "eu.isygoit.multitenancy.api",
         "eu.isygoit.app"

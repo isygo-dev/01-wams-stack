@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The interface Jpa paging and sorting saas repository.
+ * The interface Jpa paging and sorting tenant assignable repository.
  *
  * @param <T> the type parameter
  * @param <I> the type parameter
