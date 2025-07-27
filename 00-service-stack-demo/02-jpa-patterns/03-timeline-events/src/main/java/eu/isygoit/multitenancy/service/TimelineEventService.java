@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * The type Timeline event service.
+ */
 @Service
 public class TimelineEventService {
 
@@ -25,6 +28,12 @@ public class TimelineEventService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Instantiates a new Timeline event service.
+     *
+     * @param repository       the repository
+     * @param producerTemplate the producer template
+     */
     @Autowired
     public TimelineEventService(TimelineEventRepository repository,
                                 ProducerTemplate producerTemplate) {
@@ -32,6 +41,12 @@ public class TimelineEventService {
         this.producerTemplate = producerTemplate;
     }
 
+    /**
+     * Record event.
+     *
+     * @param entity    the entity
+     * @param eventType the event type
+     */
     @Transactional
     public void recordEvent(IIdAssignable entity, EventType eventType) {
         TimelineEventMessage message = TimelineEventMessage.builder()

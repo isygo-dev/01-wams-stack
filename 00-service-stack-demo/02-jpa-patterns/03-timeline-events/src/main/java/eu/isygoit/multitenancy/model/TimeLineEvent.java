@@ -9,6 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The type Time line event.
+ */
 @Data
 @SuperBuilder
 @AllArgsConstructor

@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Statement;
 
+/**
+ * The type H 2 tenant service.
+ */
 @Profile("h2")
 @Slf4j
 @Service
@@ -19,6 +22,11 @@ public class H2TenantService implements ITenantService {
 
     private final MultiTenantConnectionProvider multiTenantConnectionProvider;
 
+    /**
+     * Instantiates a new H 2 tenant service.
+     *
+     * @param multiTenantConnectionProvider the multi tenant connection provider
+     */
     public H2TenantService(MultiTenantConnectionProvider multiTenantConnectionProvider) {
         this.multiTenantConnectionProvider = multiTenantConnectionProvider;
     }

@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The type Tutorial dto.
+ */
 @Data
 @SuperBuilder
 @AllArgsConstructor

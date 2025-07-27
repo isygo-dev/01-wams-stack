@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * The type Timeline event message.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -25,6 +25,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * The type Timeline events h 2 integration tests.
+ */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=create",
         "multitenancy.mode=GDM"
@@ -52,16 +55,27 @@ class TimelineEventsH2IntegrationTests {
     @Value("${multitenancy.mode}")
     private String multiTenancyProperty;
 
+    /**
+     * Init shared schema.
+     *
+     * @param tenantService the tenant service
+     */
     @BeforeAll
     static void initSharedSchema(@Autowired ITenantService tenantService) {
         tenantService.initializeTenantSchema("public");
     }
 
+    /**
+     * Clean up.
+     */
     @AfterAll
     static void cleanUp() {
         // Any final cleanup if needed
     }
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         tutorialId = null; // Reset tutorialId for each test
@@ -80,12 +94,20 @@ class TimelineEventsH2IntegrationTests {
         return events;
     }
 
+    /**
+     * Should validate discriminator mode.
+     */
     @Test
     @Order(0)
     void shouldValidateDiscriminatorMode() {
         Assertions.assertEquals("GDM", multiTenancyProperty);
     }
 
+    /**
+     * Test create tutorial should record created event with full attributes.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(1)
     @DisplayName("Should create tutorial and record CREATED timeline event with full entity attributes")
@@ -146,6 +168,11 @@ class TimelineEventsH2IntegrationTests {
         System.out.println("CREATED event attributes: " + attributes.toPrettyString());
     }
 
+    /**
+     * Test update tutorial should record updated event with diff attributes.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(2)
     @DisplayName("Should update tutorial and record UPDATED timeline event with diff attributes")
@@ -204,6 +231,11 @@ class TimelineEventsH2IntegrationTests {
         System.out.println("UPDATED event attributes: " + attributes.toPrettyString());
     }
 
+    /**
+     * Test delete tutorial should record deleted event with empty attributes.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(3)
     @DisplayName("Should delete tutorial and record DELETED timeline event with empty attributes")
@@ -242,6 +274,11 @@ class TimelineEventsH2IntegrationTests {
         System.out.println("DELETED event attributes: " + attributes.toPrettyString());
     }
 
+    /**
+     * Test multiple updates should record diff attributes.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(4)
     @DisplayName("Should handle multiple updates and verify diff attributes")
@@ -331,6 +368,11 @@ class TimelineEventsH2IntegrationTests {
         System.out.println("Second UPDATE event attributes: " + secondUpdateAttributes.toPrettyString());
     }
 
+    /**
+     * Test complete lifecycle should record all events.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(5)
     @DisplayName("Should handle complete lifecycle and verify chronological order")
@@ -415,6 +457,11 @@ class TimelineEventsH2IntegrationTests {
         System.out.println("DELETED event attributes: " + deleteAttributes.toPrettyString());
     }
 
+    /**
+     * Test update with no changes should not record event.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(6)
     @DisplayName("Should handle update with no changes and not record UPDATE event")
@@ -452,6 +499,11 @@ class TimelineEventsH2IntegrationTests {
         assertEquals(EventType.CREATED, events.get(0).getEventType(), "Only CREATED event should exist");
     }
 
+    /**
+     * Test create without tenant header should fail.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Order(7)
     @DisplayName("Should fail to create tutorial without tenant header")
@@ -470,6 +522,9 @@ class TimelineEventsH2IntegrationTests {
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Tear down.
+     */
     @AfterEach
     void tearDown() {
         // Clean up test data if needed

@@ -7,6 +7,9 @@ import eu.isygoit.multitenancy.repository.TutorialRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * The type Tutorial service.
+ */
 @Service
 @Transactional
 @InjectRepository(value = TutorialRepository.class)

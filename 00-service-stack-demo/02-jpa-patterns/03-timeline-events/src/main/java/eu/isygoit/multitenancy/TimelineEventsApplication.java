@@ -6,6 +6,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
+/**
+ * The type Timeline events application.
+ */
 @SpringBootApplication(scanBasePackages = {
         "eu.isygoit.repository",
         "eu.isygoit.multitenancy",        // additional package where api resides
@@ -23,6 +26,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 )
 public class TimelineEventsApplication {
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         SpringApplication.run(TimelineEventsApplication.class, args);
     }

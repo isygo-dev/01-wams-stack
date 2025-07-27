@@ -10,6 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The type Tutorial.
+ */
 @Data
 @SuperBuilder
 @AllArgsConstructor

@@ -22,6 +22,11 @@ public class PGTenantService implements ITenantService {
 
     private final MultiTenantConnectionProvider multiTenantConnectionProvider;
 
+    /**
+     * Instantiates a new Pg tenant service.
+     *
+     * @param multiTenantConnectionProvider the multi tenant connection provider
+     */
     public PGTenantService(MultiTenantConnectionProvider multiTenantConnectionProvider) {
         this.multiTenantConnectionProvider = multiTenantConnectionProvider;
     }

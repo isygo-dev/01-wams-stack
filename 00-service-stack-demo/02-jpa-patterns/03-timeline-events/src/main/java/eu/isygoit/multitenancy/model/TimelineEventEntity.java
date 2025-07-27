@@ -12,6 +12,9 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
+/**
+ * The type Timeline event entity.
+ */
 @Data
 @SuperBuilder
 @AllArgsConstructor

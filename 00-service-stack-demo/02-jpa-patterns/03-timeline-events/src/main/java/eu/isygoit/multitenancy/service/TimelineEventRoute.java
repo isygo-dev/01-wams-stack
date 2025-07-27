@@ -15,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The type Timeline event route.
+ */
 @Component
 public class TimelineEventRoute extends RouteBuilder {
 
@@ -62,9 +65,23 @@ public class TimelineEventRoute extends RouteBuilder {
                             if (!previousEvents.isEmpty()) {
                                 // Reconstruct the previous state from all prior events
                                 for (TimeLineEvent prevEvent : previousEvents) {
+                                    JsonNode prevAttributes = prevEvent.getAttributes();
+                                    JsonNode prevData = null;
                                     if (prevEvent.getAttributes() != null) {
-                                        ObjectNode previousAttributes = (ObjectNode) objectMapper.readTree(prevEvent.getAttributes().asText());
-                                        JsonNode prevData = previousAttributes.get("data");
+                                        if (prevAttributes.isObject()) {
+                                            // Direct access for ObjectNode (PostgreSQL)
+                                            prevData = prevAttributes.get("data");
+                                        } else if (prevAttributes.isTextual()) {
+                                            // Parse JSON string for TextNode (H2)
+                                            try {
+                                                prevAttributes = objectMapper.readTree(prevAttributes.asText());
+                                                if (prevAttributes.isObject()) {
+                                                    prevData = prevAttributes.get("data");
+                                                }
+                                            } catch (Exception e) {
+                                                log.error("Failed to parse attributes for event ID {}: {}", prevEvent.getId(), e.getMessage());
+                                            }
+                                        }
                                         if (prevData != null && prevData.isObject()) {
                                             // Merge fields, keeping the last non-null value
                                             prevData.fields().forEachRemaining(field -> {
