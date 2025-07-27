@@ -277,7 +277,7 @@ public interface JsonHelper {
      * @return the JsonNode representation of the JSON string
      * @throws JsonProcessingException if an error occurs during the conversion
      */
-    public static JsonNode prettyPrintJsonToJsonNode(String json) throws JsonProcessingException {
+    public static JsonNode jsonToJsonNode(String json) throws JsonProcessingException {
         logger.debug("Converting Pretty Printed JSON string back to JsonNode");
         return objectMapper.readTree(json);
     }

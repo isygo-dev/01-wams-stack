@@ -1,7 +1,6 @@
-package eu.isygoit.multitenancy.dto;
+package eu.isygoit.timeline.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import eu.isygoit.multitenancy.model.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

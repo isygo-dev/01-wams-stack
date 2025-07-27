@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.model;
+package eu.isygoit.timeline.schema;
 
 /**
  * The enum Event type.

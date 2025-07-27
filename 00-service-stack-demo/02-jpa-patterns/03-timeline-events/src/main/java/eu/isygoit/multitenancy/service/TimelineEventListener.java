@@ -1,7 +1,8 @@
 package eu.isygoit.multitenancy.service;
 
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.multitenancy.model.EventType;
+import eu.isygoit.timeline.schema.EventType;
+import eu.isygoit.timeline.service.ITimelineEventService;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
@@ -16,14 +17,11 @@ import org.springframework.stereotype.Component;
 public class TimelineEventListener implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
-    private static TimelineEventService timelineEventService;
+    private static ITimelineEventService timelineEventService;
 
     /**
      * Instantiates a new Timeline event listener.
      */
-// No-arg constructor required by Hibernate
-    public TimelineEventListener() {
-    }
 
     @Override
     public void setApplicationContext(ApplicationContext context) {
@@ -60,9 +58,9 @@ public class TimelineEventListener implements ApplicationContextAware {
         getTimelineEventService().recordEvent(entity, EventType.DELETED);
     }
 
-    private TimelineEventService getTimelineEventService() {
+    private ITimelineEventService getTimelineEventService() {
         if (timelineEventService == null) {
-            timelineEventService = applicationContext.getBean(TimelineEventService.class);
+            timelineEventService = applicationContext.getBean(ITimelineEventService.class);
         }
         return timelineEventService;
     }

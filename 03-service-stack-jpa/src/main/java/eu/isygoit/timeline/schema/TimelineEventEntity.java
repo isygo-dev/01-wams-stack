@@ -1,4 +1,4 @@
-package eu.isygoit.multitenancy.model;
+package eu.isygoit.timeline.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.isygoit.model.jakarta.AbstractEntity;

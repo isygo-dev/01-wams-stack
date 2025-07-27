@@ -1,6 +1,7 @@
 package eu.isygoit.multitenancy.model;
 
 import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.timeline.schema.TimelineEventEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
