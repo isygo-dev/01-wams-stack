@@ -7,7 +7,9 @@ spring:
   jpa:
     properties:
       hibernate:
-        multiTenancy: DATABASE
+        app:
+  tenancy:
+    enabled: true DATABASE
 
 app:
   tenants:

@@ -20,7 +20,9 @@ spring:
         hibernate:
           dialect: org.hibernate.dialect.PostgreSQLDialect
 
-multitenancy:
+app:
+  tenancy:
+    enabled: true
   filter: TENANT # TENANT | CONTEXT
   mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
   tenants:

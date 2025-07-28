@@ -4,7 +4,7 @@ import eu.isygoit.annotation.Criteria;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
-import eu.isygoit.jwt.filter.QueryCriteria;
+import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;

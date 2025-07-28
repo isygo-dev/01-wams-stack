@@ -2,8 +2,8 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
+import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.jwt.filter.QueryCriteria;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;

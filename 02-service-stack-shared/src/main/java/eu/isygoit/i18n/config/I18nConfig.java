@@ -1,6 +1,7 @@
 package eu.isygoit.i18n.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
  * The type 18 n config.
  */
 @Slf4j
+@ConditionalOnProperty(name = "app.i18n.enabled", havingValue = "true")
 @Configuration
 @EnableConfigurationProperties(I18nProperties.class)
 public class I18nConfig {

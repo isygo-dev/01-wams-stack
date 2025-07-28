@@ -6,12 +6,14 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
  * The type Time line listener.
  */
+@ConditionalOnProperty(name = "app.timeline.enabled", havingValue = "true")
 @Component
 public class TimeLineListener {
 

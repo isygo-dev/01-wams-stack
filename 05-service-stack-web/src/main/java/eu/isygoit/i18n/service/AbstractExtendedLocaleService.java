@@ -1,7 +1,7 @@
 package eu.isygoit.i18n.service;
 
 import eu.isygoit.model.extendable.LocaleMessageModel;
-import eu.isygoit.repository.MessageModelRepository;
+import eu.isygoit.repository.message.MessageModelRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 

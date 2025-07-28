@@ -1,7 +1,7 @@
 package eu.isygoit.model.schema;
 
 /**
- * The interface Com schema fk constant name.
+ * The interface Com model fk constant name.
  */
 public interface ComSchemaFkConstantName {
 

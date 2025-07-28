@@ -1,7 +1,7 @@
 package eu.isygoit.service;
 
 import eu.isygoit.model.extendable.NextCodeModel;
-import eu.isygoit.repository.NextCodeRepository;
+import eu.isygoit.repository.code.NextCodeRepository;
 import eu.isygoit.service.nextCode.ICodeGeneratorService;
 import org.springframework.transaction.annotation.Transactional;
 

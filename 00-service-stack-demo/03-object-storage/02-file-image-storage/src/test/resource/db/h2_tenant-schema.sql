@@ -1,7 +1,7 @@
--- Creating schema for multi-tenancy
+-- Creating model for multi-tenancy
 CREATE SCHEMA IF NOT EXISTS public;
 
--- Set schema to tenants
+-- Set model to tenants
 SET SCHEMA public;
 
 -- Creating sequence for USER_DETAILS table

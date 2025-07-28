@@ -1,7 +1,7 @@
--- Creating schema for multi-tenancy
+-- Creating model for multi-tenancy
 CREATE SCHEMA IF NOT EXISTS public;
 
--- Set search path to tenants schema
+-- Set search path to tenants model
 SET
 search_path TO public;
 

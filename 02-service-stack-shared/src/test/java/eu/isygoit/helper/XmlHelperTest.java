@@ -230,7 +230,7 @@ class XmlHelperTest {
          * @throws Exception the exception
          */
         @Test
-        @DisplayName("Should validate valid XML against schema")
+        @DisplayName("Should validate valid XML against model")
         void validateValidXmlSuccess() throws Exception {
             String xmlContent = Files.readString(xmlFile.toPath());
 

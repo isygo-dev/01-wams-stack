@@ -59,7 +59,9 @@ The implementation consists of several key components:
 
 ```yaml
 # multitenancy configuration
-multitenancy:
+app:
+  tenancy:
+    enabled: true
   mode: DATABASE  # Options: DATABASE, SCHEMA, DISCRIMINATOR, GDM
   filter: TENANT  # Options: TENANT, CONTEXT
   tenants:
@@ -286,7 +288,9 @@ public class RequestContextDto extends AbstractDto {
 ```yaml
 logging:
   level:
-    eu.isygoit.multitenancy: DEBUG
+    eu.isygoit.app:
+  tenancy:
+    enabled: true DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 ```

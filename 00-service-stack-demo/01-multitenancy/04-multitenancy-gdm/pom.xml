@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-multitenancy-gdm</artifactId>
-    <version>WC-1.0.250722-T0122</version>
+    <version>WC-1.0.250728-T1119</version>
     <packaging>jar</packaging>
     <name>poc-multitenancy-custom-gdm</name>
     <description>Generic Discriminator multitenancy</description>
@@ -30,19 +30,13 @@
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-web</artifactId>
-            <version>WS-1.0.250722-T0122</version>
+            <version>WS-1.0.250728-T1119</version>
         </dependency>
 
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
-            <version>WS-1.0.250722-T0122</version>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.isygo-it.services</groupId>
-            <artifactId>service-stack-cassandra</artifactId>
-            <version>WS-1.0.250722-T0122</version>
+            <version>WS-1.0.250728-T1119</version>
         </dependency>
 
         <dependency>

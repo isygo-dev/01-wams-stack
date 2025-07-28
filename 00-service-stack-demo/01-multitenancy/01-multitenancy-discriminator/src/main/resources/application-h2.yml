@@ -24,11 +24,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
-multitenancy:
-  filter: TENANT # TENANT | CONTEXT
-  mode: DISCRIMINATOR
-  tenants:
-    - id: tenants
-      url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
+app:
+  tenancy:
+    enabled: true
+    filter: TENANT # TENANT | CONTEXT
+    mode: DISCRIMINATOR
+    tenants:
+      - id: tenants
+        url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+        username: sa
+        password:

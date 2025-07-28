@@ -1,7 +1,7 @@
 package eu.isygoit.model.schema;
 
 /**
- * The interface Com schema column constant name.
+ * The interface Com model column constant name.
  */
 public interface ComSchemaColumnConstantName {
 

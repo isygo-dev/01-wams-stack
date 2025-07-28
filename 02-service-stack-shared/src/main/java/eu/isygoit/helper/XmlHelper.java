@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * The interface XmlHelper provides utility methods to convert between XML and objects,
- * validate XML against a schema, and manipulate XML structures.
+ * validate XML against a model, and manipulate XML structures.
  */
 public interface XmlHelper {
 
@@ -121,41 +121,41 @@ public interface XmlHelper {
     }
 
     /**
-     * Validates an XML string against the provided XSD schema.
+     * Validates an XML string against the provided XSD model.
      *
      * @param xmlContent     the XML string to validate.
      * @param xsdPath        the XSD file path.
-     * @param schemaLanguage the schema language.
+     * @param schemaLanguage the model language.
      * @return true if the XML is valid; false otherwise.
      * @throws IOException  if reading the files fails.
      * @throws SAXException if validation fails.
      */
     public static boolean validateXmlContent(String xmlContent, String xsdPath, String schemaLanguage) throws IOException, SAXException {
-        logger.debug("Validating XML against schema at {}", xsdPath);
+        logger.debug("Validating XML against model at {}", xsdPath);
         return validateXmlWithSchema(xmlContent, ResourceUtils.getFile(xsdPath), schemaLanguage);
     }
 
     /**
-     * Validates an XML string against the provided XSD schema.
+     * Validates an XML string against the provided XSD model.
      *
      * @param xmlContent     the XML string to validate.
      * @param xsdFile        the XSD file.
-     * @param schemaLanguage the schema language.
+     * @param schemaLanguage the model language.
      * @return true if the XML is valid; false otherwise.
      * @throws IOException  if reading the files fails.
      * @throws SAXException if validation fails.
      */
     public static boolean validateXmlContent(String xmlContent, File xsdFile, String schemaLanguage) throws IOException, SAXException {
-        logger.debug("Validating XML against schema from file {}", xsdFile.getPath());
+        logger.debug("Validating XML against model from file {}", xsdFile.getPath());
         return validateXmlWithSchema(xmlContent, xsdFile, schemaLanguage);
     }
 
     /**
-     * Helper method to validate XML against the provided schema.
+     * Helper method to validate XML against the provided model.
      *
      * @param xmlContent     the XML string.
      * @param xsdFile        the XSD file.
-     * @param schemaLanguage the schema language.
+     * @param schemaLanguage the model language.
      * @return true if the XML is valid.
      * @throws IOException  if reading the files fails.
      * @throws SAXException if validation fails.

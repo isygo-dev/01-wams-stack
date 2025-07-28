@@ -1,5 +1,6 @@
 package eu.isygoit.repository.json;
 
+import eu.isygoit.annotation.IgnoreRepository;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 
 import java.io.Serializable;
@@ -19,6 +21,8 @@ import java.util.Optional;
  * @param <T> the type parameter
  * @param <I> the type parameter
  */
+@IgnoreRepository
+@NoRepositoryBean
 public interface JsonBasedTenantAssignableRepository<T extends ITenantAssignable & IIdAssignable<I>,
         I extends Serializable>
         extends JpaPagingAndSortingTenantAssignableRepository<T, I> {

@@ -7,4 +7,6 @@ spring:
   jpa:
     properties:
       hibernate:
-        multiTenancy: DISCRIMINATOR
+        app:
+  tenancy:
+    enabled: true DISCRIMINATOR

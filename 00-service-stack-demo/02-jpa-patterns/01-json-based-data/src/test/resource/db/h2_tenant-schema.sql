@@ -1,7 +1,7 @@
--- Create schema (optional in H2, but allowed)
+-- Create model (optional in H2, but allowed)
 CREATE SCHEMA IF NOT EXISTS public;
 
--- Set schema (H2 supports SET SCHEMA in PostgreSQL mode)
+-- Set model (H2 supports SET SCHEMA in PostgreSQL mode)
 SET SCHEMA public;
 
 -- Create sequence (simplified, H2 ignores NO MIN/MAX)

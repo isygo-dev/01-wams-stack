@@ -1,7 +1,7 @@
 package eu.isygoit.model.schema;
 
 /**
- * The interface Com schema constant size.
+ * The interface Com model constant size.
  */
 public interface ComSchemaConstantSize {
     /**

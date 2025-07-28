@@ -349,11 +349,11 @@ public interface JsonHelper {
     // --- JSON Schema Validation Methods ---
 
     /**
-     * Validates a JSON file against a JSON schema.
+     * Validates a JSON file against a JSON model.
      *
      * @param jsonFilePath   the path to the JSON file
-     * @param schemaFilePath the path to the schema file
-     * @param schemaLanguage the schema language version
+     * @param schemaFilePath the path to the model file
+     * @param schemaLanguage the model language version
      * @return a set of validation messages
      * @throws IOException if an error occurs during the validation process
      */
@@ -374,7 +374,7 @@ public interface JsonHelper {
         JsonSchema jsonSchema = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(new FileInputStream(schemaFile));
         JsonNode jsonNode = objectMapper.readTree(new FileInputStream(jsonFile));
 
-        logger.debug("Validating JSON against schema: {}", schemaFilePath);
+        logger.debug("Validating JSON against model: {}", schemaFilePath);
         return jsonSchema.validate(jsonNode);
     }
 

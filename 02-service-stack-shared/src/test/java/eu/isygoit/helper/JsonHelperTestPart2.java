@@ -31,9 +31,9 @@ public class JsonHelperTestPart2 {
     void setUp() throws IOException {
         // Create temporary files for the tests
         jsonFile = createTempFile("test", ".json");
-        schemaFile = createTempFile("schema", ".json");
+        schemaFile = createTempFile("model", ".json");
 
-        // Create temporary JSON and schema files with sample content
+        // Create temporary JSON and model files with sample content
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
             writer.write("{\"name\": \"John\", \"age\": 30}");
         }
@@ -80,12 +80,12 @@ public class JsonHelperTestPart2 {
          * @throws Exception the exception
          */
         @Test
-        @DisplayName("Should validate JSON against schema successfully")
+        @DisplayName("Should validate JSON against model successfully")
         void validateJson_Success() throws Exception {
             // Assuming validateJson returns an empty set (valid JSON)
             Set<ValidationMessage> validationMessages = JsonHelper.validateJson(jsonFile.getPath(), schemaFile.getPath(), "V4");
 
-            // Validating that no errors are found (i.e., it's a valid schema)
+            // Validating that no errors are found (i.e., it's a valid model)
             assertTrue(validationMessages.isEmpty(), "Validation should pass with no messages");
         }
 
@@ -93,7 +93,7 @@ public class JsonHelperTestPart2 {
          * Validate json file not found exception.
          */
         @Test
-        @DisplayName("Should throw exception if schema file is missing")
+        @DisplayName("Should throw exception if model file is missing")
         void validateJson_FileNotFoundException() {
             assertThrows(FileNotFoundException.class, () -> {
                 JsonHelper.validateJson(tempJsonFile.getPath() + "not", tempSchemaFile.getPath() + "not", "V4");
