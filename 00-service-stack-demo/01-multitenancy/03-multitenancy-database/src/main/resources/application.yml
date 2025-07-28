@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
+
 spring:
   profiles:
     active: h2
@@ -29,14 +36,14 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: TENANT # TENANT | CONTEXT
-  mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
-  tenants:
-    - id: tenant1
-      url: jdbc:h2:mem:tenant1db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
-    - id: tenant2
-      url: jdbc:h2:mem:tenant2db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
+    filter: TENANT # TENANT | CONTEXT
+    mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
+    tenants:
+      - id: tenant1
+        url: jdbc:h2:mem:tenant1db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+        username: sa
+        password:
+      - id: tenant2
+        url: jdbc:h2:mem:tenant2db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+        username: sa
+        password:

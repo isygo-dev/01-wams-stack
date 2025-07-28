@@ -6,18 +6,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@SpringBootApplication(scanBasePackages = {
-        "eu.isygoit.multitenancy",        // additional package where api resides
-        "eu.isygoit.multitenancy.api",
-        "eu.isygoit.app"
-},
+@SpringBootApplication(
         exclude = {
-                org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration.class,
                 org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
         })
 @EnableConfigurationProperties
-//http://localhost:8081/swagger-ui
+//http://localhost:8081/swagger-ui/index.html
 @OpenAPIDefinition(info =
 @Info(title = "Poc Entity with attachments", version = "1.0", description = "Poc Entity with attachments")
 )

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The type Tenant filter.
@@ -19,7 +21,10 @@ import java.io.IOException;
 @Component
 public class TenantFilter extends OncePerRequestFilter {
 
+    private static final String SWAGGER_PATTERN = "/swagger-ui";
+    private static final String API_DOCS_PATTERN = "/v3/api-docs";
     private static final String TENANT_HEADER = "X-Tenant-ID";
+    private static final Map<String, Boolean> URI_FILTER_CACHE = new ConcurrentHashMap<>();
 
     private final ITenantValidator tenantValidator;
 
@@ -30,6 +35,11 @@ public class TenantFilter extends OncePerRequestFilter {
      */
     public TenantFilter(ITenantValidator tenantValidator) {
         this.tenantValidator = tenantValidator;
+    }
+
+    private boolean shouldSkipUri(String uri) {
+        return uri.contains(SWAGGER_PATTERN) ||
+                uri.contains(API_DOCS_PATTERN);
     }
 
     @Override

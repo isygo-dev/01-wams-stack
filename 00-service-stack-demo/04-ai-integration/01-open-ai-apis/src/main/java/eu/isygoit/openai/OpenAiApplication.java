@@ -2,7 +2,6 @@ package eu.isygoit.openai;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,19 +11,12 @@ import org.springframework.web.client.RestTemplate;
 /**
  * The type Storage application.
  */
-@Slf4j
-@SpringBootApplication(scanBasePackages = {
-        "eu.isygoit.openai",        // additional package where api resides
-        "eu.isygoit.app"
-},
+@SpringBootApplication(
         exclude = {
-                org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
         })
 @EnableConfigurationProperties
+//http://localhost:8081/swagger-ui/index.html
 @OpenAPIDefinition(info =
 @Info(title = "Poc Open AI", version = "1.0", description = "Poc Open AI")
 )

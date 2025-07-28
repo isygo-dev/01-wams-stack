@@ -46,7 +46,7 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-cassandra</artifactId>
             <version>4.3.3</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

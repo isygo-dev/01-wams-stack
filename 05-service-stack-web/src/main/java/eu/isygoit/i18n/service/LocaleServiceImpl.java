@@ -4,6 +4,7 @@ import eu.isygoit.i18n.helper.LocaleResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @Transactional
+@ConditionalOnProperty(name = "app.i18n.enabled", havingValue = "true")
 public class LocaleServiceImpl implements LocaleService {
 
     private final MessageSource messageSource;

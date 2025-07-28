@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
+
 spring:
   application:
     name: Poc Storage solutions

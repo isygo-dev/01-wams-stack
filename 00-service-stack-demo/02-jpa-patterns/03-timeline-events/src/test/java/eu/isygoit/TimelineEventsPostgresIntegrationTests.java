@@ -263,10 +263,11 @@ class TimelineEventsPostgresIntegrationTests {
         assertFalse(dataNode.has("description"), "Unchanged description should not be in diff");
         assertFalse(dataNode.has("id"), "Unchanged ID should not be in diff");
         assertFalse(dataNode.has("tenant"), "Unchanged tenant should not be in diff");
-        assertFalse(dataNode.has("createDate"), "Audit fields should not be in diff");
-        assertFalse(dataNode.has("createdBy"), "Audit fields should not be in diff");
-        assertFalse(dataNode.has("updateDate"), "Audit fields should not be in diff");
-        assertFalse(dataNode.has("updatedBy"), "Audit fields should not be in diff");
+        // Verify audit fields
+        assertFalse(dataNode.has("createDate"), "createDate should not be present");
+        assertFalse(dataNode.has("createdBy"), "createdBy should not be present");
+        assertTrue(dataNode.has("updateDate"), "updateDate should be present");
+        assertTrue(dataNode.has("updatedBy"), "updatedBy should be present");
 
         System.out.println("UPDATED event attributes: " + attributes.toPrettyString());
     }

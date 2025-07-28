@@ -33,7 +33,8 @@ public interface JsonHelper {
     /**
      * The constant EXCLUDED_KEYS.
      */
-    static final Set<String> EXCLUDED_KEYS = Set.of("id", "version");
+    static final Set<String> EXCLUDED_KEYS = Set.of("id", "version", "createdBy", "createDate");
+    static final Set<String> REQUIRED_KEYS = Set.of("updateDate", "updatedBy");
 
     /**
      * The constant logger.
@@ -418,8 +419,9 @@ public interface JsonHelper {
                 Object currValue = entry.getValue();
                 Object prevValue = prevMap.get(key);
 
-                if (!prevMap.containsKey(key) && currValue != null) {
-                    // Field added in current state if not null
+                if (REQUIRED_KEYS.contains(key)) {
+                    diff.putPOJO(key, currValue);
+                } else if (!prevMap.containsKey(key) && currValue != null) {
                     diff.putPOJO(key, currValue);
                 } else if (!deepEquals(prevValue, currValue)) {
                     // Field changed

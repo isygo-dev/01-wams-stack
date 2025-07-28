@@ -6,8 +6,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@SpringBootApplication
+@SpringBootApplication(
+        exclude = {
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+        })
 @EnableConfigurationProperties
+//http://localhost:8081/swagger-ui/index.html
 @OpenAPIDefinition(info =
 @Info(title = "Poc multitenancy discriminator-tenant",
         version = "1.0",

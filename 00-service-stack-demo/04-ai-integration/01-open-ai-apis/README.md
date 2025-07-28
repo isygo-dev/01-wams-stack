@@ -70,6 +70,13 @@ The application uses `application.yml` for configuration. Key settings include:
 ```yaml
 server:
   port: 8081
+
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
 google:
   gemini:
     api:

@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
+
 spring:
   application:
     name: Poc Multitenancy - database per tenant
@@ -23,14 +30,14 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: TENANT # TENANT | CONTEXT
-  mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
-  tenants:
-    - id: tenant1
-      url: jdbc:postgresql://localhost:5432/tenant1?currentSchema=public
-      username: postgres
-      password: root
-    - id: tenant2
-      url: jdbc:postgresql://localhost:5432/tenant2?currentSchema=public
-      username: postgres
-      password: root
+    filter: TENANT # TENANT | CONTEXT
+    mode: DATABASE  # DATABASE | SCHEMA | DISCRIMINATOR
+    tenants:
+      - id: tenant1
+        url: jdbc:postgresql://localhost:5432/tenant1?currentSchema=public
+        username: postgres
+        password: root
+      - id: tenant2
+        url: jdbc:postgresql://localhost:5432/tenant2?currentSchema=public
+        username: postgres
+        password: root

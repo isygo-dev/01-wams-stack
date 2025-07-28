@@ -1,12 +1,12 @@
 server:
   port: 8081
 
-logging:
-  level:
-    org.springframework: DEBUG
-    org.springframework.data: DEBUG
-    org.hibernate: DEBUG
-    eu.isygoit: DEBUG
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
 
 spring:
   boot:
@@ -39,15 +39,10 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
-  tenants:
-    - id: tenants
-      url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
-
-app:
-  i18n:
-    enabled: false
-    #location: classpath:i18n/messages
+    filter: CONTEXT # TENANT | CONTEXT
+    mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+    tenants:
+      - id: tenants
+        url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+        username: sa
+        password:

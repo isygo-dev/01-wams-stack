@@ -9,18 +9,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 /**
  * The type Storage application.
  */
-@SpringBootApplication(scanBasePackages = {
-        "eu.isygoit.storage",        // additional package where api resides
-        "eu.isygoit.app"
-},
+@SpringBootApplication(
         exclude = {
-                org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
         })
 @EnableConfigurationProperties
+//http://localhost:8081/swagger-ui/index.html
 @OpenAPIDefinition(info =
 @Info(title = "Poc storage solutions", version = "1.0", description = "Poc storage solutions")
 )

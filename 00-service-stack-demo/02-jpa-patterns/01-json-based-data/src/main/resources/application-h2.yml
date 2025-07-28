@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
+
 spring:
   application:
     name: Poc Json-based entity
@@ -27,10 +34,10 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
-  tenants:
-    - id: tenants
-      url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
+    filter: CONTEXT # TENANT | CONTEXT
+    mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+    tenants:
+      - id: tenants
+        url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+        username: sa
+        password:

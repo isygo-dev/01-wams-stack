@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+#logging:
+#  level:
+#    org.springframework: DEBUG
+#    org.springframework.data: DEBUG
+#    org.hibernate: DEBUG
+#    eu.isygoit: DEBUG
+
 spring:
   application:
     name: Poc Json-based entity
@@ -23,10 +30,10 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
-  tenants:
-    - id: tenants
-      url: jdbc:postgresql://localhost:5432/tenants
-      username: postgres
-      password: root
+    filter: CONTEXT # TENANT | CONTEXT
+    mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+    tenants:
+      - id: tenants
+        url: jdbc:postgresql://localhost:5432/tenants
+        username: postgres
+        password: root

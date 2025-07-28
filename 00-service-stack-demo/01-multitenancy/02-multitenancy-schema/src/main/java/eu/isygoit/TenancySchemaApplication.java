@@ -2,17 +2,16 @@ package eu.isygoit;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@Slf4j
+@SpringBootApplication(
+        exclude = {
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+        })
 @EnableConfigurationProperties
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
-@EntityScan(basePackages = "eu.isygoit.multitenancy.model")
+//http://localhost:8081/swagger-ui/index.html
 @OpenAPIDefinition(info =
 @Info(title = "Poc multitenancy model-per-tenant", version = "1.0", description = "Poc multitenancy model-per-tenant")
 )

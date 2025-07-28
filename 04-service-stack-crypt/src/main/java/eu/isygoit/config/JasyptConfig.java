@@ -8,6 +8,7 @@ import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.jasypt.salt.SaltGenerator;
 import org.jasypt.util.password.ConfigurablePasswordEncryptor;
 import org.jasypt.util.password.StrongPasswordEncryptor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @EnableConfigurationProperties(JasyptProperties.class)
+@ConditionalOnProperty(name = "app.crypt.enabled", havingValue = "true")
 public class JasyptConfig {
 
     private final JasyptProperties jasyptProperties;
