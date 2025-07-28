@@ -21,8 +21,8 @@ import lombok.experimental.SuperBuilder;
 public class UserEntity extends AuditableEntity<Long> implements ITenantAssignable, IImageEntity, ICodeAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_generator")
-    @SequenceGenerator(name = "user_seq_generator", sequenceName = "user_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_sequence_generator")
+    @SequenceGenerator(name = "user_sequence_generator", sequenceName = "user_sequence", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)

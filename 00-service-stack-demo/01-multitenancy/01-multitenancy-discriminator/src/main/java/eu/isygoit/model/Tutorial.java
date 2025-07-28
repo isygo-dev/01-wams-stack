@@ -23,8 +23,8 @@ import org.hibernate.annotations.ParamDef;
 public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorials_seq_generator")
-    @SequenceGenerator(name = "tutorials_seq_generator", sequenceName = "tutorials_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorials_sequence_generator")
+    @SequenceGenerator(name = "tutorials_sequence_generator", sequenceName = "tutorials_sequence", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)

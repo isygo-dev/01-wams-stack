@@ -30,7 +30,6 @@
 
     <modules>
         <module>01-json-based-data</module>
-        <module>02-polyglot-persistence</module>
         <module>03-timeline-events</module>
     </modules>
 

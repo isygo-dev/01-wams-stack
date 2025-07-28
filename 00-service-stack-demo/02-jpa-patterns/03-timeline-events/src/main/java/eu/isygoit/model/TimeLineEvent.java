@@ -19,8 +19,8 @@ import lombok.experimental.SuperBuilder;
 public class TimeLineEvent extends TimelineEventEntity implements ITenantAssignable, IIdAssignable<Long> {
 
     @Id
-    @SequenceGenerator(name = "timeline_event_seq", sequenceName = "timeline_event_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "timeline_event_seq")
+    @SequenceGenerator(name = "timeline_event_sequence", sequenceName = "timeline_event_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "timeline_event_sequence")
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)

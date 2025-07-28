@@ -31,8 +31,8 @@ import java.util.List;
 public class ContractEntity extends AuditableEntity<Long> implements ITenantAssignable, IFileEntity, ICodeAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contract_seq_generator")
-    @SequenceGenerator(name = "contract_seq_generator", sequenceName = "contract_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contract_sequence_generator")
+    @SequenceGenerator(name = "contract_sequence_generator", sequenceName = "contract_sequence", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)

@@ -33,8 +33,8 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
         ICodeAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_seq_generator")
-    @SequenceGenerator(name = "resume_seq_generator", sequenceName = "resume_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_sequence_generator")
+    @SequenceGenerator(name = "resume_sequence_generator", sequenceName = "resume_sequence", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)

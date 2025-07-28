@@ -10,7 +10,7 @@ server:
 
 spring:
   profiles:
-    active: h2
+    active: postgres # or h2
   application:
     name: Poc Entity with attachments
   h2:
@@ -36,10 +36,10 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
-  tenants:
-    - id: tenants
-      url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-      username: sa
-      password:
+    filter: CONTEXT # TENANT | CONTEXT
+    mode: GDM # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+    tenants:
+      - id: tenants
+        url: jdbc:h2:mem:tenants;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+        username: sa
+        password:

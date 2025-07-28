@@ -30,10 +30,10 @@ spring:
 app:
   tenancy:
     enabled: true
-  filter: CONTEXT # TENANT | CONTEXT
-  mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
-  tenants:
-    - id: tenants
-      url: jdbc:postgresql://localhost:5432/tenants
-      username: postgres
-      password: root
+    filter: CONTEXT # TENANT | CONTEXT
+    mode: GDM  # DATABASE | SCHEMA | DISCRIMINATOR | GDM
+    tenants:
+      - id: tenants
+        url: jdbc:postgresql://localhost:5432/tenants
+        username: postgres
+        password: root

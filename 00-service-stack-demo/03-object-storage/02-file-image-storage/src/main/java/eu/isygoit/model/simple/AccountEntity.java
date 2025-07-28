@@ -18,8 +18,8 @@ import lombok.experimental.SuperBuilder;
 public class AccountEntity extends AuditableEntity<Long> implements ITenantAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq_generator")
-    @SequenceGenerator(name = "account_seq_generator", sequenceName = "account_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_sequence_generator")
+    @SequenceGenerator(name = "account_sequence_generator", sequenceName = "account_sequence", allocationSize = 1)
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)

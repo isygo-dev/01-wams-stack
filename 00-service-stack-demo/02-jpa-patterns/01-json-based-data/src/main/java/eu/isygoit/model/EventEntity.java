@@ -17,8 +17,8 @@ import lombok.experimental.SuperBuilder;
 public class EventEntity extends JsonBasedEntity<Long> implements ITenantAssignable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "events_seq_generator")
-    @SequenceGenerator(name = "events_seq_generator", sequenceName = "events_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "events_sequence_generator")
+    @SequenceGenerator(name = "events_sequence_generator", sequenceName = "events_sequence", allocationSize = 1)
     private Long id;
 
     @Criteria

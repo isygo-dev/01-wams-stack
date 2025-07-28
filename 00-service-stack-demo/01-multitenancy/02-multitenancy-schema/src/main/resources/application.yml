@@ -10,7 +10,7 @@ server:
 
 spring:
   profiles:
-    active: h2
+    active: postgres # or h2
   application:
     name: Poc Multitenancy - schema per tenant
   h2:

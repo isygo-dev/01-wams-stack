@@ -55,6 +55,7 @@ class MultiTenancyGDMPostgresIntegrationTests {
             .withUsername("postgres")
             .withPassword("root")
             .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
+
     private static Long tenant1TutorialId;
     @Autowired
     private MockMvc mockMvc;

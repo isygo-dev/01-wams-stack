@@ -13,7 +13,7 @@ spring:
     debug=true:
 
   profiles:
-    active: h2
+    active: postgres # or h2
   application:
     name: Poc Multitenancy - GDM
   h2:

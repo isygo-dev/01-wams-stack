@@ -38,7 +38,6 @@ public class OpenAiApplication {
      */
     @Bean
     public RestTemplate restTemplate() {
-        log.debug("Configuring RestTemplate bean");
         return new RestTemplate();
     }
 }
