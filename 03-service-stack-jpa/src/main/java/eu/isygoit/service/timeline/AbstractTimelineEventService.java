@@ -42,6 +42,7 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
                 .elementId(getElementId(entity))
                 .timestamp(LocalDateTime.now())
                 .modifiedBy(getModifiedBy(entity))
+                //TODO Enhancement @TrackChanges to track only annotated fields
                 .attributes(JsonHelper.objectToNode(entity))
                 .build();
 

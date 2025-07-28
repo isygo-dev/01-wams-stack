@@ -83,6 +83,7 @@ class TimelineEventsH2IntegrationTests {
     }
 
     private List<TimeLineEvent> waitForEvents(String elementType, String elementId, String tenant, int expectedCount, long timeoutMs) throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(2000);
         long startTime = System.currentTimeMillis();
         List<TimeLineEvent> events;
         do {

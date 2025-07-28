@@ -1,6 +1,7 @@
 package eu.isygoit.model;
 
 import eu.isygoit.annotation.Criteria;
+import eu.isygoit.annotation.TrackChanges;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.service.TimelineEventListener;
 import jakarta.persistence.*;
@@ -29,13 +30,15 @@ public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 
-    @Criteria
+    @TrackChanges
     @Column(name = "TITLE")
     private String title;
 
+    @TrackChanges
     @Column(name = "DESCRIPTION")
     private String description;
 
+    @TrackChanges
     @Column(name = "PUBLISHED")
     private boolean published;
 }
