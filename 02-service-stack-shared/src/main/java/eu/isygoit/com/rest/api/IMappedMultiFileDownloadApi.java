@@ -2,8 +2,8 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,7 +41,7 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
                             schema = @Schema(implementation = LinkedFileMinDto.class))})
     })
     @GetMapping(path = "/multi-files/download")
-    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                       @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                       @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
                                       @RequestParam(name = RestApiConstants.VERSION) Long version);

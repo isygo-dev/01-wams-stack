@@ -2,7 +2,7 @@ package eu.isygoit.service;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.enums.IEnumCharSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +38,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @PostMapping(path = "/random/new")
-    ResponseEntity<String> newRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<String> newRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                         @RequestParam(name = RestApiConstants.LENGTH) Integer length,
                                         @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
@@ -61,7 +61,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @PostMapping(path = "/random/renew")
-    ResponseEntity<String> renewRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<String> renewRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                           @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                           @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
                                           @RequestParam(name = RestApiConstants.LENGTH) Integer length,
@@ -84,7 +84,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @GetMapping(path = "/random")
-    ResponseEntity<String> getRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<String> getRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                         @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                         @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
 }

@@ -224,7 +224,7 @@ TenantContext.clear();
 The `RequestContextDto` provides comprehensive context information:
 
 ```java
-public class RequestContextDto extends AbstractDto {
+public class RequestContextDto extends AbstractDto<Long> {
     private String tenant;    // Tenant identifier
     private String senderUser;      // User identifier
     private Boolean isAdmin;        // Admin status

@@ -6,8 +6,9 @@ import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
@@ -40,7 +41,7 @@ import java.util.function.Supplier;
 public abstract class CrudTenantControllerSubMethods<
         I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
-        M extends IIdAssignableDto<I>,
+        M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudTenantServiceMethods<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
@@ -72,7 +73,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if the DTO is null
      */
     @Override
-    public ResponseEntity<F> subCreate(RequestContextDto context, F dto) {
+    public ResponseEntity<F> subCreate(ContextRequestDto context, F dto) {
         return executeWithMonitoring("subCreate", () -> {
             log.info("Creating {} for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             validateCreateRequest(dto);
@@ -96,7 +97,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> subCreate(RequestContextDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> subCreate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subCreateBulk", () -> {
             log.info("Bulk creating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -124,7 +125,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> subUpdate(RequestContextDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> subUpdate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subUpdateBulk", () -> {
             log.info("Bulk updating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -153,7 +154,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if ID or DTO is null
      */
     @Override
-    public ResponseEntity<F> subUpdate(RequestContextDto context, I id, F dto) {
+    public ResponseEntity<F> subUpdate(ContextRequestDto context, I id, F dto) {
         return executeWithMonitoring("subUpdateById", () -> {
             log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -179,7 +180,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public ResponseEntity<Void> subDelete(RequestContextDto context, I id) {
+    public ResponseEntity<Void> subDelete(ContextRequestDto context, I id) {
         return executeWithMonitoring("subDelete", () -> {
             log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -204,7 +205,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<Void> subDelete(RequestContextDto context, List<F> dtos) {
+    public ResponseEntity<Void> subDelete(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
             log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -235,7 +236,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<M>> subFindAll(RequestContextDto context, Integer page, Integer size) {
+    public ResponseEntity<List<M>> subFindAll(ContextRequestDto context, Integer page, Integer size) {
         return executeWithMonitoring("subFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -262,7 +263,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> subFindAllFull(RequestContextDto context, Integer page, Integer size) {
+    public ResponseEntity<List<F>> subFindAllFull(ContextRequestDto context, Integer page, Integer size) {
         return executeWithMonitoring("subFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -290,7 +291,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(RequestContextDto context, String criteria, Integer page, Integer size) {
+    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(ContextRequestDto context, String criteria, Integer page, Integer size) {
         return executeWithMonitoring("subFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -318,7 +319,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public ResponseEntity<F> subFindById(RequestContextDto context, I id) {
+    public ResponseEntity<F> subFindById(ContextRequestDto context, I id) {
         return executeWithMonitoring("subFindById", () -> {
             log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -339,7 +340,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @return ResponseEntity containing the count
      */
     @Override
-    public ResponseEntity<Long> subGetCount(RequestContextDto context) {
+    public ResponseEntity<Long> subGetCount(ContextRequestDto context) {
         return executeWithMonitoring("subGetCount", () -> {
             log.info("Counting {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             Long count = crudService().count(context.getSenderTenant());
@@ -482,7 +483,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @return Processed list of DTOs
      */
     @Override
-    public List<F> afterFindAllFull(RequestContextDto context, List<F> dtos) {
+    public List<F> afterFindAllFull(ContextRequestDto context, List<F> dtos) {
         log.debug("Post-find-all-full hook for {} entities", dtos.size());
         return dtos;
     }
@@ -495,7 +496,7 @@ public abstract class CrudTenantControllerSubMethods<
      * @return Processed list of DTOs
      */
     @Override
-    public List<M> afterFindAll(RequestContextDto context, List<M> dtos) {
+    public List<M> afterFindAll(ContextRequestDto context, List<M> dtos) {
         log.debug("Post-find-all hook for {} entities", dtos.size());
         return dtos;
     }

@@ -5,9 +5,10 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IMultiFileServiceMethods;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
@@ -39,7 +40,7 @@ public abstract class MappedMultiFileController<
         I extends Serializable,
         T extends IIdAssignable<I> & IMultiFileEntity,
         L extends LinkedFileMinDto,
-        M extends IIdAssignableDto<I>,
+        M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends IMultiFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>
         > extends CrudControllerUtils<I, T, M, F, S> implements IMappedMultiFileApi<L, I> {
@@ -61,7 +62,7 @@ public abstract class MappedMultiFileController<
      * @throws IOException if an I/O error occurs during file upload
      */
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFiles(RequestContextDto requestContext, I parentId, MultipartFile[] files) {
+    public ResponseEntity<List<L>> uploadAdditionalFiles(ContextRequestDto requestContext, I parentId, MultipartFile[] files) {
         log.debug("Uploading {} files for parentId: {}", files.length, parentId);
         try {
             var uploadedFiles = crudService().uploadAdditionalFiles(parentId, files);
@@ -84,7 +85,7 @@ public abstract class MappedMultiFileController<
      * @throws IOException if an I/O error occurs during file upload
      */
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFile(RequestContextDto requestContext, I parentId, MultipartFile file) {
+    public ResponseEntity<List<L>> uploadAdditionalFile(ContextRequestDto requestContext, I parentId, MultipartFile file) {
         log.debug("Uploading file for parentId: {}", parentId);
         try {
             var uploadedFiles = crudService().uploadAdditionalFile(parentId, file);
@@ -107,7 +108,7 @@ public abstract class MappedMultiFileController<
      * @throws IOException if an I/O error occurs during file deletion
      */
     @Override
-    public ResponseEntity<Boolean> deleteAdditionalFile(RequestContextDto requestContext, I parentId, I fileId) {
+    public ResponseEntity<Boolean> deleteAdditionalFile(ContextRequestDto requestContext, I parentId, I fileId) {
         log.debug("Deleting file with fileId: {} for parentId: {}", fileId, parentId);
         try {
             boolean deleted = crudService().deleteAdditionalFile(parentId, fileId);
@@ -130,7 +131,7 @@ public abstract class MappedMultiFileController<
      * @throws IOException if an I/O error occurs during file download
      */
     @Override
-    public ResponseEntity<Resource> download(RequestContextDto requestContext, I parentId, I fileId, Long version) {
+    public ResponseEntity<Resource> download(ContextRequestDto requestContext, I parentId, I fileId, Long version) {
         log.debug("Downloading file with fileId: {}, parentId: {}, version: {}", fileId, parentId, version);
         try {
             var resource = crudService().downloadFile(parentId, fileId, version);

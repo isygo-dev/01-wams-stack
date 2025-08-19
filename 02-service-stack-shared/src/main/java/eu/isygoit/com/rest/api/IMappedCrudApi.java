@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.api;
 
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -16,6 +17,6 @@ import java.io.Serializable;
         name = "Mapped CRUD API",
         description = "API for performing Create, Read, Update, and Delete (CRUD) operations on entities with mapped DTOs. Supports single and batch operations for fetching, persisting, and deleting entities."
 )
-public interface IMappedCrudApi<I extends Serializable, M extends IIdAssignableDto<I>, F extends M>
+public interface IMappedCrudApi<I extends Serializable, M extends IIdAssignableDto<I> & IDto, F extends M>
         extends IMappedCrudFetchApi<I, M, F>, IMappedCrudPersistApi<I, F>, IMappedCrudDeleteApi<I> {
 }

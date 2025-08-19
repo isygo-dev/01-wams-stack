@@ -1,6 +1,6 @@
 package eu.isygoit.filter.jwt;
 
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.service.TokenServiceApi;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
     // Constant empty context to avoid object creation on each validation
-    private static final RequestContextDto EMPTY_CONTEXT = RequestContextDto.builder().build();
+    private static final ContextRequestDto EMPTY_CONTEXT = ContextRequestDto.builder().build();
 
     // Optional: Consider adding circuit breaker pattern here
     // private final CircuitBreaker circuitBreaker;

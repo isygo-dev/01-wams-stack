@@ -5,7 +5,7 @@ import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,6 +45,6 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
                             schema = @Schema(implementation = Resource.class))})
     })
     @GetMapping(path = "/image/download/{id}")
-    ResponseEntity<Resource> downloadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<Resource> downloadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                            @PathVariable(name = RestApiConstants.ID) I id) throws IOException;
 }

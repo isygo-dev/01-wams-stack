@@ -1,9 +1,9 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EntityNullException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
@@ -109,13 +109,13 @@ class FileServiceDmsStaticMethodsTest {
         ResponseEntity<LinkedFileResponseDto> responseEntity = new ResponseEntity<>(responseDto, HttpStatus.OK);
 
         // Use consistent matchers for all arguments
-        when(linkedFileService.upload(any(RequestContextDto.class), any(LinkedFileRequestDto.class))).thenReturn(responseEntity);
+        when(linkedFileService.upload(any(ContextRequestDto.class), any(LinkedFileRequestDto.class))).thenReturn(responseEntity);
         when(file.getOriginalFilename()).thenReturn("file.txt");
 
         LinkedFileResponseDto result = FileServiceDmsStaticMethods.upload(file, entity, linkedFileService);
 
         assertNotNull(result);
-        verify(linkedFileService, times(1)).upload(any(RequestContextDto.class), any(LinkedFileRequestDto.class));
+        verify(linkedFileService, times(1)).upload(any(ContextRequestDto.class), any(LinkedFileRequestDto.class));
     }
 
     /**

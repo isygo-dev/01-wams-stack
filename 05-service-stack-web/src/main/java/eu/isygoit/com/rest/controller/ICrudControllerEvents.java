@@ -1,7 +1,8 @@
 package eu.isygoit.com.rest.controller;
 
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 
 import java.io.Serializable;
@@ -15,7 +16,7 @@ import java.util.List;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<I>, M extends IIdAssignableDto<I>, F extends M> {
+interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<I>, M extends IIdAssignableDto<I> & IDto, F extends M> {
 
     /**
      * Before create fulld.
@@ -97,7 +98,7 @@ interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<
      * @param list           the list
      * @return the list
      */
-    List<F> afterFindAllFull(RequestContextDto requestContext, List<F> list);
+    List<F> afterFindAllFull(ContextRequestDto requestContext, List<F> list);
 
     /**
      * After find all list.
@@ -106,5 +107,5 @@ interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<
      * @param list           the list
      * @return the list
      */
-    List<M> afterFindAll(RequestContextDto requestContext, List<M> list);
+    List<M> afterFindAll(ContextRequestDto requestContext, List<M> list);
 }

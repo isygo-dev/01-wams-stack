@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.api;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IFileUploadDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,7 +42,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PutMapping(path = "/file/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> uploadFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<D> uploadFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                  @PathVariable(name = RestApiConstants.ID) I id,
                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 
@@ -63,7 +63,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PostMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> createWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<D> createWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                      @RequestPart D dto);
 
@@ -86,7 +86,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PutMapping(path = "/file/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> updateWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<D> updateWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                      @PathVariable(name = RestApiConstants.ID) I id,
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                      @RequestPart D dto);

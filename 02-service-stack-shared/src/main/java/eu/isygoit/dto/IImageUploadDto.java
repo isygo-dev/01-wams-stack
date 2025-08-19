@@ -3,7 +3,7 @@ package eu.isygoit.dto;
 /**
  * The interface Image upload dto.
  */
-public interface IImageUploadDto extends IDto {
+public interface IImageUploadDto {
 
     /**
      * Gets image path.

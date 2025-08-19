@@ -1,9 +1,6 @@
 package eu.isygoit.mapper;
 
 
-import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.model.IIdAssignable;
-
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +10,7 @@ import java.util.Set;
  * @param <T> the type parameter
  * @param <D> the type parameter
  */
-public interface EntityMapper<T extends IIdAssignable, D extends IIdAssignableDto> {
+public interface EntityMapper<T, D> {
 
     /**
      * Dto to entity t.
@@ -62,5 +59,4 @@ public interface EntityMapper<T extends IIdAssignable, D extends IIdAssignableDt
      * @return the set
      */
     Set<D> listEntityToDto(Set<T> list);
-
 }

@@ -15,8 +15,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class BoardItemModelDto extends AbstractDto {
+public class BoardItemModelDto extends AbstractDto<Long> {
 
+    private Long id;
     private String code;
     private String state;
     private String itemName;

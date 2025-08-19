@@ -2,9 +2,9 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.constants.TenantConstants;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EntityNullException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
@@ -67,7 +67,7 @@ public final class FileServiceDmsStaticMethods {
                 .build();
 
         // Call linked file api to upload
-        ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(RequestContextDto.builder().build(), requestDto);
+        ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(ContextRequestDto.builder().build(), requestDto);
 
         // Return body if successful, else null
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
@@ -109,7 +109,7 @@ public final class FileServiceDmsStaticMethods {
                 : TenantConstants.DEFAULT_TENANT_NAME;
 
         // Perform the download request
-        ResponseEntity<ResourceDto> response = linkedFileService.download(RequestContextDto.builder().build(), tenant, entity.getCode());
+        ResponseEntity<ResourceDto> response = linkedFileService.download(ContextRequestDto.builder().build(), tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
             log.info("File downloaded successfully with tenant {} and code {}", tenant, entity.getCode());
@@ -146,7 +146,7 @@ public final class FileServiceDmsStaticMethods {
                 ? tenantAssignable.getTenant()
                 : TenantConstants.DEFAULT_TENANT_NAME;
 
-        var response = linkedFileService.deleteFile(RequestContextDto.builder().build(), tenant, entity.getCode());
+        var response = linkedFileService.deleteFile(ContextRequestDto.builder().build(), tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && Boolean.TRUE.equals(response.getBody())) {
             log.info("File deleted successfully with tenant {} and code {}", tenant, entity.getCode());

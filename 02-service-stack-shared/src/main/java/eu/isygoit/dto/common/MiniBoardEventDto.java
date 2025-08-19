@@ -13,7 +13,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class MiniBoardEventDto extends AbstractDto {
+public class MiniBoardEventDto extends AbstractDto<Long> {
+
+    private Long id;
     private String title;
     private String type;
 }

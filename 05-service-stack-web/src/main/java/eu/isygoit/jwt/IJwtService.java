@@ -1,6 +1,6 @@
 package eu.isygoit.jwt;
 
-import eu.isygoit.dto.common.TokenDto;
+import eu.isygoit.dto.common.TokenResponseDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -131,7 +131,7 @@ public interface IJwtService {
      * @param lifeTimeInMs the life time in ms
      * @return the token dto
      */
-    TokenDto createToken(String subject, Map<String, Object> claims, String issuer, String audience
+    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience
             , SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs);
 
     /**

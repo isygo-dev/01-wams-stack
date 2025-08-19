@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-timeline-events</artifactId>
-    <version>WC-1.0.250728-T1119</version>
+    <version>WC-1.0.250819-T1115</version>
     <packaging>jar</packaging>
     <name>poc-timeline-events</name>
     <description>Timeline events</description>
@@ -30,19 +30,19 @@
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-jpa</artifactId>
-            <version>WS-1.0.250728-T1119</version>
+            <version>WS-1.0.250819-T1115</version>
         </dependency>
 
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-web</artifactId>
-            <version>WS-1.0.250728-T1119</version>
+            <version>WS-1.0.250819-T1115</version>
         </dependency>
 
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
-            <version>WS-1.0.250728-T1119</version>
+            <version>WS-1.0.250819-T1115</version>
         </dependency>
 
         <dependency>

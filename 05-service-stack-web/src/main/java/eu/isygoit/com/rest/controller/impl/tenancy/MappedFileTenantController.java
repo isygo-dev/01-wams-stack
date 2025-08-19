@@ -7,10 +7,11 @@ import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.com.rest.service.tenancy.IFileTenantServiceMethods;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
@@ -38,14 +39,14 @@ import java.nio.file.Files;
 @Slf4j
 public abstract class MappedFileTenantController<I extends Serializable,
         T extends IIdAssignable<I> & IFileEntity & ITenantAssignable,
-        M extends IIdAssignableDto<I> & IFileUploadDto,
+        M extends IIdAssignableDto<I> & IDto & IFileUploadDto,
         F extends M,
         S extends IFileTenantServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 
     @Override
-    public ResponseEntity<F> uploadFile(RequestContextDto requestContext,
+    public ResponseEntity<F> uploadFile(ContextRequestDto requestContext,
                                         I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
@@ -57,7 +58,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext,
+    public ResponseEntity<Resource> downloadFile(ContextRequestDto requestContext,
                                                  I id,
                                                  Long version) {
         log.info("Download file request received");
@@ -74,7 +75,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<F> createWithFile(RequestContextDto requestContext,
+    public ResponseEntity<F> createWithFile(ContextRequestDto requestContext,
                                             MultipartFile file,
                                             F dto) {
         log.info("Create with file request received");
@@ -92,7 +93,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<F> updateWithFile(RequestContextDto requestContext,
+    public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext,
                                             I id,
                                             MultipartFile file,
                                             F dto) {

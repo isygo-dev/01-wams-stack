@@ -3,8 +3,8 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.InjectCodeGen;
 import eu.isygoit.annotation.InjectCodeGenKms;
 import eu.isygoit.app.ApplicationContextService;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.NextCodeDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadResponseException;
 import eu.isygoit.exception.NextCodeGenMethodNotDefinedException;
 import eu.isygoit.exception.NextCodeServiceNotDefinedException;
@@ -59,7 +59,7 @@ public abstract class CodeAssignableService<I extends Serializable,
                 .ifPresent(code -> {
                     Optional.ofNullable(remoteNextCodeService()).ifPresent(remoteService -> {
                         try {
-                            ResponseEntity<String> result = remoteService.subscribeNextCode(RequestContextDto.builder().build(),
+                            ResponseEntity<String> result = remoteService.subscribeNextCode(ContextRequestDto.builder().build(),
                                     code.getTenant(),
                                     NextCodeDto.builder()
                                             .tenant(code.getTenant())
@@ -119,7 +119,7 @@ public abstract class CodeAssignableService<I extends Serializable,
     private String getRemoteNextCode(NextCodeModel initNextCode) {
         try {
             ResponseEntity<String> response = remoteNextCodeService().generateNextCode(
-                    RequestContextDto.builder().build(),
+                    ContextRequestDto.builder().build(),
                     initNextCode.getTenant(),
                     initNextCode.getEntity(),
                     initNextCode.getAttribute()

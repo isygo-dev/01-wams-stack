@@ -20,8 +20,9 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationDto extends AbstractDto {
+public class NotificationDto extends AbstractDto<Long> {
 
+    private Long id;
     private IEnumTarget.Types targetType;
     private IEnumNotification.Types notificationType;
     private String content;

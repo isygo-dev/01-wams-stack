@@ -2,8 +2,8 @@ package eu.isygoit.service;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.NextCodeDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,7 +36,7 @@ public interface IRemoteNextCodeService {
                             schema = @Schema(name = "Generated code", implementation = String.class))})
     })
     @GetMapping(path = "/incremental/next")
-    ResponseEntity<String> generateNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<String> generateNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                             @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                             @RequestParam(name = RestApiConstants.ENTITY) String entity,
                                             @RequestParam(name = RestApiConstants.ATTRIBUTE) String attribute);
@@ -58,7 +58,7 @@ public interface IRemoteNextCodeService {
                             schema = @Schema(name = "Next code generator config", implementation = NextCodeDto.class))})
     })
     @PostMapping(path = "/incremental/config")
-    ResponseEntity<String> subscribeNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<String> subscribeNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                              @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                              @Valid @RequestBody NextCodeDto incrementalConfig);
 }

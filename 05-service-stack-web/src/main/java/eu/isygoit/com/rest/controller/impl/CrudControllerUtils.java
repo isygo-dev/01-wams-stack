@@ -5,6 +5,7 @@ import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.annotation.InjectService;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.exception.*;
 import eu.isygoit.mapper.EntityMapper;
@@ -27,7 +28,7 @@ import java.util.List;
  */
 @Slf4j
 public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
-        M extends IIdAssignableDto<I>,
+        M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudServiceUtils<I, T>>
         extends ControllerExceptionHandler

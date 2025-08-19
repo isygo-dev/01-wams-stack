@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.api;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IFileUploadDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,7 +45,7 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
     })
     @GetMapping(path = "/file/download/{id}")
     ResponseEntity<Resource> downloadFile(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
             @PathVariable(name = RestApiConstants.ID) I id,
             @RequestParam(name = RestApiConstants.VERSION) Long version);
 }

@@ -1,7 +1,7 @@
 package eu.isygoit.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import eu.isygoit.dto.common.TokenDto;
+import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.jwt.IJwtService;
 
@@ -23,7 +23,7 @@ public interface ITokenService extends IJwtService {
      * @param claims      the claims
      * @return the token dto
      */
-    TokenDto buildTokenAndSave(String tenant, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
+    TokenResponseDto buildTokenAndSave(String tenant, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
 
     /**
      * Build token token dto.
@@ -35,7 +35,7 @@ public interface ITokenService extends IJwtService {
      * @param claims      the claims
      * @return the token dto
      */
-    TokenDto buildToken(String tenant, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
+    TokenResponseDto buildToken(String tenant, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
 
     /**
      * Is token valid boolean.
@@ -59,7 +59,7 @@ public interface ITokenService extends IJwtService {
      * @param isAdmin     the is admin
      * @return the token dto
      */
-    TokenDto createAccessToken(String tenant, String application, String userName, Boolean isAdmin);
+    TokenResponseDto createAccessToken(String tenant, String application, String userName, Boolean isAdmin);
 
     /**
      * Create refresh token token dto.
@@ -69,7 +69,7 @@ public interface ITokenService extends IJwtService {
      * @param userName    the user name
      * @return the token dto
      */
-    TokenDto createRefreshToken(String tenant, String application, String userName);
+    TokenResponseDto createRefreshToken(String tenant, String application, String userName);
 
     /**
      * Create authority token token dto.
@@ -80,7 +80,7 @@ public interface ITokenService extends IJwtService {
      * @param authorities the authorities
      * @return the token dto
      */
-    TokenDto createAuthorityToken(String tenant, String application, String userName, List<String> authorities);
+    TokenResponseDto createAuthorityToken(String tenant, String application, String userName, List<String> authorities);
 
 
     /**

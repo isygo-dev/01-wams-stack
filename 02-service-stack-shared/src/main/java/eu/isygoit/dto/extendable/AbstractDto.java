@@ -12,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
@@ -22,7 +23,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractDto implements IDto {
+public abstract class AbstractDto<I extends Serializable> implements IDto, IIdAssignableDto<I> {
 
     @JsonIgnore
     private String sectionName;
@@ -43,8 +44,8 @@ public abstract class AbstractDto implements IDto {
         for (Field field : this.getClass().getDeclaredFields()) {
             Object fieldValue = BeanHelper.callGetter(this, field.getName(), true);
             if (fieldValue != null) {
-                if (IIdAssignableDto.class.isAssignableFrom(field.getType())) {
-                    if (!((IIdAssignableDto) fieldValue).isEmpty()) {
+                if (IDto.class.isAssignableFrom(field.getType())) {
+                    if (!((IDto) fieldValue).isEmpty()) {
                         return false;
                     }
                 } else if (Collection.class.isAssignableFrom(field.getType())) {

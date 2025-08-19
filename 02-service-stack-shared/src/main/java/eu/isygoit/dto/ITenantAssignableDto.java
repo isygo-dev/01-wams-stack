@@ -4,7 +4,7 @@ package eu.isygoit.dto;
 /**
  * The interface Isas dto.
  */
-public interface ITenantAssignableDto extends IDto {
+public interface ITenantAssignableDto {
 
     /**
      * Gets tenant.

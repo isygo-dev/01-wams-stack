@@ -5,7 +5,7 @@ import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +44,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @RequestPart D dto);
 
@@ -66,7 +66,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PutMapping(path = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @PathVariable(name = RestApiConstants.ID) I id,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @RequestPart D dto);
@@ -88,7 +88,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                             schema = @Schema(implementation = IdAssignableDto.class))})
     })
     @PutMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                   @PathVariable(name = RestApiConstants.ID) I id,
                                   @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

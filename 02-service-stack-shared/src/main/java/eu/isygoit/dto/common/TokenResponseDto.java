@@ -1,7 +1,6 @@
 package eu.isygoit.dto.common;
 
 
-import eu.isygoit.dto.extendable.AbstractDto;
 import eu.isygoit.enums.IEnumWebToken;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +18,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class TokenDto extends AbstractDto {
+public class TokenResponseDto {
 
     @NotNull
     private IEnumWebToken.Types type;

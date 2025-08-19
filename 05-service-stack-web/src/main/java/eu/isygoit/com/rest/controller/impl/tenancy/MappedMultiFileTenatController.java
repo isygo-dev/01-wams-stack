@@ -7,9 +7,10 @@ import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
 import eu.isygoit.com.rest.service.tenancy.IMultiFileTenantServiceMethods;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
@@ -40,7 +41,7 @@ import java.util.List;
 public abstract class MappedMultiFileTenatController<I extends Serializable,
         T extends IIdAssignable<I> & IMultiFileEntity & ITenantAssignable,
         L extends LinkedFileMinDto,
-        M extends IIdAssignableDto<I>,
+        M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends IMultiFileTenantServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
@@ -54,7 +55,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
     public abstract EntityMapper linkedFileMapper();
 
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFiles(RequestContextDto requestContext,
+    public ResponseEntity<List<L>> uploadAdditionalFiles(ContextRequestDto requestContext,
                                                          I parentId,
                                                          MultipartFile[] files) {
         log.info("update additionl file");
@@ -67,7 +68,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFile(RequestContextDto requestContext,
+    public ResponseEntity<List<L>> uploadAdditionalFile(ContextRequestDto requestContext,
                                                         I parentId,
                                                         MultipartFile file) {
         log.info("update additionl file");
@@ -80,7 +81,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<Boolean> deleteAdditionalFile(RequestContextDto requestContext,
+    public ResponseEntity<Boolean> deleteAdditionalFile(ContextRequestDto requestContext,
                                                         I parentId,
                                                         I fileId) {
         log.info("delete additional file");
@@ -93,7 +94,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<Resource> download(RequestContextDto requestContext,
+    public ResponseEntity<Resource> download(ContextRequestDto requestContext,
                                              I parentId,
                                              I fileId,
                                              Long version

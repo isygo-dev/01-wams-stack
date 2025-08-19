@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.api;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,7 +57,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     @PostMapping(path = "", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> create(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @Valid @RequestBody
             @Parameter(description = "Object to create", required = true) D object);
 
@@ -88,7 +88,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     @PostMapping(path = "/batch", consumes = "application/json", produces = "application/json")
     ResponseEntity<List<D>> createBatch(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @Valid @RequestBody
             @Parameter(description = "List of objects to create", required = true, example = "[{id: null, ...}, {id: null, ...}]") List<D> objects);
 
@@ -120,7 +120,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> update(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", required = true, example = "123") I id,
             @Valid @RequestBody

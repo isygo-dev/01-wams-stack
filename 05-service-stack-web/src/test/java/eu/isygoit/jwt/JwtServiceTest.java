@@ -1,7 +1,7 @@
 package eu.isygoit.jwt;
 
 import eu.isygoit.constants.JwtConstants;
-import eu.isygoit.dto.common.TokenDto;
+import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumWebToken;
 import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.Claims;
@@ -47,7 +47,7 @@ class JwtServiceTest {
      */
     @Test
     void testCreateTokenAndBasicClaims() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 claims,
                 "issuerTest",
@@ -57,12 +57,12 @@ class JwtServiceTest {
                 1000 * 60 * 60 // 1 hour
         );
 
-        assertNotNull(tokenDto);
-        assertEquals(IEnumWebToken.Types.Bearer, tokenDto.getType());
-        assertNotNull(tokenDto.getToken());
-        assertNotNull(tokenDto.getExpiryDate());
+        assertNotNull(tokenResponseDto);
+        assertEquals(IEnumWebToken.Types.Bearer, tokenResponseDto.getType());
+        assertNotNull(tokenResponseDto.getToken());
+        assertNotNull(tokenResponseDto.getExpiryDate());
 
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         // Basic claim extractions
         assertEquals(subject, jwtService.extractSubject(token, testKey).orElse(null));
@@ -78,7 +78,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractSubjectUnsigned() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -88,7 +88,7 @@ class JwtServiceTest {
                 1000 * 60 * 60 // 1 hour
         );
 
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         Optional<String> extracted = jwtService.extractSubject(token);
         assertTrue(extracted.isPresent());
@@ -100,7 +100,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractSubjectWithKey() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -110,7 +110,7 @@ class JwtServiceTest {
                 1000 * 60 * 60
         );
 
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         Optional<String> extracted = jwtService.extractSubject(token, testKey);
         assertTrue(extracted.isPresent());
@@ -122,7 +122,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractClaimWithFunctionAndKey() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -132,7 +132,7 @@ class JwtServiceTest {
                 1000 * 60 * 60
         );
 
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         Optional<Date> expiration = jwtService.extractClaim(token, Claims::getExpiration, testKey);
         assertTrue(expiration.isPresent());
@@ -143,7 +143,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractClaimWithFunctionNoKey() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -153,7 +153,7 @@ class JwtServiceTest {
                 1000 * 60 * 60
         );
 
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         Optional<Date> expiration = jwtService.extractClaim(token, Claims::getExpiration);
         assertTrue(expiration.isPresent());
@@ -164,7 +164,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractClaimWithClaimKeyAndClass() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 claims,
                 "issuerTest",
@@ -174,7 +174,7 @@ class JwtServiceTest {
                 1000 * 60 * 60
         );
 
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         Optional<String> tenant = jwtService.extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
         assertTrue(tenant.isPresent());
@@ -186,7 +186,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractAllClaimsSigned() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -195,7 +195,7 @@ class JwtServiceTest {
                 testKey,
                 1000 * 60 * 60
         );
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         assertDoesNotThrow(() -> {
             var claims = jwtService.extractAllClaims(token, testKey);
@@ -209,7 +209,7 @@ class JwtServiceTest {
      */
     @Test
     void testExtractAllClaimsUnsigned() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -218,7 +218,7 @@ class JwtServiceTest {
                 testKey,
                 1000 * 60 * 60
         );
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         assertDoesNotThrow(() -> {
             var claims = jwtService.extractAllClaims(token);
@@ -232,7 +232,7 @@ class JwtServiceTest {
      */
     @Test
     void testIsTokenExpiredFalse() {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -241,7 +241,7 @@ class JwtServiceTest {
                 testKey,
                 1000 * 60 * 60
         );
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         assertFalse(jwtService.isTokenExpired(token, testKey));
     }
@@ -253,7 +253,7 @@ class JwtServiceTest {
      */
     @Test
     void testIsTokenExpiredTrue() throws InterruptedException {
-        TokenDto tokenDto = jwtService.createToken(
+        TokenResponseDto tokenResponseDto = jwtService.createToken(
                 subject,
                 Collections.emptyMap(),
                 "issuerTest",
@@ -262,7 +262,7 @@ class JwtServiceTest {
                 testKey,
                 1
         );
-        String token = tokenDto.getToken();
+        String token = tokenResponseDto.getToken();
 
         Thread.sleep(5);
 
@@ -297,7 +297,7 @@ class JwtServiceTest {
          */
         @BeforeEach
         void generateValidToken() {
-            TokenDto tokenDto = jwtService.createToken(
+            TokenResponseDto tokenResponseDto = jwtService.createToken(
                     subject,
                     Collections.emptyMap(),
                     "issuerTest",
@@ -306,7 +306,7 @@ class JwtServiceTest {
                     testKey,
                     1000 * 60 * 60
             );
-            validToken = tokenDto.getToken();
+            validToken = tokenResponseDto.getToken();
         }
 
         /**
@@ -368,7 +368,7 @@ class JwtServiceTest {
          */
         @Test
         void validateTokenExpiredThrows() throws InterruptedException {
-            TokenDto shortLivedTokenDto = jwtService.createToken(
+            TokenResponseDto shortLivedTokenResponseDto = jwtService.createToken(
                     subject,
                     Collections.emptyMap(),
                     "issuerTest",
@@ -381,7 +381,7 @@ class JwtServiceTest {
             Thread.sleep(5);
 
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(shortLivedTokenDto.getToken(), subject, testKey));
+                    () -> jwtService.validateToken(shortLivedTokenResponseDto.getToken(), subject, testKey));
             assertTrue(ex.getMessage().toLowerCase().contains("expired"));
         }
 

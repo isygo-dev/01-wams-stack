@@ -2,8 +2,8 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,7 +44,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
                             schema = @Schema(implementation = LinkedFileMinDto.class))})
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFiles(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+    ResponseEntity<List<L>> uploadAdditionalFiles(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                                   @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                   @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files);
 
@@ -66,7 +66,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
                             schema = @Schema(implementation = LinkedFileMinDto.class))})
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) RequestContextDto requestContext,
+    ResponseEntity<List<L>> uploadAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

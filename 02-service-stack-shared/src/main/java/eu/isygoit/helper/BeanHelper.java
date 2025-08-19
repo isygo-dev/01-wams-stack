@@ -1,6 +1,6 @@
 package eu.isygoit.helper;
 
-import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.exception.BadFieldNameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +73,7 @@ public interface BeanHelper {
      * @param destination the destination object.
      * @return the merged destination object.
      */
-    public static IIdAssignableDto merge(IIdAssignableDto source, IIdAssignableDto destination) {
+    public static IDto merge(IDto source, IDto destination) {
         if (source == null || destination == null) {
             logger.error("Error: Cannot merge null objects.");
             return destination;
@@ -166,7 +166,7 @@ public interface BeanHelper {
      * @param destination the destination object to copy to.
      * @return the copied destination object.
      */
-    public static IIdAssignableDto copyFields(IIdAssignableDto source, IIdAssignableDto destination) {
+    public static IDto copyFields(IDto source, IDto destination) {
         if (source == null || destination == null) {
             logger.error("Error: Cannot copy fields for null objects.");
             return destination;

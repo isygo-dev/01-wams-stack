@@ -1,7 +1,6 @@
 package eu.isygoit.dto.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import eu.isygoit.dto.extendable.AbstractDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class RequestContextDto extends AbstractDto {
+public class ContextRequestDto {
 
     private String senderTenant;
     private String senderUser;

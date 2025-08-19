@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-cassandra</artifactId>
-    <version>WS-1.0.250728-T1119</version>
+    <version>WS-1.0.250819-T1115</version>
 
     <name>service-stack-cassandra</name>
     <description>service-stack-cassandra</description>
@@ -21,7 +21,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250728-T1119</version>
+        <version>WS-1.0.250819-T1115</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

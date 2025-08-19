@@ -1,7 +1,7 @@
 package eu.isygoit.jwt;
 
 import eu.isygoit.constants.JwtConstants;
-import eu.isygoit.dto.common.TokenDto;
+import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumWebToken;
 import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.*;
@@ -150,8 +150,8 @@ public class JwtService implements IJwtService {
     }
 
     @Override
-    public TokenDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
-                                SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs) {
+    public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
+                                        SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs) {
 
         log.info("Creating new JWT token for subject: {}", subject);
         Date expiryDate = calcExpiryDate(lifeTimeInMs);
@@ -171,7 +171,7 @@ public class JwtService implements IJwtService {
         String token = jwtBuilder.compact();
         log.info("JWT token created successfully");
 
-        return new TokenDto(IEnumWebToken.Types.Bearer, token, expiryDate);
+        return new TokenResponseDto(IEnumWebToken.Types.Bearer, token, expiryDate);
     }
 
     /**

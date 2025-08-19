@@ -6,7 +6,7 @@ package eu.isygoit.dto;
  *
  * @param <T> the type parameter
  */
-public interface IIdAssignableDto<T> extends IDto {
+public interface IIdAssignableDto<T> {
 
     /**
      * Gets id.

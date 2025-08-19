@@ -3,8 +3,8 @@ package eu.isygoit.com.rest.api;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IFileUploadDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
-import eu.isygoit.dto.common.RequestContextDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,7 +42,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = LinkedFileResponseDto.class))})
     })
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<LinkedFileResponseDto> upload(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<LinkedFileResponseDto> upload(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                                  @ModelAttribute("linkedFile") D linkedFile) throws IOException;
 
     /**
@@ -63,7 +63,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = Resource.class))})
     })
     @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                       @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
 
@@ -84,7 +84,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = Boolean.class))})
     })
     @DeleteMapping(path = "/deleteFile")
-    ResponseEntity<Boolean> deleteFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<Boolean> deleteFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                        @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                        @RequestParam(name = RestApiConstants.CODE) String code);
 

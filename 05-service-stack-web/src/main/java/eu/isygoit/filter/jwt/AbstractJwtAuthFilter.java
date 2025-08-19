@@ -2,7 +2,7 @@ package eu.isygoit.filter.jwt;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.TenantConstants;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.helper.UrlHelper;
 import eu.isygoit.jwt.IJwtService;
@@ -42,7 +42,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     private static final Map<String, Boolean> URI_FILTER_CACHE = new ConcurrentHashMap<>();
 
     // Default RequestContextDto for unauthenticated requests (immutable singleton)
-    private static final RequestContextDto DEFAULT_CONTEXT = RequestContextDto.builder()
+    private static final ContextRequestDto DEFAULT_CONTEXT = ContextRequestDto.builder()
             .senderTenant(TenantConstants.SUPER_TENANT_NAME)
             .senderUser("root")
             .isAdmin(true)
@@ -151,7 +151,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         setSecurityContext(subject, isAdmin);
 
         // Add context attributes to request
-        RequestContextDto contextDto = buildRequestContext(tenant, userName, isAdmin, application);
+        ContextRequestDto contextDto = buildRequestContext(tenant, userName, isAdmin, application);
         addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, contextDto));
 
         // Continue filter chain
@@ -183,8 +183,8 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     /**
      * Builds a RequestContextDto from token claims.
      */
-    private RequestContextDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application) {
-        return RequestContextDto.builder()
+    private ContextRequestDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application) {
+        return ContextRequestDto.builder()
                 .senderTenant(tenant)
                 .senderUser(userName)
                 .isAdmin(isAdmin)

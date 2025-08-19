@@ -10,7 +10,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>object-storage-demo</artifactId>
-    <version>WC-1.0.250728-T1119</version>
+    <version>WC-1.0.250819-T1115</version>
 
     <name>object-storage-demo</name>
     <description>object-storage-demo</description>
@@ -20,7 +20,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-demo</artifactId>
-        <version>WC-1.0.250728-T1119</version>
+        <version>WC-1.0.250819-T1115</version>
     </parent>
 
     <properties>

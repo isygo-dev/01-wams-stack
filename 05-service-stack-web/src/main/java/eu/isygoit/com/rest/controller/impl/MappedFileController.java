@@ -5,10 +5,11 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IFileServiceMethods;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ import java.nio.file.Files;
 public abstract class MappedFileController<
         I extends Serializable,
         T extends IIdAssignable<I> & IFileEntity,
-        M extends IIdAssignableDto<I> & IFileUploadDto,
+        M extends IIdAssignableDto<I> & IDto & IFileUploadDto,
         F extends M,
         S extends IFileServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>
         > extends CrudControllerUtils<I, T, M, F, S> implements IMappedFileApi<I, F> {
@@ -52,7 +53,7 @@ public abstract class MappedFileController<
      * @throws IOException if an I/O error occurs during file upload
      */
     @Override
-    public ResponseEntity<F> uploadFile(RequestContextDto requestContext, I id, MultipartFile file) {
+    public ResponseEntity<F> uploadFile(ContextRequestDto requestContext, I id, MultipartFile file) {
         log.debug("Uploading file for entityId: {}", id);
         try {
             var entity = crudService().uploadFile(id, file);
@@ -75,7 +76,7 @@ public abstract class MappedFileController<
      * @throws IOException if an I/O error occurs during file download
      */
     @Override
-    public ResponseEntity<Resource> downloadFile(RequestContextDto requestContext, I id, Long version) {
+    public ResponseEntity<Resource> downloadFile(ContextRequestDto requestContext, I id, Long version) {
         log.debug("Downloading file for entityId: {}, version: {}", id, version);
         try {
             var resource = crudService().downloadFile(id, version);
@@ -107,7 +108,7 @@ public abstract class MappedFileController<
      * @throws IOException if an I/O error occurs during creation or file upload
      */
     @Override
-    public ResponseEntity<F> createWithFile(RequestContextDto requestContext, MultipartFile file, F dto) {
+    public ResponseEntity<F> createWithFile(ContextRequestDto requestContext, MultipartFile file, F dto) {
         log.debug("Creating entity with file for tenant: {}", requestContext.getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -136,7 +137,7 @@ public abstract class MappedFileController<
      * @throws IOException if an I/O error occurs during update or file upload
      */
     @Override
-    public ResponseEntity<F> updateWithFile(RequestContextDto requestContext, I id, MultipartFile file, F dto) {
+    public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext, I id, MultipartFile file, F dto) {
         log.debug("Updating entity with file for entityId: {}", id);
         try {
             var processedDto = beforeUpdate(dto);

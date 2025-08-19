@@ -2,8 +2,8 @@ package eu.isygoit.service;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.RequestContextDto;
-import eu.isygoit.dto.common.TokenDto;
+import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.dto.data.TokenRequestDto;
 import eu.isygoit.enums.IEnumToken;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,14 +36,14 @@ public interface TokenServiceApi {
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = TokenDto.class))})
+                            schema = @Schema(implementation = TokenResponseDto.class))})
     })
     @PostMapping(path = "/builder")
-    ResponseEntity<TokenDto> buildTokenByTenant(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
-                                                @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                                @RequestParam(name = RestApiConstants.APPLICATION) String application,
-                                                @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
-                                                @Valid @RequestBody TokenRequestDto tokenRequestDto);
+    ResponseEntity<TokenResponseDto> buildTokenByTenant(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+                                                        @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+                                                        @RequestParam(name = RestApiConstants.APPLICATION) String application,
+                                                        @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
+                                                        @Valid @RequestBody TokenRequestDto tokenRequestDto);
 
     /**
      * Is token valid response entity.
@@ -65,7 +65,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = Boolean.class))})
     })
     @GetMapping(path = "/validation")
-    ResponseEntity<Boolean> isTokenValid(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) RequestContextDto requestContext,
+    ResponseEntity<Boolean> isTokenValid(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                          @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                          @RequestParam(name = RestApiConstants.APPLICATION) String application,
                                          @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,

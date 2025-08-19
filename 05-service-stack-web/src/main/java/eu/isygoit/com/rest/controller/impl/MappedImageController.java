@@ -5,10 +5,11 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.IImageServiceMethods;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ import java.nio.file.Files;
 public abstract class MappedImageController<
         I extends Serializable,
         T extends IIdAssignable<I> & IImageEntity,
-        M extends IIdAssignableDto<I> & IImageUploadDto,
+        M extends IIdAssignableDto<I> & IDto & IImageUploadDto,
         F extends M,
         S extends IImageServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>
         > extends CrudControllerUtils<I, T, M, F, S> implements IMappedImageApi<I, F> {
@@ -52,7 +53,7 @@ public abstract class MappedImageController<
      * @throws IOException if an I/O error occurs during image upload
      */
     @Override
-    public ResponseEntity<F> uploadImage(RequestContextDto requestContext, I id, MultipartFile file) {
+    public ResponseEntity<F> uploadImage(ContextRequestDto requestContext, I id, MultipartFile file) {
         log.debug("Uploading image for entityId: {}", id);
         try {
             var entity = crudService().uploadImage(id, file);
@@ -74,7 +75,7 @@ public abstract class MappedImageController<
      * @throws IOException if an I/O error occurs during image download
      */
     @Override
-    public ResponseEntity<Resource> downloadImage(RequestContextDto requestContext, I id) {
+    public ResponseEntity<Resource> downloadImage(ContextRequestDto requestContext, I id) {
         log.debug("Downloading image for entityId: {}", id);
         try {
             var resource = crudService().downloadImage(id);
@@ -105,7 +106,7 @@ public abstract class MappedImageController<
      * @throws IOException if an I/O error occurs during creation or image upload
      */
     @Override
-    public ResponseEntity<F> createWithImage(RequestContextDto requestContext, MultipartFile file, F dto) {
+    public ResponseEntity<F> createWithImage(ContextRequestDto requestContext, MultipartFile file, F dto) {
         log.debug("Creating entity with image for tenant: {}", requestContext.getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -134,7 +135,7 @@ public abstract class MappedImageController<
      * @throws IOException if an I/O error occurs during update or image upload
      */
     @Override
-    public ResponseEntity<F> updateWithImage(RequestContextDto requestContext, I id, MultipartFile file, F dto) {
+    public ResponseEntity<F> updateWithImage(ContextRequestDto requestContext, I id, MultipartFile file, F dto) {
         log.debug("Updating entity with image for entityId: {}", id);
         try {
             var processedDto = beforeUpdate(dto);

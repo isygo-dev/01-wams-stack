@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,7 +53,7 @@ public interface IMappedCrudDeleteApi<I> {
     @DeleteMapping(path = "/{id}")
     ResponseEntity<?> delete(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
@@ -83,7 +83,7 @@ public interface IMappedCrudDeleteApi<I> {
     @DeleteMapping(path = "/batch")
     ResponseEntity<?> batchDelete(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestBody
             @Parameter(description = "List of object identifiers", example = "[123, 124, 125]") List<I> ids);
 }

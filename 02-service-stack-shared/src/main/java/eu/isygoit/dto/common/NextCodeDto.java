@@ -14,8 +14,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class NextCodeDto extends AbstractDto {
+public class NextCodeDto extends AbstractDto<Long> {
 
+    private Long id;
     private String tenant;
     private String entity;
     private String attribute;

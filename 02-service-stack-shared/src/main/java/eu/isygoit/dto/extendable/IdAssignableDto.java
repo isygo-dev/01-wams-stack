@@ -16,8 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class IdAssignableDto<T extends Serializable> extends AbstractDto
-        implements IIdAssignableDto<T> {
+public abstract class IdAssignableDto<T extends Serializable> extends AbstractDto<T> implements IIdAssignableDto<T> {
 
     private T id;
 }

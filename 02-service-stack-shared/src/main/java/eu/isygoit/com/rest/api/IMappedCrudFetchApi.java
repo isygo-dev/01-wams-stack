@@ -2,8 +2,9 @@ package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +33,7 @@ import java.util.Map;
  */
 @Tag(name = "CRUD Fetch Operations", description = "API endpoints for fetching data with pagination and filtering")
 @SecurityRequirement(name = "BearerAuth")
-public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssignableDto<I>, F extends M> {
+public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssignableDto<I> & IDto, F extends M> {
 
     /**
      * Retrieves all objects with minimal data by page.
@@ -59,7 +60,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     @GetMapping(path = "")
     ResponseEntity<List<M>> findAll(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
             @RequestParam(name = RestApiConstants.SIZE, required = false)
@@ -90,7 +91,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     @GetMapping(path = "/full")
     ResponseEntity<List<F>> findAllFull(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
             @RequestParam(name = RestApiConstants.SIZE, required = false)
@@ -120,7 +121,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
@@ -144,7 +145,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     @GetMapping(path = "/count")
     ResponseEntity<Long> getCount(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext);
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext);
 
     /**
      * Retrieves objects filtered by criteria with pagination.
@@ -172,7 +173,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     @GetMapping(path = "/filter")
     ResponseEntity<List<F>> findAllFilteredByCriteria(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) RequestContextDto requestContext,
+            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.CRITERIA)
             @Parameter(description = "Filter criteria", example = "name=John,OR age>18") String criteria,
             @RequestParam(name = RestApiConstants.PAGE, required = false)

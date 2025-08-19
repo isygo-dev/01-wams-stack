@@ -1,7 +1,7 @@
 package eu.isygoit.common;
 
 import eu.isygoit.constants.JwtConstants;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,7 +77,7 @@ public class TenantToContextFilter extends OncePerRequestFilter {
             TenantContext.setTenantId(tenantId);
 
             // Add context attributes to request
-            RequestContextDto contextDto = buildRequestContext(tenantId, null, null, null);
+            ContextRequestDto contextDto = buildRequestContext(tenantId, null, null, null);
             addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, contextDto));
 
             filterChain.doFilter(request, response);
@@ -89,8 +89,8 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     /**
      * Builds a RequestContextDto from token claims.
      */
-    private RequestContextDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application) {
-        return RequestContextDto.builder()
+    private ContextRequestDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application) {
+        return ContextRequestDto.builder()
                 .senderTenant(tenant)
                 .senderUser(userName)
                 .isAdmin(isAdmin)

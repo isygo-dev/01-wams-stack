@@ -1,8 +1,9 @@
 package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedCrudApi;
+import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.RequestContextDto;
+import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ import java.util.Map;
 public abstract class MappedFakeCrudController<
         I extends Serializable,
         T extends IIdAssignable<I>,
-        M extends IIdAssignableDto<I>,
+        M extends IIdAssignableDto<I> & IDto,
         F extends M
         > implements IMappedCrudApi<I, M, F> {
 
@@ -42,7 +43,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<?> delete(RequestContextDto requestContext, I id) {
+    public ResponseEntity<?> delete(ContextRequestDto requestContext, I id) {
         log.warn("Attempted to call delete on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
@@ -56,7 +57,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<?> batchDelete(RequestContextDto requestContext, List<I> ids) {
+    public ResponseEntity<?> batchDelete(ContextRequestDto requestContext, List<I> ids) {
         log.warn("Attempted to call batchDelete on fake controller for {} IDs", ids.size());
         throw UNSUPPORTED_OPERATION;
     }
@@ -71,7 +72,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<M>> findAll(RequestContextDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<List<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
         log.warn("Attempted to call findAll on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
@@ -86,7 +87,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<F>> findAllFull(RequestContextDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
         log.warn("Attempted to call findAllFull on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
@@ -100,7 +101,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<F> findById(RequestContextDto requestContext, I id) {
+    public ResponseEntity<F> findById(ContextRequestDto requestContext, I id) {
         log.warn("Attempted to call findById on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
@@ -113,7 +114,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<Long> getCount(RequestContextDto requestContext) {
+    public ResponseEntity<Long> getCount(ContextRequestDto requestContext) {
         log.warn("Attempted to call getCount on fake controller");
         throw UNSUPPORTED_OPERATION;
     }
@@ -127,7 +128,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<F> create(RequestContextDto requestContext, F object) {
+    public ResponseEntity<F> create(ContextRequestDto requestContext, F object) {
         log.warn("Attempted to call create on fake controller for DTO with ID: {}", object.getId());
         throw UNSUPPORTED_OPERATION;
     }
@@ -141,7 +142,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<F>> createBatch(RequestContextDto requestContext, List<F> objects) {
+    public ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
         log.warn("Attempted to call createBatch on fake controller for {} objects", objects.size());
         throw UNSUPPORTED_OPERATION;
     }
@@ -156,7 +157,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<F> update(RequestContextDto requestContext, I id, F object) {
+    public ResponseEntity<F> update(ContextRequestDto requestContext, I id, F object) {
         log.warn("Attempted to call update on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
@@ -172,7 +173,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<List<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
         log.warn("Attempted to call findAllFilteredByCriteria on fake controller with criteria: {}, page: {}, size: {}", criteria, page, size);
         throw UNSUPPORTED_OPERATION;
     }
