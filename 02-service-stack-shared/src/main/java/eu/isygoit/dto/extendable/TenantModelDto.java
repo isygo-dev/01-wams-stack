@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class TenantModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class TenantModelDto<T extends Serializable> extends AuditableDto<T> {
 
     @NotEmpty
     private String name;

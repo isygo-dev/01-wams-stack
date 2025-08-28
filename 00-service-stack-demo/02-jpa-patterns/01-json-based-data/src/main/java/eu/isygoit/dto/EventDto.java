@@ -1,7 +1,7 @@
 package eu.isygoit.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import eu.isygoit.dto.extendable.AbstractAuditableDto;
+import eu.isygoit.dto.extendable.AuditableDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventDto extends AbstractAuditableDto<Long> {
+public class EventDto extends AuditableDto<Long> {
 
     private Long id;
     private String tenant;

@@ -1,5 +1,6 @@
-package eu.isygoit.common;
+package eu.isygoit.listener;
 
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.model.ITenantAssignable;
 import jakarta.persistence.PrePersist;
 

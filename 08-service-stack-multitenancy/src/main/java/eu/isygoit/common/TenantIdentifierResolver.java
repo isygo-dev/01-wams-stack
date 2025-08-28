@@ -1,5 +1,6 @@
 package eu.isygoit.common;
 
+import eu.isygoit.audit.TenantContext;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 
 /**

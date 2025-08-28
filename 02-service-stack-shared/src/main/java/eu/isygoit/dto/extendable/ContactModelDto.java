@@ -17,7 +17,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class ContactModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class ContactModelDto<T extends Serializable> extends AuditableDto<T> {
 
     private IEnumContact.Types type;
     private String value;

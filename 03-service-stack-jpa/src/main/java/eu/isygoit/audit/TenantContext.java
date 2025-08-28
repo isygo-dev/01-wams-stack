@@ -1,4 +1,4 @@
-package eu.isygoit.common;
+package eu.isygoit.audit;
 
 import eu.isygoit.constants.TenantConstants;
 import org.springframework.util.StringUtils;

@@ -1,6 +1,6 @@
 package eu.isygoit.discriminator;
 
-import eu.isygoit.common.TenantContext;
+import eu.isygoit.audit.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.FilterChain;

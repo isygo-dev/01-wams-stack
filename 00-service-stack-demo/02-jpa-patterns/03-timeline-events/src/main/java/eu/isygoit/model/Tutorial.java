@@ -1,9 +1,8 @@
 package eu.isygoit.model;
 
-import eu.isygoit.annotation.Criteria;
 import eu.isygoit.annotation.TrackChanges;
+import eu.isygoit.listener.TimelineEventListener;
 import eu.isygoit.model.jakarta.AuditableEntity;
-import eu.isygoit.service.TimelineEventListener;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

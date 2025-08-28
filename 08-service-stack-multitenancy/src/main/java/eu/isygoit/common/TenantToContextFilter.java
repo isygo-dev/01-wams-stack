@@ -1,5 +1,6 @@
 package eu.isygoit.common;
 
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
 import jakarta.servlet.FilterChain;

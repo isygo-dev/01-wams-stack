@@ -14,6 +14,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class BpmEventRequestDto {
 
+    private Long id;
     private BoardItemModelDto item;
     private String wbCode;
     private String fromState; //code

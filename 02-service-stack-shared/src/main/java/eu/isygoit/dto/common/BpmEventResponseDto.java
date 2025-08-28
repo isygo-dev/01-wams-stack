@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class BpmEventResponseDto {
 
+    private Long id;
     private Boolean accepted;
     private String status;
-
 }

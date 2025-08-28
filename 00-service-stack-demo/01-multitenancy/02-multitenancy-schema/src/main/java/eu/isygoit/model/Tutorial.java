@@ -1,6 +1,6 @@
 package eu.isygoit.model;
 
-import eu.isygoit.common.TenantEntityListener;
+import eu.isygoit.listener.TenantEntityListener;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -17,7 +17,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AnnexModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class AnnexModelDto<T extends Serializable> extends AuditableDto<T> {
 
     private String tableCode;
     private IEnumLanguage.Types language;

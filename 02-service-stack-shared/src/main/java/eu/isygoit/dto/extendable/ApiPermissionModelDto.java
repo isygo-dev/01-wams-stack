@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class ApiPermissionModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class ApiPermissionModelDto<T extends Serializable> extends AuditableDto<T> {
 
     private String serviceName;
     private String object;

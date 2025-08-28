@@ -16,7 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class MessageModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class MessageModelDto<T extends Serializable> extends AuditableDto<T> {
 
     private String code;
     private String locale;

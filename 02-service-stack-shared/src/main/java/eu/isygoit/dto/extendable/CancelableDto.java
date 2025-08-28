@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * The type Abstract auditable dto.
+ * The type Abstract cancelable dto.
  *
  * @param <T> the type parameter
  */
@@ -18,10 +18,9 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractAuditableDto<T extends Serializable> extends IdAssignableDto<T> {
+public abstract class CancelableDto<T extends Serializable> extends IdAssignableDto<T> {
 
-    private Date createDate;
-    private String createdBy;
-    private Date updateDate;
-    private String updatedBy;
+    private Boolean checkCancel = Boolean.FALSE;
+    private Date cancelDate;
+    private Long canceledBy;
 }

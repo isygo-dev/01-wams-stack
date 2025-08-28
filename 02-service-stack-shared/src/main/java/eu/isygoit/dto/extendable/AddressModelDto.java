@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AddressModelDto<T extends Serializable> extends AbstractAuditableDto<T> {
+public abstract class AddressModelDto<T extends Serializable> extends AuditableDto<T> {
 
     private String country;
     private String state;

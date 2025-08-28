@@ -18,7 +18,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AbstractAuditableCancelableDto<T extends Serializable> extends AbstractCancelableDto<T> {
+public abstract class AuditableCancelableDto<T extends Serializable> extends CancelableDto<T> {
 
     private Date createDate;
     private String createdBy;

@@ -1,6 +1,6 @@
 package eu.isygoit.controller;
 
-import eu.isygoit.common.TenantContext;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.dto.TutorialDto;
 import eu.isygoit.mapper.TutorialMapper;
 import eu.isygoit.repository.TutorialRepository;
