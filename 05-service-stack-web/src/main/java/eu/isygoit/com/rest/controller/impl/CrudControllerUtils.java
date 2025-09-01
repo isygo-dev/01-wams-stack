@@ -55,9 +55,9 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
      */
     protected static final String CREATE_DATE_FIELD = "createDate";
     @Getter
-    private final Class<T> fullDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+    private final Class<F> fullDtoClass = (Class<F>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[3];
     @Getter
-    private final Class<T> minDtoClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<M> minDtoClass = (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
     private EntityMapper<T, F> fullEntityMapper;
     private EntityMapper<T, M> minEntityMapper;
     private S crudService;
