@@ -16,6 +16,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -38,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Integration tests for Kafka string message processing with SASL authentication.
  * Tests the interaction between StringProducer and StringConsumer
- * using a Testcontainers-managed Kafka instance with SASL/PLAIN authentication.
+ * using Testcontainers-managed Kafka and Zookeeper instances with SASL/PLAIN authentication.
  * Uses the "sasl" Spring profile for configuration.
  */
 @SpringBootTest(properties = {
@@ -57,34 +58,51 @@ class KafkaStringIntegrationTest {
     private static final int TIMEOUT_SECONDS = 10;
     private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
     private static final BlockingQueue<Map<String, String>> consumedHeaders = new LinkedBlockingQueue<>();
-    private static final String SASL_USERNAME = "testuser";
-    private static final String SASL_PASSWORD = "testpassword";
+    private static final String SASL_USERNAME = "admin";
+    private static final String SASL_PASSWORD = "admin-secret";
 
     private static Network network = Network.newNetwork();
 
     @Container
+    private static final GenericContainer<?> zookeeperContainer = new GenericContainer<>(
+            DockerImageName.parse("confluentinc/cp-zookeeper:7.8.0"))
+            .withNetwork(network)
+            .withNetworkAliases("zookeeper")
+            .withExposedPorts(2181)
+            .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
+            .withEnv("ZOOKEEPER_TICK_TIME", "2000")
+            .withEnv("ZOOKEEPER_SERVER_SASL_ENABLED", "true")
+            .withEnv("ZOOKEEPER_AUTH_PROVIDER_1", "org.apache.zookeeper.server.auth.SASLAuthenticationProvider")
+            .withEnv("ZOOKEEPER_SERVER_AUTHENTICATION", "sasl")
+            .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/zookeeper/zookeeper_jaas.conf")
+            .withClasspathResourceMapping("zookeeper_jaas.conf", "/etc/zookeeper/zookeeper_jaas.conf", BindMode.READ_ONLY)
+            .waitingFor(Wait.forLogMessage(".*Started AdminServer.*", 1)
+                    .withStartupTimeout(Duration.ofMinutes(2)));
+
+    @Container
     private static final KafkaContainer kafkaContainer = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+            DockerImageName.parse("confluentinc/cp-kafka:7.8.0"))
             .withNetwork(network)
             .withNetworkAliases("kafka")
-            .withExposedPorts(9094, 9093)
-            .withEmbeddedZookeeper()
+            .withExposedPorts(9092, 9093)
             .withEnv("KAFKA_BROKER_ID", "1")
+            .withEnv("KAFKA_ZOOKEEPER_CONNECT", "zookeeper:2181")
+            .withEnv("KAFKA_ZOOKEEPER_PROTOCOL", "SASL")
             .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1")
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true")
             .withEnv("KAFKA_SASL_ENABLED_MECHANISMS", "PLAIN")
             .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN")
             .withEnv("KAFKA_AUTHORIZER_CLASS_NAME", "kafka.security.authorizer.AclAuthorizer")
-            .withEnv("KAFKA_SUPER_USERS", "User:" + SASL_USERNAME)
+            .withEnv("KAFKA_SUPER_USERS", "User:admin")
             .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SASL_PLAINTEXT:SASL_PLAINTEXT,PLAINTEXT:PLAINTEXT,BROKER:SASL_PLAINTEXT")
-            .withEnv("KAFKA_LISTENERS", "SASL_PLAINTEXT://0.0.0.0:9094,PLAINTEXT://0.0.0.0:9093,BROKER://0.0.0.0:9092")
+            .withEnv("KAFKA_LISTENERS", "SASL_PLAINTEXT://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9093,BROKER://0.0.0.0:9094")
             .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
-            .withEnv("KAFKA_ADVERTISED_LISTENERS", "SASL_PLAINTEXT://localhost:29092,PLAINTEXT://localhost:29093,BROKER://kafka:9092")
-            // Remove the KAFKA_SASL_JAAS_CONFIG environment variable
-            .withClasspathResourceMapping("kafka_server_jaas.conf", "/tmp/kafka_server_jaas.conf", BindMode.READ_ONLY)
-            .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/tmp/kafka_server_jaas.conf")
+            .withEnv("KAFKA_ADVERTISED_LISTENERS", "SASL_PLAINTEXT://host.docker.internal:9092,PLAINTEXT://localhost:9093,BROKER://kafka:9094")
+            .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf")
+            .withClasspathResourceMapping("kafka_jaas.conf", "/etc/kafka/kafka_server_jaas.conf", BindMode.READ_ONLY)
             .waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1)
-                    .withStartupTimeout(Duration.ofMinutes(2)));
+                    .withStartupTimeout(Duration.ofMinutes(2)))
+            .dependsOn(zookeeperContainer);
 
     @Autowired
     private StringProducer stringProducer;
@@ -98,8 +116,8 @@ class KafkaStringIntegrationTest {
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
         // Use the mapped port for SASL_PLAINTEXT
-        registry.add("spring.kafka.producer.bootstrap-servers", () -> "localhost:" + kafkaContainer.getMappedPort(9094));
-        registry.add("spring.kafka.consumer.bootstrap-servers", () -> "localhost:" + kafkaContainer.getMappedPort(9094));
+        registry.add("spring.kafka.producer.bootstrap-servers", () -> "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
+        registry.add("spring.kafka.consumer.bootstrap-servers", () -> "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
         registry.add("kafka.topic.string-topic", () -> TOPIC);
         registry.add("spring.kafka.producer.properties.sasl.mechanism", () -> "PLAIN");
         registry.add("spring.kafka.producer.properties.security.protocol", () -> "SASL_PLAINTEXT");
@@ -121,7 +139,7 @@ class KafkaStringIntegrationTest {
     @BeforeAll
     static void setUp() {
         Map<String, Object> adminProps = new HashMap<>();
-        adminProps.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:" + kafkaContainer.getMappedPort(9094));
+        adminProps.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
         adminProps.put("sasl.mechanism", "PLAIN");
         adminProps.put("security.protocol", "SASL_PLAINTEXT");
         adminProps.put("sasl.jaas.config",
@@ -284,7 +302,7 @@ class KafkaStringIntegrationTest {
     void testUnauthorizedAccess() {
         // Arrange: Create a producer with incorrect credentials
         Map<String, Object> wrongConfig = new HashMap<>();
-        wrongConfig.put("bootstrap.servers", "localhost:" + kafkaContainer.getMappedPort(9094));
+        wrongConfig.put("bootstrap.servers", "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
         wrongConfig.put("sasl.mechanism", "PLAIN");
         wrongConfig.put("security.protocol", "SASL_PLAINTEXT");
         wrongConfig.put("sasl.jaas.config",

@@ -16,24 +16,24 @@ spring:
 
   kafka:
     producer:
-      bootstrap-servers: localhost:${kafka.container.mapped.port.9094}
+      bootstrap-servers: host.docker.internal:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
       properties:
-        sasl.mechanism: PLAIN
         security.protocol: SASL_PLAINTEXT
-        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="testuser" password="testpassword";
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret";
     consumer:
-      bootstrap-servers: localhost:${kafka.container.mapped.port.9094}
+      bootstrap-servers: host.docker.internal:9092
       group-id: my-consumer-group
       auto-offset-reset: earliest
       enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
       properties:
-        sasl.mechanism: PLAIN
         security.protocol: SASL_PLAINTEXT
-        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="testuser" password="testpassword";
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret";
         enable.metrics.push: false
         session.timeout.ms: 60000
         heartbeat.interval.ms: 3000
@@ -54,7 +54,6 @@ kafka:
     json-topic: json-topic
     xml-topic: xml-topic
   schemas:
-    # Replace with absolute paths to actual schema files
     email-schema: file:/absolute/path/to/email-schema.json
     xml-message-xsd: file:/absolute/path/to/xml-message.xsd
   security:
