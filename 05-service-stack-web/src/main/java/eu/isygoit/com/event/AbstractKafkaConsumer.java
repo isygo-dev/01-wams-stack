@@ -55,6 +55,7 @@ import java.util.function.BiConsumer;
 @Slf4j
 public abstract class AbstractKafkaConsumer<T> {
 
+    private static final String RECEIVED_HEADERS = "custom_received_headers";
     /**
      * The Meter registry.
      */
@@ -114,11 +115,12 @@ public abstract class AbstractKafkaConsumer<T> {
                         @Header(KafkaHeaders.RECEIVED_TOPIC) String receivedTopic,
                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                         @Header(KafkaHeaders.OFFSET) long offset,
-                        @Headers Map<String, String> headers) {
-        if (message == null) {
+                        @Headers Map<String, String> headers){
+        if (message == null || message.length == 0) {
             log.error("Received null message on topic {}", receivedTopic);
             throw new IllegalArgumentException("Message cannot be null");
         }
+
         if (receivedTopic == null || receivedTopic.trim().isEmpty()) {
             log.error("Received invalid topic");
             throw new IllegalArgumentException("Topic must be non-empty");

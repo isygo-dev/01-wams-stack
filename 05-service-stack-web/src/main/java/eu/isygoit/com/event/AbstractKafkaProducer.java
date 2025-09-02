@@ -3,6 +3,7 @@ package eu.isygoit.com.event;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.errors.AuthenticationException;
 import org.apache.kafka.common.errors.AuthorizationException;
@@ -140,7 +141,12 @@ public abstract class AbstractKafkaProducer<T> {
             if (customHeaders != null) {
                 customHeaders.forEach((k, v) -> recordHeaders.add(k, v.getBytes(StandardCharsets.UTF_8)));
             }
-            ListenableFuture<SendResult<String, byte[]>> future = (ListenableFuture<SendResult<String, byte[]>>) kafkaTemplate.send(resolvedTopic, data);
+            ProducerRecord<String, byte[]> record = new ProducerRecord<>(resolvedTopic,
+                    null,
+                    null, null,
+                    data,
+                    recordHeaders);
+            ListenableFuture<SendResult<String, byte[]>> future = (ListenableFuture<SendResult<String, byte[]>>) kafkaTemplate.send(record);
             future.addCallback(new ListenableFutureCallback<>() {
                 @Override
                 public void onSuccess(SendResult<String, byte[]> result) {
@@ -166,7 +172,12 @@ public abstract class AbstractKafkaProducer<T> {
             if (customHeaders != null) {
                 customHeaders.forEach((k, v) -> recordHeaders.add(k, v.getBytes(StandardCharsets.UTF_8)));
             }
-            kafkaTemplate.send(resolvedTopic, data);
+            ProducerRecord<String, byte[]> record = new ProducerRecord<>(resolvedTopic,
+                    null,
+                    null, null,
+                    data,
+                    recordHeaders);
+            kafkaTemplate.send(record);
             log.debug("Message successfully sent to topic {}", resolvedTopic);
         } catch (AuthenticationException e) {
             log.error("Authentication failed for topic {}: {}", resolvedTopic, e.getMessage());
