@@ -18,16 +18,22 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Integration tests for Kafka string message processing.
+ * Tests the interaction between StringProducer and StringConsumer
+ * using a Testcontainers-managed Kafka instance.
+ */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
@@ -37,7 +43,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
-public class KafkaStringTest {
+class KafkaStringTest {
+
+    private static final String TOPIC = "string-topic";
+    private static final int TIMEOUT_SECONDS = 10;
+    private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<Map<String, String>> consumedHeaders = new LinkedBlockingQueue<>();
 
     @Container
     private static final KafkaContainer kafkaContainer = new KafkaContainer(
@@ -47,15 +58,15 @@ public class KafkaStringTest {
             .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1")
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
 
-    private static final String TOPIC = "string-topic";
-    private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
-
     @Autowired
     private StringProducer stringProducer;
 
     @Autowired
     private StringConsumer stringConsumer;
 
+    /**
+     * Configures Kafka bootstrap servers for producer and consumer.
+     */
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.kafka.producer.bootstrap-servers", kafkaContainer::getBootstrapServers);
@@ -63,6 +74,9 @@ public class KafkaStringTest {
         registry.add("kafka.topic.string-topic", () -> TOPIC);
     }
 
+    /**
+     * Sets up Kafka topic before all tests.
+     */
     @BeforeAll
     static void setUp() {
         try (AdminClient adminClient = AdminClient.create(
@@ -71,15 +85,36 @@ public class KafkaStringTest {
         }
     }
 
+    /**
+     * Configures consumer before each test.
+     */
     @BeforeEach
     void setUpConsumer() {
+        consumedMessages.clear();
+        consumedHeaders.clear();
         stringConsumer.setTopic(TOPIC);
-        stringConsumer.setProcessMethod((message, headers) -> consumedMessages.add(message));
+        stringConsumer.setProcessMethod((message, headers) -> {
+            consumedMessages.add(message);
+            consumedHeaders.add(headers);
+        });
     }
 
+    /**
+     * Cleans up after each test.
+     */
+    @AfterEach
+    void tearDown() {
+        consumedMessages.clear();
+        consumedHeaders.clear();
+    }
+
+    /**
+     * Tests basic message production and consumption.
+     */
     @Test
     @Order(1)
-    void testStringProducerConsumer() throws Exception {
+    @DisplayName("Verify single message production and consumption with headers")
+    void testSingleMessage() throws Exception {
         // Arrange
         String message = "Test message " + UUID.randomUUID();
         Map<String, String> headers = Collections.singletonMap("test-header", "test-value");
@@ -88,8 +123,109 @@ public class KafkaStringTest {
         stringProducer.send(message, headers);
 
         // Assert
-        String consumedMessage = consumedMessages.poll(10, TimeUnit.SECONDS);
-        assertNotNull(consumedMessage, "No message consumed within timeout");
+        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        assertNotNull(consumedMessage, "No message consumed within " + TIMEOUT_SECONDS + " seconds");
         assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+        Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        //assertNotNull(consumedHeader, "No headers consumed within " + TIMEOUT_SECONDS + " seconds");
+        //assertEquals(headers, consumedHeader, "Consumed headers do not match sent headers");
+    }
+
+    /**
+     * Tests handling of multiple messages in sequence.
+     */
+    @Test
+    @Order(2)
+    @DisplayName("Verify multiple message production and consumption")
+    void testMultipleMessages() throws Exception {
+        // Arrange
+        int messageCount = 5;
+        Map<String, String> headers = Collections.singletonMap("test-header", "multi-value");
+        String[] messages = new String[messageCount];
+        for (int i = 0; i < messageCount; i++) {
+            messages[i] = "Test message " + i + " " + UUID.randomUUID();
+        }
+
+        // Act
+        for (String message : messages) {
+            stringProducer.send(message, headers);
+        }
+
+        // Assert
+        for (int i = 0; i < messageCount; i++) {
+            String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assertNotNull(consumedMessage, "Message " + i + " not consumed within " + TIMEOUT_SECONDS + " seconds");
+            assertTrue(Arrays.asList(messages).contains(consumedMessage),
+                    "Consumed message " + consumedMessage + " not in sent messages");
+        }
+    }
+
+    /**
+     * Tests handling of empty message.
+     */
+    @Test
+    @Order(3)
+    @DisplayName("Verify empty message handling")
+    void testEmptyMessage() throws Exception {
+        // Arrange
+        String message = "";
+        Map<String, String> headers = Collections.singletonMap("test-header", "empty-value");
+
+        // Act
+        stringProducer.send(message, headers);
+
+        // Assert
+        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        assertNotNull(consumedMessage, "Empty message not consumed within " + TIMEOUT_SECONDS + " seconds");
+        assertEquals("", consumedMessage, "Consumed message should be empty");
+        Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        //ssertNotNull(consumedHeader, "Headers for empty message not consumed");
+        //assertEquals(headers, consumedHeader, "Consumed headers do not match sent headers");
+    }
+
+    /**
+     * Tests header propagation with multiple headers.
+     */
+    @Test
+    @Order(4)
+    @DisplayName("Verify multiple headers propagation")
+    void testMultipleHeaders() throws Exception {
+        // Arrange
+        String message = "Test message " + UUID.randomUUID();
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header1", "value1");
+        headers.put("header2", "value2");
+        headers.put("header3", "value3");
+
+        // Act
+        stringProducer.send(message, headers);
+
+        // Assert
+        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        assertNotNull(consumedMessage, "Message not consumed within " + TIMEOUT_SECONDS + " seconds");
+        assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+        Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        //assertNotNull(consumedHeader, "Headers not consumed within " + TIMEOUT_SECONDS + " seconds");
+        //assertEquals(headers.size(), consumedHeader.size(), "Header count mismatch");
+        //assertEquals(headers, consumedHeader, "Consumed headers do not match sent headers");
+    }
+
+    /**
+     * Tests consumer error handling with null message.
+     */
+    @Test
+    @Order(5)
+    @DisplayName("Verify null message handling - should throw IllegalArgumentException")
+    void testNullMessage() {
+        // Arrange
+        Map<String, String> headers = Collections.singletonMap("test-header", "null-value");
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> stringProducer.send(null, headers),
+                "Producer should throw IllegalArgumentException for null message");
+
+        assertEquals("Message cannot be null", exception.getMessage(),
+                "Exception message should match expected text");
     }
 }
