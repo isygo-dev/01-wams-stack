@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
-class KafkaStringTest {
+class KafkaStringIntegrationTest {
 
     private static final String TOPIC = "string-topic";
     private static final int TIMEOUT_SECONDS = 10;
