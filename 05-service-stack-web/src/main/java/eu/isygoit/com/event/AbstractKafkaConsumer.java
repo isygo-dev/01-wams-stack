@@ -23,6 +23,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * Abstract base class for Kafka consumers that can be extended for specific message types.
@@ -91,6 +92,11 @@ public abstract class AbstractKafkaConsumer<T> {
     protected String aesKey;
 
     /**
+     * The process method for dynamic message processing.
+     */
+    private BiConsumer<T, Map<String, String>> processMethod;
+
+    /**
      * Consumes a message from Kafka, performing validation, HMAC verification, and decryption.
      *
      * @param message       the raw byte[] message from Kafka
@@ -124,6 +130,15 @@ public abstract class AbstractKafkaConsumer<T> {
         }
     }
 
+    /**
+     * Sets a custom process method for testing or dynamic behavior.
+     *
+     * @param processMethod the BiConsumer to handle message processing
+     */
+    public void setProcessMethod(BiConsumer<T, Map<String, String>> processMethod) {
+        this.processMethod = processMethod;
+    }
+
     private void processMessageWithSecurity(byte[] message, Map<String, String> headers, String topic, int partition, long offset) {
         try {
             byte[] data = message;
@@ -139,7 +154,11 @@ public abstract class AbstractKafkaConsumer<T> {
                 throw new IllegalStateException("Deserialization returned null");
             }
             log.info("Processing message from topic {}, partition {}, offset {}", topic, partition, offset);
-            processMessage(deserializedMessage, headers);
+            if (processMethod != null) {
+                processMethod.accept(deserializedMessage, headers);
+            } else {
+                processMessage(deserializedMessage, headers);
+            }
             log.debug("Message processed successfully from topic {}, partition {}, offset {}", topic, partition, offset);
         } catch (AuthenticationException e) {
             log.error("Authentication failed for topic {}: {}", topic, e.getMessage());

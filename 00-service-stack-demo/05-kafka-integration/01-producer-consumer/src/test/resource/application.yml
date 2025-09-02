@@ -16,48 +16,23 @@ spring:
 
   kafka:
     producer:
-      bootstrap-servers: localhost:9093
-      ssl:
-        trust-store-location: classpath:/kafka/truststore.jks  # Updated path
-        trust-store-password: truststore-password
-        key-store-location: classpath:/kafka/keystore.jks      # Updated path
-        key-store-password: keystore-password
-        key-password: key-password
-      security:
-        protocol: SASL_SSL
-      sasl:
-        mechanism: PLAIN
-        jaas:
-          config: >-
-            org.apache.kafka.common.security.plain.PlainLoginModule required
-            username="kafka-user"
-            password="kafka-password";
+      bootstrap-servers: host.docker.internal:9092  # Replace with host IP (e.g., 192.168.1.100:9092) on Linux
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
     consumer:
-      bootstrap-servers: localhost:9093
+      bootstrap-servers: host.docker.internal:9092  # Replace with host IP (e.g., 192.168.1.100:9092) on Linux
       group-id: my-consumer-group
       auto-offset-reset: earliest
-      enable-auto-commit: false  # Added this important setting
-      ssl:
-        trust-store-location: classpath:/kafka/truststore.jks  # Updated path
-        trust-store-password: truststore-password
-        key-store-location: classpath:/kafka/keystore.jks      # Updated path
-        key-store-password: keystore-password
-        key-password: key-password
-      security:
-        protocol: SASL_SSL
-      sasl:
-        mechanism: PLAIN
-        jaas:
-          config: >-
-            org.apache.kafka.common.security.plain.PlainLoginModule required
-            username="kafka-user"
-            password="kafka-password";
+      enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-  retry:
-    enabled: true
+      properties:
+        enable.metrics.push: false
+        session.timeout.ms: 60000
+        heartbeat.interval.ms: 3000
+        max.poll.interval.ms: 300000
+    retry:
+      enabled: true
 
 management:
   endpoints:
@@ -69,13 +44,14 @@ kafka:
   topic:
     string-topic: string-topic
   schemas:
-    email-schema: file:/path/to/email-schema.json
-    xml-message-xsd: file:/path/to/xml-message.xsd
+    # Replace with absolute paths to actual schema files
+    email-schema: file:/absolute/path/to/email-schema.json
+    xml-message-xsd: file:/absolute/path/to/xml-message.xsd
   security:
     enable-hmac: false
-    hmac-secret: "" # Set for enabling signing/verification
+    hmac-secret: ""
     enable-encryption: false
-    aes-key: "" # 16-byte key for AES-128
+    aes-key: ""
     enable-json-validation: false
     enable-xml-validation: false
 
@@ -83,6 +59,7 @@ logging:
   level:
     root: INFO
     eu.isygoit.openai: DEBUG
+    org.apache.kafka: DEBUG
   file:
     name: logs/application.log
   pattern:

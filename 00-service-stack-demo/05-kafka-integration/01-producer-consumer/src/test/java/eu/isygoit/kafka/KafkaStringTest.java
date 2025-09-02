@@ -1,8 +1,9 @@
 package eu.isygoit.kafka;
 
-import eu.isygoit.com.event.AbstractKafkaConsumer;
 import eu.isygoit.com.event.KafkaStringConsumer;
 import eu.isygoit.com.event.KafkaStringProducer;
+import eu.isygoit.kafka.consumer.StringConsumer;
+import eu.isygoit.kafka.producer.StringProducer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -47,7 +48,99 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
+@ExtendWith(SpringExtension.class)
 public class KafkaStringTest {
 
+    @Container
+    private static final KafkaContainer kafkaContainer = new KafkaContainer(
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+            .withEmbeddedZookeeper()
+            .withEnv("KAFKA_BROKER_ID", "1")
+            .withEnv("KAFKA_ZOOKEEPER_CONNECT", "zookeeper:2181")
+            .withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:9093")
+            .withEnv("KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093")
+            .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT")
+            .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "PLAINTEXT_INTERNAL")
+            .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1")
+            .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
 
+    private static final String TOPIC = "string-topic";
+    private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
+
+    @Autowired
+    private StringProducer stringProducer;
+
+    @Autowired
+    private StringConsumer stringConsumer;
+
+    @Autowired
+    private KafkaTemplate<String, byte[]> kafkaTemplate;
+
+    @DynamicPropertySource
+    static void overrideProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.kafka.producer.bootstrap-servers", kafkaContainer::getBootstrapServers);
+        registry.add("spring.kafka.consumer.bootstrap-servers", kafkaContainer::getBootstrapServers);
+        registry.add("kafka.topic.string-topic", () -> TOPIC);
+    }
+
+    @Configuration
+    @EnableKafka
+    static class TestConfig {
+
+        @Bean
+        public ProducerFactory<String, byte[]> producerFactory() {
+            Map<String, Object> config = Collections.singletonMap(
+                    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+            return new DefaultKafkaProducerFactory<>(config);
+        }
+
+        @Bean
+        public KafkaTemplate<String, byte[]> kafkaTemplate() {
+            return new KafkaTemplate<>(producerFactory());
+        }
+
+        @Bean
+        public ConsumerFactory<String, byte[]> consumerFactory() {
+            return new DefaultKafkaConsumerFactory<>(Collections.singletonMap(
+                    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers()));
+        }
+
+        @Bean
+        public ConcurrentKafkaListenerContainerFactory<String, byte[]> kafkaListenerContainerFactory() {
+            ConcurrentKafkaListenerContainerFactory<String, byte[]> factory =
+                    new ConcurrentKafkaListenerContainerFactory<>();
+            factory.setConsumerFactory(consumerFactory());
+            return factory;
+        }
+    }
+
+    @BeforeAll
+    static void setUp() {
+        try (AdminClient adminClient = AdminClient.create(
+                Collections.singletonMap("bootstrap.servers", kafkaContainer.getBootstrapServers()))) {
+            adminClient.createTopics(Collections.singletonList(new NewTopic(TOPIC, 1, (short) 1)));
+        }
+    }
+
+    @BeforeEach
+    void setUpConsumer() {
+        stringConsumer.setTopic(TOPIC);
+        stringConsumer.setProcessMethod((message, headers) -> consumedMessages.add(message));
+    }
+
+    @Test
+    @Order(1)
+    void testStringProducerConsumer() throws Exception {
+        // Arrange
+        String message = "Test message " + UUID.randomUUID();
+        Map<String, String> headers = Collections.singletonMap("test-header", "test-value");
+
+        // Act
+        stringProducer.send(message, headers);
+
+        // Assert
+        String consumedMessage = consumedMessages.poll(10, TimeUnit.SECONDS);
+        assertNotNull(consumedMessage, "No message consumed within timeout");
+        assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+    }
 }
