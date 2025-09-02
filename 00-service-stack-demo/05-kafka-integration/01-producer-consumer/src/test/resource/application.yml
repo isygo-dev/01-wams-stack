@@ -44,6 +44,8 @@ kafka:
   topic:
     string-topic: string-topic
     file-topic: file-topic
+    json-topic: json-topic
+    xml-topic: xml-topic
   schemas:
     # Replace with absolute paths to actual schema files
     email-schema: file:/absolute/path/to/email-schema.json

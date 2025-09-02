@@ -11,8 +11,11 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * Abstract Kafka consumer for processing JSON data.
@@ -58,4 +61,18 @@ public abstract class KafkaJsonConsumer<T> extends AbstractKafkaConsumer<T> {
             throw new IllegalArgumentException("JSON schema validation failed: " + errors);
         }
     }
+
+    @Override
+    protected final void processMessage(T message, Map<String, String> headers) throws Exception {
+        process(message, headers);
+    }
+
+    /**
+     * Process.
+     *
+     * @param message the message
+     * @param headers the headers
+     * @throws Exception the exception
+     */
+    protected abstract void process(T message, Map<String, String> headers) throws Exception;
 }

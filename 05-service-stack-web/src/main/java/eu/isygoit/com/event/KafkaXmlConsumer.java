@@ -11,9 +11,12 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * Abstract Kafka consumer for processing XML data.
@@ -65,4 +68,18 @@ public abstract class KafkaXmlConsumer<T> extends AbstractKafkaConsumer<T> {
         javax.xml.validation.Validator validator = schema.newValidator();
         validator.validate(new StreamSource(new StringReader(xml)));
     }
+
+    @Override
+    protected final void processMessage(T message, Map<String, String> headers) throws Exception {
+        process(message, headers);
+    }
+
+    /**
+     * Process.
+     *
+     * @param message the message
+     * @param headers the headers
+     * @throws Exception the exception
+     */
+    protected abstract void process(T message, Map<String, String> headers) throws Exception;
 }
