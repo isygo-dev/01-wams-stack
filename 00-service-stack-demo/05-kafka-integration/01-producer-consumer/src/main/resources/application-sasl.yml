@@ -1,0 +1,75 @@
+server:
+  port: 8081
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1024
+
+spring:
+  application:
+    name: Poc AI Integration
+
+  jackson:
+    serialization:
+      indent-output: true
+    default-property-inclusion: non_null
+
+  kafka:
+    producer:
+      bootstrap-servers: host.docker.internal:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      properties:
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret";
+    consumer:
+      bootstrap-servers: host.docker.internal:9092
+      group-id: my-consumer-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      properties:
+        security.protocol: SASL_PLAINTEXT
+        sasl.mechanism: PLAIN
+        sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="admin-secret";
+        enable.metrics.push: false
+        session.timeout.ms: 60000
+        heartbeat.interval.ms: 3000
+        max.poll.interval.ms: 300000
+    retry:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+
+kafka:
+  topic:
+    string-topic: string-topic
+    file-topic: file-topic
+    json-topic: json-topic
+    xml-topic: xml-topic
+  schemas:
+    email-schema: file:/absolute/path/to/email-schema.json
+    xml-message-xsd: file:/absolute/path/to/xml-message.xsd
+  security:
+    enable-hmac: false
+    hmac-secret: ""
+    enable-encryption: false
+    aes-key: ""
+    enable-json-validation: false
+    enable-xml-validation: false
+
+logging:
+  level:
+    root: INFO
+    eu.isygoit.openai: DEBUG
+    org.apache.kafka: DEBUG
+  file:
+    name: logs/application.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,4 +1,4 @@
-package eu.isygoit.kafka;
+package eu.isygoit.kafka.nosecu;
 
 import eu.isygoit.kafka.consumer.FileConsumer;
 import eu.isygoit.kafka.producer.FileProducer;

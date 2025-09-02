@@ -1,10 +1,8 @@
-package eu.isygoit.kafka;
+package eu.isygoit.kafka.nosecu;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.helper.JsonHelper;
-import eu.isygoit.kafka.consumer.JsonConsumer;
+import eu.isygoit.kafka.consumer.XmlConsumer;
 import eu.isygoit.kafka.dto.TutorialDto;
-import eu.isygoit.kafka.producer.JsonProducer;
+import eu.isygoit.kafka.producer.XmlProducer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -33,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for Kafka JSON message processing.
- * Tests the interaction between JsonProducer and JsonConsumer
+ * Integration tests for Kafka XML message processing.
+ * Tests the interaction between XmlProducer and XmlConsumer
  * using a Testcontainers-managed Kafka instance.
  */
 @SpringBootTest(properties = {
@@ -46,13 +44,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
-class KafkaJsonIntegrationTest {
+class KafkaXmlIntegrationTest {
 
-    private static final String TOPIC = "json-topic";
+    private static final String TOPIC = "xml-topic";
     private static final int TIMEOUT_SECONDS = 10;
     private static final BlockingQueue<TutorialDto> consumedMessages = new LinkedBlockingQueue<>();
     private static final BlockingQueue<Map<String, String>> consumedHeaders = new LinkedBlockingQueue<>();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Container
     private static final KafkaContainer kafkaContainer = new KafkaContainer(
@@ -63,10 +60,10 @@ class KafkaJsonIntegrationTest {
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
 
     @Autowired
-    private JsonProducer jsonProducer;
+    private XmlProducer xmlProducer;
 
     @Autowired
-    private JsonConsumer jsonConsumer;
+    private XmlConsumer xmlConsumer;
 
     /**
      * Configures Kafka bootstrap servers for producer and consumer.
@@ -75,7 +72,7 @@ class KafkaJsonIntegrationTest {
     static void overrideProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.kafka.producer.bootstrap-servers", kafkaContainer::getBootstrapServers);
         registry.add("spring.kafka.consumer.bootstrap-servers", kafkaContainer::getBootstrapServers);
-        registry.add("kafka.topic.json-topic", () -> TOPIC);
+        registry.add("kafka.topic.xml-topic", () -> TOPIC);
     }
 
     /**
@@ -96,8 +93,8 @@ class KafkaJsonIntegrationTest {
     void setUpConsumer() {
         consumedMessages.clear();
         consumedHeaders.clear();
-        jsonConsumer.setTopic(TOPIC);
-        jsonConsumer.setProcessMethod((message, headers) -> {
+        xmlConsumer.setTopic(TOPIC);
+        xmlConsumer.setProcessMethod((message, headers) -> {
             TutorialDto tutorial = message;
             consumedMessages.add(tutorial);
             consumedHeaders.add(headers);
@@ -114,12 +111,12 @@ class KafkaJsonIntegrationTest {
     }
 
     /**
-     * Tests basic JSON message production and consumption.
+     * Tests basic XML message production and consumption.
      */
     @Test
     @Order(1)
-    @DisplayName("Verify single JSON message production and consumption with headers")
-    void testSingleJsonMessage() throws Exception {
+    @DisplayName("Verify single XML message production and consumption with headers")
+    void testSingleXmlMessage() throws Exception {
         // Arrange
         TutorialDto message = TutorialDto.builder()
                 .id(1L)
@@ -131,7 +128,7 @@ class KafkaJsonIntegrationTest {
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_value");
 
         // Act
-        jsonProducer.send(message, headers);
+        xmlProducer.send(message, headers);
 
         // Assert
         TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -147,12 +144,12 @@ class KafkaJsonIntegrationTest {
     }
 
     /**
-     * Tests handling of multiple JSON messages in sequence.
+     * Tests handling of multiple XML messages in sequence.
      */
     @Test
     @Order(2)
-    @DisplayName("Verify multiple JSON message production and consumption")
-    void testMultipleJsonMessages() throws Exception {
+    @DisplayName("Verify multiple XML message production and consumption")
+    void testMultipleXmlMessages() throws Exception {
         // Arrange
         int messageCount = 5;
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_multi_value");
@@ -169,7 +166,7 @@ class KafkaJsonIntegrationTest {
 
         // Act
         for (TutorialDto message : messages) {
-            jsonProducer.send(message, headers);
+            xmlProducer.send(message, headers);
         }
 
         // Assert
@@ -183,18 +180,18 @@ class KafkaJsonIntegrationTest {
     }
 
     /**
-     * Tests handling of null JSON message.
+     * Tests handling of null XML message.
      */
     @Test
     @Order(3)
-    @DisplayName("Verify null JSON message handling")
-    void testNullJsonMessage() {
+    @DisplayName("Verify null XML message handling")
+    void testNullXmlMessage() {
         // Arrange
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_null_value");
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> jsonProducer.send(null, headers),
+                () -> xmlProducer.send(null, headers),
                 "Producer should throw IllegalArgumentException for null message");
 
         assertEquals("Message cannot be null", exception.getMessage(),
@@ -222,7 +219,7 @@ class KafkaJsonIntegrationTest {
         headers.put("kafka_test_header3", "test_value3");
 
         // Act
-        jsonProducer.send(message, headers);
+        xmlProducer.send(message, headers);
 
         // Assert
         TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);

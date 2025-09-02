@@ -1,8 +1,7 @@
-package eu.isygoit.kafka;
+package eu.isygoit.kafka.nosecu;
 
-import eu.isygoit.kafka.consumer.XmlConsumer;
-import eu.isygoit.kafka.dto.TutorialDto;
-import eu.isygoit.kafka.producer.XmlProducer;
+import eu.isygoit.kafka.consumer.StringConsumer;
+import eu.isygoit.kafka.producer.StringProducer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -18,7 +17,7 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import javax.xml.bind.JAXBException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for Kafka XML message processing.
- * Tests the interaction between XmlProducer and XmlConsumer
+ * Integration tests for Kafka string message processing.
+ * Tests the interaction between StringProducer and StringConsumer
  * using a Testcontainers-managed Kafka instance.
  */
 @SpringBootTest(properties = {
@@ -44,11 +43,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
-class KafkaXmlIntegrationTest {
+class KafkaStringIntegrationTest {
 
-    private static final String TOPIC = "xml-topic";
+    private static final String TOPIC = "string-topic";
     private static final int TIMEOUT_SECONDS = 10;
-    private static final BlockingQueue<TutorialDto> consumedMessages = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
     private static final BlockingQueue<Map<String, String>> consumedHeaders = new LinkedBlockingQueue<>();
 
     @Container
@@ -60,10 +59,10 @@ class KafkaXmlIntegrationTest {
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
 
     @Autowired
-    private XmlProducer xmlProducer;
+    private StringProducer stringProducer;
 
     @Autowired
-    private XmlConsumer xmlConsumer;
+    private StringConsumer stringConsumer;
 
     /**
      * Configures Kafka bootstrap servers for producer and consumer.
@@ -72,7 +71,7 @@ class KafkaXmlIntegrationTest {
     static void overrideProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.kafka.producer.bootstrap-servers", kafkaContainer::getBootstrapServers);
         registry.add("spring.kafka.consumer.bootstrap-servers", kafkaContainer::getBootstrapServers);
-        registry.add("kafka.topic.xml-topic", () -> TOPIC);
+        registry.add("kafka.topic.string-topic", () -> TOPIC);
     }
 
     /**
@@ -93,10 +92,9 @@ class KafkaXmlIntegrationTest {
     void setUpConsumer() {
         consumedMessages.clear();
         consumedHeaders.clear();
-        xmlConsumer.setTopic(TOPIC);
-        xmlConsumer.setProcessMethod((message, headers) -> {
-            TutorialDto tutorial = message;
-            consumedMessages.add(tutorial);
+        stringConsumer.setTopic(TOPIC);
+        stringConsumer.setProcessMethod((message, headers) -> {
+            consumedMessages.add(message);
             consumedHeaders.add(headers);
         });
     }
@@ -111,87 +109,70 @@ class KafkaXmlIntegrationTest {
     }
 
     /**
-     * Tests basic XML message production and consumption.
+     * Tests basic message production and consumption.
      */
     @Test
     @Order(1)
-    @DisplayName("Verify single XML message production and consumption with headers")
-    void testSingleXmlMessage() throws Exception {
+    @DisplayName("Verify single message production and consumption with headers")
+    void testSingleMessage() throws Exception {
         // Arrange
-        TutorialDto message = TutorialDto.builder()
-                .id(1L)
-                .tenant("tenant1")
-                .title("Test Title " + UUID.randomUUID())
-                .description("Test Description")
-                .published(true)
-                .build();
+        String message = "Test message " + UUID.randomUUID();
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_value");
 
         // Act
-        xmlProducer.send(message, headers);
+        stringProducer.send(message, headers);
 
         // Assert
-        TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "No message consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertEquals(message.getId(), consumedMessage.getId(), "Consumed message ID does not match");
-        assertEquals(message.getTitle(), consumedMessage.getTitle(), "Consumed message title does not match");
-        assertEquals(message.getTenant(), consumedMessage.getTenant(), "Consumed message tenant does not match");
-        assertEquals(message.getDescription(), consumedMessage.getDescription(), "Consumed message description does not match");
-        assertEquals(message.isPublished(), consumedMessage.isPublished(), "Consumed message published status does not match");
+        assertEquals(message, consumedMessage, "Consumed message does not match sent message");
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "No headers consumed within " + TIMEOUT_SECONDS + " seconds");
         assertTrue(consumedHeader.containsKey("kafka_test_header"), "Consumed headers do not contain kafka_test_header");
     }
 
     /**
-     * Tests handling of multiple XML messages in sequence.
+     * Tests handling of multiple messages in sequence.
      */
     @Test
     @Order(2)
-    @DisplayName("Verify multiple XML message production and consumption")
-    void testMultipleXmlMessages() throws Exception {
+    @DisplayName("Verify multiple message production and consumption")
+    void testMultipleMessages() throws Exception {
         // Arrange
         int messageCount = 5;
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_multi_value");
-        TutorialDto[] messages = new TutorialDto[messageCount];
+        String[] messages = new String[messageCount];
         for (int i = 0; i < messageCount; i++) {
-            messages[i] = TutorialDto.builder()
-                    .id((long) i)
-                    .tenant("tenant" + i)
-                    .title("Test Title " + i + " " + UUID.randomUUID())
-                    .description("Test Description " + i)
-                    .published(i % 2 == 0)
-                    .build();
+            messages[i] = "Test message " + i + " " + UUID.randomUUID();
         }
 
         // Act
-        for (TutorialDto message : messages) {
-            xmlProducer.send(message, headers);
+        for (String message : messages) {
+            stringProducer.send(message, headers);
         }
 
         // Assert
         for (int i = 0; i < messageCount; i++) {
-            TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             assertNotNull(consumedMessage, "Message " + i + " not consumed within " + TIMEOUT_SECONDS + " seconds");
-            assertTrue(Arrays.stream(messages).anyMatch(m -> m.getId().equals(consumedMessage.getId()) &&
-                            m.getTitle().equals(consumedMessage.getTitle())),
-                    "Consumed message " + consumedMessage.getTitle() + " not in sent messages");
+            assertTrue(Arrays.asList(messages).contains(consumedMessage),
+                    "Consumed message " + consumedMessage + " not in sent messages");
         }
     }
 
     /**
-     * Tests handling of null XML message.
+     * Tests handling of empty message.
      */
     @Test
     @Order(3)
-    @DisplayName("Verify null XML message handling")
-    void testNullXmlMessage() {
+    @DisplayName("Verify empty message handling")
+    void testEmptyMessage() throws Exception {
         // Arrange
-        Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_null_value");
+        Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_empty_value");
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> xmlProducer.send(null, headers),
+                () -> stringProducer.send(null, headers),
                 "Producer should throw IllegalArgumentException for null message");
 
         assertEquals("Message cannot be null", exception.getMessage(),
@@ -206,30 +187,42 @@ class KafkaXmlIntegrationTest {
     @DisplayName("Verify multiple headers propagation")
     void testMultipleHeaders() throws Exception {
         // Arrange
-        TutorialDto message = TutorialDto.builder()
-                .id(2L)
-                .tenant("tenant2")
-                .title("Test Title " + UUID.randomUUID())
-                .description("Test Description")
-                .published(false)
-                .build();
+        String message = "Test message " + UUID.randomUUID();
         Map<String, String> headers = new HashMap<>();
         headers.put("kafka_test_header1", "test_value1");
         headers.put("kafka_test_header2", "test_value2");
         headers.put("kafka_test_header3", "test_value3");
 
         // Act
-        xmlProducer.send(message, headers);
+        stringProducer.send(message, headers);
 
         // Assert
-        TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "Message not consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertEquals(message.getId(), consumedMessage.getId(), "Consumed message ID does not match");
-        assertEquals(message.getTitle(), consumedMessage.getTitle(), "Consumed message title does not match");
+        assertEquals(message, consumedMessage, "Consumed message does not match sent message");
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "Headers not consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertTrue(consumedHeader.containsKey("kafka_test_header1"), "Consumed headers do not contain kafka_test_header1");
-        assertTrue(consumedHeader.containsKey("kafka_test_header2"), "Consumed headers do not contain kafka_test_header2");
-        assertTrue(consumedHeader.containsKey("kafka_test_header3"), "Consumed headers do not contain kafka_test_header3");
+        assertTrue(consumedHeader.containsKey("kafka_test_header1"), "Consumed headers do not contain kafka_test_header");
+        assertTrue(consumedHeader.containsKey("kafka_test_header2"), "Consumed headers do not contain kafka_test_header");
+        assertTrue(consumedHeader.containsKey("kafka_test_header3"), "Consumed headers do not contain kafka_test_header");
+    }
+
+    /**
+     * Tests consumer error handling with null message.
+     */
+    @Test
+    @Order(5)
+    @DisplayName("Verify null message handling - should throw IllegalArgumentException")
+    void testNullMessage() {
+        // Arrange
+        Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_null_value");
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> stringProducer.send(null, headers),
+                "Producer should throw IllegalArgumentException for null message");
+
+        assertEquals("Message cannot be null", exception.getMessage(),
+                "Exception message should match expected text");
     }
 }

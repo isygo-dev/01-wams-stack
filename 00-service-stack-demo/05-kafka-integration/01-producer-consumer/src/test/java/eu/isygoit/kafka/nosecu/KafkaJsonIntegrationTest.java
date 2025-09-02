@@ -1,7 +1,9 @@
-package eu.isygoit.kafka;
+package eu.isygoit.kafka.nosecu;
 
-import eu.isygoit.kafka.consumer.StringConsumer;
-import eu.isygoit.kafka.producer.StringProducer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.kafka.consumer.JsonConsumer;
+import eu.isygoit.kafka.dto.TutorialDto;
+import eu.isygoit.kafka.producer.JsonProducer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -30,8 +32,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for Kafka string message processing.
- * Tests the interaction between StringProducer and StringConsumer
+ * Integration tests for Kafka JSON message processing.
+ * Tests the interaction between JsonProducer and JsonConsumer
  * using a Testcontainers-managed Kafka instance.
  */
 @SpringBootTest(properties = {
@@ -43,12 +45,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
-class KafkaStringIntegrationTest {
+class KafkaJsonIntegrationTest {
 
-    private static final String TOPIC = "string-topic";
+    private static final String TOPIC = "json-topic";
     private static final int TIMEOUT_SECONDS = 10;
-    private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<TutorialDto> consumedMessages = new LinkedBlockingQueue<>();
     private static final BlockingQueue<Map<String, String>> consumedHeaders = new LinkedBlockingQueue<>();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Container
     private static final KafkaContainer kafkaContainer = new KafkaContainer(
@@ -59,10 +62,10 @@ class KafkaStringIntegrationTest {
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
 
     @Autowired
-    private StringProducer stringProducer;
+    private JsonProducer jsonProducer;
 
     @Autowired
-    private StringConsumer stringConsumer;
+    private JsonConsumer jsonConsumer;
 
     /**
      * Configures Kafka bootstrap servers for producer and consumer.
@@ -71,7 +74,7 @@ class KafkaStringIntegrationTest {
     static void overrideProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.kafka.producer.bootstrap-servers", kafkaContainer::getBootstrapServers);
         registry.add("spring.kafka.consumer.bootstrap-servers", kafkaContainer::getBootstrapServers);
-        registry.add("kafka.topic.string-topic", () -> TOPIC);
+        registry.add("kafka.topic.json-topic", () -> TOPIC);
     }
 
     /**
@@ -92,9 +95,10 @@ class KafkaStringIntegrationTest {
     void setUpConsumer() {
         consumedMessages.clear();
         consumedHeaders.clear();
-        stringConsumer.setTopic(TOPIC);
-        stringConsumer.setProcessMethod((message, headers) -> {
-            consumedMessages.add(message);
+        jsonConsumer.setTopic(TOPIC);
+        jsonConsumer.setProcessMethod((message, headers) -> {
+            TutorialDto tutorial = message;
+            consumedMessages.add(tutorial);
             consumedHeaders.add(headers);
         });
     }
@@ -109,70 +113,87 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests basic message production and consumption.
+     * Tests basic JSON message production and consumption.
      */
     @Test
     @Order(1)
-    @DisplayName("Verify single message production and consumption with headers")
-    void testSingleMessage() throws Exception {
+    @DisplayName("Verify single JSON message production and consumption with headers")
+    void testSingleJsonMessage() throws Exception {
         // Arrange
-        String message = "Test message " + UUID.randomUUID();
+        TutorialDto message = TutorialDto.builder()
+                .id(1L)
+                .tenant("tenant1")
+                .title("Test Title " + UUID.randomUUID())
+                .description("Test Description")
+                .published(true)
+                .build();
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_value");
 
         // Act
-        stringProducer.send(message, headers);
+        jsonProducer.send(message, headers);
 
         // Assert
-        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "No message consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+        assertEquals(message.getId(), consumedMessage.getId(), "Consumed message ID does not match");
+        assertEquals(message.getTitle(), consumedMessage.getTitle(), "Consumed message title does not match");
+        assertEquals(message.getTenant(), consumedMessage.getTenant(), "Consumed message tenant does not match");
+        assertEquals(message.getDescription(), consumedMessage.getDescription(), "Consumed message description does not match");
+        assertEquals(message.isPublished(), consumedMessage.isPublished(), "Consumed message published status does not match");
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "No headers consumed within " + TIMEOUT_SECONDS + " seconds");
         assertTrue(consumedHeader.containsKey("kafka_test_header"), "Consumed headers do not contain kafka_test_header");
     }
 
     /**
-     * Tests handling of multiple messages in sequence.
+     * Tests handling of multiple JSON messages in sequence.
      */
     @Test
     @Order(2)
-    @DisplayName("Verify multiple message production and consumption")
-    void testMultipleMessages() throws Exception {
+    @DisplayName("Verify multiple JSON message production and consumption")
+    void testMultipleJsonMessages() throws Exception {
         // Arrange
         int messageCount = 5;
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_multi_value");
-        String[] messages = new String[messageCount];
+        TutorialDto[] messages = new TutorialDto[messageCount];
         for (int i = 0; i < messageCount; i++) {
-            messages[i] = "Test message " + i + " " + UUID.randomUUID();
+            messages[i] = TutorialDto.builder()
+                    .id((long) i)
+                    .tenant("tenant" + i)
+                    .title("Test Title " + i + " " + UUID.randomUUID())
+                    .description("Test Description " + i)
+                    .published(i % 2 == 0)
+                    .build();
         }
 
         // Act
-        for (String message : messages) {
-            stringProducer.send(message, headers);
+        for (TutorialDto message : messages) {
+            jsonProducer.send(message, headers);
         }
 
         // Assert
         for (int i = 0; i < messageCount; i++) {
-            String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             assertNotNull(consumedMessage, "Message " + i + " not consumed within " + TIMEOUT_SECONDS + " seconds");
-            assertTrue(Arrays.asList(messages).contains(consumedMessage),
-                    "Consumed message " + consumedMessage + " not in sent messages");
+            assertTrue(Arrays.stream(messages).anyMatch(m -> m.getId().equals(consumedMessage.getId()) &&
+                            m.getTitle().equals(consumedMessage.getTitle())),
+                    "Consumed message " + consumedMessage.getTitle() + " not in sent messages");
         }
     }
 
     /**
-     * Tests handling of empty message.
+     * Tests handling of null JSON message.
      */
     @Test
     @Order(3)
-    @DisplayName("Verify empty message handling")
-    void testEmptyMessage() throws Exception {
+    @DisplayName("Verify null JSON message handling")
+    void testNullJsonMessage() {
         // Arrange
-        Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_empty_value");
+        Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_null_value");
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> stringProducer.send(null, headers),
+                () -> jsonProducer.send(null, headers),
                 "Producer should throw IllegalArgumentException for null message");
 
         assertEquals("Message cannot be null", exception.getMessage(),
@@ -187,42 +208,30 @@ class KafkaStringIntegrationTest {
     @DisplayName("Verify multiple headers propagation")
     void testMultipleHeaders() throws Exception {
         // Arrange
-        String message = "Test message " + UUID.randomUUID();
+        TutorialDto message = TutorialDto.builder()
+                .id(2L)
+                .tenant("tenant2")
+                .title("Test Title " + UUID.randomUUID())
+                .description("Test Description")
+                .published(false)
+                .build();
         Map<String, String> headers = new HashMap<>();
         headers.put("kafka_test_header1", "test_value1");
         headers.put("kafka_test_header2", "test_value2");
         headers.put("kafka_test_header3", "test_value3");
 
         // Act
-        stringProducer.send(message, headers);
+        jsonProducer.send(message, headers);
 
         // Assert
-        String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        TutorialDto consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "Message not consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+        assertEquals(message.getId(), consumedMessage.getId(), "Consumed message ID does not match");
+        assertEquals(message.getTitle(), consumedMessage.getTitle(), "Consumed message title does not match");
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "Headers not consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertTrue(consumedHeader.containsKey("kafka_test_header1"), "Consumed headers do not contain kafka_test_header");
-        assertTrue(consumedHeader.containsKey("kafka_test_header2"), "Consumed headers do not contain kafka_test_header");
-        assertTrue(consumedHeader.containsKey("kafka_test_header3"), "Consumed headers do not contain kafka_test_header");
-    }
-
-    /**
-     * Tests consumer error handling with null message.
-     */
-    @Test
-    @Order(5)
-    @DisplayName("Verify null message handling - should throw IllegalArgumentException")
-    void testNullMessage() {
-        // Arrange
-        Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_null_value");
-
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> stringProducer.send(null, headers),
-                "Producer should throw IllegalArgumentException for null message");
-
-        assertEquals("Message cannot be null", exception.getMessage(),
-                "Exception message should match expected text");
+        assertTrue(consumedHeader.containsKey("kafka_test_header1"), "Consumed headers do not contain kafka_test_header1");
+        assertTrue(consumedHeader.containsKey("kafka_test_header2"), "Consumed headers do not contain kafka_test_header2");
+        assertTrue(consumedHeader.containsKey("kafka_test_header3"), "Consumed headers do not contain kafka_test_header3");
     }
 }
