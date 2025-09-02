@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -109,10 +110,11 @@ public abstract class AbstractKafkaConsumer<T> {
      */
     @KafkaListener(topics = "#{__listener.topic}", containerFactory = "kafkaListenerContainerFactory")
     @Retryable(value = {KafkaException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
-    public void consume(@Payload byte[] message, @Header(KafkaHeaders.RECEIVED_TOPIC) String receivedTopic,
+    public void consume(@Payload byte[] message,
+                        @Header(KafkaHeaders.RECEIVED_TOPIC) String receivedTopic,
                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                         @Header(KafkaHeaders.OFFSET) long offset,
-                        @Header Map<String, String> headers) {
+                        @Headers Map<String, String> headers) {
         if (message == null) {
             log.error("Received null message on topic {}", receivedTopic);
             throw new IllegalArgumentException("Message cannot be null");
