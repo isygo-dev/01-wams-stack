@@ -1,3 +1,8 @@
+# Create key-credentials.txt for Kafka SSL
+cat > ./certs/key-credentials.txt << 'EOF'
+changeit
+EOF
+
 # 1. client-ssl.properties (à placer dans ./certs/)
 cat > ./certs/client-ssl.properties << 'EOF'
 security.protocol=SSL
