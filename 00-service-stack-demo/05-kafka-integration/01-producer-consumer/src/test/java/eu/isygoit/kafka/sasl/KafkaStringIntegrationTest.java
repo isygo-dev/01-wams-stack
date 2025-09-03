@@ -15,16 +15,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
+import org.apache.kafka.common.KafkaException;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,72 +34,50 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for Kafka string message processing with SASL authentication.
+ * Integration tests for Kafka string message processing with SASL.
  * Tests the interaction between StringProducer and StringConsumer
- * using Testcontainers-managed Kafka and Zookeeper instances with SASL/PLAIN authentication.
- * Uses the "sasl" Spring profile for configuration.
+ * using a Testcontainers-managed Kafka instance with SASL_PLAINTEXT.
  */
 @SpringBootTest(properties = {
         "spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
-@ActiveProfiles("sasl")
 @AutoConfigureMockMvc
+@ActiveProfiles("sasl")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 class KafkaStringIntegrationTest {
 
-    private static final String TOPIC = "string-topic";
+    private static final String TOPIC = "string-topic-sasl";
     private static final int TIMEOUT_SECONDS = 10;
     private static final BlockingQueue<String> consumedMessages = new LinkedBlockingQueue<>();
     private static final BlockingQueue<Map<String, String>> consumedHeaders = new LinkedBlockingQueue<>();
-    private static final String SASL_USERNAME = "admin";
-    private static final String SASL_PASSWORD = "admin-secret";
-
-    private static Network network = Network.newNetwork();
-
-    @Container
-    private static final GenericContainer<?> zookeeperContainer = new GenericContainer<>(
-            DockerImageName.parse("confluentinc/cp-zookeeper:7.8.0"))
-            .withNetwork(network)
-            .withNetworkAliases("zookeeper")
-            .withExposedPorts(2181)
-            .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
-            .withEnv("ZOOKEEPER_TICK_TIME", "2000")
-            .withEnv("ZOOKEEPER_SERVER_SASL_ENABLED", "true")
-            .withEnv("ZOOKEEPER_AUTH_PROVIDER_1", "org.apache.zookeeper.server.auth.SASLAuthenticationProvider")
-            .withEnv("ZOOKEEPER_SERVER_AUTHENTICATION", "sasl")
-            .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/zookeeper/zookeeper_jaas.conf")
-            .withClasspathResourceMapping("zookeeper_jaas.conf", "/etc/zookeeper/zookeeper_jaas.conf", BindMode.READ_ONLY)
-            .waitingFor(Wait.forLogMessage(".*Started AdminServer.*", 1)
-                    .withStartupTimeout(Duration.ofMinutes(2)));
 
     @Container
     private static final KafkaContainer kafkaContainer = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.8.0"))
-            .withNetwork(network)
-            .withNetworkAliases("kafka")
-            .withExposedPorts(9092, 9093)
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+            .withEmbeddedZookeeper()
             .withEnv("KAFKA_BROKER_ID", "1")
-            .withEnv("KAFKA_ZOOKEEPER_CONNECT", "zookeeper:2181")
-            .withEnv("KAFKA_ZOOKEEPER_PROTOCOL", "SASL")
             .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1")
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true")
+            .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "CONTROLLER:SASL_PLAINTEXT,PLAINTEXT:SASL_PLAINTEXT,BROKER:SASL_PLAINTEXT")
+            .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
             .withEnv("KAFKA_SASL_ENABLED_MECHANISMS", "PLAIN")
             .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN")
-            .withEnv("KAFKA_AUTHORIZER_CLASS_NAME", "kafka.security.authorizer.AclAuthorizer")
-            .withEnv("KAFKA_SUPER_USERS", "User:admin")
-            .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SASL_PLAINTEXT:SASL_PLAINTEXT,PLAINTEXT:PLAINTEXT,BROKER:SASL_PLAINTEXT")
-            .withEnv("KAFKA_LISTENERS", "SASL_PLAINTEXT://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9093,BROKER://0.0.0.0:9094")
-            .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
-            .withEnv("KAFKA_ADVERTISED_LISTENERS", "SASL_PLAINTEXT://host.docker.internal:9092,PLAINTEXT://localhost:9093,BROKER://kafka:9094")
-            .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf")
-            .withClasspathResourceMapping("kafka_jaas.conf", "/etc/kafka/kafka_server_jaas.conf", BindMode.READ_ONLY)
-            .waitingFor(Wait.forLogMessage(".*\\[KafkaServer id=\\d+\\] started.*", 1)
-                    .withStartupTimeout(Duration.ofMinutes(2)))
-            .dependsOn(zookeeperContainer);
+            .withEnv("KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL", "PLAIN")
+            .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/kafka_jaas.conf")
+            .withEnv("ZOOKEEPER_SASL_ENABLED", "true")
+            .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("kafka_jaas.conf"),
+                    "/etc/kafka/kafka_jaas.conf"
+            )
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("zookeeper_jaas.conf"),
+                    "/etc/kafka/zookeeper_jaas.conf"
+            );
 
     @Autowired
     private StringProducer stringProducer;
@@ -111,43 +86,28 @@ class KafkaStringIntegrationTest {
     private StringConsumer stringConsumer;
 
     /**
-     * Configures Kafka bootstrap servers and SASL settings for producer and consumer under the "sasl" profile.
+     * Configures Kafka bootstrap servers for producer and consumer.
      */
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        // Use the mapped port for SASL_PLAINTEXT
-        registry.add("spring.kafka.producer.bootstrap-servers", () -> "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
-        registry.add("spring.kafka.consumer.bootstrap-servers", () -> "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
+        registry.add("spring.kafka.producer.bootstrap-servers", kafkaContainer::getBootstrapServers);
+        registry.add("spring.kafka.consumer.bootstrap-servers", kafkaContainer::getBootstrapServers);
         registry.add("kafka.topic.string-topic", () -> TOPIC);
-        registry.add("spring.kafka.producer.properties.sasl.mechanism", () -> "PLAIN");
-        registry.add("spring.kafka.producer.properties.security.protocol", () -> "SASL_PLAINTEXT");
-        registry.add("spring.kafka.producer.properties.sasl.jaas.config",
-                () -> "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                        "username=\"" + SASL_USERNAME + "\" " +
-                        "password=\"" + SASL_PASSWORD + "\";");
-        registry.add("spring.kafka.consumer.properties.sasl.mechanism", () -> "PLAIN");
-        registry.add("spring.kafka.consumer.properties.security.protocol", () -> "SASL_PLAINTEXT");
-        registry.add("spring.kafka.consumer.properties.sasl.jaas.config",
-                () -> "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                        "username=\"" + SASL_USERNAME + "\" " +
-                        "password=\"" + SASL_PASSWORD + "\";");
     }
 
     /**
-     * Sets up Kafka topic before all tests with SASL authentication.
+     * Sets up Kafka topic before all tests.
      */
     @BeforeAll
     static void setUp() {
-        Map<String, Object> adminProps = new HashMap<>();
-        adminProps.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
-        adminProps.put("sasl.mechanism", "PLAIN");
-        adminProps.put("security.protocol", "SASL_PLAINTEXT");
-        adminProps.put("sasl.jaas.config",
-                "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-                        "username=\"" + SASL_USERNAME + "\" " +
-                        "password=\"" + SASL_PASSWORD + "\";");
+        Map<String, Object> adminConfig = new HashMap<>();
+        adminConfig.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+        adminConfig.put("security.protocol", "SASL_PLAINTEXT");
+        adminConfig.put("sasl.mechanism", "PLAIN");
+        adminConfig.put("sasl.jaas.config",
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"admin-secret\";");
 
-        try (AdminClient adminClient = AdminClient.create(adminProps)) {
+        try (AdminClient adminClient = AdminClient.create(adminConfig)) {
             adminClient.createTopics(Collections.singletonList(new NewTopic(TOPIC, 1, (short) 1)));
         }
     }
@@ -176,11 +136,11 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests basic message production and consumption with SASL authentication.
+     * Tests basic message production and consumption.
      */
     @Test
     @Order(1)
-    @DisplayName("Verify single message production and consumption with headers and SASL")
+    @DisplayName("Verify single message production and consumption with headers")
     void testSingleMessage() throws Exception {
         // Arrange
         String message = "Test message " + UUID.randomUUID();
@@ -199,11 +159,11 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests handling of multiple messages in sequence with SASL authentication.
+     * Tests handling of multiple messages in sequence.
      */
     @Test
     @Order(2)
-    @DisplayName("Verify multiple message production and consumption with SASL")
+    @DisplayName("Verify multiple message production and consumption")
     void testMultipleMessages() throws Exception {
         // Arrange
         int messageCount = 5;
@@ -228,11 +188,11 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests handling of empty message with SASL authentication.
+     * Tests handling of empty message.
      */
     @Test
     @Order(3)
-    @DisplayName("Verify empty message handling with SASL")
+    @DisplayName("Verify empty message handling")
     void testEmptyMessage() throws Exception {
         // Arrange
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_empty_value");
@@ -247,11 +207,11 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests header propagation with multiple headers and SASL authentication.
+     * Tests header propagation with multiple headers.
      */
     @Test
     @Order(4)
-    @DisplayName("Verify multiple headers propagation with SASL")
+    @DisplayName("Verify multiple headers propagation")
     void testMultipleHeaders() throws Exception {
         // Arrange
         String message = "Test message " + UUID.randomUUID();
@@ -275,11 +235,11 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests consumer error handling with null message and SASL authentication.
+     * Tests consumer error handling with null message.
      */
     @Test
     @Order(5)
-    @DisplayName("Verify null message handling with SASL - should throw IllegalArgumentException")
+    @DisplayName("Verify null message handling - should throw IllegalArgumentException")
     void testNullMessage() {
         // Arrange
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_null_value");
@@ -294,11 +254,11 @@ class KafkaStringIntegrationTest {
     }
 
     /**
-     * Tests unauthorized access attempt with incorrect SASL credentials.
+     * Tests unauthorized access handling with invalid credentials.
      */
     @Test
     @Order(6)
-    @DisplayName("Verify unauthorized access with incorrect SASL credentials")
+    @DisplayName("Verify unauthorized access handling")
     void testUnauthorizedAccess() {
         // Arrange: Create a producer with incorrect credentials
         Map<String, Object> wrongConfig = new HashMap<>();
