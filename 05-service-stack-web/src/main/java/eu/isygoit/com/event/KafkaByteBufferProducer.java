@@ -3,7 +3,6 @@ package eu.isygoit.com.event;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
 
 /**
  * Abstract Kafka producer for sending ByteBuffer data.

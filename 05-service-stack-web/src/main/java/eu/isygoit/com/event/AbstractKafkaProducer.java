@@ -6,8 +6,6 @@ import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
-import org.apache.kafka.common.errors.AuthenticationException;
-import org.apache.kafka.common.errors.AuthorizationException;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -174,17 +172,17 @@ public abstract class AbstractKafkaProducer<T> {
             throw new KafkaPrepareDataException(e);
         }
         log.info("Sending message to topic {}", resolvedTopic);
-            RecordHeaders recordHeaders = new RecordHeaders();
-            if (customHeaders != null) {
-                customHeaders.forEach((k, v) -> recordHeaders.add(k, v.getBytes(StandardCharsets.UTF_8)));
-            }
-            ProducerRecord<String, byte[]> record = new ProducerRecord<>(resolvedTopic,
-                    null,
-                    null, null,
-                    data,
-                    recordHeaders);
-            kafkaTemplate.send(record);
-            log.debug("Message successfully sent to topic {}", resolvedTopic);
+        RecordHeaders recordHeaders = new RecordHeaders();
+        if (customHeaders != null) {
+            customHeaders.forEach((k, v) -> recordHeaders.add(k, v.getBytes(StandardCharsets.UTF_8)));
+        }
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(resolvedTopic,
+                null,
+                null, null,
+                data,
+                recordHeaders);
+        kafkaTemplate.send(record);
+        log.debug("Message successfully sent to topic {}", resolvedTopic);
     }
 
     private byte[] prepareData(T message) throws Exception {

@@ -114,7 +114,7 @@ class OxiCloudStorageIntegrationTests {
     @Order(3)
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Test content".getBytes(StandardCharsets.UTF_8));
+                "Test content" .getBytes(StandardCharsets.UTF_8));
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         byte[] data = oxiCloudService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
@@ -127,7 +127,7 @@ class OxiCloudStorageIntegrationTests {
     @Order(4)
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Content for presigned".getBytes(StandardCharsets.UTF_8));
+                "Content for presigned" .getBytes(StandardCharsets.UTF_8));
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         String url = oxiCloudService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertNotNull(url);
@@ -141,7 +141,7 @@ class OxiCloudStorageIntegrationTests {
     @Order(5)
     void testGetObjectsByTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Tagged content".getBytes(StandardCharsets.UTF_8));
+                "Tagged content" .getBytes(StandardCharsets.UTF_8));
         Map<String, String> tags = Map.of("type", "document", "env", "test");
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
 
@@ -159,7 +159,7 @@ class OxiCloudStorageIntegrationTests {
     @Order(6)
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Content to tag".getBytes(StandardCharsets.UTF_8));
+                "Content to tag" .getBytes(StandardCharsets.UTF_8));
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
 
         oxiCloudService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
@@ -177,7 +177,7 @@ class OxiCloudStorageIntegrationTests {
     @Order(7)
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Content to delete".getBytes(StandardCharsets.UTF_8));
+                "Content to delete" .getBytes(StandardCharsets.UTF_8));
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         oxiCloudService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertThrows(S3BuketException.class, () ->
@@ -190,8 +190,8 @@ class OxiCloudStorageIntegrationTests {
     @Test
     @Order(8)
     void testDeleteMultipleObjects() {
-        MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
-        MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2".getBytes());
+        MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1" .getBytes());
+        MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2" .getBytes());
 
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
@@ -285,7 +285,7 @@ class OxiCloudStorageIntegrationTests {
         String objectPath = "/dir1/dir2/";
         String objectName = "path-object.txt";
         MockMultipartFile file = new MockMultipartFile("file", objectPath, "text/plain",
-                "Path content".getBytes(StandardCharsets.UTF_8));
+                "Path content" .getBytes(StandardCharsets.UTF_8));
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
         byte[] retrieved = oxiCloudService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
         assertEquals("Path content", new String(retrieved));
@@ -297,7 +297,7 @@ class OxiCloudStorageIntegrationTests {
     @Test
     @Order(17)
     void testListObjectsInBucket() {
-        MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list" .getBytes());
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
         List<FileStorage> files = oxiCloudService.getObjects(s3Config, BUCKET_NAME);
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
@@ -310,7 +310,7 @@ class OxiCloudStorageIntegrationTests {
     @Order(18)
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "With empty version".getBytes());
+                "With empty version" .getBytes());
         oxiCloudService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         assertDoesNotThrow(() ->
                 oxiCloudService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));

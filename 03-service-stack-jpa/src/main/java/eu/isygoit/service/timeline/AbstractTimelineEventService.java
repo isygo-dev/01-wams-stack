@@ -30,7 +30,7 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
     /**
      * Record event.
      *
-     * @param entity    the entity
+     * @param entity            the entity
      * @param timelineEventType the event type
      */
     @Transactional

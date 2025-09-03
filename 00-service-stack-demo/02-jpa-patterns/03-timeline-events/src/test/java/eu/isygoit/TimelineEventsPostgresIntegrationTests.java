@@ -48,9 +48,6 @@ class TimelineEventsPostgresIntegrationTests {
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
     private static final String BASE_URL = "/api/tutorials";
-
-    private static Long tutorialId;
-
     /**
      * The constant postgres.
      */
@@ -60,7 +57,7 @@ class TimelineEventsPostgresIntegrationTests {
             .withUsername("postgres")
             .withPassword("root")
             .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
-
+    private static Long tutorialId;
     @Autowired
     private MockMvc mockMvc;
 

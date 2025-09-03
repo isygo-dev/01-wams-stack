@@ -32,7 +32,7 @@ class ZipOperationsTest {
     void zipSingleFile_ShouldCreateValidZipFile() throws IOException {
         // Setup
         Path sourceFile = tempDir.resolve("source.txt");
-        Files.write(sourceFile, "test content".getBytes());
+        Files.write(sourceFile, "test content" .getBytes());
         String zipPath = tempDir.resolve("output.zip").toString();
 
         // Test
@@ -53,8 +53,8 @@ class ZipOperationsTest {
         // Setup
         Path file1 = tempDir.resolve("file1.txt");
         Path file2 = tempDir.resolve("file2.txt");
-        Files.write(file1, "content1".getBytes());
-        Files.write(file2, "content2".getBytes());
+        Files.write(file1, "content1" .getBytes());
+        Files.write(file2, "content2" .getBytes());
 
         List<File> files = Arrays.asList(file1.toFile(), file2.toFile());
         String zipPath = tempDir.resolve("multiple.zip").toString();
@@ -76,7 +76,7 @@ class ZipOperationsTest {
     void unzipFile_ShouldExtractFilesCorrectly() throws IOException {
         // Setup
         Path sourceFile = tempDir.resolve("source.txt");
-        Files.write(sourceFile, "test content".getBytes());
+        Files.write(sourceFile, "test content" .getBytes());
         Path zipFile = tempDir.resolve("test.zip");
         FileHelper.zipSingleFile(sourceFile.toFile(), zipFile.toString());
 

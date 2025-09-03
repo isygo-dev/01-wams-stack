@@ -109,7 +109,7 @@ class ImageCrudIntegrationTests {
     }
 
     private MockMultipartFile createMockImage() {
-        byte[] imageContent = "mock image content".getBytes();
+        byte[] imageContent = "mock image content" .getBytes();
         return new MockMultipartFile("file", "test.png", MediaType.IMAGE_PNG_VALUE, imageContent);
     }
 
@@ -119,7 +119,7 @@ class ImageCrudIntegrationTests {
     }
 
     private MockMultipartFile createInvalidImage() {
-        byte[] invalidContent = "invalid content".getBytes();
+        byte[] invalidContent = "invalid content" .getBytes();
         return new MockMultipartFile("file", "test.txt", MediaType.TEXT_PLAIN_VALUE, invalidContent);
     }
 
@@ -158,7 +158,7 @@ class ImageCrudIntegrationTests {
 
     private MockMultipartHttpServletRequestBuilder buildMultipartRequest(String url, String method, MockMultipartFile... files) {
         MockMultipartHttpServletRequestBuilder builder = MockMvcRequestBuilders.multipart(url);
-        if ("PUT".equalsIgnoreCase(method)) {
+        if ("PUT" .equalsIgnoreCase(method)) {
             builder.with(req -> {
                 req.setMethod("PUT");
                 return req;
@@ -322,7 +322,7 @@ class ImageCrudIntegrationTests {
                 .andReturn();
 
         byte[] downloadedContent = result.getResponse().getContentAsByteArray();
-        byte[] expectedContent = "mock image content".getBytes();
+        byte[] expectedContent = "mock image content" .getBytes();
         assertArrayEquals(expectedContent, downloadedContent, "Downloaded image content should match uploaded content");
     }
 
@@ -657,7 +657,7 @@ class ImageCrudIntegrationTests {
     @DisplayName("Create user with invalid JSON DTO - should fail")
     void testCreateUserWithInvalidJsonDto() throws Exception {
         MockMultipartFile userPart = new MockMultipartFile(
-                "dto", "", "application/json", "invalid json".getBytes());
+                "dto", "", "application/json", "invalid json" .getBytes());
         MockMultipartFile imagePart = createMockImage();
 
         mockMvc.perform(buildMultipartRequest(IMAGE_URL, "POST", userPart, imagePart)
@@ -688,7 +688,7 @@ class ImageCrudIntegrationTests {
                             .andReturn();
 
                     byte[] downloadedContent = result.getResponse().getContentAsByteArray();
-                    byte[] expectedContent = "mock image content".getBytes();
+                    byte[] expectedContent = "mock image content" .getBytes();
                     assertArrayEquals(expectedContent, downloadedContent, "Downloaded image content should match");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -706,7 +706,7 @@ class ImageCrudIntegrationTests {
     @Order(26)
     @DisplayName("Create user with oversized fields - should fail")
     void testCreateUserWithOversizedFields() throws Exception {
-        String oversizedField = "A".repeat(MAX_FIELD_LENGTH + 1);
+        String oversizedField = "A" .repeat(MAX_FIELD_LENGTH + 1);
         UserDto userDto = UserDto.builder()
                 .tenant(TENANT_ID)
                 .firstName(oversizedField)

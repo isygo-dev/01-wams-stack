@@ -288,6 +288,6 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     private E findEntityById(UUID id) {
         return repository().findByElementTypeAndJsonId(elementType, id.toString())
                 .orElseThrow(() -> new ObjectNotFoundException(
-                        "Entity not found for type: %s and id: %s".formatted(elementType, id)));
+                        "Entity not found for type: %s and id: %s" .formatted(elementType, id)));
     }
 }

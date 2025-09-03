@@ -1,7 +1,6 @@
 package eu.isygoit.kafka.producer;
 
 import eu.isygoit.com.event.KafkaFileProducer;
-import eu.isygoit.com.event.KafkaStringProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

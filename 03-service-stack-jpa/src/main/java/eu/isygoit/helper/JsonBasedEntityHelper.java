@@ -184,7 +184,7 @@ public class JsonBasedEntityHelper {
             jsonEntity.setAttributes(json);
             return jsonEntity;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create %s instance".formatted(elementType), e);
+            throw new RuntimeException("Failed to create %s instance" .formatted(elementType), e);
         }
     }
 

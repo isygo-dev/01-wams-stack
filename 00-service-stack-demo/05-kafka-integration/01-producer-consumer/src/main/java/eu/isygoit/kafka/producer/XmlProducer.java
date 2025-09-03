@@ -1,6 +1,5 @@
 package eu.isygoit.kafka.producer;
 
-import eu.isygoit.com.event.KafkaJsonProducer;
 import eu.isygoit.com.event.KafkaXmlProducer;
 import eu.isygoit.kafka.dto.TutorialDto;
 import lombok.extern.slf4j.Slf4j;

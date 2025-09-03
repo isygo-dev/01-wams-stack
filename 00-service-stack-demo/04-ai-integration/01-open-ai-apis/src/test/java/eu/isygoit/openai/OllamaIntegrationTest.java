@@ -198,7 +198,7 @@ public class OllamaIntegrationTest {
      */
     @Test
     void testOllamaGenerateEndpointWithLongMessage() throws Exception {
-        String longMessage = "a".repeat(15000); // Exceeds 4096 character limit
+        String longMessage = "a" .repeat(15000); // Exceeds 4096 character limit
 
         mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
                         .param("message", longMessage)
@@ -267,7 +267,7 @@ public class OllamaIntegrationTest {
      */
     @Test
     void testOllamaAnalyzeBillEndpointWithInvalidFileType() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF".getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF" .getBytes());
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
                         .file(file)
@@ -336,7 +336,7 @@ public class OllamaIntegrationTest {
      */
     @Test
     void testOllamaAnalyzeCVEndpointWithInvalidFileType() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF".getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF" .getBytes());
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
                         .file(file)

@@ -9,9 +9,9 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public abstract class AbstractKeyGenerator implements IKeyGenerator {
 
-    private static final char[] NUM_SYMBOLS = "0123456789".toCharArray();
-    private static final char[] ALPHA_SYMBOLS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
-    private static final char[] specialSymbols = "$#&@/-+={}[]()".toCharArray();
+    private static final char[] NUM_SYMBOLS = "0123456789" .toCharArray();
+    private static final char[] ALPHA_SYMBOLS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" .toCharArray();
+    private static final char[] specialSymbols = "$#&@/-+={}[]()" .toCharArray();
 
     private static final char[] ALPHANUM_SYMBOLS;
     private static final char[] ALL_SYMBOLS;

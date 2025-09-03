@@ -42,7 +42,7 @@ class FileStorageTest {
         void saveMultipartFile_ShouldSaveValidFile() throws IOException {
             // Setup
             MultipartFile mockFile = Mockito.mock(MultipartFile.class);
-            byte[] content = "test content".getBytes();
+            byte[] content = "test content" .getBytes();
             when(mockFile.getBytes()).thenReturn(content);
             when(mockFile.isEmpty()).thenReturn(false);
             when(mockFile.getOriginalFilename()).thenReturn("test.txt");

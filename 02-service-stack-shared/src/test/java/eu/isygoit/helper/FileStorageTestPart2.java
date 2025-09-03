@@ -48,7 +48,7 @@ class FileStorageTestPart2 {
     void setup() throws IOException {
         // Create and populate a temp file with some content
         tempFile = Files.createTempFile(tempDir, "testfile", ".txt");
-        Files.write(tempFile, "Sample content".getBytes());
+        Files.write(tempFile, "Sample content" .getBytes());
     }
 
     /**
@@ -68,7 +68,7 @@ class FileStorageTestPart2 {
         void testSaveMultipartFile_validFile() throws IOException {
             // Setup mock MultipartFile
             MultipartFile mockFile = mock(MultipartFile.class);
-            byte[] content = "test content".getBytes();
+            byte[] content = "test content" .getBytes();
             when(mockFile.getBytes()).thenReturn(content);
             when(mockFile.isEmpty()).thenReturn(false);
             when(mockFile.getOriginalFilename()).thenReturn("testfile.txt");

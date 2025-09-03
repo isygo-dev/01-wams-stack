@@ -1,6 +1,5 @@
 package eu.isygoit.kafka.consumer;
 
-import eu.isygoit.com.event.KafkaJsonConsumer;
 import eu.isygoit.com.event.KafkaXmlConsumer;
 import eu.isygoit.kafka.dto.TutorialDto;
 import lombok.extern.slf4j.Slf4j;

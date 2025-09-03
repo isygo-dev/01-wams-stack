@@ -115,7 +115,7 @@ public abstract class AbstractKafkaConsumer<T> {
                         @Header(KafkaHeaders.RECEIVED_TOPIC) String receivedTopic,
                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                         @Header(KafkaHeaders.OFFSET) long offset,
-                        @Headers Map<String, String> headers){
+                        @Headers Map<String, String> headers) {
         if (message == null || message.length == 0) {
             log.error("Received null message on topic {}", receivedTopic);
             throw new IllegalArgumentException("Message cannot be null");

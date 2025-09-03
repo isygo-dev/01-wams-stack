@@ -1,6 +1,5 @@
 package eu.isygoit.kafka.dto;
 
-import eu.isygoit.dto.extendable.AuditableDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -11,10 +11,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 

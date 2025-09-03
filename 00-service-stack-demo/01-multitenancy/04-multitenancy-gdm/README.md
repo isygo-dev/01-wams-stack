@@ -148,7 +148,7 @@ multitenancy-poc/
 
 2. **Access the Application**:
     - The application runs on `http://localhost:8081` by default.
-   - Swagger UI is available at `http://localhost:8081/swagger-ui/index.html` for API documentation.
+    - Swagger UI is available at `http://localhost:8081/swagger-ui/index.html` for API documentation.
 
 ### API Endpoints
 
