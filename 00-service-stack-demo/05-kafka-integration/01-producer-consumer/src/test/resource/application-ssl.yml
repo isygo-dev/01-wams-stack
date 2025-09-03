@@ -16,17 +16,32 @@ spring:
 
   kafka:
     producer:
-      bootstrap-servers: host.docker.internal:9092  # Replace with host IP (e.g., 192.168.1.100:9092) on Linux
+      bootstrap-servers: host.docker.internal:9093  # Updated to SSL port
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      properties:
+        security.protocol: SSL
+        ssl.truststore.location: /etc/kafka/secrets/client.truststore.jks
+        ssl.truststore.password: changeit
+        ssl.keystore.location: /etc/kafka/secrets/client.keystore.jks
+        ssl.keystore.password: changeit
+        ssl.key.password: changeit
+        ssl.endpoint.identification.algorithm: ""
     consumer:
-      bootstrap-servers: host.docker.internal:9092  # Replace with host IP (e.g., 192.168.1.100:9092) on Linux
+      bootstrap-servers: host.docker.internal:9093  # Updated to SSL port
       group-id: my-consumer-group
       auto-offset-reset: earliest
       enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
       properties:
+        security.protocol: SSL
+        ssl.truststore.location: /etc/kafka/secrets/client.truststore.jks
+        ssl.truststore.password: changeit
+        ssl.keystore.location: /etc/kafka/secrets/client.keystore.jks
+        ssl.keystore.password: changeit
+        ssl.key.password: changeit
+        ssl.endpoint.identification.algorithm: ""
         enable.metrics.push: false
         session.timeout.ms: 60000
         heartbeat.interval.ms: 3000
