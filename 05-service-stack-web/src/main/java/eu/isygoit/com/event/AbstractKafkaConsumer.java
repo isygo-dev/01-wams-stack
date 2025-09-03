@@ -24,6 +24,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiConsumer;
 
 /**
@@ -56,6 +58,14 @@ import java.util.function.BiConsumer;
 public abstract class AbstractKafkaConsumer<T> {
 
     private static final String RECEIVED_HEADERS = "custom_received_headers";
+
+    /**
+     * The Enable hmac.
+     */
+    @Setter
+    @Value("${kafka.security.enable-hmac:false}")
+    protected boolean enableHmac;
+
     /**
      * The Meter registry.
      */
@@ -68,30 +78,29 @@ public abstract class AbstractKafkaConsumer<T> {
     @Getter
     @Setter
     protected String topic; // Set by concrete classes via @Value
-
-    /**
-     * The Enable hmac.
-     */
-    @Value("${kafka.security.enable-hmac:false}")
-    protected boolean enableHmac;
-
     /**
      * The Hmac secret.
      */
+    @Setter
     @Value("${kafka.security.hmac-secret:}")
     protected String hmacSecret;
-
     /**
      * The Enable encryption.
      */
+    @Setter
     @Value("${kafka.security.enable-encryption:false}")
     protected boolean enableEncryption;
-
     /**
      * The Aes key.
      */
+    @Setter
     @Value("${kafka.security.aes-key:}")
     protected String aesKey;
+    /**
+     * The Exceptions.
+     */
+    @Getter
+    BlockingQueue<Throwable> exceptions = new LinkedBlockingQueue<>();
 
     /**
      * The process method for dynamic message processing.
@@ -116,6 +125,7 @@ public abstract class AbstractKafkaConsumer<T> {
                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                         @Header(KafkaHeaders.OFFSET) long offset,
                         @Headers Map<String, String> headers) {
+        exceptions.clear();
         if (message == null || message.length == 0) {
             log.error("Received null message on topic {}", receivedTopic);
             throw new IllegalArgumentException("Message cannot be null");
@@ -166,15 +176,19 @@ public abstract class AbstractKafkaConsumer<T> {
             log.debug("Message processed successfully from topic {}, partition {}, offset {}", topic, partition, offset);
         } catch (AuthenticationException e) {
             log.error("Authentication failed for topic {}: {}", topic, e.getMessage());
+            exceptions.add(e);
             throw new RuntimeException("Kafka authentication failed", e);
         } catch (AuthorizationException e) {
             log.error("Authorization failed for topic {}: {}", topic, e.getMessage());
+            exceptions.add(e);
             throw new RuntimeException("Kafka authorization failed", e);
         } catch (KafkaException e) {
             log.error("Kafka error processing message from topic {}: {}", topic, e.getMessage());
+            exceptions.add(e);
             throw new RuntimeException("Kafka processing failed", e);
         } catch (Exception e) {
             log.error("Failed to process message from topic {}, partition {}, offset {}: {}", topic, partition, offset, e.getMessage());
+            exceptions.add(e);
             throw new RuntimeException("Kafka processing failed", e);
         }
     }
