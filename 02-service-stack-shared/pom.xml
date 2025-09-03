@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-shared</artifactId>
-    <version>WS-1.0.250819-T1115</version>
+    <version>WS-1.0.250603-T1554</version>
 
     <name>service-stack-shared</name>
     <description>service-stack-shared</description>
@@ -21,7 +21,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250819-T1115</version>
+        <version>WS-1.0.250603-T1554</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

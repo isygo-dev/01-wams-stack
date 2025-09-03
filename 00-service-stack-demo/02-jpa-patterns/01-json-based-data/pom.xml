@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-json-based-data-pattern</artifactId>
-    <version>WC-1.0.250819-T1115</version>
+    <version>WC-1.0.250603-T1554</version>
     <packaging>jar</packaging>
     <name>poc-json-based-data-pattern</name>
     <description>JSON-Based Data Patterns in SQL</description>
@@ -30,13 +30,13 @@
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-web</artifactId>
-            <version>WS-1.0.250819-T1115</version>
+            <version>WS-1.0.250603-T1554</version>
         </dependency>
 
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
-            <version>WS-1.0.250819-T1115</version>
+            <version>WS-1.0.250603-T1554</version>
         </dependency>
 
         <dependency>
