@@ -1,5 +1,6 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.KafkaPrepareDataException;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
@@ -165,9 +166,14 @@ public abstract class AbstractKafkaProducer<T> {
     }
 
     private void performSend(T message, Map<String, String> customHeaders, String resolvedTopic, boolean async) {
+
+        byte[] data = null;
         try {
-            byte[] data = prepareData(message);
-            log.info("Sending message to topic {}", resolvedTopic);
+            data = prepareData(message);
+        } catch (Exception e) {
+            throw new KafkaPrepareDataException(e);
+        }
+        log.info("Sending message to topic {}", resolvedTopic);
             RecordHeaders recordHeaders = new RecordHeaders();
             if (customHeaders != null) {
                 customHeaders.forEach((k, v) -> recordHeaders.add(k, v.getBytes(StandardCharsets.UTF_8)));
@@ -179,19 +185,6 @@ public abstract class AbstractKafkaProducer<T> {
                     recordHeaders);
             kafkaTemplate.send(record);
             log.debug("Message successfully sent to topic {}", resolvedTopic);
-        } catch (AuthenticationException e) {
-            log.error("Authentication failed for topic {}: {}", resolvedTopic, e.getMessage());
-            throw new RuntimeException("Kafka authentication failed", e);
-        } catch (AuthorizationException e) {
-            log.error("Authorization failed for topic {}: {}", resolvedTopic, e.getMessage());
-            throw new RuntimeException("Kafka authorization failed", e);
-        } catch (KafkaException e) {
-            log.error("Kafka error sending to topic {}: {}", resolvedTopic, e.getMessage());
-            throw new RuntimeException("Kafka send failed", e);
-        } catch (Exception e) {
-            log.error("Failed to send message to topic {}: {}", resolvedTopic, e.getMessage());
-            throw new RuntimeException("Kafka send failed", e);
-        }
     }
 
     private byte[] prepareData(T message) throws Exception {

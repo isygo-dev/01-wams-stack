@@ -5,11 +5,13 @@ import eu.isygoit.kafka.producer.StringProducer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.errors.SaslAuthenticationException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -20,7 +22,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.apache.kafka.common.KafkaException;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,10 +60,13 @@ class KafkaStringIntegrationTest {
     private static final KafkaContainer kafkaContainer = new KafkaContainer(
             DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
             .withEmbeddedZookeeper()
+            .withExposedPorts(9092, 9093)
             .withEnv("KAFKA_BROKER_ID", "1")
             .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1")
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true")
             .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "CONTROLLER:SASL_PLAINTEXT,PLAINTEXT:SASL_PLAINTEXT,BROKER:SASL_PLAINTEXT")
+            .withEnv("KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://localhost:9093,BROKER://localhost:9092")
+            .withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:9093,BROKER://0.0.0.0:9092")
             .withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER")
             .withEnv("KAFKA_SASL_ENABLED_MECHANISMS", "PLAIN")
             .withEnv("KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL", "PLAIN")
@@ -70,6 +74,8 @@ class KafkaStringIntegrationTest {
             .withEnv("KAFKA_OPTS", "-Djava.security.auth.login.config=/etc/kafka/kafka_jaas.conf")
             .withEnv("ZOOKEEPER_SASL_ENABLED", "true")
             .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
+            .withEnv("ZOOKEEPER_AUTH_PROVIDER_1", "zookeeper.authProvider.SASLAuthenticationProvider")
+            .withEnv("ZOOKEEPER_SERVER_JVMFLAGS", "-Djava.security.auth.login.config=/etc/kafka/zookeeper_jaas.conf")
             .withCopyFileToContainer(
                     MountableFile.forClasspathResource("kafka_jaas.conf"),
                     "/etc/kafka/kafka_jaas.conf"
@@ -262,13 +268,15 @@ class KafkaStringIntegrationTest {
     void testUnauthorizedAccess() {
         // Arrange: Create a producer with incorrect credentials
         Map<String, Object> wrongConfig = new HashMap<>();
-        wrongConfig.put("bootstrap.servers", "host.docker.internal:" + kafkaContainer.getMappedPort(9092));
+        wrongConfig.put("bootstrap.servers", "localhost:" + kafkaContainer.getMappedPort(9092));
         wrongConfig.put("sasl.mechanism", "PLAIN");
         wrongConfig.put("security.protocol", "SASL_PLAINTEXT");
         wrongConfig.put("sasl.jaas.config",
                 "org.apache.kafka.common.security.plain.PlainLoginModule required " +
                         "username=\"wronguser\" " +
                         "password=\"wrongpassword\";");
+        wrongConfig.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        wrongConfig.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
 
         KafkaTemplate<String, byte[]> unauthorizedTemplate = new KafkaTemplate<>(
                 new org.springframework.kafka.core.DefaultKafkaProducerFactory<>(wrongConfig));
@@ -280,8 +288,12 @@ class KafkaStringIntegrationTest {
         };
 
         // Act & Assert
-        assertThrows(org.apache.kafka.common.errors.AuthenticationException.class,
+        RuntimeException exception = assertThrows(KafkaException.class,
                 () -> unauthorizedProducer.send("Test message", null),
-                "Should throw AuthenticationException for unauthorized access");
+                "Should throw KafkaException for unauthorized access");
+        assertTrue(exception.getCause() instanceof SaslAuthenticationException,
+                "Root cause should be SaslAuthenticationException");
+        assertTrue(exception.getCause().getMessage().contains("Invalid username or password"),
+                "Root cause message should indicate invalid username or password");
     }
 }
