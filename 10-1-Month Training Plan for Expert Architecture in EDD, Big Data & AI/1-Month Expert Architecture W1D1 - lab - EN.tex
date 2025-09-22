@@ -1,0 +1,1132 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue,
+    pdfborder={0 0 0}
+}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{amsmath, amssymb}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{framed}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes, arrows, calc, decorations.pathreplacing}
+
+% Custom colors
+\definecolor{isygoblue}{RGB}{33, 150, 243}
+
+% Page geometry
+\geometry{
+ a4paper,
+ left=30mm,
+ right=20mm,
+ top=30mm,
+ bottom=25mm,
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{isygoblue}\textbf{ISYGO Consulting Services}}
+\fancyhead[R]{\color{black}\textit{Week 1 - Day 1 Lab}}
+\fancyfoot[C]{\color{isygoblue}\textit{Inspire Success, Your Goals \& Opportunities}}
+\fancyfoot[R]{\thepage}
+
+% Title page customization
+\makeatletter
+\def\maketitle{%
+  \newpage
+  \null
+  \vfil
+  \begin{center}%
+  {\color{isygoblue}\LARGE \textbf{\@title}\par}
+  \vspace{1cm}
+  {\color{black}\large Week 1 - Day 1: Kafka Lab Guide \par}
+  \vspace{0.5cm}
+  {\color{isygoblue}\large \textit{Inspire Success, Your Goals \& Opportunities} \par}
+  \vskip 2em%
+  {\large
+   \lineskip .5em%
+   \begin{tabular}[t]{c}%
+    \@author
+  \end{tabular}\par
+  }%
+  \vskip 1.5em%
+  {\large \@date \par}
+  \end{center}
+  \par
+  \vfil
+  \null
+  \clearpage
+}
+\makeatother
+
+\title{\color{isygoblue}\Huge\textbf{Expert Architecture Training Program}}
+\author{\color{black}{ISYGO Consulting Services}}
+\date{\color{black}{September 19, 2025}}
+
+% Listings setup for code blocks with framing and line breaking
+\lstset{
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  breakatwhitespace=true,
+  columns=flexible,
+  frame=single,
+  showstringspaces=false,
+}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\clearpage
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+\markboth{Introduction}{Introduction}
+
+This lab guide complements the Week 1-Day 1 Theory Guide. Participants will implement an \textbf{Event-Driven Architecture (EDA)} using \textbf{Apache Kafka}. The exercises cover \textbf{Kafka setup, topic creation, producers and consumers, fault tolerance, monitoring, logging, security, and multi-tenancy}, enabling participants to achieve all Day 1 objectives efficiently.
+
+\begin{framed}
+\textbf{Astuce (Trick):} Allocate at least 4GB RAM to Docker Desktop and ensure a stable internet connection to pull images quickly.
+\end{framed}
+
+\section*{Objectives of the Lab}
+\addcontentsline{toc}{section}{Objectives of the Lab}
+\markright{Objectives of the Lab}
+
+By the end of this lab session, participants will be able to:  
+\begin{enumerate}
+    \item Install and configure Kafka on Windows using Docker.  
+    \item Create Kafka topics with multiple partitions for scalability.  
+    \item Implement Java Kafka producers and consumers with error handling.  
+    \item Understand Kafka consumer groups, offsets, and partition assignment.  
+    \item Test event publishing and consumption with multiple consumers.  
+    \item Apply monitoring and logging for Kafka events using tools like Kafdrop.  
+    \item Demonstrate fault-tolerance scenarios with message persistence.  
+    \item Configure Kafka security with SSL and SASL/PLAIN.  
+    \item Implement multi-tenancy using tenant-specific topics and ACLs.
+\end{enumerate}
+
+\chapter{Environment Setup}
+
+\section{Prerequisites}
+\begin{itemize}
+    \item \textbf{Operating System}: Windows 10 or higher (build 19041 or later).
+    \item \textbf{Java Development Kit}: JDK 17 (download from \href{https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html}{Oracle}; verify with \texttt{java -version}).
+    \item \textbf{Docker Desktop}: Version 4.10 or higher (download from \href{https://www.docker.com/products/docker-desktop}{Docker}; enable WSL 2 backend).
+    \item \textbf{IDE}: IntelliJ IDEA Community or Eclipse (download from \href{https://www.jetbrains.com/idea/download/}{JetBrains} or \href{https://www.eclipse.org/downloads/}{Eclipse}).
+    \item \textbf{Command Line Tools}: PowerShell 7 or Windows Terminal (download from \href{https://learn.microsoft.com/powershell/}{Microsoft}).
+    \item \textbf{Maven}: Version 3.8 or higher (download from \href{https://maven.apache.org/download.cgi}{Maven}; verify with \texttt{mvn -version}).
+\end{itemize}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{java -version} confirms JDK 17.
+    \item \texttt{docker --version} shows version 4.10 or higher.
+    \item \texttt{mvn -version} confirms Maven 3.8 or higher.
+    \item IDE is installed with a new Maven project template.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Docker Desktop fails to start.
+      \textbf{Solution:} Enable virtualization in BIOS, install WSL 2, restart Docker.
+    \item \textbf{Issue:} JDK not recognized.
+      \textbf{Solution:} Set \texttt{JAVA_HOME} to JDK path and update \texttt{PATH}.
+    \item \textbf{Issue:} Maven commands fail.
+      \textbf{Solution:} Set \texttt{M2_HOME} and add Maven bin to \texttt{PATH}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Run \texttt{docker info} to verify Docker setup; increase memory to 4GB in Docker settings for stability.
+\end{framed}
+
+\section{Kafka Setup Using Docker}
+\begin{enumerate}
+    \item Create a folder \texttt{C:\Users\<YourUser>\Desktop\w1d1-lab}.
+    \item Create \texttt{w1d1-lab/docker-compose.yml}:
+\begin{lstlisting}[language=yaml]
+version: '3.8'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_MESSAGE_MAX_BYTES: 1000000
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+    depends_on:
+      - kafka
+\end{lstlisting}
+    \item Open PowerShell in \texttt{w1d1-lab} (\texttt{cd ~/Desktop/w1d1-lab}) and run:
+    \begin{lstlisting}
+docker-compose up -d
+    \end{lstlisting}
+    \item Verify containers:
+    \begin{lstlisting}
+docker ps
+    \end{lstlisting}
+    Look for \texttt{wurstmeister/kafka}, \texttt{wurstmeister/zookeeper}, and \texttt{obsidiandynamics/kafdrop}.
+    \item Access Kafdrop at \texttt{http://localhost:9000}.
+    \item (Advanced) Enable JMX for monitoring:
+       - Add to Kafka environment: \texttt{KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false"}
+       - Expose port: \texttt{- "9999:9999"}.
+    \item Stop environment:
+    \begin{lstlisting}
+docker-compose down
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{docker-compose.yml} exists in \texttt{w1d1-lab}.
+    \item \texttt{docker ps} lists Kafka, Zookeeper, and Kafdrop containers.
+    \item \texttt{docker logs <kafka-container-id>} shows no errors.
+    \item Kafdrop UI is accessible at \texttt{http://localhost:9000}.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Kafka container exits.
+      \textbf{Solution:} Check logs (\texttt{docker logs <kafka-container-id>}); free port 9092 (\texttt{netstat -ano | findstr 9092}).
+    \item \textbf{Issue:} Zookeeper connection fails.
+      \textbf{Solution:} Verify port 2181 (\texttt{telnet localhost 2181}).
+    \item \textbf{Issue:} Kafdrop inaccessible.
+      \textbf{Solution:} Ensure port 9000 is free; check \texttt{KAFKA_BROKERCONNECT}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use \texttt{docker inspect <kafka-container-id>} to debug network issues; set \texttt{KAFKA_LOG_RETENTION_HOURS=24} for shorter logs.
+\end{framed}
+
+\chapter{Kafka Topics and Partitions}
+
+\section{Creating Topics}
+\begin{enumerate}
+    \item Get Kafka container ID:
+    \begin{lstlisting}
+docker ps
+    \end{lstlisting}
+    \item Access container shell:
+    \begin{lstlisting}
+docker exec -it <kafka-container-id> bash
+    \end{lstlisting}
+    \item Create topic \texttt{orders}:
+    \begin{lstlisting}
+bin/kafka-topics.sh --create --topic orders --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+    \end{lstlisting}
+    \item Verify:
+    \begin{lstlisting}
+bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+    \end{lstlisting}
+    \item (Advanced) Inspect topic:
+    \begin{lstlisting}
+bin/kafka-topics.sh --describe --topic orders --bootstrap-server localhost:9092
+    \end{lstlisting}
+    \item (Advanced) Set retention:
+    \begin{lstlisting}
+bin/kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name orders --alter --add-config retention.ms=86400000
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{orders} appears in \texttt{--list} output.
+    \item \texttt{--describe} confirms 3 partitions, replication factor 1.
+    \item Retention is 86400000 ms if advanced step applied.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Topic creation fails.
+      \textbf{Solution:} Check Kafka running; test \texttt{localhost:9092} (\texttt{telnet localhost 9092}).
+    \item \textbf{Issue:} Topic not listed.
+      \textbf{Solution:} Re-run creation; check syntax.
+    \item \textbf{Issue:} Retention config error.
+      \textbf{Solution:} Verify topic exists; correct command syntax.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Increase partitions to 6 for high-throughput scenarios; use \texttt{--partitions} based on consumer count.
+\end{framed}
+
+\section{Understanding Partitions}
+Partitions enable \textbf{parallel processing} and \textbf{scalability}. Each partition is \textbf{ordered}, with \textbf{offsets} tracking consumption.
+
+\begin{itemize}
+    \item \textbf{Use Case}: Consumer groups process partitions concurrently.
+    \item \textbf{Best Practice}: Set partitions with \(\lceil \text{events/sec} / \text{consumer capacity} \rceil\).
+    \item \textbf{Advanced}: Use \texttt{compression.type=snappy} to reduce network load.
+\end{itemize}
+
+\chapter{Java Kafka Producer}
+
+\section{Project Setup}
+\begin{enumerate}
+    \item Create Maven project in IDE:
+       - IntelliJ: File > New > Project > Maven.
+       - Eclipse: File > New > Maven Project.
+    \item Create \texttt{pom.xml}:
+\begin{lstlisting}[language=xml]
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.isygo</groupId>
+    <artifactId>kafka-lab</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+\end{lstlisting}
+    \item Build project:
+    \begin{lstlisting}
+mvn clean install
+    \end{lstlisting}
+    \item (Advanced) Add JUnit for testing:
+\begin{lstlisting}[language=xml]
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.9.2</version>
+    <scope>test</scope>
+</dependency>
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{mvn clean install} returns "BUILD SUCCESS".
+    \item Kafka and SLF4J dependencies are resolved.
+    \item IDE imports Kafka classes.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Dependency download fails.
+      \textbf{Solution:} Check internet; run \texttt{mvn -U clean install}.
+    \item \textbf{Issue:} IDE cannot resolve classes.
+      \textbf{Solution:} Refresh project (IntelliJ: Maven > Reload; Eclipse: Maven > Update).
+    \item \textbf{Issue:} JDK version mismatch.
+      \textbf{Solution:} Set JDK 17 in IDE and \texttt{pom.xml}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use \texttt{mvn dependency:tree} to detect and resolve dependency conflicts.
+\end{framed}
+
+\section{Implementing a Simple Producer}
+\begin{enumerate}
+    \item Create \texttt{src/main/java/com/isygo/KafkaProducerExample.java}:
+\begin{lstlisting}[language=java]
+package com.isygo;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Properties;
+
+public class KafkaProducerExample {
+    private static final Logger logger = LoggerFactory.getLogger(KafkaProducerExample.class);
+
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("acks", "all");
+        props.put("retries", 3);
+        props.put("compression.type", "snappy");
+        props.put("linger.ms", 5);
+
+        try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
+            for (int i = 1; i <= 10; i++) {
+                ProducerRecord<String, String> record = new ProducerRecord<>("orders", "order" + i, "Order data " + i);
+                producer.send(record, (metadata, exception) -> {
+                    if (exception != null) {
+                        logger.error("Error sending message: {}", exception.getMessage());
+                    } else {
+                        logger.info("Sent: key=order{}, partition={}, offset={}", i, metadata.partition(), metadata.offset());
+                    }
+                });
+            }
+            producer.flush();
+        } catch (Exception e) {
+            logger.error("Producer error: {}", e.getMessage());
+        }
+    }
+}
+\end{lstlisting}
+    \item Run:
+    \begin{lstlisting}
+mvn exec:java -Dexec.mainClass="com.isygo.KafkaProducerExample"
+    \end{lstlisting}
+    \item (Advanced) Add partition key for consistent routing:
+    \begin{lstlisting}[language=java]
+ProducerRecord<String, String> record = new ProducerRecord<>("orders", "customer1", "Order data " + i);
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Producer logs 10 messages sent.
+    \item Messages appear in \texttt{orders} via Kafdrop.
+    \item Logs show partition and offset details.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Producer connection fails.
+      \textbf{Solution:} Verify \texttt{localhost:9092}; check Kafka status.
+    \item \textbf{Issue:} Messages not in topic.
+      \textbf{Solution:} Confirm topic exists; use \texttt{bin/kafka-console-consumer.sh}.
+    \item \textbf{Issue:} No logs.
+      \textbf{Solution:} Ensure SLF4J dependency; check console.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Set \texttt{batch.size=16384} to optimize high-volume message batching.
+\end{framed}
+
+\section{Explanation}
+\begin{itemize}
+    \item \texttt{bootstrap.servers}: Broker address.
+    \item \texttt{key.serializer/value.serializer}: Serialize data.
+    \item \texttt{send()}: Publishes messages with callbacks.
+\end{itemize}
+
+\chapter{Java Kafka Consumer}
+
+\section{Implementing a Simple Consumer}
+\begin{enumerate}
+    \item Create \texttt{src/main/java/com/isygo/KafkaConsumerExample.java}:
+\begin{lstlisting}[language=java]
+package com.isygo;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+
+public class KafkaConsumerExample {
+    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerExample.class);
+
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("group.id", "order-consumer-group");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("auto.offset.reset", "earliest");
+        props.put("enable.auto.commit", "true");
+        props.put("max.poll.records", 100);
+
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
+            consumer.subscribe(Collections.singletonList("orders"));
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    logger.info("Received: key={}, value={}, partition={}, offset={}",
+                            record.key(), record.value(), record.partition(), record.offset());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Consumer error: {}", e.getMessage());
+        }
+    }
+}
+\end{lstlisting}
+    \item Run:
+    \begin{lstlisting}
+mvn exec:java -Dexec.mainClass="com.isygo.KafkaConsumerExample"
+    \end{lstlisting}
+    \item (Advanced) Manual offset commit:
+    \begin{lstlisting}[language=java]
+props.put("enable.auto.commit", "false");
+consumer.commitSync();
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Consumer logs messages from \texttt{orders}.
+    \item Console shows key, value, partition, offset.
+    \item All 10 produced messages are processed.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} No messages received.
+      \textbf{Solution:} Check topic messages; verify \texttt{auto.offset.reset}.
+    \item \textbf{Issue:} Poll timeout.
+      \textbf{Solution:} Increase \texttt{max.poll.interval.ms}; check broker.
+    \item \textbf{Issue:} Duplicates.
+      \textbf{Solution:} Enable \texttt{enable.auto.commit} or use manual commits.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Set \texttt{max.poll.records=50} for memory efficiency in high-volume scenarios.
+\end{framed}
+
+\section{Explanation}
+\begin{itemize}
+    \item \texttt{group.id}: Enables load balancing in consumer group.
+    \item \texttt{poll()}: Fetches messages with timeout.
+    \item \texttt{auto.offset.reset}: Sets read start point.
+\end{itemize}
+
+\chapter{Advanced Lab Exercises}
+
+\section{Multiple Consumers}
+\begin{enumerate}
+    \item Run two consumers:
+    \begin{lstlisting}
+mvn exec:java -Dexec.mainClass="com.isygo.KafkaConsumerExample"
+    \end{lstlisting}
+    Use separate terminals.
+    \item Produce messages using \texttt{KafkaProducerExample}.
+    \item Observe distribution in Kafdrop.
+    \item (Advanced) Check group status:
+    \begin{lstlisting}
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group order-consumer-group
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Two consumers run with same \texttt{group.id}.
+    \item Messages distributed across partitions.
+    \item \texttt{--describe} shows partition assignments.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Uneven distribution.
+      \textbf{Solution:} Increase partitions; check group coordinator.
+    \item \textbf{Issue:} Consumers not joining group.
+      \textbf{Solution:} Verify \texttt{group.id}; check broker.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use \texttt{--reset-offsets} to restart consumer group for testing.
+\end{framed}
+
+\section{Fault-Tolerance Testing}
+\begin{enumerate}
+    \item Stop Kafka during producer run:
+    \begin{lstlisting}
+docker-compose stop kafka
+    \end{lstlisting}
+    \item Produce messages.
+    \item Restart Kafka:
+    \begin{lstlisting}
+docker-compose start kafka
+    \end{lstlisting}
+    \item Verify message persistence in Kafdrop.
+    \item Stop consumer, produce messages, restart, verify replay.
+    \item (Advanced) Increase replication:
+    \begin{lstlisting}
+bin/kafka-topics.sh --alter --topic orders --replication-factor 1
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Messages persist after restart.
+    \item Consumer resumes from last offset.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Messages lost.
+      \textbf{Solution:} Check \texttt{acks=all}; verify retention.
+    \item \textbf{Issue:} Consumer skips messages.
+      \textbf{Solution:} Set \texttt{auto.offset.reset=earliest}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Increase \texttt{retention.bytes} for large datasets in fault tests.
+\end{framed}
+
+\section{Monitoring Kafka}
+\begin{enumerate}
+    \item Ensure Kafdrop in \texttt{docker-compose.yml}.
+    \item Restart Docker:
+    \begin{lstlisting}
+docker-compose down && docker-compose up -d
+    \end{lstlisting}
+    \item Access \texttt{http://localhost:9000}.
+    \item Monitor rates, lag, offsets.
+    \item (Advanced) Add Prometheus/Grafana:
+       - Pull images: \texttt{prom/prometheus}, \texttt{grafana/grafana}.
+       - Configure Kafka exporter.
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Kafdrop shows \texttt{orders} and messages.
+    \item Lag is minimal (<10 messages).
+    \item Prometheus/Grafana shows metrics (if advanced).
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Kafdrop inaccessible.
+      \textbf{Solution:} Free port 9000; check \texttt{KAFKA_BROKERCONNECT}.
+    \item \textbf{Issue:} High lag.
+      \textbf{Solution:} Scale consumers; add partitions.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use Grafana dashboards for real-time Kafka metric visualization.
+\end{framed}
+
+\chapter{Kafka Security Configuration}
+
+\section{Enabling SSL for Encryption}
+\begin{enumerate}
+    \item Create \texttt{w1d1-lab/certs}:
+    \begin{lstlisting}
+mkdir -p w1d1-lab/certs
+    \end{lstlisting}
+    \item Generate certificates:
+    \begin{lstlisting}
+openssl req -new -x509 -keyout w1d1-lab/certs/kafka.key -out w1d1-lab/certs/kafka.crt -days 365 -nodes -subj "/CN=localhost"
+    \end{lstlisting}
+    \item Convert to JKS:
+    \begin{lstlisting}
+keytool -importcert -file w1d1-lab/certs/kafka.crt -keystore w1d1-lab/certs/kafka.truststore.jks -storepass changeit -noprompt
+openssl pkcs12 -export -in w1d1-lab/certs/kafka.crt -inkey w1d1-lab/certs/kafka.key -out w1d1-lab/certs/kafka.p12 -name kafka -passout pass:changeit
+keytool -importkeystore -srckeystore w1d1-lab/certs/kafka.p12 -srcstoretype PKCS12 -destkeystore w1d1-lab/certs/kafka.keystore.jks -deststorepass changeit -srcstorepass changeit
+    \end{lstlisting}
+    \item Update \texttt{docker-compose.yml}:
+\begin{lstlisting}[language=yaml]
+version: '3.8'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9092,SSL://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,SSL://localhost:9093
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/certs/kafka.keystore.jks
+      KAFKA_SSL_KEYSTORE_PASSWORD: changeit
+      KAFKA_SSL_KEY_PASSWORD: changeit
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/certs/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: changeit
+    volumes:
+      - ./certs:/etc/kafka/certs
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+    depends_on:
+      - kafka
+\end{lstlisting}
+    \item Update \texttt{KafkaProducerExample.java} and \texttt{KafkaConsumerExample.java}:
+\begin{lstlisting}[language=java]
+props.put("bootstrap.servers", "localhost:9093");
+props.put("security.protocol", "SSL");
+props.put("ssl.keystore.location", "C:/Users/<YourUser>/Desktop/w1d1-lab/certs/kafka.keystore.jks");
+props.put("ssl.keystore.password", "changeit");
+props.put("ssl.key.password", "changeit");
+props.put("ssl.truststore.location", "C:/Users/<YourUser>/Desktop/w1d1-lab/certs/kafka.truststore.jks");
+props.put("ssl.truststore.password", "changeit");
+\end{lstlisting}
+    \item Restart Docker:
+    \begin{lstlisting}
+docker-compose down && docker-compose up -d
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Certificates in \texttt{w1d1-lab/certs}.
+    \item Kafka listens on 9093 with SSL.
+    \item Producer/consumer connect via SSL.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} SSL handshake fails.
+      \textbf{Solution:} Check certificate paths; ensure \texttt{CN=localhost}.
+    \item \textbf{Issue:} Keytool errors.
+      \textbf{Solution:} Verify JDK bin in \texttt{PATH}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Test SSL with \texttt{openssl s_client -connect localhost:9093}.
+\end{framed}
+
+\section{Enabling SASL/PLAIN Authentication}
+\begin{enumerate}
+    \item Create \texttt{w1d1-lab/kafka-jaas.conf}:
+\begin{lstlisting}
+KafkaServer {
+   org.apache.kafka.common.security.plain.PlainLoginModule required
+   username="admin"
+   password="admin-secret"
+   user_admin="admin-secret"
+   user_client="client-secret"
+   user_tenant1="tenant1-secret"
+   user_tenant2="tenant2-secret";
+};
+\end{lstlisting}
+    \item Update \texttt{docker-compose.yml}:
+\begin{lstlisting}[language=yaml]
+version: '3.8'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "9094:9094"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9092,SSL://:9093,SASL_SSL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,SSL://localhost:9093,SASL_SSL://localhost:9094
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/certs/kafka.keystore.jks
+      KAFKA_SSL_KEYSTORE_PASSWORD: changeit
+      KAFKA_SSL_KEY_PASSWORD: changeit
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/certs/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: changeit
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/kafka-jaas.conf"
+    volumes:
+      - ./certs:/etc/kafka/certs
+      - ./kafka-jaas.conf:/etc/kafka/kafka-jaas.conf
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+    depends_on:
+      - kafka
+\end{lstlisting}
+    \item Update \texttt{KafkaProducerExample.java} and \texttt{KafkaConsumerExample.java}:
+\begin{lstlisting}[language=java]
+props.put("bootstrap.servers", "localhost:9094");
+props.put("security.protocol", "SASL_SSL");
+props.put("sasl.mechanism", "PLAIN");
+props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"client\" password=\"client-secret\";");
+\end{lstlisting}
+    \item Restart Docker:
+    \begin{lstlisting}
+docker-compose down && docker-compose up -d
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item Kafka listens on 9094 with SASL/PLAIN over SSL.
+    \item Producer/consumer authenticate with \texttt{client/client-secret}.
+    \item Unauthorized clients rejected.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Authentication fails.
+      \textbf{Solution:} Verify JAAS credentials match client config.
+    \item \textbf{Issue:} SASL not enabled.
+      \textbf{Solution:} Check \texttt{KAFKA_SASL_ENABLED_MECHANISMS}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use environment variables for JAAS credentials in production.
+\end{framed}
+
+\section{Basic Authorization with ACLs}
+\begin{enumerate}
+    \item Access Kafka shell:
+    \begin{lstlisting}
+docker exec -it <kafka-container-id> bash
+    \end{lstlisting}
+    \item Add ACL for \texttt{client}:
+    \begin{lstlisting}
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:2181 \
+--add --allow-principal User:client --operation Read --operation Write --topic orders
+    \end{lstlisting}
+    \item Verify ACLs:
+    \begin{lstlisting}
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:2181 --list --topic orders
+    \end{lstlisting}
+    \item (Advanced) Restrict by host:
+    \begin{lstlisting}
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:2181 \
+--add --allow-principal User:client --operation Read --operation Write --topic orders --allow-host 127.0.0.1
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{client} can read/write \texttt{orders}.
+    \item ACLs listed correctly.
+    \item Unauthorized users denied.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} ACL command fails.
+      \textbf{Solution:} Verify \texttt{AclAuthorizer}; check Zookeeper.
+    \item \textbf{Issue:} Client access denied.
+      \textbf{Solution:} Check ACL principal and permissions.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use \texttt{--allow-host} for IP-based restrictions in production.
+\end{framed}
+
+\chapter{Kafka Multi-Tenancy Configuration}
+
+\section{Creating Tenant-Specific Topics}
+\begin{enumerate}
+    \item Access Kafka shell:
+    \begin{lstlisting}
+docker exec -it <kafka-container-id> bash
+    \end{lstlisting}
+    \item Create tenant topics:
+    \begin{lstlisting}
+bin/kafka-topics.sh --create --topic tenant1.orders --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+bin/kafka-topics.sh --create --topic tenant2.orders --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+    \end{lstlisting}
+    \item Verify:
+    \begin{lstlisting}
+bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+    \end{lstlisting}
+    \item (Advanced) Set retention:
+    \begin{lstlisting}
+bin/kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name tenant1.orders --alter --add-config retention.ms=86400000
+bin/kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name tenant2.orders --alter --add-config retention.ms=86400000
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{tenant1.orders}, \texttt{tenant2.orders} listed.
+    \item Each has 3 partitions (\texttt{--describe}).
+    \item Retention set to 24 hours (if advanced).
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Topic creation fails.
+      \textbf{Solution:} Verify Kafka running; check topic syntax.
+    \item \textbf{Issue:} Topics not listed.
+      \textbf{Solution:} Re-run creation; verify with \texttt{--list}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use prefixes (e.g., \texttt{tenant1.}) for namespace organization.
+\end{framed}
+
+\section{Configuring ACLs for Tenant Isolation}
+\begin{enumerate}
+    \item Update \texttt{w1d1-lab/kafka-jaas.conf}:
+\begin{lstlisting}
+KafkaServer {
+   org.apache.kafka.common.security.plain.PlainLoginModule required
+   username="admin"
+   password="admin-secret"
+   user_admin="admin-secret"
+   user_client="client-secret"
+   user_tenant1="tenant1-secret"
+   user_tenant2="tenant2-secret";
+};
+\end{lstlisting}
+    \item Add tenant ACLs:
+    \begin{lstlisting}
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:2181 \
+--add --allow-principal User:tenant1 --operation Read --operation Write --topic tenant1.orders
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:2181 \
+--add --allow-principal User:tenant2 --operation Read --operation Write --topic tenant2.orders
+    \end{lstlisting}
+    \item Verify:
+    \begin{lstlisting}
+bin/kafka-acls.sh --authorizer-properties zookeeper.connect=localhost:2181 --list
+    \end{lstlisting}
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{tenant1} accesses only \texttt{tenant1.orders}, \texttt{tenant2} only \texttt{tenant2.orders}.
+    \item ACLs listed correctly.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Tenant access denied.
+      \textbf{Solution:} Verify JAAS credentials and ACLs.
+    \item \textbf{Issue:} Cross-tenant access.
+      \textbf{Solution:} Ensure \texttt{KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND=false}.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Use topic patterns (e.g., \texttt{tenant*}) for scalable ACL management.
+\end{framed}
+
+\section{Testing Multi-Tenant Producers and Consumers}
+\begin{enumerate}
+    \item Create \texttt{src/main/java/com/isygo/KafkaTenantProducer.java}:
+\begin{lstlisting}[language=java]
+package com.isygo;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Properties;
+
+public class KafkaTenantProducer {
+    private static final Logger logger = LoggerFactory.getLogger(KafkaTenantProducer.class);
+
+    public static void main(String[] args) {
+        String tenant = args.length > 0 ? args[0] : "tenant1";
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9094");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.mechanism", "PLAIN");
+        props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + tenant + "\" password=\"" + tenant + "-secret\";");
+        props.put("ssl.keystore.location", "C:/Users/<YourUser>/Desktop/w1d1-lab/certs/kafka.keystore.jks");
+        props.put("ssl.keystore.password", "changeit");
+        props.put("ssl.key.password", "changeit");
+        props.put("ssl.truststore.location", "C:/Users/<YourUser>/Desktop/w1d1-lab/certs/kafka.truststore.jks");
+        props.put("ssl.truststore.password", "changeit");
+        props.put("acks", "all");
+        props.put("retries", 3);
+        props.put("compression.type", "snappy");
+
+        try (KafkaProducer<String, String> producer = new KafkaProducer<>(props)) {
+            for (int i = 1; i <= 5; i++) {
+                ProducerRecord<String, String> record = new ProducerRecord<>(tenant + ".orders", "order" + i, tenant + " Order data " + i);
+                producer.send(record, (metadata, exception) -> {
+                    if (exception != null) {
+                        logger.error("Error sending: {}", exception.getMessage());
+                    } else {
+                        logger.info("Sent to {}.orders: key=order{}, partition={}, offset={}", tenant, i, metadata.partition(), metadata.offset());
+                    }
+                });
+            }
+            producer.flush();
+        } catch (Exception e) {
+            logger.error("Producer error: {}", e.getMessage());
+        }
+    }
+}
+\end{lstlisting}
+    \item Create \texttt{src/main/java/com/isygo/KafkaTenantConsumer.java}:
+\begin{lstlisting}[language=java]
+package com.isygo;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+
+public class KafkaTenantConsumer {
+    private static final Logger logger = LoggerFactory.getLogger(KafkaTenantConsumer.class);
+
+    public static void main(String[] args) {
+        String tenant = args.length > 0 ? args[0] : "tenant1";
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9094");
+        props.put("group.id", tenant + "-consumer-group");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("auto.offset.reset", "earliest");
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.mechanism", "PLAIN");
+        props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + tenant + "\" password=\"" + tenant + "-secret\";");
+        props.put("ssl.keystore.location", "C:/Users/<YourUser>/Desktop/w1d1-lab/certs/kafka.keystore.jks");
+        props.put("ssl.keystore.password", "changeit");
+        props.put("ssl.key.password", "changeit");
+        props.put("ssl.truststore.location", "C:/Users/<YourUser>/Desktop/w1d1-lab/certs/kafka.truststore.jks");
+        props.put("ssl.truststore.password", "changeit");
+
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
+            consumer.subscribe(Collections.singletonList(tenant + ".orders"));
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    logger.info("Received from {}.orders: key={}, value={}, partition={}, offset={}",
+                            tenant, record.key(), record.value(), record.partition(), record.offset());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Consumer error: {}", e.getMessage());
+        }
+    }
+}
+\end{lstlisting}
+    \item Run \texttt{tenant1} producer:
+    \begin{lstlisting}
+mvn exec:java -Dexec.mainClass="com.isygo.KafkaTenantProducer" -Dexec.args="tenant1"
+    \end{lstlisting}
+    \item Run \texttt{tenant1} consumer:
+    \begin{lstlisting}
+mvn exec:java -Dexec.mainClass="com.isygo.KafkaTenantConsumer" -Dexec.args="tenant1"
+    \end{lstlisting}
+    \item Repeat for \texttt{tenant2}.
+    \item Verify isolation in Kafdrop.
+\end{enumerate}
+
+\subsection{Acceptance Criteria}
+\begin{itemize}
+    \item \texttt{tenant1} accesses only \texttt{tenant1.orders}.
+    \item \texttt{tenant2} accesses only \texttt{tenant2.orders}.
+    \item Kafdrop shows tenant-specific messages.
+\end{itemize}
+
+\subsection{Troubleshooting}
+\begin{itemize}
+    \item \textbf{Issue:} Cross-tenant access.
+      \textbf{Solution:} Verify ACLs and subscriptions.
+    \item \textbf{Issue:} Authentication errors.
+      \textbf{Solution:} Check JAAS credentials.
+\end{itemize}
+
+\begin{framed}
+\textbf{Astuce (Trick):} Test cross-tenant access to ensure ACL enforcement.
+\end{framed}
+
+\chapter*{Reflection Questions}
+\addcontentsline{toc}{chapter}{Reflection Questions}
+\begin{enumerate}
+    \item How does Kafka ensure message durability?  
+    \item What happens if two consumers share the same partition?  
+    \item How would you scale Kafka for high-volume order processing?  
+    \item How does partitioning improve parallelism?  
+    \item Why is SSL critical for securing Kafka in production?  
+    \item How do ACLs enhance access control in multi-tenant Kafka setups?
+\end{enumerate}
+
+\chapter*{Glossary}
+\addcontentsline{toc}{chapter}{Glossary}
+\begin{itemize}
+    \item \textbf{ACL (Access Control List):} Defines permissions for Kafka users/resources.
+    \item \textbf{Consumer Group:} Consumers sharing \texttt{group.id} for load balancing.
+    \item \textbf{Event-Driven Architecture (EDA):} Architecture using events for communication.
+    \item \textbf{Kafka:} Distributed streaming platform for high-throughput events.
+    \item \textbf{Multi-Tenancy:} Sharing infrastructure with isolated tenant data.
+    \item \textbf{Namespace:} Logical grouping of topics (e.g., \texttt{tenant1.}).
+    \item \textbf{Offset:} Message position identifier in a partition.
+    \item \textbf{Partition:} Topic subset for ordered, parallel processing.
+    \item \textbf{SASL (Simple Authentication and Security Layer):} Authentication framework for Kafka.
+    \item \textbf{SSL (Secure Sockets Layer):} Encryption protocol for Kafka communication.
+    \item \textbf{Tenant:} A client or organization with isolated data in a shared system.
+    \item \textbf{Topic:} Logical channel for grouping events.
+\end{itemize}
+
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
+\begin{itemize}
+    \item \href{https://kafka.apache.org/documentation/}{Apache Kafka Documentation}\autocite{kafka2025}
+    \item \href{https://kafka.apache.org/documentation/#security}{Apache Kafka Security Documentation}\autocite{kafka2025}
+    \item \href{https://www.baeldung.com/kafka-java}{Baeldung Kafka Java Guide}
+    \item \href{https://kafka.apache.org/quickstart}{Kafka Quickstart Guide}
+    \item \href{https://www.confluent.io/blog/kafka-security-best-practices/}{Confluent: Kafka Security Best Practices}
+    \item \href{https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/service/event-hubs}{Microsoft Learn: Multi-Tenancy in Event Hubs}
+\end{itemize}
+
+\end{document}
