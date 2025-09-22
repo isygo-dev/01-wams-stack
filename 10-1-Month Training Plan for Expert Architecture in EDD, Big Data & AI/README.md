@@ -1,10 +1,18 @@
-How to Verify Services: 
-    * Zookeeper: http://localhost:2181
-    * Kafka: Connect a client to localhost:29092
-    * Kafdrop: http://localhost:9000
-    * Redpanda: Connect a client to localhost:9093, or check admin API at http://localhost:9644/v1/status/ready
-    * Prometheus: http://localhost:9090
-    * Grafana: http://localhost:3000 (login with admin/admin or your custom password)
+## Overview
+This README provides guidance on verifying the services in your Docker Compose setup for Kafka, Zookeeper, Kafdrop, Redpanda, Prometheus, and Grafana. It also includes a detailed guide on configuring Kafka monitoring with Prometheus and Grafana using a Kafka exporter.
+
+## Verifying Services
+Use the following URLs and commands to verify that each service is running correctly:
+
+- **Zookeeper**: Access via `http://localhost:2181` (or use a Zookeeper client to connect).
+- **Kafka**: Connect a Kafka client (e.g., `kafkacat` or `kafka-console-consumer`) to `localhost:29092`.
+- **Kafdrop**: Open the UI at `http://localhost:9000` to browse Kafka topics and messages.
+- **Redpanda**: Connect a Kafka-compatible client to `localhost:9093`, or check the admin API at `http://localhost:9644/v1/status/ready`.
+- **Prometheus**: Access the UI at `http://localhost:9090` to view metrics and targets.
+- **Grafana**: Open the dashboard at `http://localhost:3000` (default login: `admin`/`admin` or your custom password).
+
+## Screenshots
+Below are screenshots demonstrating the setup, including Kafdrop interfaces, terminal outputs for consumer groups, application logs from producers and consumers, and Prometheus targets. Each image includes a description for clarity.
 
 
 ![img.png](img.png)
