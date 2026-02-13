@@ -138,7 +138,7 @@ public class GeminiApiService {
                 for (var rating : firstCandidate.path("safetyRatings")) {
                     String category = rating.path("category").asText();
                     String probability = rating.path("probability").asText();
-                    if ("HIGH" .equals(probability) || "MEDIUM" .equals(probability)) {
+                    if ("HIGH".equals(probability) || "MEDIUM".equals(probability)) {
                         throw new GeminiApiException("Content blocked due to safety concerns: " +
                                 category + " (" + probability + ")");
                     }

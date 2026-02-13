@@ -316,6 +316,6 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     private E findEntityById(String tenant, UUID id) {
         return repository().findByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant)
                 .orElseThrow(() -> new ObjectNotFoundException(
-                        "Entity not found for type: %s, id: %s and tenant: %s" .formatted(elementType, id, tenant)));
+                        "Entity not found for type: %s, id: %s and tenant: %s".formatted(elementType, id, tenant)));
     }
 }

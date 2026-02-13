@@ -5,12 +5,15 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
+
 public class KafkaConsumerExample {
     private static final Logger logger =
             LoggerFactory.getLogger(KafkaConsumerExample.class);
+
     public static void main(String[] args) {
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:29092");

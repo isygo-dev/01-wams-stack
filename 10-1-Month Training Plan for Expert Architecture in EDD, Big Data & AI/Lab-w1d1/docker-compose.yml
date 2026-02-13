@@ -1,42 +1,42 @@
 version: "3.8"
 services:
   zookeeper:
-   image: wurstmeister/zookeeper:latest
-   ports:
-    - "2181:2181"
-   environment:
-    ZOOKEEPER_CLIENT_PORT: 2181
-    ZOOKEEPER_TICK_TIME: 2000
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
   kafka:
-   image: wurstmeister/kafka:latest
-   ports:
-    - "9092:9092"   # internal docker-to-docker
-    - "29092:29092" # external host access
-   environment:
-    KAFKA_ADVERTISED_HOST_NAME: localhost
-    KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    KAFKA_BROKER_ID: 1
-    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    KAFKA_MESSAGE_MAX_BYTES: 1000000
-    KAFKA_NUM_PARTITIONS: 3
-    KAFKA_MIN_INSYNC_REPLICAS: 1
-    KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-    KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
-    KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-   depends_on:
-    - zookeeper
-   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"   # internal docker-to-docker
+      - "29092:29092" # external host access
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_MESSAGE_MAX_BYTES: 1000000
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+    depends_on:
+      - zookeeper
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   kafdrop:
-   image: obsidiandynamics/kafdrop:latest
-   container_name: kafdrop
-   ports:
-    - "9000:9000"
-   environment:
-    KAFKA_BROKERCONNECT: kafka:9092
-    JVM_OPTS: "-Xms32M -Xmx64M"
-   depends_on:
-    - kafka
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+      JVM_OPTS: "-Xms32M -Xmx64M"
+    depends_on:
+      - kafka

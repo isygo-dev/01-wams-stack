@@ -122,7 +122,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "resume.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Sample PDF content" .getBytes(StandardCharsets.UTF_8));
+                "Sample PDF content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -165,7 +165,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "profile.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "Sample Image content" .getBytes(StandardCharsets.UTF_8));
+                "Sample Image content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -232,7 +232,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "updated_resume.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Updated PDF content" .getBytes(StandardCharsets.UTF_8));
+                "Updated PDF content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -302,7 +302,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "updated_profile.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "Updated Image content" .getBytes(StandardCharsets.UTF_8));
+                "Updated Image content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -361,7 +361,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "uploaded_resume.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Uploaded PDF content" .getBytes(StandardCharsets.UTF_8));
+                "Uploaded PDF content".getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(FILE_URL + "/upload/{id}", createdResume.getId())
                         .file(file)
@@ -412,7 +412,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "uploaded_profile.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "Uploaded Image content" .getBytes(StandardCharsets.UTF_8));
+                "Uploaded Image content".getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(IMAGE_URL + "/upload/{id}", createdResume.getId())
                         .file(file)
@@ -451,7 +451,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "download_resume.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Downloadable PDF content" .getBytes(StandardCharsets.UTF_8));
+                "Downloadable PDF content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -499,7 +499,7 @@ class ImageFileCrudIntegrationTests {
                 "file",
                 "download_profile.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "Downloadable Image content" .getBytes(StandardCharsets.UTF_8));
+                "Downloadable Image content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",

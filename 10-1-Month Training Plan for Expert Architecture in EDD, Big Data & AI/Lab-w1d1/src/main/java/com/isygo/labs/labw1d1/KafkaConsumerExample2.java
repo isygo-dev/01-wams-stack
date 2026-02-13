@@ -13,6 +13,7 @@ import java.util.Properties;
 public class KafkaConsumerExample2 {
     private static final Logger logger =
             LoggerFactory.getLogger(KafkaConsumerExample2.class);
+
     public static void main(String[] args) {
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:29092");

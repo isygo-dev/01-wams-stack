@@ -77,7 +77,7 @@ public interface DateHelper {
     static Date parseDateString(String dateString, Date defaultIfNull) {
         logger.debug("Attempting to parse date string: {}", dateString);
 
-        if (!StringUtils.hasText(dateString) || "null" .equalsIgnoreCase(dateString)) {
+        if (!StringUtils.hasText(dateString) || "null".equalsIgnoreCase(dateString)) {
             logger.warn("Input date string is empty or null, returning default date.");
             return defaultIfNull;
         }

@@ -259,7 +259,7 @@ public interface UrlHelper {
      * @return True if the value is null or contains "null", otherwise false.
      */
     public static boolean isNullOrEmpty(String value) {
-        boolean isNull = !StringUtils.hasText(value) || "null" .equals(value);
+        boolean isNull = !StringUtils.hasText(value) || "null".equals(value);
         if (isNull) {
             logger.warn("Parameter is either null or contains the string 'null'.");
         }
@@ -322,7 +322,7 @@ public interface UrlHelper {
      * @return True if the content type is JSON, otherwise false.
      */
     public static boolean isJsonContent(HttpServletRequest request) {
-        boolean isJson = "application/json" .equalsIgnoreCase(request.getContentType());
+        boolean isJson = "application/json".equalsIgnoreCase(request.getContentType());
         logger.debug("Is content type JSON: {}", isJson);
         return isJson;
     }
@@ -335,8 +335,8 @@ public interface UrlHelper {
      * @return True if the content type is XML, otherwise false.
      */
     public static boolean isXmlContent(HttpServletRequest request) {
-        boolean isXml = "application/xml" .equalsIgnoreCase(request.getContentType()) ||
-                "text/xml" .equalsIgnoreCase(request.getContentType());
+        boolean isXml = "application/xml".equalsIgnoreCase(request.getContentType()) ||
+                "text/xml".equalsIgnoreCase(request.getContentType());
         logger.debug("Is content type XML: {}", isXml);
         return isXml;
     }

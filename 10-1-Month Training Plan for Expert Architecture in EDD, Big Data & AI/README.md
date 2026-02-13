@@ -1,6 +1,9 @@
 # Kafka Monitoring with Docker Compose
 
-This guide provides comprehensive instructions for setting up and monitoring a Kafka ecosystem using Docker Compose, including Kafka, Zookeeper, Kafdrop, Redpanda (optional), Prometheus, and Grafana. It details how to configure a Kafka exporter to scrape metrics for Prometheus and visualize them in Grafana, with step-by-step verification, troubleshooting, and production-ready recommendations. Screenshots illustrate the setup and monitoring interfaces.
+This guide provides comprehensive instructions for setting up and monitoring a Kafka ecosystem using Docker Compose,
+including Kafka, Zookeeper, Kafdrop, Redpanda (optional), Prometheus, and Grafana. It details how to configure a Kafka
+exporter to scrape metrics for Prometheus and visualize them in Grafana, with step-by-step verification,
+troubleshooting, and production-ready recommendations. Screenshots illustrate the setup and monitoring interfaces.
 
 ## Table of Contents
 
@@ -28,56 +31,74 @@ This guide provides comprehensive instructions for setting up and monitoring a K
 
 ## Overview
 
-This setup deploys a robust Kafka ecosystem with monitoring tools to track performance and health. All services are connected via a custom Docker network (`monitoring-net`) for seamless communication. The setup is designed for development and testing but includes recommendations for production environments.
+This setup deploys a robust Kafka ecosystem with monitoring tools to track performance and health. All services are
+connected via a custom Docker network (`monitoring-net`) for seamless communication. The setup is designed for
+development and testing but includes recommendations for production environments.
 
 ## Service Explanations
 
 ### Zookeeper
 
-- **Purpose**: Zookeeper is a distributed coordination service that manages Kafka's cluster metadata, such as broker information, topic configurations, and partition leader elections. It ensures Kafka brokers operate as a cohesive cluster.
+- **Purpose**: Zookeeper is a distributed coordination service that manages Kafka's cluster metadata, such as broker
+  information, topic configurations, and partition leader elections. It ensures Kafka brokers operate as a cohesive
+  cluster.
 - **How It Works**:
     - Zookeeper runs as a centralized service that Kafka brokers connect to for coordination.
-    - It stores metadata in a hierarchical namespace (similar to a file system) and handles tasks like leader election for partitions and tracking consumer offsets.
-    - In this setup, Zookeeper listens on port `2181` and is configured with `ZOOKEEPER_CLIENT_PORT` and `ZOOKEEPER_TICK_TIME` for reliable operation.
+    - It stores metadata in a hierarchical namespace (similar to a file system) and handles tasks like leader election
+      for partitions and tracking consumer offsets.
+    - In this setup, Zookeeper listens on port `2181` and is configured with `ZOOKEEPER_CLIENT_PORT` and
+      `ZOOKEEPER_TICK_TIME` for reliable operation.
     - The service is lightweight, with CPU and memory limits (`0.5` CPU, `512M` memory) to prevent resource overuse.
     - Kafka depends on Zookeeper, so it must be running before Kafka starts.
 
 ### Kafka
 
-- **Purpose**: Kafka is a distributed streaming platform for publishing, subscribing, and processing large volumes of messages in real-time, with high throughput and fault tolerance.
+- **Purpose**: Kafka is a distributed streaming platform for publishing, subscribing, and processing large volumes of
+  messages in real-time, with high throughput and fault tolerance.
 - **How It Works**:
-    - Kafka operates as a cluster of brokers (in this setup, a single broker with `KAFKA_BROKER_ID: 1`) that store and serve messages organized into topics and partitions.
+    - Kafka operates as a cluster of brokers (in this setup, a single broker with `KAFKA_BROKER_ID: 1`) that store and
+      serve messages organized into topics and partitions.
     - It uses Zookeeper to manage cluster state and metadata.
-    - Configured with dual listeners: `PLAINTEXT://kafka:9092` for internal Docker communication and `PLAINTEXT_HOST://localhost:29092` for external access.
-    - Key configurations include `KAFKA_NUM_PARTITIONS: 3` for topic partitioning, `KAFKA_MESSAGE_MAX_BYTES: 1000000` for message size limits, and `KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1` for single-broker setups.
+    - Configured with dual listeners: `PLAINTEXT://kafka:9092` for internal Docker communication and
+      `PLAINTEXT_HOST://localhost:29092` for external access.
+    - Key configurations include `KAFKA_NUM_PARTITIONS: 3` for topic partitioning, `KAFKA_MESSAGE_MAX_BYTES: 1000000`
+      for message size limits, and `KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1` for single-broker setups.
     - A healthcheck (`kafka-topics.sh --list`) ensures the broker is responsive.
     - Resource limits (`1.0` CPU, `1G` memory) balance performance and resource usage.
 
 ### Kafdrop
 
-- **Purpose**: Kafdrop is a web-based user interface for browsing Kafka topics, messages, consumer groups, and offsets, providing a visual tool for inspecting Kafka's state.
+- **Purpose**: Kafdrop is a web-based user interface for browsing Kafka topics, messages, consumer groups, and offsets,
+  providing a visual tool for inspecting Kafka's state.
 - **How It Works**:
     - Kafdrop connects to the Kafka broker (`kafka:9092`) to retrieve metadata and message data.
     - It runs on port `9000` and provides a browser-based UI at `http://localhost:9000`.
     - Configured with minimal JVM resources (`-Xms32M -Xmx64M`) for lightweight operation.
     - Depends on Kafka to ensure the broker is available before starting.
     - Resource limits (`0.2` CPU, `256M` memory) ensure it doesn't consume excessive resources.
-    - Users can view topic messages, consumer group lags, and partition details, as shown in screenshots (`img.png`, `img_1.png`).
+    - Users can view topic messages, consumer group lags, and partition details, as shown in screenshots (`img.png`,
+      `img_1.png`).
 
 ### Redpanda
 
-- **Purpose**: Redpanda is a Kafka-compatible streaming platform designed for low-latency, high-throughput data processing. It can be used as an alternative to Kafka or for specific use cases requiring high performance.
-- **Is It Mandatory?**: **Redpanda is not mandatory** in this setup. It is included as an optional component to allow comparison with Kafka or to support applications that specifically require Redpanda's features. If you are solely focused on Kafka, Redpanda can be safely removed.
+- **Purpose**: Redpanda is a Kafka-compatible streaming platform designed for low-latency, high-throughput data
+  processing. It can be used as an alternative to Kafka or for specific use cases requiring high performance.
+- **Is It Mandatory?**: **Redpanda is not mandatory** in this setup. It is included as an optional component to allow
+  comparison with Kafka or to support applications that specifically require Redpanda's features. If you are solely
+  focused on Kafka, Redpanda can be safely removed.
 - **When to Use Redpanda**:
     - **Use Redpanda** if:
-        - You need a Kafka-compatible system with lower latency and higher throughput for specific workloads (e.g., real-time analytics or event streaming with large volumes).
-        - You are evaluating Redpanda as an alternative to Kafka for its simpler deployment or performance optimizations.
+        - You need a Kafka-compatible system with lower latency and higher throughput for specific workloads (e.g.,
+          real-time analytics or event streaming with large volumes).
+        - You are evaluating Redpanda as an alternative to Kafka for its simpler deployment or performance
+          optimizations.
         - Your application already uses Redpanda, and you want to monitor it alongside or instead of Kafka.
         - You want to leverage Redpanda's built-in metrics endpoint (`8080`) for additional monitoring insights.
     - **Do Not Use Redpanda** if:
         - Your application relies exclusively on Kafka, and you have no need for a Kafka-compatible alternative.
         - You want to simplify the setup to reduce resource usage and configuration complexity.
-        - You are not evaluating or testing Redpanda, as it adds overhead (e.g., additional container, volume, and metrics scraping).
+        - You are not evaluating or testing Redpanda, as it adds overhead (e.g., additional container, volume, and
+          metrics scraping).
 - **How It Works**:
     - Redpanda mimics Kafka's API, allowing Kafka clients to connect to it (`localhost:9093`).
     - It runs as a broker and controller (`KAFKA_PROCESS_ROLES: broker,controller`) with a unique `CLUSTER_ID`.
@@ -85,13 +106,16 @@ This setup deploys a robust Kafka ecosystem with monitoring tools to track perfo
     - A healthcheck (`curl http://localhost:9644/v1/status/ready`) ensures readiness.
     - Uses a persistent volume (`redpanda-data`) to store data across container restarts.
     - Resource limits (`1.0` CPU, `1G` memory) match Kafka's for consistency.
-    - To remove Redpanda, delete its service and volume from `docker-compose.yml` and the `redpanda` job from `prometheus.yml`.
+    - To remove Redpanda, delete its service and volume from `docker-compose.yml` and the `redpanda` job from
+      `prometheus.yml`.
 
 ### Kafka Exporter
 
-- **Purpose**: Kafka Exporter (`danielqsj/kafka-exporter`) translates Kafka metrics into a Prometheus-compatible format, enabling monitoring of consumer group lag, broker status, and topic metrics.
+- **Purpose**: Kafka Exporter (`danielqsj/kafka-exporter`) translates Kafka metrics into a Prometheus-compatible format,
+  enabling monitoring of consumer group lag, broker status, and topic metrics.
 - **How It Works**:
-    - Connects to the Kafka broker (`kafka:9092`) to collect metrics like consumer group lag (`kafka_consumergroup_lag`), broker counts (`kafka_brokers`), and partition details.
+    - Connects to the Kafka broker (`kafka:9092`) to collect metrics like consumer group lag (
+      `kafka_consumergroup_lag`), broker counts (`kafka_brokers`), and partition details.
     - Exposes metrics on port `9308` at the `/metrics` endpoint (`http://localhost:9308/metrics`).
     - Supports optional filters (`GROUP_FILTER`, `TOPIC_FILTER`) to limit metrics scope for performance.
     - A healthcheck (`curl http://localhost:9308/metrics`) ensures the metrics endpoint is accessible.
@@ -100,9 +124,11 @@ This setup deploys a robust Kafka ecosystem with monitoring tools to track perfo
 
 ### Prometheus
 
-- **Purpose**: Prometheus is a time-series database that collects, stores, and queries metrics from services like Kafka Exporter and Redpanda for monitoring and alerting.
+- **Purpose**: Prometheus is a time-series database that collects, stores, and queries metrics from services like Kafka
+  Exporter and Redpanda for monitoring and alerting.
 - **How It Works**:
-    - Scrapes metrics from configured endpoints (`kafka-exporter:9308`, `redpanda:8080`, `prometheus:9090`) as defined in `prometheus.yml`.
+    - Scrapes metrics from configured endpoints (`kafka-exporter:9308`, `redpanda:8080`, `prometheus:9090`) as defined
+      in `prometheus.yml`.
     - Runs on port `9090`, providing a web UI (`http://localhost:9090`) for querying metrics and viewing target status.
     - Uses a persistent volume (`prometheus-data`) to store metrics data.
     - Depends on Kafka Exporter and Redpanda to ensure metrics sources are available.
@@ -111,30 +137,38 @@ This setup deploys a robust Kafka ecosystem with monitoring tools to track perfo
 
 ### Grafana
 
-- **Purpose**: Grafana is a visualization platform that creates dashboards from Prometheus metrics, providing insights into Kafka's performance and health.
+- **Purpose**: Grafana is a visualization platform that creates dashboards from Prometheus metrics, providing insights
+  into Kafka's performance and health.
 - **How It Works**:
     - Connects to Prometheus (`http://prometheus:9090`) as a data source to retrieve metrics.
-    - Runs on port `3000`, accessible at `http://localhost:3000` with default credentials (`admin`/`${GRAFANA_ADMIN_PASSWORD}`).
-    - Supports importing pre-built dashboards (e.g., ID `7589` for Kafka Exporter, `14239` for Redpanda) to visualize metrics like consumer lag and broker status.
+    - Runs on port `3000`, accessible at `http://localhost:3000` with default credentials (`admin`/
+      `${GRAFANA_ADMIN_PASSWORD}`).
+    - Supports importing pre-built dashboards (e.g., ID `7589` for Kafka Exporter, `14239` for Redpanda) to visualize
+      metrics like consumer lag and broker status.
     - Uses a persistent volume (`grafana-data`) to retain dashboards and settings.
-    - Configured with security settings (`GF_USERS_ALLOW_SIGN_UP=false`, `GF_AUTH_ANONYMOUS_ENABLED=false`) to restrict access.
+    - Configured with security settings (`GF_USERS_ALLOW_SIGN_UP=false`, `GF_AUTH_ANONYMOUS_ENABLED=false`) to restrict
+      access.
     - Resource limits (`0.2` CPU, `256M` memory) ensure lightweight operation.
-    - Dashboards display metrics as shown in screenshots (`img_7.png`, `img_8.png`, `img_9.png`, `img_10.png`, `img_11.png`).
+    - Dashboards display metrics as shown in screenshots (`img_7.png`, `img_8.png`, `img_9.png`, `img_10.png`,
+      `img_11.png`).
 
 ## Prerequisites
 
 Before starting, ensure the following:
+
 - **Docker and Docker Compose**: Installed and configured (version 3.8 or later).
 - **Basic Knowledge**: Familiarity with Kafka, Prometheus, Grafana, and Docker networking.
 - **Environment File**: A `.env` file for sensitive configurations (e.g., `GRAFANA_ADMIN_PASSWORD`).
 - **Screenshots Directory**: Access to `Lab-w1d1/readme-image/` containing screenshots (`img.png`, `img_1.png`, etc.).
-- **Network Access**: Ports `2181`, `29092`, `9000`, `9093`, `9644`, `8080`, `9308`, `9090`, and `3000` available on localhost.
+- **Network Access**: Ports `2181`, `29092`, `9000`, `9093`, `9644`, `8080`, `9308`, `9090`, and `3000` available on
+  localhost.
 
 ## Setup Instructions
 
 ### 1. Configure Docker Compose
 
-Create a `docker-compose.yml` file with the configuration below. It includes resource limits, healthchecks, and the Kafka exporter for monitoring.
+Create a `docker-compose.yml` file with the configuration below. It includes resource limits, healthchecks, and the
+Kafka exporter for monitoring.
 
 ```yaml
 version: "3.8"
@@ -306,7 +340,8 @@ networks:
 
 ### 2. Configure Prometheus
 
-Create a `prometheus.yml` file in the same directory as `docker-compose.yml` to scrape metrics from Kafka Exporter, Redpanda (if used), and Prometheus itself.
+Create a `prometheus.yml` file in the same directory as `docker-compose.yml` to scrape metrics from Kafka Exporter,
+Redpanda (if used), and Prometheus itself.
 
 ```yaml
 global:
@@ -328,6 +363,7 @@ scrape_configs:
 ```
 
 **Notes**:
+
 - The `scrape_interval` is set to 15 seconds for frequent updates.
 - Remove the `redpanda` job if not using Redpanda.
 
@@ -375,12 +411,14 @@ Verify each service using the following URLs and commands:
 ## Key Metrics
 
 The `danielqsj/kafka-exporter` provides:
+
 - `kafka_consumergroup_lag`: Consumer group lag per topic/partition.
 - `kafka_brokers`: Number of active brokers.
 - `kafka_topic_partitions`: Partition counts per topic.
 - `kafka_topic_partition_leader`: Leader status for partitions.
 
 **Sample Queries**:
+
 - `kafka_consumergroup_lag{group="my-group"}`
 - `kafka_brokers`
 - `kafka_topic_partitions{topic="my-topic"}`
@@ -476,7 +514,9 @@ The `danielqsj/kafka-exporter` provides:
     - Ensure queries match `kafka-exporter` metrics.
 
 ## Screenshots
-Below are screenshots demonstrating the setup, including Kafdrop interfaces, terminal outputs for consumer groups, application logs from producers and consumers, and Prometheus targets. Each image includes a description for clarity.
+
+Below are screenshots demonstrating the setup, including Kafdrop interfaces, terminal outputs for consumer groups,
+application logs from producers and consumers, and Prometheus targets. Each image includes a description for clarity.
 
 ![img.png](Lab-w1d1%2Freadme-image%2Fimg.png)
 

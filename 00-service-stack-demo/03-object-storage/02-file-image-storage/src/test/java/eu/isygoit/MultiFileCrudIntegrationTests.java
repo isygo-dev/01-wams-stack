@@ -149,15 +149,15 @@ class MultiFileCrudIntegrationTests {
         // Create test files
         MockMultipartFile file1 = new MockMultipartFile(
                 "files", "test1.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Test file content 1" .getBytes(StandardCharsets.UTF_8));
+                "Test file content 1".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile file2 = new MockMultipartFile(
                 "files", "test2.pdf", MediaType.APPLICATION_PDF_VALUE,
-                "Test PDF content 2" .getBytes(StandardCharsets.UTF_8));
+                "Test PDF content 2".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile file3 = new MockMultipartFile(
                 "files", "test3.docx", MediaType.APPLICATION_OCTET_STREAM_VALUE,
-                "Test DOCX content 3" .getBytes(StandardCharsets.UTF_8));
+                "Test DOCX content 3".getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(UPLOAD_URL)
                         .file(file1)
@@ -199,7 +199,7 @@ class MultiFileCrudIntegrationTests {
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "single-test.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Single test file content" .getBytes(StandardCharsets.UTF_8));
+                "Single test file content".getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(UPLOAD_ONE_URL)
                         .file(file)
@@ -235,7 +235,7 @@ class MultiFileCrudIntegrationTests {
     void uploadFiles_InvalidParentId_NotFound() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Test content" .getBytes(StandardCharsets.UTF_8));
+                "Test content".getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart(UPLOAD_ONE_URL)
                         .file(file)
@@ -282,7 +282,7 @@ class MultiFileCrudIntegrationTests {
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "download-test.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Download test content" .getBytes(StandardCharsets.UTF_8));
+                "Download test content".getBytes(StandardCharsets.UTF_8));
 
         MvcResult uploadResult = mockMvc.perform(multipart(UPLOAD_ONE_URL)
                         .file(file)
@@ -358,7 +358,7 @@ class MultiFileCrudIntegrationTests {
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "delete-test.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Delete test content" .getBytes(StandardCharsets.UTF_8));
+                "Delete test content".getBytes(StandardCharsets.UTF_8));
 
         MvcResult uploadResult = mockMvc.perform(multipart(UPLOAD_ONE_URL)
                         .file(file)
@@ -434,15 +434,15 @@ class MultiFileCrudIntegrationTests {
         // Create files with different MIME types
         MockMultipartFile textFile = new MockMultipartFile(
                 "files", "document.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Plain text content" .getBytes(StandardCharsets.UTF_8));
+                "Plain text content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile jsonFile = new MockMultipartFile(
                 "files", "data.json", MediaType.APPLICATION_JSON_VALUE,
-                "{\"key\": \"value\"}" .getBytes(StandardCharsets.UTF_8));
+                "{\"key\": \"value\"}".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile xmlFile = new MockMultipartFile(
                 "files", "config.xml", MediaType.APPLICATION_XML_VALUE,
-                "<?xml version=\"1.0\"?><root></root>" .getBytes(StandardCharsets.UTF_8));
+                "<?xml version=\"1.0\"?><root></root>".getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(UPLOAD_URL)
                         .file(textFile)
@@ -533,7 +533,7 @@ class MultiFileCrudIntegrationTests {
     void testFileOperationsWithoutTenantHeader_BadRequest() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.txt", MediaType.TEXT_PLAIN_VALUE,
-                "Test content" .getBytes(StandardCharsets.UTF_8));
+                "Test content".getBytes(StandardCharsets.UTF_8));
 
         // Upload without tenant header
         mockMvc.perform(multipart(UPLOAD_ONE_URL)

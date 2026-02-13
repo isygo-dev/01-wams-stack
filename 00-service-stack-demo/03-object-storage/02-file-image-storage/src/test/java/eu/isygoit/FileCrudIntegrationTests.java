@@ -147,7 +147,7 @@ class FileCrudIntegrationTests {
                 "file",
                 "test.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Test file content" .getBytes(StandardCharsets.UTF_8));
+                "Test file content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -248,7 +248,7 @@ class FileCrudIntegrationTests {
                 "file",
                 "updated.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Updated file content" .getBytes(StandardCharsets.UTF_8));
+                "Updated file content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",
@@ -407,7 +407,7 @@ class FileCrudIntegrationTests {
                 "file",
                 "contract.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Contract file content" .getBytes(StandardCharsets.UTF_8));
+                "Contract file content".getBytes(StandardCharsets.UTF_8));
 
         mockMvc.perform(multipart(FILE_URL + "/upload/" + createdContract.getId())
                         .file(file)
@@ -438,7 +438,7 @@ class FileCrudIntegrationTests {
                 "file",
                 "download.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "Downloadable file content" .getBytes(StandardCharsets.UTF_8));
+                "Downloadable file content".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile dtoPart = new MockMultipartFile(
                 "dto",

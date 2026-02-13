@@ -65,14 +65,14 @@ services:
       - kafka-network
 
   # web-based UIs for Apache Kafka / Origin: Open-source, originally by Obsidian Dynamics.
-#  kafdrop:
-#    image: obsidiandynamics/kafdrop:latest
-#    ports:
-#      - "9000:9000"
-#    environment:
-#      KAFKA_BROKERCONNECT: kafka:9092
-#    depends_on:
-#      - kafka
+  #  kafdrop:
+  #    image: obsidiandynamics/kafdrop:latest
+  #    ports:
+  #      - "9000:9000"
+  #    environment:
+  #      KAFKA_BROKERCONNECT: kafka:9092
+  #    depends_on:
+  #      - kafka
 
   # web-based UIs for Apache Kafka / Origin: Open-source project maintained by Provectus.
   kafka-ui:

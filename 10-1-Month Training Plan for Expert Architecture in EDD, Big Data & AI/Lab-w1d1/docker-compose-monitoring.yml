@@ -34,7 +34,7 @@ services:
     depends_on:
       - zookeeper
     healthcheck:
-      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
       interval: 10s
       retries: 5
     networks:
@@ -83,7 +83,7 @@ services:
       - "9644:9644"       # Redpanda admin API
       - "8080:8080"       # Metrics HTTP endpoint for Prometheus
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9644/v1/status/ready"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9644/v1/status/ready" ]
       interval: 10s
       retries: 5
     volumes:
@@ -109,7 +109,7 @@ services:
     depends_on:
       - kafka
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9308/metrics"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9308/metrics" ]
       interval: 10s
       retries: 5
     networks:

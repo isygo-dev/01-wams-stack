@@ -115,7 +115,7 @@ class GarageStorageIntegrationTests {
     @Order(3)
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Test content" .getBytes(StandardCharsets.UTF_8));
+                "Test content".getBytes(StandardCharsets.UTF_8));
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         byte[] data = garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
@@ -128,7 +128,7 @@ class GarageStorageIntegrationTests {
     @Order(4)
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Content for presigned" .getBytes(StandardCharsets.UTF_8));
+                "Content for presigned".getBytes(StandardCharsets.UTF_8));
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         String url = garageService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertNotNull(url);
@@ -142,7 +142,7 @@ class GarageStorageIntegrationTests {
     @Order(5)
     void testGetObjectsByTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Tagged content" .getBytes(StandardCharsets.UTF_8));
+                "Tagged content".getBytes(StandardCharsets.UTF_8));
         Map<String, String> tags = Map.of("type", "document", "env", "test");
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
 
@@ -160,7 +160,7 @@ class GarageStorageIntegrationTests {
     @Order(6)
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Content to tag" .getBytes(StandardCharsets.UTF_8));
+                "Content to tag".getBytes(StandardCharsets.UTF_8));
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
 
         garageService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
@@ -178,7 +178,7 @@ class GarageStorageIntegrationTests {
     @Order(7)
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "Content to delete" .getBytes(StandardCharsets.UTF_8));
+                "Content to delete".getBytes(StandardCharsets.UTF_8));
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         garageService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertThrows(S3BuketException.class, () ->
@@ -191,8 +191,8 @@ class GarageStorageIntegrationTests {
     @Test
     @Order(8)
     void testDeleteMultipleObjects() {
-        MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1" .getBytes());
-        MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2" .getBytes());
+        MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
+        MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2".getBytes());
 
         garageService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
         garageService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
@@ -286,7 +286,7 @@ class GarageStorageIntegrationTests {
         String objectPath = "/dir1/dir2/";
         String objectName = "path-object.txt";
         MockMultipartFile file = new MockMultipartFile("file", objectPath, "text/plain",
-                "Path content" .getBytes(StandardCharsets.UTF_8));
+                "Path content".getBytes(StandardCharsets.UTF_8));
         garageService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
         byte[] retrieved = garageService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
         assertEquals("Path content", new String(retrieved));
@@ -298,7 +298,7 @@ class GarageStorageIntegrationTests {
     @Test
     @Order(17)
     void testListObjectsInBucket() {
-        MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list" .getBytes());
+        MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
         garageService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
         List<FileStorage> files = garageService.getObjects(s3Config, BUCKET_NAME);
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
@@ -311,7 +311,7 @@ class GarageStorageIntegrationTests {
     @Order(18)
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
-                "With empty version" .getBytes());
+                "With empty version".getBytes());
         garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
         assertDoesNotThrow(() ->
                 garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));
