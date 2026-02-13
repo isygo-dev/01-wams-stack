@@ -68,7 +68,6 @@ public interface HtmlEscapeHelper {
         put('}', "&rcub;"); // Right curly brace
 
         // Other special characters
-        put('©', "&copy;"); // Copyright symbol
         put('™', "&trade;"); // Trademark symbol
         put('§', "&sect;"); // Section symbol
         put('¶', "&para;"); // Paragraph symbol
