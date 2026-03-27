@@ -20,7 +20,7 @@ import java.util.Map;
  * @param <F> the type parameter
  * @param <S> the type parameter
  */
-public interface ICrudControllerSubMethods<I extends Serializable,
+public interface ICrudControllerOperations<I extends Serializable,
         T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,

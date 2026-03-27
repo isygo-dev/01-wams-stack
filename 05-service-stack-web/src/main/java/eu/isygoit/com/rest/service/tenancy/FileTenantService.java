@@ -31,8 +31,8 @@ import java.nio.file.Path;
 public abstract class FileTenantService<I extends Serializable,
         T extends IFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
-        extends FileTenantServiceSubMethods<I, T, R>
-        implements IFileTenantServiceMethods<I, T> {
+        extends FileTenantServiceOperations<I, T, R>
+        implements IFileTenantServiceOperations<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 

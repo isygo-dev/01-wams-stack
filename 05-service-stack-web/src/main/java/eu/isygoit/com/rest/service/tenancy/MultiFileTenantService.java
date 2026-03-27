@@ -41,7 +41,7 @@ public abstract class MultiFileTenantService<
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I> & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>,
         RL extends JpaPagingAndSortingTenantAssignableRepository<L, I>
-        > extends MultiFileTenantServiceSubMethods<I, T, L, R, RL> implements IMultiFileTenantServiceMethods<I, T> {
+        > extends MultiFileTenantServiceSubOperations<I, T, L, R, RL> implements IMultiFileTenantServiceOperations<I, T> {
 
     private final Class<T> persistentClass;
     private final Class<L> linkedFileClass;

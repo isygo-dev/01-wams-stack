@@ -1,6 +1,7 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.com.rest.service.media.FileServiceDmsStaticOperations;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 /**
  * The type File api dms static methods test.
  */
-class FileServiceDmsStaticMethodsTest {
+class FileServiceDmsStaticOperationsTest {
 
     /**
      * Helper to create a Resume entity with given path, code, and filename.
@@ -61,7 +62,7 @@ class FileServiceDmsStaticMethodsTest {
         Resume entity = createResume("resume", "code123", "file.txt");
 
         LinkedFileServiceNullException ex = assertThrows(LinkedFileServiceNullException.class,
-                () -> FileServiceDmsStaticMethods.upload(file, entity, null));
+                () -> FileServiceDmsStaticOperations.upload(file, entity, null));
         assertEquals("LinkedFileApi api is null", ex.getMessage());
     }
 
@@ -76,7 +77,7 @@ class FileServiceDmsStaticMethodsTest {
         Resume entity = createResume("resume", "code123", "file.txt");
 
         MultiPartFileNullException ex = assertThrows(MultiPartFileNullException.class,
-                () -> FileServiceDmsStaticMethods.upload(null, entity, linkedFileService));
+                () -> FileServiceDmsStaticOperations.upload(null, entity, linkedFileService));
         assertEquals("MultipartFile must not be null", ex.getMessage());
     }
 
@@ -91,7 +92,7 @@ class FileServiceDmsStaticMethodsTest {
         MultipartFile file = mock(MultipartFile.class);
 
         EntityNullException ex = assertThrows(EntityNullException.class,
-                () -> FileServiceDmsStaticMethods.upload(file, null, linkedFileService));
+                () -> FileServiceDmsStaticOperations.upload(file, null, linkedFileService));
         assertEquals("Entity must not be null", ex.getMessage());
     }
 
@@ -112,7 +113,7 @@ class FileServiceDmsStaticMethodsTest {
         when(linkedFileService.upload(any(ContextRequestDto.class), any(LinkedFileRequestDto.class))).thenReturn(responseEntity);
         when(file.getOriginalFilename()).thenReturn("file.txt");
 
-        LinkedFileResponseDto result = FileServiceDmsStaticMethods.upload(file, entity, linkedFileService);
+        LinkedFileResponseDto result = FileServiceDmsStaticOperations.upload(file, entity, linkedFileService);
 
         assertNotNull(result);
         verify(linkedFileService, times(1)).upload(any(ContextRequestDto.class), any(LinkedFileRequestDto.class));
@@ -128,7 +129,7 @@ class FileServiceDmsStaticMethodsTest {
         Resume entity = createResume("resume", "code123", "file.txt");
 
         LinkedFileServiceNullException ex = assertThrows(LinkedFileServiceNullException.class,
-                () -> FileServiceDmsStaticMethods.download(entity, 1L, null));
+                () -> FileServiceDmsStaticOperations.download(entity, 1L, null));
         assertEquals("LinkedFileApi api is null", ex.getMessage());
     }
 
@@ -142,7 +143,7 @@ class FileServiceDmsStaticMethodsTest {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
 
         EntityNullException ex = assertThrows(EntityNullException.class,
-                () -> FileServiceDmsStaticMethods.download(null, 1L, linkedFileService));
+                () -> FileServiceDmsStaticOperations.download(null, 1L, linkedFileService));
         assertEquals("Entity must not be null", ex.getMessage());
     }
 
@@ -162,7 +163,7 @@ class FileServiceDmsStaticMethodsTest {
 
         when(linkedFileService.download(any(), anyString(), anyString())).thenReturn(responseEntity);
 
-        ResourceDto result = FileServiceDmsStaticMethods.download(entity, 1L, linkedFileService);
+        ResourceDto result = FileServiceDmsStaticOperations.download(entity, 1L, linkedFileService);
 
         assertNotNull(result);
         verify(linkedFileService, times(1)).download(any(), anyString(), anyString());
@@ -176,7 +177,7 @@ class FileServiceDmsStaticMethodsTest {
         ResumeLinkedFile entity = createLinkedFile("resumeLinkedFile", "code123", "file.txt");
 
         LinkedFileServiceNullException ex = assertThrows(LinkedFileServiceNullException.class,
-                () -> FileServiceDmsStaticMethods.delete(entity, null));
+                () -> FileServiceDmsStaticOperations.delete(entity, null));
         assertEquals("LinkedFileApi api is null", ex.getMessage());
     }
 
@@ -188,7 +189,7 @@ class FileServiceDmsStaticMethodsTest {
         ILinkedFileApi linkedFileService = mock(ILinkedFileApi.class);
 
         EntityNullException ex = assertThrows(EntityNullException.class,
-                () -> FileServiceDmsStaticMethods.delete(null, linkedFileService));
+                () -> FileServiceDmsStaticOperations.delete(null, linkedFileService));
         assertEquals("Entity must not be null", ex.getMessage());
     }
 
@@ -203,7 +204,7 @@ class FileServiceDmsStaticMethodsTest {
 
         when(linkedFileService.deleteFile(any(), anyString(), anyString())).thenReturn(responseEntity);
 
-        boolean result = FileServiceDmsStaticMethods.delete(entity, linkedFileService);
+        boolean result = FileServiceDmsStaticOperations.delete(entity, linkedFileService);
 
         assertTrue(result);
         verify(linkedFileService, times(1)).deleteFile(any(), anyString(), anyString());
@@ -220,7 +221,7 @@ class FileServiceDmsStaticMethodsTest {
 
         when(linkedFileService.deleteFile(any(), anyString(), anyString())).thenReturn(responseEntity);
 
-        boolean result = FileServiceDmsStaticMethods.delete(entity, linkedFileService);
+        boolean result = FileServiceDmsStaticOperations.delete(entity, linkedFileService);
 
         assertFalse(result);
     }

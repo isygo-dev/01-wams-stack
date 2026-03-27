@@ -1,14 +1,17 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.annotation.InjectDmsLinkedFileService;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.com.rest.service.media.FileServiceDmsStaticOperations;
+import eu.isygoit.com.rest.service.media.FileServiceLocalStaticOperations;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,10 +27,10 @@ import java.io.Serializable;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileServiceSubMethods<I extends Serializable,
-        T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends CodeAssignableService<I, T, R> {
+public abstract class FileTenantServiceOperations<I extends Serializable,
+        T extends IFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
+        R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
+        extends CodeAssignableTenantService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;
@@ -43,8 +46,8 @@ public abstract class FileServiceSubMethods<I extends Serializable,
      */
     final String performUploadFile(MultipartFile file, T entity) {
         return executeWithFallback(
-                dms -> FileServiceDmsStaticMethods.upload(file, entity, dms).getCode(),
-                () -> FileServiceLocalStaticMethods.upload(file, entity),
+                dms -> FileServiceDmsStaticOperations.upload(file, entity, dms).getCode(),
+                () -> FileServiceLocalStaticOperations.upload(file, entity),
                 "upload"
         );
     }
@@ -96,8 +99,8 @@ public abstract class FileServiceSubMethods<I extends Serializable,
      */
     final ResourceDto performDownloadFile(T entity, Long version) throws IOException {
         return executeWithFallback(
-                dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
-                () -> FileServiceLocalStaticMethods.download(entity, version),
+                dms -> FileServiceDmsStaticOperations.download(entity, version, dms),
+                () -> FileServiceLocalStaticOperations.download(entity, version),
                 "download"
         );
     }

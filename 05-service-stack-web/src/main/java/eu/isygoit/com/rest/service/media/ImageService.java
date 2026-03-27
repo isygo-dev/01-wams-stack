@@ -1,5 +1,6 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.media;
 
+import eu.isygoit.com.rest.service.CodeAssignableService;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
@@ -38,7 +39,7 @@ import java.nio.file.StandardOpenOption;
 public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
         extends CodeAssignableService<I, T, R>
-        implements IImageServiceMethods<I, T> {
+        implements IImageServiceOperations<I, T> {
 
     // Persistent class derived via reflection for exception messages etc.
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()

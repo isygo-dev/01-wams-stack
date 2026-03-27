@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.JsonBasedEntityHelper;
@@ -44,7 +44,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         E extends JsonBasedEntity<IE> & IIdAssignable<IE> & ITenantAssignable,
         R extends JsonBasedTenantAssignableRepository<E, IE>>
         extends CrudServiceUtils<UUID, T, R>
-        implements ICrudTenantServiceMethods<UUID, T>,
+        implements ICrudTenantServiceOperations<UUID, T>,
         ICrudTenantServiceEvents<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 

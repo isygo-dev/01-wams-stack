@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.media;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.constants.TenantConstants;
@@ -21,7 +21,7 @@ import java.util.List;
  * The type File api dms static methods.
  */
 @Slf4j
-public final class FileServiceDmsStaticMethods {
+public final class FileServiceDmsStaticOperations {
 
     /**
      * Upload linked file response dto.

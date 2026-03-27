@@ -3,7 +3,7 @@ package eu.isygoit.jpa.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.exception.CreateConstraintsViolationException;
 import eu.isygoit.exception.ObjectNotFoundException;
@@ -45,7 +45,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         E extends JsonBasedEntity<IE> & IIdAssignable<IE>,
         R extends JsonBasedRepository<E, IE>>
         extends CrudServiceUtils<UUID, T, R>
-        implements ICrudServiceMethods<UUID, T>,
+        implements ICrudServiceOperations<UUID, T>,
         ICrudServiceEvents<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 

@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.media;
 
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
@@ -37,7 +37,7 @@ public abstract class FileImageService<I extends Serializable,
         T extends IImageEntity & IFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
         extends FileService<I, T, R>
-        implements IFileServiceMethods<I, T>, IImageServiceMethods<I, T> {
+        implements IFileServiceOperations<I, T>, IImageServiceOperations<I, T> {
 
     private final Class<T> persistentClass =
             (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];

@@ -1,5 +1,6 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.media;
 
+import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.ObjectNotFoundException;
@@ -29,8 +30,8 @@ import java.nio.file.Path;
 @Slf4j
 public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
-        extends FileServiceSubMethods<I, T, R>
-        implements IFileServiceMethods<I, T> {
+        extends FileServiceOperations<I, T, R>
+        implements IFileServiceOperations<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 

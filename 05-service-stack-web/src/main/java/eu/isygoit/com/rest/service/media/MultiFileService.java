@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.media;
 
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyFileException;
@@ -44,7 +44,7 @@ public abstract class MultiFileService<
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
         R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>
-        > extends MultiFileServiceSubMethods<I, T, L, R, RL> implements IMultiFileServiceMethods<I, T> {
+        > extends MultiFileServiceOperations<I, T, L, R, RL> implements IMultiFileServiceOperations<I, T> {
 
     private final Class<T> persistentClass;
     private final Class<L> linkedFileClass;

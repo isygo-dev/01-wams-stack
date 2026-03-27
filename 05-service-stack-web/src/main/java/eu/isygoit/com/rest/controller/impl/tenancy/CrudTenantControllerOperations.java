@@ -1,12 +1,12 @@
 package eu.isygoit.com.rest.controller.impl.tenancy;
 
-import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
+import eu.isygoit.com.rest.controller.ICrudControllerOperations;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
@@ -39,14 +39,14 @@ import java.util.function.Supplier;
  * @param <S> Service type implementing tenant-specific CRUD operations
  */
 @Slf4j
-public abstract class CrudTenantControllerSubMethods<
+public abstract class CrudTenantControllerOperations<
         I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudTenantServiceMethods<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudTenantServiceOperations<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
-        implements ICrudControllerSubMethods<I, T, M, F, S> {
+        implements ICrudControllerOperations<I, T, M, F, S> {
 
 
     private final Class<T> entityClass;
@@ -55,7 +55,7 @@ public abstract class CrudTenantControllerSubMethods<
      * Instantiates a new Crud tenant controller sub methods.
      */
     @SuppressWarnings("unchecked")
-    protected CrudTenantControllerSubMethods() {
+    protected CrudTenantControllerOperations() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[1];
     }

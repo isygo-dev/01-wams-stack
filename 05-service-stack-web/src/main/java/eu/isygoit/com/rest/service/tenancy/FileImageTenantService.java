@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service.tenancy;
 
-import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceMethods;
+import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceOperations;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
@@ -37,7 +37,7 @@ public abstract class FileImageTenantService<I extends Serializable,
         T extends IImageEntity & IFileEntity & ITenantAssignable & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
         extends FileTenantService<I, T, R>
-        implements IFileTenantServiceMethods<I, T>, IImageTenantServiceMethods<I, T> {
+        implements IFileTenantServiceOperations<I, T>, IImageTenantServiceOperations<I, T> {
 
     private final Class<T> persistentClass =
             (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];

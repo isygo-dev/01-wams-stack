@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service;
 
+import eu.isygoit.com.rest.service.media.FileServiceLocalStaticOperations;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.FileNotFoundException;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for FileServiceLocalStaticMethods using the Resume entity.
  * Covers upload, download, delete with success and failure scenarios.
  */
-class FileServiceLocalStaticMethodsTest {
+class FileServiceLocalStaticOperationsTest {
 
     // Temporary directory for testing file operations
     private static final Path TEMP_DIR = Path.of(System.getProperty("java.io.tmpdir"), "file-api-test");
@@ -88,7 +89,7 @@ class FileServiceLocalStaticMethodsTest {
         var file = new MockMultipartFile("file", "upload.txt", "text/plain", fileContent.getBytes());
         var resume = createResume(TEMP_DIR.resolve("nested").toString(), "upload", "upload.txt");
 
-        String returnedCode = FileServiceLocalStaticMethods.upload(file, resume);
+        String returnedCode = FileServiceLocalStaticOperations.upload(file, resume);
 
         // Directory should be created
         assertTrue(Files.exists(Path.of(resume.getPath())));
@@ -117,7 +118,7 @@ class FileServiceLocalStaticMethodsTest {
 
         var resume = createResume(TEMP_DIR.toString(), "download.txt", "download.txt");
 
-        ResourceDto resource = FileServiceLocalStaticMethods.download(resume, 1L);
+        ResourceDto resource = FileServiceLocalStaticOperations.download(resume, 1L);
 
         assertNotNull(resource);
         assertTrue(resource.getResource().exists());
@@ -133,7 +134,7 @@ class FileServiceLocalStaticMethodsTest {
         var resume = createResume(TEMP_DIR.toString(), "missing.txt", "missing.txt");
 
         ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () ->
-                FileServiceLocalStaticMethods.download(resume, 123L)
+                FileServiceLocalStaticOperations.download(resume, 123L)
         );
 
         assertTrue(thrown.getMessage().contains("Resource not found: testTenant/missing.txt"));
@@ -147,7 +148,7 @@ class FileServiceLocalStaticMethodsTest {
         var resume = createResume("", "file.txt", "file.txt");
 
         EmptyPathException thrown = assertThrows(EmptyPathException.class, () ->
-                FileServiceLocalStaticMethods.download(resume, 456L)
+                FileServiceLocalStaticOperations.download(resume, 456L)
         );
 
         assertTrue(thrown.getMessage().contains("Empty path: testTenant/file.txt"));
@@ -165,7 +166,7 @@ class FileServiceLocalStaticMethodsTest {
 
         ResumeLinkedFile linkedFile = createLinkedFile(TEMP_DIR.toString(), "deleteLinkedFile.txt", "deleteLinkedFile.txt");
 
-        boolean deleted = FileServiceLocalStaticMethods.delete(linkedFile);
+        boolean deleted = FileServiceLocalStaticOperations.delete(linkedFile);
 
         assertTrue(deleted);
         assertFalse(Files.exists(filePath));
@@ -179,7 +180,7 @@ class FileServiceLocalStaticMethodsTest {
         ResumeLinkedFile linkedFile = createLinkedFile(TEMP_DIR.toString(), "nonexistentLinkedFile.txt", "nonexistentLinkedFile.txt");
 
         FileNotFoundException thrown = assertThrows(FileNotFoundException.class, () ->
-                FileServiceLocalStaticMethods.delete(linkedFile)
+                FileServiceLocalStaticOperations.delete(linkedFile)
         );
 
         assertTrue(thrown.getMessage().contains(linkedFile.getCode()));
@@ -199,7 +200,7 @@ class FileServiceLocalStaticMethodsTest {
         var newFileContent = "New content";
         var newFile = new MockMultipartFile("file", "overwrite.txt", "text/plain", newFileContent.getBytes());
 
-        String code = FileServiceLocalStaticMethods.upload(newFile, oldFile);
+        String code = FileServiceLocalStaticOperations.upload(newFile, oldFile);
 
         assertEquals("overwrite.txt", code);
         assertEquals(newFileContent, Files.readString(filePath));
@@ -214,7 +215,7 @@ class FileServiceLocalStaticMethodsTest {
         long version = 99L;
 
         ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () ->
-                FileServiceLocalStaticMethods.download(resume, version)
+                FileServiceLocalStaticOperations.download(resume, version)
         );
 
         assertTrue(thrown.getMessage().contains(Long.toString(version)));

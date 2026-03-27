@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service.tenancy;
+package eu.isygoit.com.rest.service.media;
 
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
@@ -15,50 +15,46 @@ import java.util.List;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface IMultiFileTenantServiceMethods<I extends Serializable, T extends IIdAssignable<I> & IMultiFileEntity> {
+public interface IMultiFileServiceOperations<I extends Serializable, T extends IIdAssignable<I> & IMultiFileEntity> {
 
     /**
      * Upload additional files list.
      *
-     * @param tenant   the tenant
      * @param parentId the parent id
      * @param files    the files
      * @return the list
      * @throws IOException the io exception
      */
-    List uploadAdditionalFiles(String tenant, I parentId, MultipartFile[] files) throws IOException;
+    List uploadAdditionalFiles(I parentId, MultipartFile[] files) throws IOException;
 
     /**
      * Upload additional file list.
      *
-     * @param tenant   the tenant
      * @param parentId the parent id
      * @param file     the file
      * @return the list
      * @throws IOException the io exception
      */
-    List uploadAdditionalFile(String tenant, I parentId, MultipartFile file) throws IOException;
+    List uploadAdditionalFile(I parentId, MultipartFile file) throws IOException;
 
     /**
      * Download file resource.
      *
-     * @param tenant   the tenant
      * @param parentId the parent id
      * @param fileId   the file id
      * @param version  the version
      * @return the resource
      * @throws IOException the io exception
      */
-    ResourceDto downloadFile(String tenant, I parentId, I fileId, Long version) throws IOException;
+    ResourceDto downloadFile(I parentId, I fileId, Long version) throws IOException;
 
     /**
      * Delete additional file boolean.
      *
-     * @param tenant   the tenant
      * @param parentId the parent id
      * @param fileId   the file id
      * @return the boolean
      * @throws IOException the io exception
      */
-    boolean deleteAdditionalFile(String tenant, I parentId, I fileId) throws IOException;
+    boolean deleteAdditionalFile(I parentId, I fileId) throws IOException;
 }

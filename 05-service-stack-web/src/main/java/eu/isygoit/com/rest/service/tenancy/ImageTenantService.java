@@ -1,6 +1,6 @@
 package eu.isygoit.com.rest.service.tenancy;
 
-import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceMethods;
+import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceOperations;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
@@ -40,7 +40,7 @@ public abstract class ImageTenantService<I extends Serializable,
         T extends IImageEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
         extends CodeAssignableTenantService<I, T, R>
-        implements IImageTenantServiceMethods<I, T> {
+        implements IImageTenantServiceOperations<I, T> {
 
     // Persistent class derived via reflection for exception messages etc.
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()

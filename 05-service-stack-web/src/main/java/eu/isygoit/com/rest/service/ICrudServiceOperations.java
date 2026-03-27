@@ -16,7 +16,7 @@ import java.util.Optional;
  * @param <I> the type parameter
  * @param <T> the type parameter
  */
-public interface ICrudServiceMethods<I extends Serializable, T extends IIdAssignable<I>> {
+public interface ICrudServiceOperations<I extends Serializable, T extends IIdAssignable<I>> {
 
     /**
      * Count long.

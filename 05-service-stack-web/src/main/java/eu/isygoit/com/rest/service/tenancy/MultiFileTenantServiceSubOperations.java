@@ -1,18 +1,17 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.annotation.InjectDmsLinkedFileService;
 import eu.isygoit.annotation.InjectLinkedFileRepository;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
+import eu.isygoit.com.rest.service.media.FileServiceDmsStaticOperations;
+import eu.isygoit.com.rest.service.media.FileServiceLocalStaticOperations;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
-import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ILinkedFile;
-import eu.isygoit.model.IMultiFileEntity;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,24 +19,24 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.Serializable;
 
 /**
- * Abstract service class providing methods for handling multiple file operations with performance optimizations.
+ * Abstract service class providing methods for handling multiple file operations with tenancy support.
  * This class supports file upload, download, and deletion operations for entities implementing
- * {@link IMultiFileEntity}, {@link IIdAssignable}, and {@link ICodeAssignable}.
+ * {@link IMultiFileEntity}, {@link IIdAssignable}, {@link ICodeAssignable}, and {@link ITenantAssignable}.
  *
  * @param <I>  the type of the identifier, extending {@link Serializable}
- * @param <T>  the entity type, extending {@link IMultiFileEntity}, {@link IIdAssignable}, and {@link ICodeAssignable}
+ * @param <T>  the entity type, extending {@link IMultiFileEntity}, {@link IIdAssignable}, {@link ICodeAssignable}, and {@link ITenantAssignable}
  * @param <L>  the linked file type, extending {@link ILinkedFile}, {@link ICodeAssignable}, and {@link IIdAssignable}
- * @param <R>  the repository type for the entity, extending {@link JpaPagingAndSortingCodeAssingnableRepository}
+ * @param <R>  the repository type for the entity, extending {@link JpaPagingAndSortingTenantAndCodeAssignableRepository}
  * @param <RL> the repository type for linked files, extending {@link JpaPagingAndSortingRepository}
  */
 @Slf4j
-public abstract class MultiFileServiceSubMethods<
+public abstract class MultiFileTenantServiceSubOperations<
         I extends Serializable,
-        T extends IMultiFileEntity<L> & IIdAssignable<I> & ICodeAssignable,
+        T extends IMultiFileEntity<L> & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
+        R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>
-        > extends CodeAssignableService<I, T, R> {
+        > extends CodeAssignableTenantService<I, T, R> {
 
     @Autowired
     private ApplicationContextService applicationContextService;
@@ -119,8 +118,8 @@ public abstract class MultiFileServiceSubMethods<
         return executeSafely(() -> {
             var service = getLinkedFileApi();
             String fileName = service != null
-                    ? FileServiceDmsStaticMethods.upload(file, entity, service).getCode()
-                    : FileServiceLocalStaticMethods.upload(file, entity);
+                    ? FileServiceDmsStaticOperations.upload(file, entity, service).getCode()
+                    : FileServiceLocalStaticOperations.upload(file, entity);
             entity.setFileName(fileName);
             log.info("File uploaded successfully for entity: {}, fileName: {}", entity.getCode(), fileName);
             return entity;
@@ -144,8 +143,8 @@ public abstract class MultiFileServiceSubMethods<
         return executeSafely(() -> {
             var service = getLinkedFileApi();
             ResourceDto resource = service != null
-                    ? FileServiceDmsStaticMethods.download(entity, version, service)
-                    : FileServiceLocalStaticMethods.download(entity, version);
+                    ? FileServiceDmsStaticOperations.download(entity, version, service)
+                    : FileServiceLocalStaticOperations.download(entity, version);
             log.info("File downloaded successfully for entity: {}, version: {}", entity.getCode(), version);
             return resource;
         }, null, "download file");
@@ -168,8 +167,8 @@ public abstract class MultiFileServiceSubMethods<
             getLinkFileRepository().delete(entity);
             var service = getLinkedFileApi();
             boolean deleted = service != null
-                    ? FileServiceDmsStaticMethods.delete(entity, service)
-                    : FileServiceLocalStaticMethods.delete(entity);
+                    ? FileServiceDmsStaticOperations.delete(entity, service)
+                    : FileServiceLocalStaticOperations.delete(entity);
             log.info("File deleted successfully for entity: {}", entity.getCode());
             return deleted;
         }, false, "delete file");

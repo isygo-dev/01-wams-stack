@@ -1,4 +1,4 @@
-package eu.isygoit.com.rest.service;
+package eu.isygoit.com.rest.service.media;
 
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
@@ -25,10 +25,10 @@ import java.nio.file.StandardCopyOption;
  * The type File api local static methods.
  */
 @Slf4j
-public final class FileServiceLocalStaticMethods {
+public final class FileServiceLocalStaticOperations {
 
     // Private constructor to prevent instantiation of this utility class
-    private FileServiceLocalStaticMethods() {
+    private FileServiceLocalStaticOperations() {
     }
 
     /**

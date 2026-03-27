@@ -5,8 +5,8 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
-import eu.isygoit.com.rest.service.tenancy.IFileTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
+import eu.isygoit.com.rest.service.tenancy.IFileTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -41,7 +41,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
         T extends IIdAssignable<I> & IFileEntity & ITenantAssignable,
         M extends IIdAssignableDto<I> & IDto & IFileUploadDto,
         F extends M,
-        S extends IFileTenantServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceUtils<I, T>>
+        S extends IFileTenantServiceOperations<I, T> & ICrudTenantServiceOperations<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 

@@ -2,10 +2,11 @@ package eu.isygoit.com.rest.controller.impl.media;
 
 import eu.isygoit.com.rest.api.IMappedImageApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
-import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.controller.impl.CrudControllerOperations;
+import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.IImageServiceMethods;
+import eu.isygoit.com.rest.service.media.IImageServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
@@ -25,15 +26,8 @@ import java.io.Serializable;
 import java.nio.file.Files;
 
 /**
- * Abstract controller class for handling image-related operations via REST API.
- * Provides endpoints for uploading, downloading, creating, and updating entities with associated images
- * for entities implementing {@link IImageEntity} and {@link IIdAssignable}.
- *
- * @param <I> the type of the identifier, extending {@link Serializable}
- * @param <T> the entity type, extending {@link IIdAssignable} and {@link IImageEntity}
- * @param <M> the main DTO type, extending {@link IIdAssignableDto} and {@link IImageUploadDto}
- * @param <F> the full DTO type, extending {@link M}
- * @param <S> the service type, implementing {@link IImageServiceMethods}, {@link ICrudServiceMethods}, and {@link ICrudServiceUtils}
+ * Concrete controller for entities that have a single associated image.
+ * Extends the common operations base → reuses all lifecycle hooks and utilities.
  */
 @Slf4j
 public abstract class MappedImageController<
@@ -41,24 +35,19 @@ public abstract class MappedImageController<
         T extends IIdAssignable<I> & IImageEntity,
         M extends IIdAssignableDto<I> & IDto & IImageUploadDto,
         F extends M,
-        S extends IImageServiceMethods<I, T> & ICrudServiceMethods<I, T> & ICrudServiceUtils<I, T>
-        > extends CrudControllerUtils<I, T, M, F, S> implements IMappedImageApi<I, F> {
+        S extends IImageServiceOperations<I, T>
+                & ICrudServiceOperations<I, T>
+                & ICrudServiceEvents<I, T>
+                & ICrudServiceUtils<I, T>>
+        extends CrudControllerOperations<I, T, M, F, S>
+        implements IMappedImageApi<I, F> {
 
-    /**
-     * Uploads an image for the specified entity.
-     *
-     * @param requestContext the request context containing metadata
-     * @param id             the ID of the entity
-     * @param file           the multipart file containing the image
-     * @return a response entity containing the updated entity DTO
-     * @throws IOException if an I/O error occurs during image upload
-     */
     @Override
     public ResponseEntity<F> uploadImage(ContextRequestDto requestContext, I id, MultipartFile file) {
         log.debug("Uploading image for entityId: {}", id);
         try {
-            var entity = crudService().uploadImage(id, file);
-            var dto = mapper().entityToDto(entity);
+            T entity = crudService().uploadImage(id, file);
+            F dto = mapper().entityToDto(entity);
             log.info("Successfully uploaded image for entityId: {}", id);
             return ResponseFactory.responseOk(dto);
         } catch (IOException e) {
@@ -67,14 +56,6 @@ public abstract class MappedImageController<
         }
     }
 
-    /**
-     * Downloads the image associated with the specified entity.
-     *
-     * @param requestContext the request context containing metadata
-     * @param id             the ID of the entity
-     * @return a response entity containing the image resource
-     * @throws IOException if an I/O error occurs during image download
-     */
     @Override
     public ResponseEntity<Resource> downloadImage(ContextRequestDto requestContext, I id) {
         log.debug("Downloading image for entityId: {}", id);
@@ -97,15 +78,6 @@ public abstract class MappedImageController<
         }
     }
 
-    /**
-     * Creates an entity with an associated image.
-     *
-     * @param requestContext the request context containing metadata
-     * @param file           the multipart file containing the image
-     * @param dto            the DTO containing entity data
-     * @return a response entity containing the created entity DTO
-     * @throws IOException if an I/O error occurs during creation or image upload
-     */
     @Override
     public ResponseEntity<F> createWithImage(ContextRequestDto requestContext, MultipartFile file, F dto) {
         log.debug("Creating entity with image for tenant: {}", requestContext.getSenderTenant());
@@ -114,9 +86,11 @@ public abstract class MappedImageController<
                 tenantAssignableDto.setTenant(requestContext.getSenderTenant());
                 log.debug("Assigned tenant {} to DTO", requestContext.getSenderTenant());
             }
-            var processedDto = beforeCreate(dto);
-            var entity = crudService().createWithImage(mapper().dtoToEntity(processedDto), file);
-            var result = afterCreate(entity);
+
+            F processed = beforeCreate(dto);                    // ← reused from base
+            T entity = crudService().createWithImage(mapper().dtoToEntity(processed), file);
+            T result = afterCreate(entity);                     // ← reused from base
+
             log.info("Successfully created entity with image for tenant: {}", requestContext.getSenderTenant());
             return ResponseFactory.responseCreated(mapper().entityToDto(result));
         } catch (IOException e) {
@@ -125,76 +99,19 @@ public abstract class MappedImageController<
         }
     }
 
-    /**
-     * Updates an entity with an associated image.
-     *
-     * @param requestContext the request context containing metadata
-     * @param id             the ID of the entity to update
-     * @param file           the multipart file containing the image
-     * @param dto            the DTO containing updated entity data
-     * @return a response entity containing the updated entity DTO
-     * @throws IOException if an I/O error occurs during update or image upload
-     */
     @Override
     public ResponseEntity<F> updateWithImage(ContextRequestDto requestContext, I id, MultipartFile file, F dto) {
         log.debug("Updating entity with image for entityId: {}", id);
         try {
-            var processedDto = beforeUpdate(dto);
-            var entity = crudService().updateWithImage(mapper().dtoToEntity(processedDto), file);
-            var result = afterUpdate(entity);
+            F processed = beforeUpdate(id, dto);               // ← now uses id (better)
+            T entity = crudService().updateWithImage(mapper().dtoToEntity(processed), file);
+            T result = afterUpdate(entity);                    // ← reused from base
+
             log.info("Successfully updated entity with image for entityId: {}", id);
             return ResponseFactory.responseOk(mapper().entityToDto(result));
         } catch (IOException e) {
             log.error("Failed to update entity with image for entityId: {}", id, e);
             return getBackExceptionResponse(e);
         }
-    }
-
-    /**
-     * Hook method called before creating an entity, allowing customization.
-     *
-     * @param object the DTO to process
-     * @return the processed DTO
-     * @throws IOException if an I/O error occurs
-     */
-    protected F beforeCreate(F object) throws IOException {
-        log.debug("Executing beforeCreate for DTO with ID: {}", object.getId());
-        return object;
-    }
-
-    /**
-     * Hook method called after creating an entity, allowing customization.
-     *
-     * @param object the created entity
-     * @return the processed entity
-     * @throws IOException if an I/O error occurs
-     */
-    protected T afterCreate(T object) throws IOException {
-        log.debug("Executing afterCreate for entity with ID: {}", object.getId());
-        return object;
-    }
-
-    /**
-     * Hook method called before updating an entity, allowing customization.
-     *
-     * @param object the DTO to process
-     * @return the processed DTO
-     * @throws IOException if an I/O error occurs
-     */
-    protected F beforeUpdate(F object) throws IOException {
-        log.debug("Executing beforeUpdate for DTO with ID: {}", object.getId());
-        return object;
-    }
-
-    /**
-     * Hook method called after updating an entity, allowing customization.
-     *
-     * @param object the updated entity
-     * @return the processed entity
-     * @throws IOException if an I/O error occurs
-     */
-    protected T afterUpdate(T object) throws IOException {
-        log.debug("Executing afterUpdate for entity with ID: {}", object.getId());
-        return object;
     }
 }

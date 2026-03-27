@@ -43,7 +43,7 @@ public abstract class CrudTenantService<I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
         R extends JpaPagingAndSortingRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudTenantServiceMethods<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudTenantServiceOperations<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1];
