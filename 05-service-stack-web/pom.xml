@@ -84,7 +84,7 @@
             <dependency>
                 <groupId>org.apache.camel.springboot</groupId>
                 <artifactId>camel-spring-boot-bom</artifactId>
-                <version>4.10.2</version>
+                <version>${camel.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -229,11 +229,6 @@
         </dependency>
 
         <!-- ── Apache Camel Kafka ─────────────────────────────── -->
-        <!--
-            Camel Kafka component for event-driven route integration.
-            Version managed by camel-spring-boot-bom imported above.
-            (was 4.1.0 — now 4.10.2 via BOM, aligned with Spring Boot 3.5)
-        -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-kafka-starter</artifactId>

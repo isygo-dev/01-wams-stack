@@ -20,7 +20,7 @@
 | Hibernate ORM          | 6.6.x       |
 | PostgreSQL Driver      | 42.7.x      |
 | HikariCP               | 6.x         |
-| Apache Camel           | 4.10.2      |
+| Apache Camel           | 4.14.0      |
 | MapStruct              | 1.6.3       |
 | Lombok                 | 1.18.36     |
 | JJWT                   | 0.12.6      |

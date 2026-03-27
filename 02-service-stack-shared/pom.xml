@@ -81,7 +81,7 @@
             <dependency>
                 <groupId>org.apache.camel.springboot</groupId>
                 <artifactId>camel-spring-boot-bom</artifactId>
-                <version>4.10.2</version>
+                <version>${camel.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -212,16 +212,6 @@
             <artifactId>json-schema-validator</artifactId>
             <version>${json-schema-validator.version}</version>
         </dependency>
-
-        <!-- ── Apache Camel Spring Boot ───────────────────────── -->
-        <!--
-            Camel versions managed by camel-spring-boot-bom imported above.
-            servlet-starter: HTTP endpoint exposure via Servlet
-            jackson-starter: JSON data format for Camel routes
-            spring-boot-xml-starter: XML DSL route loading
-            stream-starter: stdin/stdout/file stream components
-            spring-boot-starter: core Camel Spring Boot auto-configuration
-        -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-servlet-starter</artifactId>
@@ -317,7 +307,6 @@
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <!-- =========================================================== -->

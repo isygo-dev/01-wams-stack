@@ -78,7 +78,7 @@
         <springdoc.version>2.8.8</springdoc.version>
         <jasypt.version>1.9.3</jasypt.version>
         <joda-time.version>2.13.0</joda-time.version>
-        <camel.version>4.10.2</camel.version>
+        <camel.version>4.14.0</camel.version>
         <minio.version>8.5.17</minio.version>
         <aws-sdk.version>2.30.31</aws-sdk.version>
         <lakefs-sdk.version>1.52.0</lakefs-sdk.version>
