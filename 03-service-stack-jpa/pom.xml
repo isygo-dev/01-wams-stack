@@ -1,23 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- =========================================================== -->
+    <!--  Organization                                                 -->
+    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <!-- =========================================================== -->
+    <!--  Artifact Identity                                            -->
+    <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-jpa</artifactId>
     <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-jpa</name>
-    <description>service-stack-jpa</description>
-
     <packaging>jar</packaging>
 
+    <name>service-stack-jpa</name>
+    <description>
+        Isygo-IT Service Stack — JPA / persistence layer library.
+        Provides the full Hibernate ORM + Spring Data JPA runtime for
+        all stack modules and microservice applications that need
+        relational database access:
+        • Hibernate ORM 6 (Jakarta Persistence 3.x compliant)
+        • Spring Data JPA repositories and query abstractions
+        • Hibernate Validator (Jakarta Bean Validation 3.x)
+        • Spring Security core (for audit / created-by tracking)
+        • Apache Commons Text (for dynamic query building)
+        • Base repository interfaces, generic CRUD services,
+        entity listeners and auditing support
+        Depends on service-stack-shared for domain model base classes.
+    </description>
+    <url>https://isygo-it.eu</url>
+
+    <!-- =========================================================== -->
+    <!--  Parent — root aggregator (toolchain + plugin management)    -->
+    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -25,109 +48,222 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <!-- =========================================================== -->
+    <!--  Properties                                                   -->
+    <!-- =========================================================== -->
+    <properties>
+        <!-- Library module — never repackaged as fat JAR             -->
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
 
+    <!-- =========================================================== -->
+    <!--  Dependency Management — import Spring Boot BOM               -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!--  Dependencies                                                 -->
+    <!-- =========================================================== -->
     <dependencies>
+
+        <!-- ── Internal: foundation layer ────────────────────── -->
+        <!--
+            service-stack-shared provides base domain model classes,
+            DTO abstractions, Jackson config, and Jakarta validation
+            API. Everything built on JPA extends those foundations.
+        -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+
+        <!-- ── Code Generation ────────────────────────────────── -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <optional>true</optional>
         </dependency>
+
+        <!-- ── ORM — Hibernate 6 (Jakarta Persistence 3.x) ───── -->
+        <!--
+            hibernate-core 6.x ships under org.hibernate.orm groupId.
+            It implements Jakarta Persistence 3.x (not javax.persistence).
+            Version fully managed by Spring Boot BOM — do NOT hardcode.
+
+            Replaces:
+              OLD: org.hibernate:hibernate-core:6.4.4.Final  ← wrong groupId
+              NEW: org.hibernate.orm:hibernate-core          ← BOM-managed
+        -->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>6.4.4.Final</version>
         </dependency>
+
+        <!-- ── Spring Data JPA ────────────────────────────────── -->
+        <!--
+            Provides Repository/CrudRepository/JpaRepository abstractions,
+            query derivation from method names, @Query support, and
+            Specification API for dynamic queries.
+            Version managed by Spring Boot BOM.
+        -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
-            <version>3.0.5</version>
         </dependency>
+
+        <!-- ── Validation — Hibernate Validator ──────────────── -->
+        <!--
+            Reference implementation of Jakarta Bean Validation 3.x.
+            Used for entity constraint validation (@NotNull, @Size, etc.)
+            and for validating DTOs before persistence.
+            Version managed by Spring Boot BOM.
+
+            Replaces:
+              OLD: org.hibernate:hibernate-validator:8.0.0.Final
+              OLD: org.hibernate:hibernate-validator-annotation-processor
+              NEW: org.hibernate.validator:hibernate-validator  ← correct artifact
+        -->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator-annotation-processor</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
+
+        <!-- ── Spring Security Core ───────────────────────────── -->
+        <!--
+            Required for Spring Data JPA auditing support:
+            @EnableJpaAuditing + AuditorAware<String> implementations
+            that read the authenticated principal for @CreatedBy /
+            @LastModifiedBy population.
+            Version managed by Spring Boot BOM — was pinned to 6.0.3,
+            now correctly aligned with Spring Boot 3.5.x (6.5.x).
+        -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>6.0.3</version>
-            <scope>compile</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+
+        <!-- ── Apache Commons Text ────────────────────────────── -->
+        <!--
+            Used for safe dynamic JPQL/SQL fragment construction
+            (StringSubstitutor, WordUtils, etc.).
+            Version managed by Spring Boot BOM.
+        -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
+            <version>1.13.0</version>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- ── Test ───────────────────────────────────────────── -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito Core -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>6.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 Extension -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- =========================================================== -->
+    <!--  Build                                                        -->
+    <!-- =========================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Compiler: Lombok + MapStruct annotation processors   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Surefire: JUnit 5 test runner                        -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach sources jar for consumers and IDE navigation   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- =========================================================== -->
+    <!--  Distribution Management                                      -->
+    <!-- =========================================================== -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </snapshotRepository>
     </distributionManagement>
 
+    <!-- =========================================================== -->
+    <!--  Repositories                                                 -->
+    <!-- =========================================================== -->
     <repositories>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
 </project>

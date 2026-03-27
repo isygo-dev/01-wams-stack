@@ -6,6 +6,7 @@ import eu.isygoit.enums.IEnumWebToken;
 import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -52,9 +53,9 @@ class JwtServiceTest {
                 claims,
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,          // replaces SignatureAlgorithm.HS256
                 testKey,
-                1000 * 60 * 60 // 1 hour
+                1000 * 60 * 60           // 1 hour
         );
 
         assertNotNull(tokenResponseDto);
@@ -83,7 +84,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60 // 1 hour
         );
@@ -105,7 +106,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -127,7 +128,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -148,7 +149,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -169,7 +170,7 @@ class JwtServiceTest {
                 claims,
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -191,7 +192,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -214,7 +215,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -237,7 +238,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1000 * 60 * 60
         );
@@ -258,7 +259,7 @@ class JwtServiceTest {
                 Collections.emptyMap(),
                 "issuerTest",
                 "audienceTest",
-                SignatureAlgorithm.HS256,
+                Jwts.SIG.HS256,
                 testKey,
                 1
         );
@@ -302,7 +303,7 @@ class JwtServiceTest {
                     Collections.emptyMap(),
                     "issuerTest",
                     "audienceTest",
-                    SignatureAlgorithm.HS256,
+                    Jwts.SIG.HS256,
                     testKey,
                     1000 * 60 * 60
             );
@@ -373,7 +374,7 @@ class JwtServiceTest {
                     Collections.emptyMap(),
                     "issuerTest",
                     "audienceTest",
-                    SignatureAlgorithm.HS256,
+                    Jwts.SIG.HS256,
                     testKey,
                     1
             );

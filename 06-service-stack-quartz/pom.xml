@@ -1,23 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- =========================================================== -->
+    <!--  Organization                                                 -->
+    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <!-- =========================================================== -->
+    <!--  Artifact Identity                                            -->
+    <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-quartz</artifactId>
     <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-quartz</name>
-    <description>service-stack-quartz</description>
-
     <packaging>jar</packaging>
 
+    <name>service-stack-quartz</name>
+    <description>
+        Isygo-IT Service Stack — distributed job scheduling library.
+        Provides a reusable Quartz Scheduler integration layer for all
+        microservice applications that need reliable, persistent, and
+        clusterable scheduled task execution:
+        • Spring Boot Quartz starter auto-configuration (scheduler
+        factory, job store, trigger and job bean wiring)
+        • Quartz JDBC JobStore support for persistent, clustered
+        scheduling backed by a relational database
+        • Base Job, Trigger, and Scheduler service abstractions
+        ready to be extended by application-specific jobs
+        • Joda-Time utilities for cron expression building and
+        schedule date/time arithmetic
+        Depends on service-stack-shared for base utilities.
+        Does NOT depend on service-stack-jpa — Quartz manages its
+        own schema and JDBC connections independently.
+    </description>
+    <url>https://isygo-it.eu</url>
+
+    <!-- =========================================================== -->
+    <!--  Parent — root aggregator (toolchain + plugin management)    -->
+    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -25,39 +51,194 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <!-- =========================================================== -->
+    <!--  Properties                                                   -->
+    <!-- =========================================================== -->
+    <properties>
+        <!-- Library module — never repackaged as fat JAR             -->
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
 
+    <!-- =========================================================== -->
+    <!--  Dependency Management — import Spring Boot BOM               -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!--  Dependencies                                                 -->
+    <!-- =========================================================== -->
     <dependencies>
+
+        <!-- ── Internal: foundation layer ────────────────────── -->
+        <!--
+            service-stack-shared provides base model abstractions,
+            logging, Jackson config, and common utilities (commons-io,
+            joda-time) needed for job configuration and scheduling helpers.
+        -->
+        <dependency>
+            <groupId>eu.isygo-it.services</groupId>
+            <artifactId>service-stack-shared</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <!-- ── Code Generation ────────────────────────────────── -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version> <!-- Feb 03, 2023 -->
+            <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.12.5</version>
-        </dependency>
+
+        <!-- ── Quartz Scheduler ───────────────────────────────── -->
+        <!--
+            spring-boot-starter-quartz provides:
+              • Quartz Scheduler auto-configuration
+              • SchedulerFactoryBean with Spring bean job factory
+                (jobs can have @Autowired dependencies injected)
+              • QuartzDataSource support for JDBC JobStore
+              • spring.quartz.* configuration properties binding
+              • @QuartzDataSource qualifier for isolated connection pool
+
+            Version managed by Spring Boot BOM.
+            Was pinned to 3.2.3 — now correctly BOM-managed (3.5.11).
+
+            For JDBC JobStore (clustered, persistent scheduling),
+            consuming applications must also declare:
+              spring.quartz.job-store-type=jdbc
+              spring.quartz.jdbc.initialize-schema=always (or never)
+            and provide a datasource (HikariCP via their own JPA config).
+        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
-            <version>3.2.3</version>
         </dependency>
+
+        <!-- ── Date / Time ────────────────────────────────────── -->
+        <!--
+            Joda-Time for cron expression construction, schedule
+            interval arithmetic, and timezone-aware trigger building.
+            Not in Spring Boot BOM — pinned via ${joda-time.version}.
+        -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${joda-time.version}</version>
+        </dependency>
+
+        <!-- ── Test ───────────────────────────────────────────── -->
+        <!--
+            JUnit 5 + Mockito for unit-testing job logic in isolation
+            (without a live scheduler). spring-test enables
+            @SpringJUnitConfig for lightweight integration tests
+            that spin up the Quartz SchedulerFactory.
+        -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- =========================================================== -->
+    <!--  Build                                                        -->
+    <!-- =========================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Compiler: Lombok annotation processor                -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Surefire: JUnit 5 test runner                        -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach sources jar for consumers and IDE navigation   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- =========================================================== -->
+    <!--  Distribution Management                                      -->
+    <!-- =========================================================== -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </snapshotRepository>
     </distributionManagement>
 
+    <!-- =========================================================== -->
+    <!--  Repositories                                                 -->
+    <!-- =========================================================== -->
     <repositories>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
 </project>

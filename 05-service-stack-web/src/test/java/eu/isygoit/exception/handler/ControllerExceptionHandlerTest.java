@@ -16,9 +16,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.transaction.CannotCreateTransactionException;
 
 import javax.naming.SizeLimitExceededException;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Path;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
@@ -176,15 +176,15 @@ class ControllerExceptionHandlerTest {
      */
     @Test
     void testHandleError_ConstraintViolationException_Validation() {
-        javax.validation.ConstraintViolation<?> violation = mock(javax.validation.ConstraintViolation.class);
+        jakarta.validation.ConstraintViolation<?> violation = mock(jakarta.validation.ConstraintViolation.class);
         // Mock Path object
-        var mockPath = mock(javax.validation.Path.class);
+        var mockPath = mock(jakarta.validation.Path.class);
         when(mockPath.toString()).thenReturn("property.path");
         when(violation.getPropertyPath()).thenReturn(mockPath);
         when(violation.getMessage()).thenReturn("must not be null");
 
-        Set<javax.validation.ConstraintViolation<?>> violations = Collections.singleton(violation);
-        javax.validation.ConstraintViolationException validationEx = new javax.validation.ConstraintViolationException("validation error", violations);
+        Set<jakarta.validation.ConstraintViolation<?>> violations = Collections.singleton(violation);
+        jakarta.validation.ConstraintViolationException validationEx = new jakarta.validation.ConstraintViolationException("validation error", violations);
 
         when(localeServiceMock.getMessage("property.path", testLocale)).thenReturn("Property path");
         when(localeServiceMock.getMessage("must.not.be.null", testLocale)).thenReturn("Must not be null");

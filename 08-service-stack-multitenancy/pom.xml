@@ -1,23 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- =========================================================== -->
+    <!--  Organization                                                 -->
+    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <!-- =========================================================== -->
+    <!--  Artifact Identity                                            -->
+    <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-multitenancy</artifactId>
     <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-multitenancy</name>
-    <description>service-stack-multitenancy</description>
-
     <packaging>jar</packaging>
 
+    <name>service-stack-multitenancy</name>
+    <description>
+        Isygo-IT Service Stack — multi-tenancy infrastructure library.
+        Provides pluggable, strategy-based tenant isolation for all
+        microservice applications that serve multiple clients from a
+        single deployment. Supports four isolation strategies:
+        • DISCRIMINATOR  — shared schema, tenant column on every table
+        (lowest isolation, highest density)
+        • SCHEMA         — shared database, one schema per tenant
+        (medium isolation, Hibernate multi-tenancy
+        SchemaMultiTenantConnectionProvider)
+        • DATABASE       — dedicated database per tenant, shared pool
+        (strong isolation, HikariCP per-tenant
+        DataSource routing)
+        • GDM            — Generic Discriminator Model — custom hybrid
+        combining discriminator columns with
+        dynamic schema switching
+        Core infrastructure provided:
+        • TenantContext (ThreadLocal-based tenant identifier holder)
+        • CurrentTenantIdentifierResolver implementations per strategy
+        • MultiTenantConnectionProvider implementations per strategy
+        • TenantRoutingDataSource (AbstractRoutingDataSource subclass)
+        • HikariCP per-tenant DataSource factory and lifecycle manager
+        • Jakarta Servlet filter for tenant resolution from HTTP headers,
+        JWT claims, or subdomain
+        • Base @Entity classes with @TenantId / discriminator support
+        Depends on service-stack-shared and service-stack-jpa.
+    </description>
+    <url>https://isygo-it.eu</url>
+
+    <!-- =========================================================== -->
+    <!--  Parent — root aggregator (toolchain + plugin management)    -->
+    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -25,93 +61,217 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!-- =========================================================== -->
+    <!--  Properties                                                   -->
+    <!-- =========================================================== -->
+    <properties>
+        <!-- Library module — never repackaged as fat JAR             -->
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
+
+    <!-- =========================================================== -->
+    <!--  Dependency Management — import Spring Boot BOM               -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!--  Dependencies                                                 -->
+    <!-- =========================================================== -->
     <dependencies>
+
+        <!-- ── Internal: foundation layers ───────────────────── -->
+        <!--
+            service-stack-shared: base model abstractions, DTO
+            contracts, Jackson config, and common utilities.
+            service-stack-jpa: Hibernate ORM, Spring Data JPA,
+            entity base classes, and auditing — multi-tenancy is
+            implemented at the Hibernate/JPA session factory level
+            and requires full ORM runtime access.
+            Both use ${project.parent.version} — no hardcoding.
+        -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>WS-1.0.250603-T1554</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-jpa</artifactId>
-            <version>WS-1.0.250603-T1554</version>
+            <version>${project.parent.version}</version>
         </dependency>
+
+        <!-- ── Code Generation ────────────────────────────────── -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ── Jakarta Servlet API ────────────────────────────── -->
+        <!--
+            Required for the tenant-resolution servlet filter
+            (OncePerRequestFilter subclass) that extracts the
+            tenant identifier from incoming HTTP requests and
+            populates TenantContext before the request reaches
+            any @Service or @Repository.
+            Provided scope — the servlet container supplies the
+            implementation at runtime.
+
+            Replaces: javax.annotation:javax.annotation-api:1.3.2
+                      (wrong artifact entirely — that was for
+                       @PostConstruct/@Resource, not servlets)
+            Replaces: jakarta.servlet:jakarta.servlet-api:6.0.0
+                      (now BOM-managed — no explicit version needed)
+        -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>6.0.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
-        </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP -->
+        <!-- ── HikariCP Connection Pool ───────────────────────── -->
+        <!--
+            Central to the DATABASE and GDM multi-tenancy strategies.
+            Used to create and manage one HikariDataSource per tenant,
+            with separate connection pools, credentials, and JDBC URLs.
+            Also used in SCHEMA strategy for the shared pool with
+            schema-switching after connection acquisition.
+            Version managed by Spring Boot BOM (6.x with Boot 3.5.x).
+
+            Replaces: com.zaxxer:HikariCP:5.1.0 (hardcoded)
+            Now: BOM-managed — no explicit version needed.
+        -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.1.0</version>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- ── Spring Boot auto-configuration ────────────────── -->
+        <!--
+            Required for @Configuration, @ConditionalOnProperty,
+            and @EnableConfigurationProperties used in multi-tenancy
+            auto-configuration classes.
+        -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <!-- Mockito Core -->
+        <!-- ── Test ───────────────────────────────────────────── -->
+        <!--
+            Unit tests validate TenantContext thread-local isolation,
+            DataSource routing logic, and tenant resolver behaviour.
+            Integration tests use Testcontainers PostgreSQL (declared
+            by consuming applications, not this library).
+        -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>6.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 Extension -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- =========================================================== -->
+    <!--  Build                                                        -->
+    <!-- =========================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Compiler: Lombok annotation processor                -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Surefire: JUnit 5 test runner                        -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach sources jar for consumers and IDE navigation   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- =========================================================== -->
+    <!--  Distribution Management                                      -->
+    <!-- =========================================================== -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </snapshotRepository>
     </distributionManagement>
 
+    <!-- =========================================================== -->
+    <!--  Repositories                                                 -->
+    <!-- =========================================================== -->
     <repositories>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
 </project>

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <organization>
@@ -11,39 +13,39 @@
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>jpa-patterns-demo</artifactId>
     <version>WC-1.0.250603-T1554</version>
+    <packaging>pom</packaging>
 
     <name>jpa-patterns-demo</name>
-    <description>jpa-patterns-demo</description>
-
-    <packaging>pom</packaging>
+    <description>
+        Isygo-IT Service Stack Demo — advanced JPA pattern showcase aggregator.
+        Groups runnable Spring Boot applications demonstrating advanced
+        persistence patterns built on service-stack-jpa:
+        01-json-based-data  — JSON column storage patterns in PostgreSQL
+        (JSONB columns, Hibernate custom types,
+        @JdbcTypeCode, partial index queries)
+        03-timeline-events  — Temporal/audit event patterns
+        (event sourcing lite, timeline tables,
+        @CreatedDate/@LastModifiedDate tracking,
+        soft-delete with effective dating)
+    </description>
+    <url>https://isygo-it.eu</url>
 
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-demo</artifactId>
         <version>WC-1.0.250603-T1554</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <properties>
-        <java.source.version>17</java.source.version>
-        <java.target.version>17</java.target.version>
-    </properties>
 
     <modules>
         <module>01-json-based-data</module>
+        <!-- 02-* reserved for future pattern -->
         <module>03-timeline-events</module>
     </modules>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
 </project>

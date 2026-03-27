@@ -1,23 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- =========================================================== -->
+    <!--  Organization                                                 -->
+    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <!-- =========================================================== -->
+    <!--  Artifact Identity                                            -->
+    <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-shared</artifactId>
     <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-shared</name>
-    <description>service-stack-shared</description>
-
     <packaging>jar</packaging>
 
+    <name>service-stack-shared</name>
+    <description>
+        Isygo-IT Service Stack — shared foundation library.
+        Provides the universal building blocks consumed by every other
+        stack module and by all microservice applications:
+        • Base domain model classes and generic interfaces
+        • DTO abstractions and MapStruct mapper contracts
+        • Jackson serialization configuration (JSON, XML, YAML, CSV)
+        • Jakarta Bean Validation integration
+        • Apache Camel Spring Boot integration (servlet, jackson,
+        stream, spring-boot XML, spring-boot starter)
+        • OpenFeign declarative HTTP client support
+        • SpringDoc / OpenAPI 3 annotations and configuration
+        • JSON Schema validation (networknt)
+        • Common utilities: commons-io, joda-time, jaxb-api (Jakarta)
+        All other stack modules depend on this artifact.
+    </description>
+    <url>https://isygo-it.eu</url>
+
+    <!-- =========================================================== -->
+    <!--  Parent — root aggregator (toolchain + plugin management)    -->
+    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -25,219 +50,351 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <!-- =========================================================== -->
+    <!--  Properties                                                   -->
+    <!-- =========================================================== -->
+    <properties>
+        <!--
+            This is a library module — it must NOT produce a fat JAR.
+            spring-boot-maven-plugin repackage is deliberately skipped.
+        -->
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
 
+    <!-- =========================================================== -->
+    <!--  Dependency Management — import Spring Boot BOM               -->
+    <!--                                                               -->
+    <!--  Stack library modules do NOT inherit from                    -->
+    <!--  spring-boot-starter-parent (only service-stack-parent does). -->
+    <!--  They import the BOM here to get version-aligned deps         -->
+    <!--  without the starter-parent's plugin opinions.                -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel.springboot</groupId>
+                <artifactId>camel-spring-boot-bom</artifactId>
+                <version>4.10.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!--  Dependencies                                                 -->
+    <!-- =========================================================== -->
     <dependencies>
+
+        <!-- ── Code Generation ────────────────────────────────── -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version> <!-- Feb 03, 2023 -->
+            <optional>true</optional>
+            <!--
+                optional=true: Lombok is a compile-only annotation
+                processor. Consumers do not need it on their classpath.
+            -->
         </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+
+        <!-- ── Spring Web MVC ─────────────────────────────────── -->
+        <!--
+            spring-webmvc brings: DispatcherServlet, @Controller,
+            @RestController, @RequestMapping, HttpMessageConverters,
+            content negotiation, and the full MVC infrastructure.
+            Version managed by Spring Boot BOM.
+        -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>6.0.9</version>
+        </dependency>
+
+        <!-- Jakarta Servlet API (provided — container supplies it) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Spring Boot auto-configuration support               -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- ── Validation ─────────────────────────────────────── -->
+        <!--
+            Jakarta Bean Validation 3.x API — replaces javax.validation.
+            hibernate-validator is the reference implementation; brought
+            in transitively via spring-boot-starter-validation.
+        -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.networknt</groupId>
-            <artifactId>json-schema-validator</artifactId>
-            <version>1.5.8</version>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
         </dependency>
+
+        <!-- ── Persistence (type definitions only) ────────────── -->
+        <!--
+            Hibernate core brought as type=pom (BOM-style import of
+            its own managed deps) so shared domain model classes can
+            use JPA annotations without pulling in the full ORM runtime.
+            The runtime is provided by service-stack-jpa.
+        -->
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>6.4.4.Final</version>
+            <version>6.6.13.Final</version>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
-            <version>3.0.5</version>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator-annotation-processor</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.12.5</version>
-        </dependency>
+
+        <!-- ── Serialization — Jackson suite ──────────────────── -->
+        <!--
+            All four Jackson modules kept in sync via Spring Boot BOM.
+            jackson-databind is the core; the dataformat variants add
+            XML, YAML, and CSV support needed for multi-format REST APIs.
+        -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.18.2</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.18.2</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.18.2</version> <!-- Use the appropriate version for your project -->
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
-            <version>2.18.2</version> <!-- Use the Jackson version that matches your project -->
         </dependency>
 
+        <!-- ── Jakarta XML Binding ────────────────────────────── -->
+        <!--
+            Replaces removed javax.xml.bind:jaxb-api.
+            Required for XML marshalling in Java 11+ where JAXB was
+            removed from the JDK.
+        -->
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
+
+        <!-- ── JSON Schema Validation ─────────────────────────── -->
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>6.0.0</version>
-            <scope>provided</scope>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>${json-schema-validator.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-            <version>3.0.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>1.5.5.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>1.5.5.Final</version>
-        </dependency>
+
+        <!-- ── Apache Camel Spring Boot ───────────────────────── -->
+        <!--
+            Camel versions managed by camel-spring-boot-bom imported above.
+            servlet-starter: HTTP endpoint exposure via Servlet
+            jackson-starter: JSON data format for Camel routes
+            spring-boot-xml-starter: XML DSL route loading
+            stream-starter: stdin/stdout/file stream components
+            spring-boot-starter: core Camel Spring Boot auto-configuration
+        -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-servlet-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-jackson-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-xml-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-stream-starter</artifactId>
-            <version>4.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-api</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
+
+        <!-- ── OpenFeign ──────────────────────────────────────── -->
+        <!--
+            feign-core: base Feign interfaces and annotations
+            feign-hc5: Apache HttpClient 5 transport (recommended
+            over the default URLConnection for production use —
+            better connection pooling, timeouts, and metrics)
+        -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
-            <version>13.2.1</version>
+            <version>${feign.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.github.openfeign/feign-hc5 -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-hc5</artifactId>
-            <version>13.2.1</version>
+            <version>${feign.version}</version>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- ── SpringDoc / OpenAPI 3 ──────────────────────────── -->
+        <!--
+            webmvc-ui: Swagger UI + OpenAPI JSON endpoint for MVC apps.
+            webflux variants are intentionally excluded here — they pull
+            in the full reactive stack (Project Reactor, Netty) which
+            conflicts with MVC. Add them only in reactive modules.
+        -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
-        <!-- Mockito Core -->
+        <!-- ── Utilities ──────────────────────────────────────── -->
+        <!--
+            commons-io: NOT in Spring Boot BOM — must be explicitly versioned.
+            commons-text: NOT exported via spring-boot-dependencies standalone
+            import — must be explicitly versioned in library modules.
+        -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${joda-time.version}</version>
+        </dependency>
+
+        <!-- ── Test ───────────────────────────────────────────── -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>6.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 Extension -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- =========================================================== -->
+    <!--  Build                                                        -->
+    <!-- =========================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Compiler: Lombok + MapStruct annotation processors   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Surefire: JUnit 5 test runner                        -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach sources jar for consumers and IDE navigation   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- =========================================================== -->
+    <!--  Distribution Management                                      -->
+    <!-- =========================================================== -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </snapshotRepository>
     </distributionManagement>
 
+    <!-- =========================================================== -->
+    <!--  Repositories                                                 -->
+    <!-- =========================================================== -->
     <repositories>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
 </project>

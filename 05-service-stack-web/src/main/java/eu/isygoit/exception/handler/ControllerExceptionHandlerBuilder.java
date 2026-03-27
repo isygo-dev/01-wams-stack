@@ -3,6 +3,7 @@ package eu.isygoit.exception.handler;
 import eu.isygoit.annotation.MsgLocale;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.helper.SpringClassScanner;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
@@ -15,7 +16,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.*;
 

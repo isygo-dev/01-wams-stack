@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <organization>
@@ -11,39 +13,36 @@
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>object-storage-demo</artifactId>
     <version>WC-1.0.250603-T1554</version>
+    <packaging>pom</packaging>
 
     <name>object-storage-demo</name>
-    <description>object-storage-demo</description>
-
-    <packaging>pom</packaging>
+    <description>
+        Isygo-IT Service Stack Demo — object storage solutions showcase aggregator.
+        Groups two runnable Spring Boot applications demonstrating storage
+        backends provided by service-stack-storage:
+        01-object-storage-solutions — MinIO, AWS S3, and LakeFS backends
+        with unified StorageService API
+        02-file-image-storage       — File and image upload/download
+        with metadata persistence, multipart
+        streaming, and multi-tenant isolation
+    </description>
+    <url>https://isygo-it.eu</url>
 
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-demo</artifactId>
         <version>WC-1.0.250603-T1554</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <properties>
-        <java.source.version>17</java.source.version>
-        <java.target.version>17</java.target.version>
-    </properties>
 
     <modules>
         <module>01-object-storage-solutions</module>
         <module>02-file-image-storage</module>
     </modules>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
 </project>

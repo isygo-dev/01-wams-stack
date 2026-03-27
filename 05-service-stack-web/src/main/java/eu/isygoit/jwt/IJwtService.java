@@ -3,6 +3,7 @@ package eu.isygoit.jwt;
 import eu.isygoit.dto.common.TokenResponseDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.MacAlgorithm;
 
 import java.util.Date;
 import java.util.Map;
@@ -132,7 +133,7 @@ public interface IJwtService {
      * @return the token dto
      */
     TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience
-            , SignatureAlgorithm algorithm, String key, Integer lifeTimeInMs);
+            , MacAlgorithm algorithm, String key, Integer lifeTimeInMs);
 
     /**
      * Validate token.

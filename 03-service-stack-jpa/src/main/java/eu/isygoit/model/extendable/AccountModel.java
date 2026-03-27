@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.validation.constraints.Email;
+import jakarta.validation.constraints.Email;
 import java.io.Serializable;
 
 /**

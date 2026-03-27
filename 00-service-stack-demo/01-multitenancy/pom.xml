@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <organization>
@@ -11,22 +13,26 @@
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>multitenancy-demo</artifactId>
     <version>WC-1.0.250603-T1554</version>
+    <packaging>pom</packaging>
 
     <name>multitenancy-demo</name>
-    <description>multitenancy-demo</description>
-
-    <packaging>pom</packaging>
+    <description>
+        Isygo-IT Service Stack Demo — multi-tenancy strategy showcase aggregator.
+        Groups four runnable Spring Boot applications, each demonstrating a
+        distinct tenant isolation strategy provided by service-stack-multitenancy:
+        01-multitenancy-discriminator — shared schema, tenant discriminator column
+        02-multitenancy-schema        — shared database, one schema per tenant
+        03-multitenancy-database      — dedicated database per tenant
+        04-multitenancy-gdm           — Generic Discriminator Model (hybrid)
+    </description>
+    <url>https://isygo-it.eu</url>
 
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-demo</artifactId>
         <version>WC-1.0.250603-T1554</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <properties>
-        <java.source.version>17</java.source.version>
-        <java.target.version>17</java.target.version>
-    </properties>
 
     <modules>
         <module>01-multitenancy-discriminator</module>
@@ -35,17 +41,9 @@
         <module>04-multitenancy-gdm</module>
     </modules>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
 </project>

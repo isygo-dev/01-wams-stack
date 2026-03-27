@@ -1,22 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- =========================================================== -->
+    <!--  Organization                                                 -->
+    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <!-- =========================================================== -->
+    <!--  Artifact Identity                                            -->
+    <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-demo</artifactId>
     <version>WC-1.0.250603-T1554</version>
-
-    <name>service-stack-demo</name>
-    <description>service-stack-demo</description>
-
     <packaging>pom</packaging>
 
+    <name>service-stack-demo</name>
+    <description>
+        Isygo-IT Service Stack — demo and proof-of-concept aggregator.
+        Groups hands-on demonstrations of stack capabilities: multi-tenancy
+        strategies, JPA patterns, object storage, AI integration, and
+        Kafka messaging. Each sub-module is a runnable Spring Boot application.
+    </description>
+    <url>https://isygo-it.eu</url>
+
+    <!-- =========================================================== -->
+    <!--  Parent — inherits root aggregator toolchain                  -->
+    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -24,30 +40,213 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <java.source.version>17</java.source.version>
-        <java.target.version>17</java.target.version>
-    </properties>
-
+    <!-- =========================================================== -->
+    <!--  Demo Sub-Modules                                             -->
+    <!-- =========================================================== -->
     <modules>
+        <!-- Multi-tenancy strategies: discriminator, schema, database, GDM -->
         <module>01-multitenancy</module>
+
+        <!-- JPA patterns: JSON-based data, timeline/audit events           -->
         <module>02-jpa-patterns</module>
+
+        <!-- Object storage: MinIO/S3 solutions, file & image storage       -->
         <module>03-object-storage</module>
+
+        <!-- AI integration: OpenAI API usage patterns                      -->
         <module>04-ai-integration</module>
+
+        <!-- Messaging: Kafka producer/consumer patterns                    -->
         <module>05-kafka-integration</module>
     </modules>
 
+    <!-- =========================================================== -->
+    <!--  Properties — demo-layer overrides                            -->
+    <!-- =========================================================== -->
+    <properties>
+        <!--
+            skip deployment for all demo/POC modules by default —
+            they are not published as library artifacts to GitHub Packages.
+        -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+
+        <!-- Skip javadoc generation for demo modules (they are POC apps) -->
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
+    <!-- =========================================================== -->
+    <!--  Dependency Management — shared across all demo modules       -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!--
+                Spring Boot BOM — hardcoded because this module's parent
+                is the root aggregator (service-stack, packaging=pom) which
+                does NOT inherit spring-boot-starter-parent. Property
+                ${spring-boot.version} is defined in the root but Maven
+                resolves BOM import versions before property interpolation
+                is complete in aggregator-only parents, causing a resolution
+                failure. Hardcoding is the correct pattern here.
+            -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Testcontainers BOM — single aligned version for all
+                 demo modules; avoids the 1.19.7 vs 1.20.6 conflict
+                 that existed across multiple POCs                         -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>1.20.6</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Internal stack modules — version pinned once here;
+                 demo leaf POMs just declare groupId + artifactId          -->
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-shared</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-jpa</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-crypt</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-web</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-multitenancy</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-storage</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-quartz</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack-cassandra</artifactId>
+                <version>WS-1.0.250603-T1554</version>
+            </dependency>
+
+            <!-- Common POC dependencies — versions managed here once     -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>3.9.0</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!--  Build — demo-layer plugin configuration                      -->
+    <!-- =========================================================== -->
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- Spring Boot Maven plugin available to all demo apps  -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>3.5.11</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
+    <!-- =========================================================== -->
+    <!--  Distribution Management                                      -->
+    <!--  Demo modules are NOT published — skip deploy                 -->
+    <!-- =========================================================== -->
+    <distributionManagement>
+        <repository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+        </repository>
+    </distributionManagement>
+
+    <!-- =========================================================== -->
+    <!--  Repositories                                                 -->
+    <!-- =========================================================== -->
+    <repositories>
+        <repository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
 </project>

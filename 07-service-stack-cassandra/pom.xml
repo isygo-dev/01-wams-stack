@@ -1,23 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- =========================================================== -->
+    <!--  Organization                                                 -->
+    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <!-- =========================================================== -->
+    <!--  Artifact Identity                                            -->
+    <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-cassandra</artifactId>
     <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-cassandra</name>
-    <description>service-stack-cassandra</description>
-
     <packaging>jar</packaging>
 
+    <name>service-stack-cassandra</name>
+    <description>
+        Isygo-IT Service Stack — Apache Cassandra / NoSQL persistence library.
+        Provides reusable Cassandra integration building blocks for all
+        microservice applications that need high-throughput, distributed,
+        column-family data storage:
+        • Spring Data Cassandra auto-configuration (CassandraTemplate,
+        ReactiveCassandraTemplate, repository support)
+        • CassandraMappingContext and CassandraConverter abstractions
+        • Base @Table entity classes, @PrimaryKey / @PrimaryKeyColumn
+        definitions, and generic Cassandra repository interfaces
+        • Keyspace and session configuration helpers
+        • Cassandra-specific auditing and TTL support
+        Depends on service-stack-shared for base model abstractions and
+        service-stack-jpa for shared entity identity contracts (entities
+        that exist in both relational and columnar stores).
+        Version managed by Spring Boot BOM — Spring Data Cassandra
+        5.x ships with Spring Boot 3.5.x.
+    </description>
+    <url>https://isygo-it.eu</url>
+
+    <!-- =========================================================== -->
+    <!--  Parent — root aggregator (toolchain + plugin management)    -->
+    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -25,9 +52,43 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <!-- =========================================================== -->
+    <!--  Properties                                                   -->
+    <!-- =========================================================== -->
+    <properties>
+        <!-- Library module — never repackaged as fat JAR             -->
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
 
+    <!-- =========================================================== -->
+    <!--  Dependency Management — import Spring Boot BOM               -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!--  Dependencies                                                 -->
+    <!-- =========================================================== -->
     <dependencies>
+
+        <!-- ── Internal: foundation layers ───────────────────── -->
+        <!--
+            service-stack-shared: base model abstractions, DTO
+            contracts, Jackson serialization, common utilities.
+            service-stack-jpa: shared entity identity contracts
+            (IEntity, IAuditEntity) used by entities stored in
+            both PostgreSQL and Cassandra simultaneously.
+            Both use ${project.parent.version} — no hardcoding.
+        -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
@@ -38,31 +99,142 @@
             <artifactId>service-stack-jpa</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-cassandra</artifactId>
-            <version>4.3.3</version>
-        </dependency>
+
+        <!-- ── Code Generation ────────────────────────────────── -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <optional>true</optional>
         </dependency>
+
+        <!-- ── Spring Data Cassandra ──────────────────────────── -->
+        <!--
+            Provides:
+              • CassandraTemplate / ReactiveCassandraTemplate
+              • CassandraRepository / ReactiveCassandraRepository
+              • @Table, @PrimaryKey, @PrimaryKeyColumn, @Column
+              • CassandraMappingContext for schema introspection
+              • CassandraConverter for type mapping
+              • Spring Boot auto-configuration via
+                spring-boot-starter-data-cassandra
+
+            Version managed by Spring Boot BOM.
+            Was pinned to 4.3.3 — now correctly BOM-managed.
+            Spring Boot 3.5.x ships Spring Data Cassandra 5.x
+            which requires Cassandra driver 4.17+ and
+            uses the DataStax Java Driver 4.x exclusively
+            (OSS driver, no legacy 3.x Datastax driver).
+        -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-cassandra</artifactId>
+        </dependency>
+
+        <!-- ── Test ───────────────────────────────────────────── -->
+        <!--
+            For integration tests against a real Cassandra instance,
+            add org.testcontainers:cassandra to the consuming
+            application's test scope — not here, as this is a
+            library module without a concrete Cassandra connection.
+        -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- =========================================================== -->
+    <!--  Build                                                        -->
+    <!-- =========================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Compiler: Lombok annotation processor                -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Surefire: JUnit 5 test runner                        -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach sources jar for consumers and IDE navigation   -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!-- =========================================================== -->
+    <!--  Distribution Management                                      -->
+    <!-- =========================================================== -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </snapshotRepository>
     </distributionManagement>
 
+    <!-- =========================================================== -->
+    <!--  Repositories                                                 -->
+    <!-- =========================================================== -->
     <repositories>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
 </project>
