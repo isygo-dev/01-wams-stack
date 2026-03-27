@@ -1,5 +1,6 @@
 package eu.isygoit.com.rest.service;
 
+import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
@@ -42,7 +43,6 @@ public abstract class CrudService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudServiceMethods<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
-    private static final String SHOULD_USE_SAAS_SPECIFIC_METHOD = "should use SAAS-specific method";
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1];
     private final boolean isTenantAssignable = ITenantAssignable.class.isAssignableFrom(persistentClass);
@@ -82,7 +82,7 @@ public abstract class CrudService<I extends Serializable,
     private void validateNotTenantSpecific(String operationName) {
         if (isTenantAssignable) {
             log.error("{} operation on {} requires tenant-specific method", operationName, persistentClass.getSimpleName());
-            throw new OperationNotAllowedException(operationName + persistentClass.getSimpleName() + " " + SHOULD_USE_SAAS_SPECIFIC_METHOD);
+            throw new OperationNotAllowedException(operationName + persistentClass.getSimpleName() + " " + CtrlConstants.SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }
     }
 

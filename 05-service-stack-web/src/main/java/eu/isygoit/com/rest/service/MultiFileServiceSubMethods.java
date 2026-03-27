@@ -110,7 +110,7 @@ public abstract class MultiFileServiceSubMethods<
      * @return the updated entity with the file name set
      * @throws IllegalArgumentException if the file or entity is null
      */
-    protected final L subUploadFile(MultipartFile file, L entity) {
+    protected final L performUploadFile(MultipartFile file, L entity) {
         if (file == null || entity == null) {
             log.error("Invalid input: file or entity is null");
             throw new IllegalArgumentException("File and entity must not be null");
@@ -135,7 +135,7 @@ public abstract class MultiFileServiceSubMethods<
      * @return the resource DTO containing the file data
      * @throws IllegalArgumentException if the entity is null
      */
-    protected final ResourceDto subDownloadFile(L entity, Long version) {
+    protected final ResourceDto performDownloadFile(L entity, Long version) {
         if (entity == null) {
             log.error("Invalid input: entity is null");
             throw new IllegalArgumentException("Entity must not be null");

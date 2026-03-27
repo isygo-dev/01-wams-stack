@@ -108,8 +108,8 @@ public class OllamaApiService {
 
             Map<String, Object> options = new HashMap<>();
             if (temperature != null) options.put("temperature", temperature);
-            if (maxTokens != null)   options.put("num_predict", maxTokens);
-            if (!options.isEmpty())  requestBody.put("options", options);
+            if (maxTokens != null) options.put("num_predict", maxTokens);
+            if (!options.isEmpty()) requestBody.put("options", options);
 
             HttpEntity<String> request = new HttpEntity<>(JsonHelper.toJson(requestBody), headers);
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -20,10 +20,10 @@
         Isygo-IT Service Stack Demo — advanced JPA pattern showcase aggregator.
         Groups runnable Spring Boot applications demonstrating advanced
         persistence patterns built on service-stack-jpa:
-        01-json-based-data  — JSON column storage patterns in PostgreSQL
+        01-json-based-data — JSON column storage patterns in PostgreSQL
         (JSONB columns, Hibernate custom types,
         @JdbcTypeCode, partial index queries)
-        03-timeline-events  — Temporal/audit event patterns
+        03-timeline-events — Temporal/audit event patterns
         (event sourcing lite, timeline tables,
         @CreatedDate/@LastModifiedDate tracking,
         soft-delete with effective dating)

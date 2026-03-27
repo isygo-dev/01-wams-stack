@@ -29,29 +29,29 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerSubMethods<I, T, M, F, S>
+        extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudApi<I, M, F> {
 
     @Override
     public final ResponseEntity<F> create(ContextRequestDto requestContext,
                                           F object) {
-        return subCreate(requestContext, object);
+        return performCreate(requestContext, object);
     }
 
     public final ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
-        return subCreate(requestContext, objects);
+        return performCreate(requestContext, objects);
     }
 
     @Override
     public final ResponseEntity<?> delete(ContextRequestDto requestContext,
                                           I id) {
-        return subDelete(requestContext, id);
+        return performDelete(requestContext, id);
     }
 
     @Override
     public final ResponseEntity<?> batchDelete(ContextRequestDto requestContext,
                                                List<I> ids) {
-        return subDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
+        return performDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
 
@@ -59,27 +59,27 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     public final ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext,
                                                      Integer page,
                                                      Integer size) {
-        return subFindAllFull(requestContext, page, size);
+        return performFindAllFull(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<List<M>> findAll(ContextRequestDto requestContext,
                                                  Integer page,
                                                  Integer size) {
-        return subFindAll(requestContext, page, size);
+        return performFindAll(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<F> findById(ContextRequestDto requestContext,
                                             I id) {
-        return subFindById(requestContext, id);
+        return performFindById(requestContext, id);
     }
 
     @Override
     public final ResponseEntity<F> update(ContextRequestDto requestContext,
                                           I id,
                                           F object) {
-        return subUpdate(requestContext, id, object);
+        return performUpdate(requestContext, id, object);
     }
 
     @Override
@@ -89,7 +89,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<List<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
-        return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
+        return performFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 
     @Override

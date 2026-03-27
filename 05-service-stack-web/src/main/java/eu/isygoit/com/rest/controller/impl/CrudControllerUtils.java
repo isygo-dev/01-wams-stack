@@ -4,6 +4,7 @@ import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.annotation.InjectService;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
+import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -34,26 +35,7 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         extends ControllerExceptionHandler
         implements ICrudControllerUtils<I, T, M, F, S> {
 
-    /**
-     * The constant ERROR_BEAN_NOT_FOUND.
-     */
-    public static final String ERROR_BEAN_NOT_FOUND = "<Error>: bean {} not found";
-    /**
-     * The constant CONTROLLER_SERVICE.
-     */
-    public static final String CONTROLLER_SERVICE = "controller api";
-    /**
-     * The constant DEFAULT_PAGE_SIZE.
-     */
-    protected static final int DEFAULT_PAGE_SIZE = 50;
-    /**
-     * The constant MAX_PAGE_SIZE.
-     */
-    protected static final int MAX_PAGE_SIZE = 1000;
-    /**
-     * The constant CREATE_DATE_FIELD.
-     */
-    protected static final String CREATE_DATE_FIELD = "createDate";
+
     @Getter
     private final Class<F> fullDtoClass = (Class<F>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[3];
     @Getter
@@ -72,9 +54,9 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException("Bulk operation list cannot be empty or null");
         }
-        if (objects.size() > MAX_PAGE_SIZE) {
+        if (objects.size() > CtrlConstants.MAX_PAGE_SIZE) {
             throw new BadArgumentException(
-                    String.format("Bulk operation size %d exceeds maximum %d", objects.size(), MAX_PAGE_SIZE));
+                    String.format("Bulk operation size %d exceeds maximum %d", objects.size(), CtrlConstants.MAX_PAGE_SIZE));
         }
     }
 
@@ -84,12 +66,12 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
             InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
             if (injectMapperAndService != null) {
                 this.crudService = getApplicationContextService().getBean((Class<S>) injectMapperAndService.service())
-                        .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
+                        .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.CONTROLLER_SERVICE));
             } else {
                 InjectService injectService = this.getClass().getAnnotation(InjectService.class);
                 if (injectService != null) {
                     this.crudService = getApplicationContextService().getBean((Class<S>) injectService.value())
-                            .orElseThrow(() -> new BeanNotFoundException(CONTROLLER_SERVICE));
+                            .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.CONTROLLER_SERVICE));
                 }
             }
         }
@@ -103,11 +85,15 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
             InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
             if (injectMapperAndService != null) {
                 this.fullEntityMapper = getApplicationContextService().getBean(injectMapperAndService.mapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
+                        .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
             } else {
                 InjectMapper injectMapper = this.getClass().getAnnotation(InjectMapper.class);
-                this.fullEntityMapper = getApplicationContextService().getBean(injectMapper.mapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
+                if (injectMapper != null) {
+                    this.fullEntityMapper = getApplicationContextService().getBean(injectMapper.mapper())
+                            .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapper.mapper().getSimpleName()));
+                } else {
+                    throw new MapperNotDefinedException("Full entity mapper for " + this.getClass().getSimpleName());
+                }
             }
         }
 
@@ -120,11 +106,15 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
             InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
             if (injectMapperAndService != null) {
                 this.minEntityMapper = getApplicationContextService().getBean(injectMapperAndService.minMapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
+                        .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
             } else {
                 InjectMapper injectMapper = this.getClass().getAnnotation(InjectMapper.class);
-                this.minEntityMapper = getApplicationContextService().getBean(injectMapper.minMapper())
-                        .orElseThrow(() -> new BeanNotFoundException(ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
+                if (injectMapper != null) {
+                    this.minEntityMapper = getApplicationContextService().getBean(injectMapper.minMapper())
+                            .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapper.mapper().getSimpleName()));
+                } else {
+                    throw new MapperNotDefinedException("Min entity mapper for " + this.getClass().getSimpleName());
+                }
             }
         }
 

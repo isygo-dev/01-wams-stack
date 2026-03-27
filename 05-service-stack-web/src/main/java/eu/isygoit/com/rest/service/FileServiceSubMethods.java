@@ -41,7 +41,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
      * @param entity the entity
      * @return the string
      */
-    final String subUploadFile(MultipartFile file, T entity) {
+    final String performUploadFile(MultipartFile file, T entity) {
         return executeWithFallback(
                 dms -> FileServiceDmsStaticMethods.upload(file, entity, dms).getCode(),
                 () -> FileServiceLocalStaticMethods.upload(file, entity),
@@ -94,7 +94,7 @@ public abstract class FileServiceSubMethods<I extends Serializable,
      * @return the resource
      * @throws IOException the io exception
      */
-    final ResourceDto subDownloadFile(T entity, Long version) throws IOException {
+    final ResourceDto performDownloadFile(T entity, Long version) throws IOException {
         return executeWithFallback(
                 dms -> FileServiceDmsStaticMethods.download(entity, version, dms),
                 () -> FileServiceLocalStaticMethods.download(entity, version),

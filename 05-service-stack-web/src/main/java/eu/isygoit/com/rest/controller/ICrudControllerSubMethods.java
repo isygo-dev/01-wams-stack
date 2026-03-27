@@ -34,7 +34,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param object         the object
      * @return the response entity
      */
-    ResponseEntity<F> subCreate(ContextRequestDto requestContext, F object);
+    ResponseEntity<F> performCreate(ContextRequestDto requestContext, F object);
 
     /**
      * Sub create response entity.
@@ -43,7 +43,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> subCreate(ContextRequestDto requestContext, List<F> objects);
+    ResponseEntity<List<F>> performCreate(ContextRequestDto requestContext, List<F> objects);
 
     /**
      * Sub update response entity.
@@ -53,7 +53,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param object         the object
      * @return the response entity
      */
-    ResponseEntity<F> subUpdate(ContextRequestDto requestContext, I id, F object);
+    ResponseEntity<F> performUpdate(ContextRequestDto requestContext, I id, F object);
 
     /**
      * Sub update response entity.
@@ -62,7 +62,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> subUpdate(ContextRequestDto requestContext, List<F> objects);
+    ResponseEntity<List<F>> performUpdate(ContextRequestDto requestContext, List<F> objects);
 
     /**
      * Sub delete response entity.
@@ -71,7 +71,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param id             the id
      * @return the response entity
      */
-    ResponseEntity<Void> subDelete(ContextRequestDto requestContext, I id);
+    ResponseEntity<Void> performDelete(ContextRequestDto requestContext, I id);
 
     /**
      * Sub delete response entity.
@@ -80,7 +80,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<Void> subDelete(ContextRequestDto requestContext, List<F> objects);
+    ResponseEntity<Void> performDelete(ContextRequestDto requestContext, List<F> objects);
 
     /**
      * Sub find all full response entity.
@@ -90,7 +90,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<F>> subFindAllFull(ContextRequestDto requestContext, Integer page, Integer size);
+    ResponseEntity<List<F>> performFindAllFull(ContextRequestDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find all response entity.
@@ -100,7 +100,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<M>> subFindAll(ContextRequestDto requestContext, Integer page, Integer size);
+    ResponseEntity<List<M>> performFindAll(ContextRequestDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find by id response entity.
@@ -109,7 +109,7 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param id             the id
      * @return the response entity
      */
-    ResponseEntity<F> subFindById(ContextRequestDto requestContext, I id);
+    ResponseEntity<F> performFindById(ContextRequestDto requestContext, I id);
 
 
     /**
@@ -136,5 +136,5 @@ public interface ICrudControllerSubMethods<I extends Serializable,
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<F>> subFindAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size);
+    ResponseEntity<List<F>> performFindAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size);
 }

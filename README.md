@@ -8,27 +8,27 @@
 
 ## Technology Stack
 
-| Component              | Version     |
-|------------------------|-------------|
-| Java                   | 17+         |
-| Spring Boot            | 3.5.11      |
-| Spring Cloud           | 2025.0.1    |
-| Spring Framework       | 6.2.x       |
-| Spring Security        | 6.5.x       |
-| Spring Data JPA        | 2025.0.x    |
-| Spring Data Cassandra  | 5.x         |
-| Hibernate ORM          | 6.6.x       |
-| PostgreSQL Driver      | 42.7.x      |
-| HikariCP               | 6.x         |
-| Apache Camel           | 4.14.0      |
-| MapStruct              | 1.6.3       |
-| Lombok                 | 1.18.36     |
-| JJWT                   | 0.12.6      |
-| SpringDoc OpenAPI      | 2.8.8       |
-| Flyway                 | 11.x        |
-| Testcontainers         | 1.20.6      |
-| Maven                  | 3.9+        |
-| Docker                 | Latest      |
+| Component             | Version  |
+|-----------------------|----------|
+| Java                  | 17+      |
+| Spring Boot           | 3.5.11   |
+| Spring Cloud          | 2025.0.1 |
+| Spring Framework      | 6.2.x    |
+| Spring Security       | 6.5.x    |
+| Spring Data JPA       | 2025.0.x |
+| Spring Data Cassandra | 5.x      |
+| Hibernate ORM         | 6.6.x    |
+| PostgreSQL Driver     | 42.7.x   |
+| HikariCP              | 6.x      |
+| Apache Camel          | 4.14.0   |
+| MapStruct             | 1.6.3    |
+| Lombok                | 1.18.36  |
+| JJWT                  | 0.12.6   |
+| SpringDoc OpenAPI     | 2.8.8    |
+| Flyway                | 11.x     |
+| Testcontainers        | 1.20.6   |
+| Maven                 | 3.9+     |
+| Docker                | Latest   |
 
 > All Spring-managed versions (Spring Framework, Security, Data, Hibernate, HikariCP,
 > PostgreSQL, Flyway, JUnit 5, Mockito) are governed by the Spring Boot 3.5.11 BOM.
@@ -58,10 +58,10 @@
 
 ### Version Prefixes
 
-| Prefix | Layer | Published |
-|--------|-------|-----------|
-| `WS-*` | Stack library modules | ✅ GitHub Packages |
-| `WC-*` | Demo / POC applications | ❌ Never |
+| Prefix | Layer                   | Published         |
+|--------|-------------------------|-------------------|
+| `WS-*` | Stack library modules   | ✅ GitHub Packages |
+| `WC-*` | Demo / POC applications | ❌ Never           |
 
 ---
 
@@ -85,13 +85,13 @@ service-stack-storage         ← depends on: shared
 
 ### Prerequisites
 
-| Tool | Version | Download |
-|------|---------|----------|
-| Git | Latest | https://git-scm.com/downloads |
-| IntelliJ IDEA | Latest (Ultimate or Community) | https://www.jetbrains.com/idea/download |
-| JDK | 17+ | https://adoptium.net |
-| Maven | 3.9+ | https://maven.apache.org/download.cgi |
-| Docker Desktop | Latest | https://www.docker.com/products/docker-desktop |
+| Tool           | Version                        | Download                                       |
+|----------------|--------------------------------|------------------------------------------------|
+| Git            | Latest                         | https://git-scm.com/downloads                  |
+| IntelliJ IDEA  | Latest (Ultimate or Community) | https://www.jetbrains.com/idea/download        |
+| JDK            | 17+                            | https://adoptium.net                           |
+| Maven          | 3.9+                           | https://maven.apache.org/download.cgi          |
+| Docker Desktop | Latest                         | https://www.docker.com/products/docker-desktop |
 
 ---
 
@@ -106,6 +106,7 @@ credentials to resolve them.
 2. Add the following to `~/.m2/settings.xml`:
 
 ```xml
+
 <settings>
     <servers>
         <server>
@@ -155,6 +156,7 @@ mvn spring-boot:run
 Declare `service-stack-parent` as your application's parent:
 
 ```xml
+
 <parent>
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-parent</artifactId>
@@ -165,6 +167,7 @@ Declare `service-stack-parent` as your application's parent:
 Then add only the modules your service needs — no `<version>` tags required:
 
 ```xml
+
 <dependencies>
     <!-- Web layer: Spring Security, Kafka, JWT, Feign, Micrometer, OpenAPI -->
     <dependency>
@@ -203,24 +206,28 @@ Then add only the modules your service needs — no `<version>` tags required:
 ## Stack Module Reference
 
 ### `service-stack-shared`
+
 Universal foundation consumed by every other stack module. Provides base domain model
 classes, DTO abstractions, Jackson serialization (JSON, XML, YAML, CSV), Jakarta Bean
 Validation, Apache Camel Spring Boot starters, OpenFeign with Apache HC5 transport,
 SpringDoc OpenAPI 3, JSON Schema validation, and common utilities (commons-io, joda-time).
 
 ### `service-stack-jpa`
+
 Full Hibernate 6 ORM + Spring Data JPA runtime. Provides repository abstractions, query
 derivation, Specifications API, Hibernate Validator, Spring Data auditing
 (`@CreatedBy`, `@LastModifiedBy`, `@CreatedDate`, `@LastModifiedDate`), and dynamic
 JPQL support via Apache Commons Text.
 
 ### `service-stack-crypt`
+
 Cryptography and token management. Provides password encoding via Spring Security Crypto
 (BCrypt, Argon2, SCrypt, PBKDF2), JWT creation and validation via JJWT 0.12
 (`jjwt-api` on compile scope, `jjwt-impl` and `jjwt-jackson` on runtime scope),
 symmetric encryption via Jasypt, and date/time utilities via Joda-Time.
 
 ### `service-stack-web`
+
 Complete web and API layer. Provides Spring Security 6.x filter chain configuration,
 JWT authentication filter, Spring Kafka producer/consumer templates, Apache Camel Kafka
 routes, Spring Retry (`@Retryable`), Micrometer Prometheus metrics
@@ -228,26 +235,29 @@ routes, Spring Retry (`@Retryable`), Micrometer Prometheus metrics
 PostgreSQL JDBC driver, and HikariCP connection pool.
 
 ### `service-stack-quartz`
+
 Distributed Quartz Scheduler integration. Provides auto-configured `SchedulerFactoryBean`
 with Spring bean job injection, JDBC JobStore support for persistent clustered scheduling,
 and Joda-Time utilities for cron expression building. Quartz manages its own schema
 and connection pool independently of the application JPA datasource.
 
 ### `service-stack-cassandra`
+
 Spring Data Cassandra integration. Provides `CassandraTemplate`,
 `ReactiveCassandraTemplate`, `CassandraRepository`, entity mapping annotations
 (`@Table`, `@PrimaryKey`, `@PrimaryKeyColumn`), and `CassandraMappingContext`.
 Requires DataStax Java Driver 4.17+.
 
 ### `service-stack-multitenancy`
+
 Pluggable multi-tenancy infrastructure supporting four isolation strategies:
 
-| Strategy | Isolation | Description |
-|---|---|---|
-| `DISCRIMINATOR` | Low | Shared schema, `tenant_id` column on every table |
-| `SCHEMA` | Medium | Shared database, one PostgreSQL schema per tenant |
-| `DATABASE` | Strong | Dedicated database per tenant, HikariCP pool per tenant |
-| `GDM` | Hybrid | Generic Discriminator Model — per-entity-type strategy selection at runtime |
+| Strategy        | Isolation | Description                                                                 |
+|-----------------|-----------|-----------------------------------------------------------------------------|
+| `DISCRIMINATOR` | Low       | Shared schema, `tenant_id` column on every table                            |
+| `SCHEMA`        | Medium    | Shared database, one PostgreSQL schema per tenant                           |
+| `DATABASE`      | Strong    | Dedicated database per tenant, HikariCP pool per tenant                     |
+| `GDM`           | Hybrid    | Generic Discriminator Model — per-entity-type strategy selection at runtime |
 
 Provides `TenantContext` (ThreadLocal), `CurrentTenantIdentifierResolver`,
 `MultiTenantConnectionProvider`, `TenantRoutingDataSource`, per-tenant HikariCP pool
@@ -255,13 +265,14 @@ lifecycle management, and a Jakarta Servlet filter for tenant resolution from HT
 headers, JWT claims, or subdomain.
 
 ### `service-stack-storage`
+
 Provider-agnostic object storage abstraction with three pluggable backends:
 
-| Backend | Artifact | Use Case |
-|---|---|---|
-| MinIO | `io.minio:minio:8.5.17` | Self-hosted S3-compatible storage |
-| AWS S3 | `software.amazon.awssdk:s3:2.30.31` | Cloud object storage |
-| LakeFS | `io.lakefs:sdk:1.52.0` | Git-like versioned data lake |
+| Backend | Artifact                            | Use Case                          |
+|---------|-------------------------------------|-----------------------------------|
+| MinIO   | `io.minio:minio:8.5.17`             | Self-hosted S3-compatible storage |
+| AWS S3  | `software.amazon.awssdk:s3:2.30.31` | Cloud object storage              |
+| LakeFS  | `io.lakefs:sdk:1.52.0`              | Git-like versioned data lake      |
 
 Backend selected via `isygo.storage.provider` configuration property.
 
@@ -272,18 +283,18 @@ Backend selected via `isygo.storage.provider` configuration property.
 Demo modules are runnable Spring Boot applications illustrating stack capabilities.
 They are never published to GitHub Packages.
 
-| Module | Demonstrates |
-|---|---|
-| `poc-multitenancy-discriminator` | Hibernate `@TenantId` / `@Filter` discriminator strategy |
-| `poc-multitenancy-schema` | PostgreSQL `search_path` switching per tenant |
-| `poc-multitenancy-database` | Dynamic HikariCP pool creation per tenant |
-| `poc-multitenancy-gdm` | Per-entity-type isolation strategy selection |
-| `poc-json-based-data-pattern` | JSONB columns, `@JdbcTypeCode(SqlTypes.JSON)`, GIN indexes |
-| `poc-timeline-events` | Audit trail, event sourcing lite, soft-delete with effective dating |
-| `poc-object-storage-solutions` | MinIO / S3 / LakeFS unified API comparison |
-| `poc-file-image-storage` | Multi-tenant file upload, streaming download, presigned URLs |
-| `poc-open-ai-apis` | Ollama/OpenAI REST client, PDF text extraction via PDFBox 3.x |
-| `poc-producer-consumer` | Spring Kafka producer/consumer, dead-letter topics, Testcontainers Kafka |
+| Module                           | Demonstrates                                                             |
+|----------------------------------|--------------------------------------------------------------------------|
+| `poc-multitenancy-discriminator` | Hibernate `@TenantId` / `@Filter` discriminator strategy                 |
+| `poc-multitenancy-schema`        | PostgreSQL `search_path` switching per tenant                            |
+| `poc-multitenancy-database`      | Dynamic HikariCP pool creation per tenant                                |
+| `poc-multitenancy-gdm`           | Per-entity-type isolation strategy selection                             |
+| `poc-json-based-data-pattern`    | JSONB columns, `@JdbcTypeCode(SqlTypes.JSON)`, GIN indexes               |
+| `poc-timeline-events`            | Audit trail, event sourcing lite, soft-delete with effective dating      |
+| `poc-object-storage-solutions`   | MinIO / S3 / LakeFS unified API comparison                               |
+| `poc-file-image-storage`         | Multi-tenant file upload, streaming download, presigned URLs             |
+| `poc-open-ai-apis`               | Ollama/OpenAI REST client, PDF text extraction via PDFBox 3.x            |
+| `poc-producer-consumer`          | Spring Kafka producer/consumer, dead-letter topics, Testcontainers Kafka |
 
 ---
 
@@ -291,12 +302,12 @@ They are never published to GitHub Packages.
 
 The following rules run on every build before compilation:
 
-| Rule | Requirement |
-|---|---|
-| Maven version | 3.9 or higher |
-| Java version | 17 or higher |
-| Release dependencies | No SNAPSHOT deps allowed in release builds |
-| Duplicate versions | No dependency declared twice with different versions |
+| Rule                 | Requirement                                          |
+|----------------------|------------------------------------------------------|
+| Maven version        | 3.9 or higher                                        |
+| Java version         | 17 or higher                                         |
+| Release dependencies | No SNAPSHOT deps allowed in release builds           |
+| Duplicate versions   | No dependency declared twice with different versions |
 
 ```bash
 # Skip enforcer for local development only — never skip in CI

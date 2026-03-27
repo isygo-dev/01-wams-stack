@@ -28,18 +28,18 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerSubMethods<I, T, M, F, S>
+        extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudPersistApi<I, F> {
 
     public final ResponseEntity<F> create(ContextRequestDto requestContext, F object) {
-        return subCreate(requestContext, object);
+        return performCreate(requestContext, object);
     }
 
     public final ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
-        return subCreate(requestContext, objects);
+        return performCreate(requestContext, objects);
     }
 
     public final ResponseEntity<F> update(ContextRequestDto requestContext, I id, F object) {
-        return subUpdate(requestContext, id, object);
+        return performUpdate(requestContext, id, object);
     }
 }

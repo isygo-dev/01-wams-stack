@@ -2,6 +2,7 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.controller.ICrudControllerSubMethods;
 import eu.isygoit.com.rest.controller.ResponseFactory;
+import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
 import eu.isygoit.com.rest.service.ICrudServiceMethods;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
@@ -37,7 +38,7 @@ import java.util.function.Supplier;
  * @param <S> the api type (must implement ICrudServiceMethods, ICrudServiceEvents, ICrudServiceUtils)
  */
 @Slf4j
-public abstract class CrudControllerSubMethods<
+public abstract class CrudControllerOperations<
         I extends Serializable,
         T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
@@ -46,17 +47,13 @@ public abstract class CrudControllerSubMethods<
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerSubMethods<I, T, M, F, S> {
 
-    private static final int DEFAULT_PAGE = 0;
-    private static final int DEFAULT_PAGE_SIZE = 20;
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final String CREATE_DATE_FIELD = "createDate";
     private final Class<T> entityClass;
 
     /**
      * Instantiates a new Crud controller sub methods.
      */
     @SuppressWarnings("unchecked")
-    protected CrudControllerSubMethods() {
+    protected CrudControllerOperations() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[1];
     }
@@ -72,8 +69,8 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if the DTO is null
      */
     @Override
-    public ResponseEntity<F> subCreate(ContextRequestDto context, F dto) {
-        return executeWithMonitoring("subCreate", () -> {
+    public ResponseEntity<F> performCreate(ContextRequestDto context, F dto) {
+        return executeWithMonitoring("performCreate", () -> {
             log.info("Creating {} for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             validateCreateRequest(dto);
 
@@ -96,7 +93,7 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> subCreate(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> performCreate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subCreateBulk", () -> {
             log.info("Bulk creating {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -124,7 +121,7 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> subUpdate(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subUpdateBulk", () -> {
             log.info("Bulk updating {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -153,7 +150,7 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if ID or DTO is null
      */
     @Override
-    public ResponseEntity<F> subUpdate(ContextRequestDto context, I id, F dto) {
+    public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
         return executeWithMonitoring("subUpdateById", () -> {
             log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -179,8 +176,8 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public ResponseEntity<Void> subDelete(ContextRequestDto context, I id) {
-        return executeWithMonitoring("subDelete", () -> {
+    public ResponseEntity<Void> performDelete(ContextRequestDto context, I id) {
+        return executeWithMonitoring("performDelete", () -> {
             log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
 
@@ -204,7 +201,7 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<Void> subDelete(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<Void> performDelete(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
             log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -235,8 +232,8 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<M>> subFindAll(ContextRequestDto context, Integer page, Integer size) {
-        return executeWithMonitoring("subFindAll", () -> {
+    public ResponseEntity<List<M>> performFindAll(ContextRequestDto context, Integer page, Integer size) {
+        return executeWithMonitoring("performFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
@@ -262,8 +259,8 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> subFindAllFull(ContextRequestDto context, Integer page, Integer size) {
-        return executeWithMonitoring("subFindAllFull", () -> {
+    public ResponseEntity<List<F>> performFindAllFull(ContextRequestDto context, Integer page, Integer size) {
+        return executeWithMonitoring("performFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
@@ -290,8 +287,8 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> subFindAllFilteredByCriteria(ContextRequestDto context, String criteria, Integer page, Integer size) {
-        return executeWithMonitoring("subFindAllFilteredByCriteria", () -> {
+    public ResponseEntity<List<F>> performFindAllFilteredByCriteria(ContextRequestDto context, String criteria, Integer page, Integer size) {
+        return executeWithMonitoring("performFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
@@ -318,8 +315,8 @@ public abstract class CrudControllerSubMethods<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public ResponseEntity<F> subFindById(ContextRequestDto context, I id) {
-        return executeWithMonitoring("subFindById", () -> {
+    public ResponseEntity<F> performFindById(ContextRequestDto context, I id) {
+        return executeWithMonitoring("performFindById", () -> {
             log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
 
@@ -522,8 +519,8 @@ public abstract class CrudControllerSubMethods<
      */
     private int validatePage(Integer page) {
         if (page == null || page < 0) {
-            log.debug("Invalid page number {}, using default: {}", page, DEFAULT_PAGE);
-            return DEFAULT_PAGE;
+            log.debug("Invalid page number {}, using default: {}", page, CtrlConstants.DEFAULT_PAGE);
+            return CtrlConstants.DEFAULT_PAGE;
         }
         return page;
     }
@@ -536,12 +533,12 @@ public abstract class CrudControllerSubMethods<
      */
     private int validatePageSize(Integer size) {
         if (size == null || size <= 0) {
-            log.debug("Invalid page size {}, using default: {}", size, DEFAULT_PAGE_SIZE);
-            return DEFAULT_PAGE_SIZE;
+            log.debug("Invalid page size {}, using default: {}", size, CtrlConstants.DEFAULT_PAGE_SIZE);
+            return CtrlConstants.DEFAULT_PAGE_SIZE;
         }
-        if (size > MAX_PAGE_SIZE) {
-            log.warn("Requested page size {} exceeds maximum {}, adjusting to maximum", size, MAX_PAGE_SIZE);
-            return MAX_PAGE_SIZE;
+        if (size > CtrlConstants.MAX_PAGE_SIZE) {
+            log.warn("Requested page size {} exceeds maximum {}, adjusting to maximum", size, CtrlConstants.MAX_PAGE_SIZE);
+            return CtrlConstants.MAX_PAGE_SIZE;
         }
         return size;
     }
@@ -583,7 +580,7 @@ public abstract class CrudControllerSubMethods<
         PageRequest pageRequest = PageRequest.of(
                 validatedPage,
                 validatedSize,
-                Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD)
+                Sort.by(Sort.Direction.DESC, CtrlConstants.CREATE_DATE_FIELD)
         );
         return crudService().findAll(pageRequest);
     }
@@ -602,7 +599,7 @@ public abstract class CrudControllerSubMethods<
         PageRequest pageRequest = PageRequest.of(
                 validatedPage,
                 validatedSize,
-                Sort.by(Sort.Direction.DESC, CREATE_DATE_FIELD)
+                Sort.by(Sort.Direction.DESC, CtrlConstants.CREATE_DATE_FIELD)
         );
         return crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
     }

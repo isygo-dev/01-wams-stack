@@ -7,6 +7,7 @@ import feign.FeignException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.RollbackException;
+import jakarta.validation.ConstraintViolation;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
@@ -25,7 +26,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.naming.SizeLimitExceededException;
-import jakarta.validation.ConstraintViolation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;

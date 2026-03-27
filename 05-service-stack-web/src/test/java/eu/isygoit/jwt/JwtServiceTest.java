@@ -233,6 +233,40 @@ class JwtServiceTest {
     // Token Validation (full original nested suite)
     // ========================================================================
 
+    @Test
+    void extractMissingClaimReturnsEmptyOptional() {
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+
+        String token = dto.getToken();
+
+        assertTrue(jwtService.extractTenant(token).isEmpty());
+        assertFalse(jwtService.extractIsAdmin(token)); // default false
+        assertTrue(jwtService.extractApplication(token).isEmpty());
+    }
+
+    // ========================================================================
+    // Extract Claims Error Handling (covers both secured & unsecured)
+    // ========================================================================
+
+    @Test
+    void extractMissingClaimSecuredReturnsEmptyOptional() {
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+
+        String token = dto.getToken();
+
+        assertTrue(jwtService.extractTenant(token, testKey).isEmpty());
+        assertFalse(jwtService.extractIsAdmin(token, testKey));
+        assertTrue(jwtService.extractApplication(token, testKey).isEmpty());
+    }
+
+    // ========================================================================
+    // Additional useful edge-case tests
+    // ========================================================================
+
     @Nested
     class ValidateTokenTests {
 
@@ -309,10 +343,6 @@ class JwtServiceTest {
         }
     }
 
-    // ========================================================================
-    // Extract Claims Error Handling (covers both secured & unsecured)
-    // ========================================================================
-
     @Nested
     class ExtractClaimsErrorHandling {
 
@@ -355,35 +385,5 @@ class JwtServiceTest {
             assertThrows(NullPointerException.class, () -> jwtService.extractUserName(null, testKey));
             assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null, testKey));
         }
-    }
-
-    // ========================================================================
-    // Additional useful edge-case tests
-    // ========================================================================
-
-    @Test
-    void extractMissingClaimReturnsEmptyOptional() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
-
-        String token = dto.getToken();
-
-        assertTrue(jwtService.extractTenant(token).isEmpty());
-        assertFalse(jwtService.extractIsAdmin(token)); // default false
-        assertTrue(jwtService.extractApplication(token).isEmpty());
-    }
-
-    @Test
-    void extractMissingClaimSecuredReturnsEmptyOptional() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
-
-        String token = dto.getToken();
-
-        assertTrue(jwtService.extractTenant(token, testKey).isEmpty());
-        assertFalse(jwtService.extractIsAdmin(token, testKey));
-        assertTrue(jwtService.extractApplication(token, testKey).isEmpty());
     }
 }

@@ -108,7 +108,7 @@ public abstract class MultiFileTenantService<
             var linkedFile = createLinkedFile(tenant, file);
 
             linkedFile = beforeUpload(tenant, linkedFile, file);
-            linkedFile = subUploadFile(file, linkedFile);
+            linkedFile = performUploadFile(file, linkedFile);
             linkedFile = afterUpload(tenant, linkedFile, file);
 
             if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
@@ -169,7 +169,7 @@ public abstract class MultiFileTenantService<
             throw new ObjectNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
         log.debug("Downloading file for tenant: {}, parentId: {}, fileId: {}, version: {}", tenant, parentId, fileId, version);
-        return subDownloadFile(linkedFile, version);
+        return performDownloadFile(linkedFile, version);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -21,9 +21,9 @@
         Groups four runnable Spring Boot applications, each demonstrating a
         distinct tenant isolation strategy provided by service-stack-multitenancy:
         01-multitenancy-discriminator — shared schema, tenant discriminator column
-        02-multitenancy-schema        — shared database, one schema per tenant
-        03-multitenancy-database      — dedicated database per tenant
-        04-multitenancy-gdm           — Generic Discriminator Model (hybrid)
+        02-multitenancy-schema — shared database, one schema per tenant
+        03-multitenancy-database — dedicated database per tenant
+        04-multitenancy-gdm — Generic Discriminator Model (hybrid)
     </description>
     <url>https://isygo-it.eu</url>
 

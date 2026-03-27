@@ -109,7 +109,7 @@ public abstract class MultiFileService<
             var linkedFile = createLinkedFile(file);
 
             linkedFile = beforeUpload(linkedFile, file);
-            linkedFile = subUploadFile(file, linkedFile);
+            linkedFile = performUploadFile(file, linkedFile);
             linkedFile = afterUpload(linkedFile, file);
 
             if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
@@ -166,7 +166,7 @@ public abstract class MultiFileService<
             throw new ObjectNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
         log.debug("Downloading file for parentId: {}, fileId: {}, version: {}", parentId, fileId, version);
-        return subDownloadFile(linkedFile, version);
+        return performDownloadFile(linkedFile, version);
     }
 
     /**

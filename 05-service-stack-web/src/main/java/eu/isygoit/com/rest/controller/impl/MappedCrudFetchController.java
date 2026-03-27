@@ -29,23 +29,23 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerSubMethods<I, T, M, F, S>
+        extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudFetchApi<I, M, F> {
 
 
     @Override
     public final ResponseEntity<List<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
-        return subFindAll(requestContext, page, size);
+        return performFindAll(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
-        return subFindAllFull(requestContext, page, size);
+        return performFindAllFull(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<F> findById(ContextRequestDto requestContext, I id) {
-        return subFindById(requestContext, id);
+        return performFindById(requestContext, id);
     }
 
     @Override
@@ -56,7 +56,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
 
     @Override
     public ResponseEntity<List<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
-        return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
+        return performFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 
     @Override
