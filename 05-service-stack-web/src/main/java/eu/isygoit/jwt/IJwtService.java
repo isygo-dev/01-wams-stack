@@ -2,7 +2,6 @@ package eu.isygoit.jwt;
 
 import eu.isygoit.dto.common.TokenResponseDto;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.MacAlgorithm;
 
 import java.util.Date;
@@ -12,151 +11,48 @@ import java.util.function.Function;
 
 /**
  * The interface Jwt api.
+ * <p>
+ * Supports **both secured and unsecured** extraction for every claim.
  */
 public interface IJwtService {
 
-    /**
-     * Extract tenant string.
-     *
-     * @param token the token
-     * @return the string
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Unsecured (no key) — fast pre-inspection
+    // ─────────────────────────────────────────────────────────────────────────
     Optional<String> extractTenant(String token);
-
-    /**
-     * Extract application string.
-     *
-     * @param token the token
-     * @return the string
-     */
     Optional<String> extractApplication(String token);
-
-    /**
-     * Extract account type string.
-     *
-     * @param token the token
-     * @return the string
-     */
     Optional<String> extractAccountType(String token);
-
-    /**
-     * Extract user name string.
-     *
-     * @param token the token
-     * @return the string
-     */
     Optional<String> extractUserName(String token);
-
-    /**
-     * Extract subject string.
-     *
-     * @param token the token
-     * @param key   the key
-     * @return the string
-     */
-    Optional<String> extractSubject(String token, String key);
-
-    /**
-     * Extract subject string.
-     *
-     * @param token the token
-     * @return the string
-     */
+    Boolean extractIsAdmin(String token);
     Optional<String> extractSubject(String token);
 
-    /**
-     * Extract expiration date.
-     *
-     * @param token the token
-     * @param key   the key
-     * @return the date
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Secured (with key) — signature verified
+    // ─────────────────────────────────────────────────────────────────────────
+    Optional<String> extractTenant(String token, String key);
+    Optional<String> extractApplication(String token, String key);
+    Optional<String> extractAccountType(String token, String key);
+    Optional<String> extractUserName(String token, String key);
+    Boolean extractIsAdmin(String token, String key);
+    Optional<String> extractSubject(String token, String key);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Other signed-only methods
+    // ─────────────────────────────────────────────────────────────────────────
     Optional<Date> extractExpiration(String token, String key);
 
-    /**
-     * Extract claim t.
-     *
-     * @param <T>            the type parameter
-     * @param token          the token
-     * @param claimsResolver the claims resolver
-     * @param key            the key
-     * @return the t
-     */
     <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver, String key);
-
-    /**
-     * Extract claim t.
-     *
-     * @param <T>            the type parameter
-     * @param token          the token
-     * @param claimsResolver the claims resolver
-     * @return the t
-     */
     <T> Optional<T> extractClaim(String token, Function<Claims, T> claimsResolver);
 
-    /**
-     * Extract all claims claims.
-     *
-     * @param token the token
-     * @param key   the key
-     * @return the claims
-     */
     Claims extractAllClaims(String token, String key);
-
-    /**
-     * Extract all claims claims.
-     *
-     * @param token the token
-     * @return the claims
-     */
     Claims extractAllClaims(String token);
 
-    /**
-     * Is token expired boolean.
-     *
-     * @param token the token
-     * @param key   the key
-     * @return the boolean
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Core API
+    // ─────────────────────────────────────────────────────────────────────────
     Boolean isTokenExpired(String token, String key);
-
-    /**
-     * Create token token dto.
-     *
-     * @param subject      the subject
-     * @param claims       the claims
-     * @param issuer       the issuer
-     * @param audience     the audience
-     * @param algorithm    the algorithm
-     * @param key          the key
-     * @param lifeTimeInMs the life time in ms
-     * @return the token dto
-     */
-    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience
-            , MacAlgorithm algorithm, String key, Integer lifeTimeInMs);
-
-    /**
-     * Validate token.
-     *
-     * @param token   the token
-     * @param subject the subject
-     * @param key     the key
-     */
+    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
+                                 MacAlgorithm algorithm, String key, Integer lifeTimeInMs);
     void validateToken(String token, String subject, String key);
-
-    /**
-     * Calc expiry date date.
-     *
-     * @param lifeTimeInMs the life time in ms
-     * @return the date
-     */
     Date calcExpiryDate(Integer lifeTimeInMs);
-
-    /**
-     * Extract is admin boolean.
-     *
-     * @param token the token
-     * @return the boolean
-     */
-    Boolean extractIsAdmin(String token);
 }
