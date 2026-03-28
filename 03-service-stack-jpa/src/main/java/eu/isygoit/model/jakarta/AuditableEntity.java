@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * The type Auditable entity.
@@ -45,4 +46,8 @@ public abstract class AuditableEntity<T extends Serializable> extends AbstractEn
     @LastModifiedBy
     @Column(name = ComSchemaColumnConstantName.C_UPDATED_BY)
     private String updatedBy;
+
+    public Set<String> ignoreFields() {
+        return Set.of("createDate",  "updateDate", "createdBy", "updatedBy");
+    }
 }

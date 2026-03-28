@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Set;
+
 /**
  * The type Tutorial.
  */
@@ -19,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "TUTORIALS")
 @EntityListeners(TimelineEventListener.class)
-public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable {
+public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable, IDirtyEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorials_sequence_generator")
