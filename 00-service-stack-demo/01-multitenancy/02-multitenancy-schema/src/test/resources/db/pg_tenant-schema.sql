@@ -1,8 +1,6 @@
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA IF NOT EXISTS public;
-
-SET
-search_path TO public;
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA IF NOT EXISTS public;   -- 'public' gets replaced with tenantId
+SET search_path TO public;
 
 -- Table: public.account
 

@@ -6,7 +6,6 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AbstractEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
-import eu.isygoit.model.timeline.TimelineEventEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Builder;

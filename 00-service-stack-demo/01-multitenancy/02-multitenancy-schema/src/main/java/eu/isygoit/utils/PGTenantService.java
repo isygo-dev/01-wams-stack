@@ -41,7 +41,7 @@ public class PGTenantService implements ITenantService {
                 String rawSql = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
 
                 // Replace the model name placeholder
-                String sql = rawSql.replace("public", tenantId);
+                String sql = rawSql.replaceAll("public", tenantId);
 
                 // Execute each statement separately
                 for (String statement : sql.split(";")) {

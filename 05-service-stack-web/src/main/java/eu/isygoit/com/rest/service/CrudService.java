@@ -6,7 +6,6 @@ import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.*;
-import eu.isygoit.model.IDirtyEntity;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import jakarta.persistence.EntityManager;
@@ -51,6 +50,7 @@ public abstract class CrudService<I extends Serializable,
 
     @Autowired
     private EntityManager entityManager;
+
     /**
      * Validates that an object is not null.
      *
@@ -195,7 +195,7 @@ public abstract class CrudService<I extends Serializable,
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
 
-            if(object instanceof IDirtyEntity){
+            if (object instanceof IDirtyEntity) {
                 validateObjectUpdatable(object);
             } else {
                 validateObjectExists(object);
@@ -233,10 +233,10 @@ public abstract class CrudService<I extends Serializable,
      * are skipped entirely. If no meaningful difference is detected, the update is rejected.
      *
      * @param object the incoming entity to be updated; must implement {@link IDirtyEntity}
-     * @throws ObjectNotFoundException     if no persisted record exists for the given ID
+     * @throws ObjectNotFoundException    if no persisted record exists for the given ID
      * @throws ObjectNotModifiedException if the entity carries no dirty (changed) fields
      */
-    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException{
+    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
         IDirtyEntity dirtyEntity = (IDirtyEntity) object;
         Set<String> ignoredFields = dirtyEntity.ignoreFields();
 

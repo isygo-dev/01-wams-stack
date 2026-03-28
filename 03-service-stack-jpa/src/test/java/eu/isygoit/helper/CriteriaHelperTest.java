@@ -71,7 +71,7 @@ class CriteriaHelperTest {
     }
 
     @Data
-    static class EmptyTestEntity extends AbstractEntity<Long>  implements IIdAssignable<Long> {
+    static class EmptyTestEntity extends AbstractEntity<Long> implements IIdAssignable<Long> {
         private Long id;
         private String someField;
     }

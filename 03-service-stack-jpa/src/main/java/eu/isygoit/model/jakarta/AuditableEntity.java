@@ -48,6 +48,6 @@ public abstract class AuditableEntity<T extends Serializable> extends AbstractEn
     private String updatedBy;
 
     public Set<String> ignoreFields() {
-        return Set.of("createDate",  "updateDate", "createdBy", "updatedBy");
+        return Set.of("createDate", "updateDate", "createdBy", "updatedBy");
     }
 }

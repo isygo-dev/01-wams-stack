@@ -467,9 +467,9 @@ class TimelineEventsH2IntegrationTests {
      */
     @Test
     @Order(6)
-    @DisplayName("Should handle update with no changes and not record UPDATE event")
+    @DisplayName("Should handle not updated with no changes and not record UPDATE event")
     void testUpdateWithNoChanges_ShouldNotRecordEvent() throws Exception {
-        // Given - Create a tutorial
+        // Given
         TutorialDto tutorial = TutorialDto.builder()
                 .tenant(TENANT_1)
                 .title("No Change Test")
@@ -484,22 +484,26 @@ class TimelineEventsH2IntegrationTests {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        TutorialDto createdTutorial = objectMapper.readValue(createResult.getResponse().getContentAsString(), TutorialDto.class);
+        TutorialDto createdTutorial = objectMapper.readValue(
+                createResult.getResponse().getContentAsString(),
+                TutorialDto.class
+        );
+
         tutorialId = createdTutorial.getId();
 
-        // When - Perform update with no changes
+        // When - update with NO changes
         mockMvc.perform(put(BASE_URL + "/" + tutorialId)
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tutorial)))
-                .andExpect(status().isOk());
-
-        // Wait briefly to ensure no new events are created
-        List<TimeLineEvent> events = waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 1, 1000);
+                .andExpect(status().isNotModified());
 
         // Then
+        List<TimeLineEvent> events =
+                waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 1, 1000);
+
         assertEquals(1, events.size(), "Should only have CREATED event");
-        assertEquals(TimelineEventType.CREATED, events.get(0).getEventType(), "Only CREATED event should exist");
+        assertEquals(TimelineEventType.CREATED, events.get(0).getEventType());
     }
 
     /**

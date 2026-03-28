@@ -532,7 +532,7 @@ class TimelineEventsPostgresIntegrationTests {
                         .header(TENANT_HEADER, TENANT_1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tutorial)))
-                .andExpect(status().isNotModified()); // ✅ FIX HERE
+                .andExpect(status().isNotModified());
 
         // Then
         List<TimeLineEvent> events =

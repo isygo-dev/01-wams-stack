@@ -4,7 +4,6 @@ import eu.isygoit.annotation.Criteria;
 import eu.isygoit.annotation.JsonEntity;
 import eu.isygoit.model.jakarta.AbstractEntity;
 import eu.isygoit.model.json.JsonElement;
-import eu.isygoit.model.timeline.TimelineEventEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
