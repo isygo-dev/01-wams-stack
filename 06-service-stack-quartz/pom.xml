@@ -67,7 +67,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.11</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -109,7 +109,7 @@
               • @QuartzDataSource qualifier for isolated connection pool
 
             Version managed by Spring Boot BOM.
-            Was pinned to 3.2.3 — now correctly BOM-managed (3.5.11).
+            Was pinned to 3.2.3 — now correctly BOM-managed (3.5.x).
 
             For JDBC JobStore (clustered, persistent scheduling),
             consuming applications must also declare:

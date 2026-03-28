@@ -6,6 +6,7 @@ import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.jakarta.AbstractEntity;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
@@ -39,7 +40,7 @@ class CriteriaHelperTest {
 
     // Test entities
     @Data
-    static class TestEntity implements IIdAssignable<Long> {
+    static class TestEntity extends AbstractEntity<Long> implements IIdAssignable<Long> {
         private Long id;
 
         @Criteria
@@ -70,7 +71,7 @@ class CriteriaHelperTest {
     }
 
     @Data
-    static class EmptyTestEntity implements IIdAssignable<Long> {
+    static class EmptyTestEntity extends AbstractEntity<Long>  implements IIdAssignable<Long> {
         private Long id;
         private String someField;
     }

@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Entity
 @Table(name = "TIME_LINE")
-public class TimeLineEvent extends TimelineEventEntity implements ITenantAssignable, IIdAssignable<Long> {
+public class TimeLineEvent extends TimelineEventEntity<Long> implements ITenantAssignable, IIdAssignable<Long> {
 
     @Id
     @SequenceGenerator(name = "timeline_event_sequence", sequenceName = "timeline_event_sequence", allocationSize = 1)

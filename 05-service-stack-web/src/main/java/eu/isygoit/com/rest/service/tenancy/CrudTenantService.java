@@ -7,14 +7,13 @@ import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.model.IFileEntity;
-import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.IImageEntity;
-import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.*;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +22,13 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
@@ -47,6 +48,9 @@ public abstract class CrudTenantService<I extends Serializable,
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1];
+
+    @Autowired
+    private EntityManager entityManager;
 
     /**
      * Validates that an object is not null.
@@ -233,7 +237,13 @@ public abstract class CrudTenantService<I extends Serializable,
             validateTenantNotNull(tenant);
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
-            validateObjectExists(object);
+
+            if(object instanceof IDirtyEntity){
+                validateObjectUpdatable(object);
+            } else {
+                validateObjectExists(object);
+            }
+
             log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
 
             // Validate tenant access
@@ -678,6 +688,97 @@ public abstract class CrudTenantService<I extends Serializable,
         if (!repository().existsById(object.getId())) {
             throw new ObjectNotFoundException("with id: " + object.getId());
         }
+    }
+
+    /**
+     * Validates that the entity has at least one dirty (changed) field before allowing an update.
+     * <p>
+     * Fetches the persisted original from the repository, then performs a field-by-field
+     * comparison against the incoming object. Fields listed in {@link IDirtyEntity#ignoreFields()}
+     * are skipped entirely. If no meaningful difference is detected, the update is rejected.
+     *
+     * @param object the incoming entity to be updated; must implement {@link IDirtyEntity}
+     * @throws ObjectNotFoundException     if no persisted record exists for the given ID
+     * @throws ObjectNotModifiedException if the entity carries no dirty (changed) fields
+     */
+    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException{
+        IDirtyEntity dirtyEntity = (IDirtyEntity) object;
+        Set<String> ignoredFields = dirtyEntity.ignoreFields();
+
+        log.debug("Validating dirty state for {} entity with ID: {}",
+                persistentClass.getSimpleName(), object.getId());
+
+        // Fetch the persisted original — must exist for an update
+        T original = repository().findById(object.getId())
+                .orElseThrow(() -> {
+                    log.error("Entity {} with id {} not found during dirty check",
+                            persistentClass.getSimpleName(), object.getId());
+                    return new ObjectNotFoundException("with id: " + object.getId());
+                });
+
+        // Walk every declared field in the class hierarchy and compare values
+        if (!hasDirtyField(object, original, ignoredFields)) {
+            log.warn("No dirty fields detected for {} entity with ID: {} — update skipped",
+                    persistentClass.getSimpleName(), object.getId());
+            throw new ObjectNotModifiedException(
+                    persistentClass.getSimpleName() + " with id: " + object.getId());
+        }
+
+        log.debug("Dirty fields detected for {} entity with ID: {} — update allowed",
+                persistentClass.getSimpleName(), object.getId());
+    }
+
+    /**
+     * Performs a reflective field-by-field comparison between the incoming and the original entity,
+     * walking up the entire class hierarchy. Fields whose names appear in {@code ignoredFields}
+     * are skipped.
+     *
+     * @param incoming      the entity carrying the requested changes
+     * @param original      the entity as currently persisted
+     * @param ignoredFields field names that must not be considered when determining dirtiness
+     * @return {@code true} if at least one tracked field differs between the two entities
+     */
+    private boolean hasDirtyField(T incoming, T original, Set<String> ignoredFields) {
+        Class<?> cursor = incoming.getClass();
+
+        while (cursor != null && cursor != Object.class) {
+            for (Field field : cursor.getDeclaredFields()) {
+                if (ignoredFields != null && ignoredFields.contains(field.getName())) {
+                    log.trace("Skipping ignored field '{}' during dirty check", field.getName());
+                    continue;
+                }
+
+                field.setAccessible(true);
+                try {
+                    Object incomingValue = field.get(incoming);
+                    Object originalValue = field.get(original);
+
+                    if (!objectsEqual(incomingValue, originalValue)) {
+                        log.debug("Dirty field detected: '{}' changed from [{}] to [{}]",
+                                field.getName(), originalValue, incomingValue);
+                        return true;
+                    }
+                } catch (IllegalAccessException e) {
+                    log.warn("Could not access field '{}' during dirty check: {}", field.getName(), e.getMessage());
+                }
+            }
+            cursor = cursor.getSuperclass();
+        }
+
+        return false;
+    }
+
+    /**
+     * Null-safe equality check used during dirty-field comparison.
+     *
+     * @param a first value
+     * @param b second value
+     * @return {@code true} if both values are considered equal
+     */
+    private boolean objectsEqual(Object a, Object b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
     }
 
     /**

@@ -28,12 +28,12 @@ spring:
     password:
 
   jpa:
-    show-sql: true
-    format_sql: true
+    show-sql: true                   # Prints SQL statements
     hibernate:
-      ddl-auto: create
+      ddl-auto: create               # Recreate schema each startup
     properties:
       hibernate:
+        format_sql: true             # Format SQL for readability
         dialect: org.hibernate.dialect.H2Dialect
 
 app:

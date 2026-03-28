@@ -11,7 +11,7 @@
 | Component             | Version  |
 |-----------------------|----------|
 | Java                  | 17+      |
-| Spring Boot           | 3.5.11   |
+| Spring Boot           | 3.5.x    |
 | Spring Cloud          | 2025.0.1 |
 | Spring Framework      | 6.2.x    |
 | Spring Security       | 6.5.x    |
@@ -31,7 +31,7 @@
 | Docker                | Latest   |
 
 > All Spring-managed versions (Spring Framework, Security, Data, Hibernate, HikariCP,
-> PostgreSQL, Flyway, JUnit 5, Mockito) are governed by the Spring Boot 3.5.11 BOM.
+> PostgreSQL, Flyway, JUnit 5, Mockito) are governed by the Spring Boot 3.5.x BOM.
 
 ---
 

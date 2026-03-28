@@ -627,30 +627,15 @@ CREATE TABLE IF NOT EXISTS public.time_line
 ),
     CONSTRAINT time_line_eventtype_check CHECK
 (
-    eventtype
-    :
-    :
-    text =
+    eventtype::text =
     ANY (
     ARRAY[
-    'CREATED'
-    :
-    :
-    character
+    'CREATED'::character
     varying,
-    'UPDATED'
-    :
-    :
-    character
+    'UPDATED'::character
     varying,
-    'DELETED'
-    :
-    :
-    character
-    varying]
-    :
-    :
-    text
+    'DELETED'::character
+    varying]::text
 []
 ))
     )

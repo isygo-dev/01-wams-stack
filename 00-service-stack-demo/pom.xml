@@ -84,7 +84,7 @@
                 Spring Boot BOM — hardcoded because this module's parent
                 is the root aggregator (service-stack, packaging=pom) which
                 does NOT inherit spring-boot-starter-parent. Property
-                ${spring-boot.version} is defined in the root but Maven
+                3.5.x is defined in the root but Maven
                 resolves BOM import versions before property interpolation
                 is complete in aggregator-only parents, causing a resolution
                 failure. Hardcoding is the correct pattern here.
@@ -92,7 +92,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.11</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -191,7 +191,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>3.5.11</version>
+                    <version>${spring-boot.version}</version>
                     <configuration>
                         <excludes>
                             <exclude>

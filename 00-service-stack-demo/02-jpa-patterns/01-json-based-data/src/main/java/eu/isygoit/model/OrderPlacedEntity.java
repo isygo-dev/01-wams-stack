@@ -2,7 +2,9 @@ package eu.isygoit.model;
 
 import eu.isygoit.annotation.Criteria;
 import eu.isygoit.annotation.JsonEntity;
+import eu.isygoit.model.jakarta.AbstractEntity;
 import eu.isygoit.model.json.JsonElement;
+import eu.isygoit.model.timeline.TimelineEventEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonEntity(EventEntity.class)
-public class OrderPlacedEntity implements JsonElement<UUID>, ITenantAssignable {
+public class OrderPlacedEntity extends AbstractEntity<UUID> implements JsonElement<UUID>, ITenantAssignable {
 
     @Criteria
     private UUID id;

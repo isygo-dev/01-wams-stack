@@ -1,6 +1,7 @@
 package eu.isygoit.model.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import eu.isygoit.model.jakarta.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -22,7 +24,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class TimelineEventEntity implements ITimelineEventEntity {
+public abstract class TimelineEventEntity<I extends Serializable> extends AbstractEntity<I> implements ITimelineEventEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

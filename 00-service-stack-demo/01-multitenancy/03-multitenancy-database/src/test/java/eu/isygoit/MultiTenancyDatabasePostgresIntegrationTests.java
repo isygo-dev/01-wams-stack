@@ -70,15 +70,15 @@ class MultiTenancyDatabasePostgresIntegrationTests {
         String tenant1Url = baseUrl.replace("/postgres", "/tenant1");
         String tenant2Url = baseUrl.replace("/postgres", "/tenant2");
 
-        registry.add("multitenancy.tenants[0].id", () -> "tenant1");
-        registry.add("multitenancy.tenants[0].url", () -> tenant1Url);
-        registry.add("multitenancy.tenants[0].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[0].id", () -> "tenant1");
+        registry.add("app.tenancy.tenants[0].url", () -> tenant1Url);
+        registry.add("app.tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[0].password", postgres::getPassword);
 
-        registry.add("multitenancy.tenants[1].id", () -> "tenant2");
-        registry.add("multitenancy.tenants[1].url", () -> tenant2Url);
-        registry.add("multitenancy.tenants[1].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[1].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[1].id", () -> "tenant2");
+        registry.add("app.tenancy.tenants[1].url", () -> tenant2Url);
+        registry.add("app.tenancy.tenants[1].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[1].password", postgres::getPassword);
     }
 
     /**

@@ -76,10 +76,10 @@ class ImageCrudIntegrationTests {
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.datasource.url", () -> postgres.getJdbcUrl());
         String tenants = postgres.getJdbcUrl().replace("/postgres", "/tenants");
-        registry.add("multitenancy.tenants[0].id", () -> "tenants");
-        registry.add("multitenancy.tenants[0].url", () -> tenants);
-        registry.add("multitenancy.tenants[0].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[0].id", () -> "tenants");
+        registry.add("app.tenancy.tenants[0].url", () -> tenants);
+        registry.add("app.tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[0].password", postgres::getPassword);
     }
 
     @BeforeAll

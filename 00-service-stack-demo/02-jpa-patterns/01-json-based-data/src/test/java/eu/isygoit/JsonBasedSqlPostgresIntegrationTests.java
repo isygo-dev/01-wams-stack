@@ -82,10 +82,10 @@ class JsonBasedSqlPostgresIntegrationTests {
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
         String tenants = baseUrl.replace("/postgres", "/tenants");
-        registry.add("multitenancy.tenants[0].id", () -> "tenants");
-        registry.add("multitenancy.tenants[0].url", () -> tenants);
-        registry.add("multitenancy.tenants[0].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[0].id", () -> "tenants");
+        registry.add("app.tenancy.tenants[0].url", () -> tenants);
+        registry.add("app.tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[0].password", postgres::getPassword);
     }
 
     /**

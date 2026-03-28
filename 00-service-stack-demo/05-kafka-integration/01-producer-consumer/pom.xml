@@ -30,14 +30,14 @@
         (no external Kafka broker required)
         Upgrade note: Testcontainers BOM aligned to 1.20.6 (was
         mixing BOM 1.19.7 with artifacts at 1.20.6 and 1.21.3).
-        Spring Boot aligned to 3.5.11 (was 3.4.4).
+        Spring Boot aligned to 3.5.13 (was 3.4.4).
     </description>
     <url>https://isygo-it.eu</url>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.11</version>
+        <version>3.5.13</version>
         <relativePath/>
     </parent>
 
