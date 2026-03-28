@@ -8,6 +8,11 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -35,7 +40,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * using a Testcontainers-managed Kafka instance.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
@@ -43,6 +47,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
+
+// === FIXED: Exclude JPA/DataSource auto-configuration (this test doesn't need a database) ===
+@ImportAutoConfiguration(exclude = {
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class,
+        TransactionAutoConfiguration.class
+})
+// ==========================================================================================
+
 class KafkaFileIntegrationTest {
 
     private static final String TOPIC = "file-topic";
@@ -133,6 +147,7 @@ class KafkaFileIntegrationTest {
         String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "No message consumed within " + TIMEOUT_SECONDS + " seconds");
         assertEquals(messageContent, consumedMessage, "Consumed message does not match sent message");
+
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "No headers consumed within " + TIMEOUT_SECONDS + " seconds");
         assertTrue(consumedHeader.containsKey("kafka_test_header"), "Consumed headers do not contain kafka_test_header");
@@ -210,6 +225,7 @@ class KafkaFileIntegrationTest {
         String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "Message not consumed within " + TIMEOUT_SECONDS + " seconds");
         assertEquals(messageContent, consumedMessage, "Consumed message does not match sent message");
+
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "Headers not consumed within " + TIMEOUT_SECONDS + " seconds");
         assertTrue(consumedHeader.containsKey("kafka_test_header1"), "Consumed headers do not contain kafka_test_header1");
