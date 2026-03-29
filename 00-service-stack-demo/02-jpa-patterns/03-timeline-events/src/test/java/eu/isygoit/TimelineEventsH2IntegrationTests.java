@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * The type Timeline events h 2 integration tests.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })

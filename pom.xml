@@ -155,6 +155,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
                     <configuration>
+                        <parallel>none</parallel>
                         <useModulePath>false</useModulePath>
                         <includes>
                             <include>**/*Test.java</include>

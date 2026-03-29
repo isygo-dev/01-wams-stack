@@ -17,6 +17,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
+import java.util.UUID;
+import java.util.UUID;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -32,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifies tenant isolation via tenant ID filtering on a shared table.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
@@ -54,7 +56,9 @@ class MultiTenancyGDMPostgresIntegrationTests {
             .withDatabaseName("postgres") // initial database
             .withUsername("postgres")
             .withPassword("root")
-            .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
+            .withReuse(false)
+            .withInitScript("db/pg_init-multi-db.sql")
+            .withCreateContainerCmdModifier(cmd -> cmd.withName(UUID.randomUUID().toString()));
 
     private static Long tenant1TutorialId;
     @Autowired

@@ -20,6 +20,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
+import java.util.UUID;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
@@ -57,7 +58,9 @@ class MultiFileCrudIntegrationTests {
             .withDatabaseName("postgres")
             .withUsername("postgres")
             .withPassword("root")
-            .withInitScript("db/pg_init-multi-db.sql");
+            .withReuse(false)
+            .withInitScript("db/pg_init-multi-db.sql")
+            .withCreateContainerCmdModifier(cmd -> cmd.withName(UUID.randomUUID().toString()));
 
     @Autowired
     private MockMvc mockMvc;
