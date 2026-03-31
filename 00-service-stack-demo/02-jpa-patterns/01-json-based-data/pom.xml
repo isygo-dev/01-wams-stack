@@ -12,7 +12,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-json-based-data-pattern</artifactId>
-    <version>WC-1.0.250603-T1554</version>
+    <version>WC-1.0.260331-T1652</version>
     <packaging>jar</packaging>
 
     <name>poc-json-based-data-pattern</name>
@@ -42,7 +42,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <service-stack.version>WS-1.0.250603-T1554</service-stack.version>
+        <service-stack.version>WS-1.0.260331-T1652</service-stack.version>
     </properties>
 
     <dependencyManagement>

@@ -18,7 +18,7 @@
     <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-crypt</artifactId>
-    <version>WS-1.0.250603-T1554</version>
+    <version>WS-1.0.260331-T1652</version>
     <packaging>jar</packaging>
 
     <name>service-stack-crypt</name>
@@ -44,7 +44,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
