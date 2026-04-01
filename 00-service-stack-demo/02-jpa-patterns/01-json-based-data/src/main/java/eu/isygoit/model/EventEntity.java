@@ -21,11 +21,7 @@ public class EventEntity extends JsonBasedEntity<Long> implements ITenantAssigna
     @SequenceGenerator(name = "events_sequence_generator", sequenceName = "events_sequence", allocationSize = 1)
     private Long id;
 
-    @Criteria
+
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
-
-    @Criteria
-    @Column(name = "ELEMENT_TYPE", nullable = false)
-    private String elementType;
 }

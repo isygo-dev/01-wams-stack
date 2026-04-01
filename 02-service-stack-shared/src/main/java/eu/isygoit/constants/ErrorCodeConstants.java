@@ -29,4 +29,5 @@ public interface ErrorCodeConstants {
      * The constant SAVE_FAILED.
      */
     String SAVE_FAILED = "Saving failed";
+    String UNKNOWN = "unknown";
 }

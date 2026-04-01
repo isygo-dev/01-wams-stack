@@ -1,13 +1,18 @@
 package eu.isygoit.service.timeline;
 
+import eu.isygoit.constants.ErrorCodeConstants;
+import eu.isygoit.exception.TimelineEventDispatchException;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventMessage;
 import eu.isygoit.model.timeline.TimelineEventType;
 import org.apache.camel.ProducerTemplate;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 
@@ -27,53 +32,40 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
         this.producerTemplate = producerTemplate;
     }
 
-    /**
-     * Record event.
-     *
-     * @param entity            the entity
-     * @param timelineEventType the event type
-     */
-    @Transactional
-    public void recordEvent(IIdAssignable entity, TimelineEventType timelineEventType) {
-        TimelineEventMessage message = TimelineEventMessage.builder()
-                .tenant(getTenant(entity))
-                .timelineEventType(timelineEventType)
-                .elementType(entity.getClass().getSimpleName())
-                .elementId(getElementId(entity))
-                .timestamp(LocalDateTime.now())
-                .modifiedBy(getModifiedBy(entity))
-                //TODO Enhancement @TrackChanges to track only annotated fields
-                .attributes(JsonHelper.objectToNode(entity))
-                .build();
-
-        sendToQueue(message);
+    public void recordEvent(ITimelineEventSource entity, TimelineEventType eventType) {
+        TimelineEventMessage message = buildQueuedMessage(entity, eventType);
+        // sends ONLY after the DB transaction commits — no ghost events on rollback
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        sendAfterCommit(message);
+                    }
+                }
+        );
     }
 
-    private void sendToQueue(TimelineEventMessage message) {
+    private TimelineEventMessage buildQueuedMessage(ITimelineEventSource entity, TimelineEventType timelineEventType) {
+        TimelineEventMessage message = TimelineEventMessage.builder()
+                .timelineEventType(timelineEventType)
+                .elementType(entity.getClass().getSimpleName())
+                .elementId(entity.resolveElementId())
+                .timestamp(LocalDateTime.now())
+                .modifiedBy(entity.resolveModifiedBy())
+                .attributes(TrackChangesExtractor.extract(entity))
+                .build();
+
+        if(message instanceof ITenantAssignable messageTenantAssignable){
+            messageTenantAssignable.setTenant(entity.resolveTenant());
+        }
+        return message;
+    }
+
+    private void sendAfterCommit(TimelineEventMessage message) {
         try {
             producerTemplate.sendBody("seda:timelineEvents", JsonHelper.toJson(message));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send timeline event to queue", e);
+            throw new TimelineEventDispatchException("Failed to dispatch event for element: " + message.getElementId(), e);
         }
-    }
-
-    private String getElementId(IIdAssignable entity) {
-        return entity.getId() != null ? entity.getId().toString() : null;
-    }
-
-    private String getTenant(IIdAssignable entity) {
-        if (entity instanceof ITenantAssignable tenantAssignable) {
-            return tenantAssignable.getTenant();
-        }
-        throw new IllegalArgumentException("Entity must implement ITenantAssignable");
-    }
-
-    private String getModifiedBy(IIdAssignable entity) {
-        if (entity instanceof AuditableEntity auditableEntity) {
-            return auditableEntity.getUpdatedBy() != null
-                    ? auditableEntity.getUpdatedBy()
-                    : (auditableEntity.getCreatedBy() != null ? auditableEntity.getCreatedBy() : "test_user");
-        }
-        throw new IllegalArgumentException("Entity must implement ITenantAssignable");
     }
 }

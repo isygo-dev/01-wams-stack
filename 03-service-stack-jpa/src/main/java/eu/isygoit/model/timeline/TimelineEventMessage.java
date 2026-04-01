@@ -16,10 +16,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class TimelineEventMessage {
+
     private TimelineEventType timelineEventType;
     private String elementType;
     private String elementId;
-    private String tenant;
     private LocalDateTime timestamp;
     private String modifiedBy;
     private JsonNode attributes;

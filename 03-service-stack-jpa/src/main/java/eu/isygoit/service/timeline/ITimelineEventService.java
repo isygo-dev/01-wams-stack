@@ -1,6 +1,7 @@
 package eu.isygoit.service.timeline;
 
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventType;
 
 /**
@@ -8,5 +9,5 @@ import eu.isygoit.model.timeline.TimelineEventType;
  */
 public interface ITimelineEventService {
 
-    void recordEvent(IIdAssignable entity, TimelineEventType timelineEventType);
+    void recordEvent(ITimelineEventSource entity, TimelineEventType eventType);
 }

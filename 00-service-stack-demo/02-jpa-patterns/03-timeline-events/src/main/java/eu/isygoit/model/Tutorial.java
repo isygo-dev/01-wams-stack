@@ -3,6 +3,8 @@ package eu.isygoit.model;
 import eu.isygoit.annotation.TrackChanges;
 import eu.isygoit.listener.TimelineEventListener;
 import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.AuditableTenantEntity;
+import eu.isygoit.model.timeline.ITimelineEventSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "TUTORIALS")
 @EntityListeners(TimelineEventListener.class)
-public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable, IDirtyEntity {
+public class Tutorial extends AuditableTenantEntity<Long> implements ITenantAssignable, IDirtyEntity, ITimelineEventSource {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorials_sequence_generator")
