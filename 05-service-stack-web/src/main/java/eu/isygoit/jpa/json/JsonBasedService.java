@@ -51,6 +51,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
 
     private final Class<T> jsonElementClass;
     private final Class<E> jsonEntityClass;
+
     private final String elementType;
     private final ObjectMapper objectMapper;
 
