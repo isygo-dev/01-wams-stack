@@ -26,9 +26,11 @@ public class Tutorial extends AuditableTenantEntity<Long> implements ITenantAssi
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorials_sequence_generator")
     @SequenceGenerator(name = "tutorials_sequence_generator", sequenceName = "tutorials_sequence", allocationSize = 1)
+    @TrackChanges
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
+    @TrackChanges
     private String tenant;
 
     @TrackChanges

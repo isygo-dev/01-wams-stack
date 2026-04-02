@@ -47,6 +47,7 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
 
     private TimelineEventMessage buildQueuedMessage(ITimelineEventSource entity, TimelineEventType timelineEventType) {
         TimelineEventMessage message = TimelineEventMessage.builder()
+                .tenant(entity.resolveTenant())
                 .timelineEventType(timelineEventType)
                 .elementType(entity.getClass().getSimpleName())
                 .elementId(entity.resolveElementId())
@@ -55,9 +56,6 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
                 .attributes(TrackChangesExtractor.extract(entity))
                 .build();
 
-        if(message instanceof ITenantAssignable messageTenantAssignable){
-            messageTenantAssignable.setTenant(entity.resolveTenant());
-        }
         return message;
     }
 

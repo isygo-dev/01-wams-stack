@@ -47,9 +47,8 @@ public abstract class AbstractTimelineEventRoute<T extends ITimelineEventEntity 
                         throw new RuntimeException("Failed to instantiate " + clazz.getName(), e);
                     }
 
-                    if (event instanceof ITenantAssignable eventTenantAssignable
-                            && message instanceof ITenantAssignable messageTenantAssignable) {
-                        eventTenantAssignable.setTenant(messageTenantAssignable.getTenant());
+                    if (event instanceof ITenantAssignable eventTenantAssignable) {
+                        eventTenantAssignable.setTenant(message.getTenant());
                     }
 
                     event.setEventType(message.getTimelineEventType());
