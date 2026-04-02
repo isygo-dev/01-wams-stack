@@ -45,9 +45,10 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
      * @param objectMapper the object mapper
      * @return the json based entity
      */
-    public final <T extends IIdAssignable<UUID> & JsonElement<UUID>>
-    JsonBasedEntity toJsonEntity(T element, String elementType, ObjectMapper objectMapper) {
-        JsonBasedEntity entity = JsonBasedEntityHelper.toJsonEntity(element, elementType, this.getClass(), objectMapper);
+    public final <T extends IIdAssignable<UUID> & JsonElement<UUID>, E extends JsonBasedEntity<?>> E toJsonEntity(
+            T element, String elementType, ObjectMapper objectMapper
+    ) {
+        E entity = (E) JsonBasedEntityHelper.toJsonEntity(element, elementType, this.getClass(), objectMapper);
         return afterToJsonEntity(entity);
     }
 
@@ -59,8 +60,9 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
      * @param objectMapper     the object mapper
      * @return the t
      */
-    public final <T extends IIdAssignable<UUID> & JsonElement<UUID>>
-    T toJsonElement(Class<T> jsonElementClass, ObjectMapper objectMapper) {
+    public final <T extends IIdAssignable<UUID> & JsonElement<UUID>> T toJsonElement(
+            Class<T> jsonElementClass, ObjectMapper objectMapper
+    ) {
         T element = JsonBasedEntityHelper.toJsonElement(this, jsonElementClass, objectMapper);
         return afterToJsonElement(element);
     }
@@ -71,7 +73,7 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
      * @param entity the entity
      * @return the json based entity
      */
-    public JsonBasedEntity afterToJsonEntity(JsonBasedEntity entity) {
+    public <T extends JsonBasedEntity<?>> T afterToJsonEntity(T entity) {
         return entity;
     }
 
