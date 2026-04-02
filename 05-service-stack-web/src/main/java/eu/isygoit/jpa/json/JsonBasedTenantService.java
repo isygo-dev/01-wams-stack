@@ -8,6 +8,8 @@ import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.JsonBasedEntityHelper;
+import eu.isygoit.json.JsonCriteriaQueryBuilder;
+import eu.isygoit.json.JsonQueryExecutor;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
@@ -29,13 +31,27 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Generic tenant-aware JSON-based api implementation with CRUD operations.
- * Provides multi-tenant support for entities stored as JSON in the database.
+ * Tenant-aware counterpart of {@link JsonBasedService}.
+ * Every operation is scoped to a tenant and requires a non-blank tenant value.
  *
- * @param <T>  JSON element type extending IIdAssignable and JsonElement
- * @param <IE> ID type for the entity (Serializable)
- * @param <E>  JSON entity type extending JsonBasedEntity, IIdAssignable, and ITenantAssignable
- * @param <R>  Repository type extending JsonBasedTenantAssignableRepository
+ * <h3>Changes from the original</h3>
+ * <ul>
+ *   <li><b>Point 4 — DB criteria filtering:</b> {@code findAllByCriteriaFilter} pushes
+ *       DB-compatible operators to PostgreSQL via {@link eu.isygoit.json.JsonQueryExecutor}, including
+ *       the tenant predicate in the same query. Only {@code BW} falls back to
+ *       in-memory evaluation on the already-narrowed result set.</li>
+ *   <li><b>Point 6 — Stable element type key:</b> The {@code elementType} discriminator
+ *       is resolved via {@link JsonBasedEntityHelper#resolveElementType}, checking for
+ *       {@link eu.isygoit.annotation.ElementType} before falling back to the simple class
+ *       name. A missing annotation produces a startup warning.</li>
+ *   <li><b>Table name resolution:</b> Resolved once at construction from
+ *       {@link jakarta.persistence.Table#name()} rather than hardcoded in queries.</li>
+ * </ul>
+ *
+ * @param <T>  JSON element type — must also implement {@link ITenantAssignable}
+ * @param <IE> primary key type of the backing JPA entity
+ * @param <E>  the JPA entity type that stores the JSONB payload
+ * @param <R>  the Spring Data repository for {@code E}
  */
 @Slf4j
 @Transactional
@@ -50,23 +66,44 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
     private final Class<T> jsonElementClass;
     private final Class<E> jsonEntityClass;
+
+    /** Stable discriminator key — resolved from @ElementType or class simple name. */
     private final String elementType;
+
+    /** Physical table name — resolved from @Table(name=...) or class simple name. */
+    private final String tableName;
+
     private final ObjectMapper objectMapper;
 
     /**
-     * Instantiates a new Json based tenant api.
+     * Executes dynamic JSONB criteria queries with tenant scoping.
+     * Field injection keeps concrete subclass constructors unchanged.
+     */
+    @Autowired
+    private JsonQueryExecutor queryExecutor;
+
+    /**
+     * Resolves generic type parameters and derives the element type key and table name
+     * from class-level metadata.
      *
-     * @param objectMapper the object mapper
+     * @param objectMapper Jackson mapper used for JSONB serialisation/deserialisation
      */
     @Autowired
     public JsonBasedTenantService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+
         var genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        var typeArguments = genericSuperclass.getActualTypeArguments();
+        var typeArguments     = genericSuperclass.getActualTypeArguments();
+
         this.jsonElementClass = (Class<T>) typeArguments[0];
-        this.jsonEntityClass = (Class<E>) typeArguments[2];
-        this.elementType = jsonElementClass.getSimpleName().toUpperCase();
+        this.jsonEntityClass  = (Class<E>) typeArguments[2];
+
+        // Point 6: annotation-backed resolution instead of bare getSimpleName()
+        this.elementType = JsonBasedEntityHelper.resolveElementType(jsonElementClass);
+        this.tableName   = JsonBasedEntityHelper.resolveTableName(jsonEntityClass);
     }
+
+    // ── Count / exists ────────────────────────────────────────────────────────
 
     @Override
     public Long count(String tenant) {
@@ -80,6 +117,8 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         return repository().existsByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant);
     }
 
+    // ── Create ────────────────────────────────────────────────────────────────
+
     @Override
     public T create(String tenant, T object) {
         try {
@@ -88,7 +127,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
             var beforeCreateResult = beforeCreate(tenant, object);
             var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
             entity.setTenant(tenant);
-            var saved = repository().save(entity);
+            var saved  = repository().save(entity);
             var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
             return afterCreate(tenant, result);
         } catch (DataIntegrityViolationException e) {
@@ -101,29 +140,29 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateTenant(tenant);
         validateListNotEmpty(objects);
         objects.forEach(JsonBasedEntityHelper::assignIdIfNull);
-        var beforeCreateResults = objects.stream()
+        var entities = objects.stream()
                 .map(t -> beforeCreate(tenant, t))
-                .toList();
-        var entities = beforeCreateResults.stream()
                 .map(obj -> {
                     var entity = JsonBasedEntityHelper.toJsonEntity(obj, elementType, jsonEntityClass, objectMapper);
                     entity.setTenant(tenant);
                     return entity;
                 })
                 .toList();
-        return repository().saveAll(entities)
-                .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+        return repository().saveAll(entities).stream()
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .map(t -> afterCreate(tenant, t))
                 .toList();
     }
+
+    // ── Delete ────────────────────────────────────────────────────────────────
 
     @Override
     public void delete(String tenant, UUID id) {
         validateTenant(tenant);
         beforeDelete(tenant, id);
         if (repository().deleteByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant) == 0) {
-            throw new ObjectNotFoundException("with id " + id + " and tenant " + tenant);
+            throw new ObjectNotFoundException(
+                    "with id '%s' and tenant '%s'".formatted(id, tenant));
         }
         afterDelete(tenant, id);
     }
@@ -133,19 +172,18 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         validateTenant(tenant);
         validateListNotEmpty(objects);
         beforeDelete(tenant, objects);
-        var ids = objects.stream()
-                .map(entity -> entity.getId().toString())
-                .toList();
+        var ids = objects.stream().map(e -> e.getId().toString()).toList();
         repository().deleteByElementTypeAndJsonIdInAndTenant(elementType, ids, tenant);
         afterDelete(tenant, objects);
     }
 
+    // ── Read ──────────────────────────────────────────────────────────────────
+
     @Override
     public List<T> findAll(String tenant) {
         validateTenant(tenant);
-        var results = repository().findAllByElementTypeAndTenant(elementType, tenant)
-                .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+        var results = repository().findAllByElementTypeAndTenant(elementType, tenant).stream()
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .toList();
         return afterFindAll(tenant, results);
     }
@@ -153,9 +191,8 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     @Override
     public List<T> findAll(String tenant, Pageable pageable) {
         validateTenant(tenant);
-        var results = repository().findAllByElementTypeAndTenant(elementType, tenant, pageable)
-                .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+        var results = repository().findAllByElementTypeAndTenant(elementType, tenant, pageable).stream()
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .toList();
         return afterFindAll(tenant, results);
     }
@@ -164,9 +201,11 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public Optional<T> findById(String tenant, UUID id) throws ObjectNotFoundException {
         validateTenant(tenant);
         return repository().findByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant)
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .map(t -> afterFindById(tenant, t));
     }
+
+    // ── Update ────────────────────────────────────────────────────────────────
 
     @Override
     public T saveOrUpdate(String tenant, T object) {
@@ -178,9 +217,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
         validateTenant(tenant);
         validateListNotEmpty(objects);
-        return objects.stream()
-                .map(obj -> saveOrUpdate(tenant, obj))
-                .toList();
+        return objects.stream().map(obj -> saveOrUpdate(tenant, obj)).toList();
     }
 
     @Override
@@ -190,7 +227,8 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
             var beforeUpdateResult = beforeUpdate(tenant, object);
             var entity = findEntityById(tenant, beforeUpdateResult.getId());
             entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-            var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
+            var result = JsonBasedEntityHelper.toJsonElement(
+                    repository().saveAndFlush(entity), jsonElementClass, objectMapper);
             return afterUpdate(tenant, result);
         } catch (DataIntegrityViolationException e) {
             throw new UpdateConstraintsViolationException(e.getMessage());
@@ -207,41 +245,76 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
                 .toList();
     }
 
+    // ── Criteria filtering (point 4) ──────────────────────────────────────────
+
+    /**
+     * Returns all elements for the given tenant matching the criteria.
+     *
+     * <p>DB-pushable operators are sent to PostgreSQL as JSONB predicates alongside
+     * the tenant filter — both constraints are evaluated in one query. Only
+     * {@code BW} is handled in-memory on the narrowed result set.
+     */
     @Override
     public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria) {
         validateTenant(tenant);
 
         if (criteria == null || criteria.isEmpty()) {
-            log.warn("No criteria provided, falling back to findAll for tenant: {}", tenant);
+            log.warn("findAllByCriteriaFilter called with no criteria — falling back to findAll for tenant '{}'.", tenant);
             return findAll(tenant);
         }
 
         JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
-        List<T> entities = repository().findAllByElementTypeAndTenant(elementType, tenant)
+
+        var split       = JsonCriteriaQueryBuilder.partition(criteria);
+        var dbCriteria  = split.getKey();
+        var memCriteria = split.getValue();
+
+        List<T> results = queryExecutor
+                .findByCriteria(tableName, elementType, tenant, dbCriteria, jsonEntityClass)
                 .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
-        List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
-        return afterFindAll(tenant, filtered);
+
+        if (!memCriteria.isEmpty()) {
+            results = JsonBasedEntityHelper.applyCriteriaFilter(results, memCriteria, elementType);
+        }
+
+        return afterFindAll(tenant, results);
     }
 
+    /**
+     * Returns a page of elements for the given tenant matching the criteria.
+     *
+     * <p>Pagination is applied after all filtering because in-memory operators
+     * may change the effective result count after the DB fetch.
+     */
     @Override
-    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria,
+                                           PageRequest pageRequest) {
         validateTenant(tenant);
 
         if (criteria == null || criteria.isEmpty()) {
-            log.warn("No criteria provided, falling back to findAll with pagination for tenant: {}", tenant);
+            log.warn("findAllByCriteriaFilter called with no criteria — falling back to findAll with pagination for tenant '{}'.", tenant);
             return findAll(tenant, pageRequest);
         }
 
         JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
-        List<T> entities = repository().findAllByElementTypeAndTenant(elementType, tenant)
+
+        var split       = JsonCriteriaQueryBuilder.partition(criteria);
+        var dbCriteria  = split.getKey();
+        var memCriteria = split.getValue();
+
+        List<T> results = queryExecutor
+                .findByCriteria(tableName, elementType, tenant, dbCriteria, jsonEntityClass)
                 .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
-        List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
-        List<T> paginated = JsonBasedEntityHelper.applyPagination(filtered, pageRequest);
-        return afterFindAll(tenant, paginated);
+
+        if (!memCriteria.isEmpty()) {
+            results = JsonBasedEntityHelper.applyCriteriaFilter(results, memCriteria, elementType);
+        }
+
+        return afterFindAll(tenant, JsonBasedEntityHelper.applyPagination(results, pageRequest));
     }
 
     @Override
@@ -249,64 +322,66 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         throw new OperationNotSupportedException("Json based entity: getByIdIn");
     }
 
-    // Event lifecycle methods
+    // ── Lifecycle event hooks ─────────────────────────────────────────────────
+
     @Override
     public T beforeUpdate(String tenant, T object) {
-        log.debug("Before update {} [{}]: {}", elementType, "id", object.getId());
+        log.debug("Before update {} [tenant='{}', id={}]", elementType, tenant, object.getId());
         return object;
     }
 
     @Override
     public T afterUpdate(String tenant, T object) {
-        log.debug("After update {} [{}]: {}", elementType, "id", object.getId());
+        log.debug("After update {} [tenant='{}', id={}]", elementType, tenant, object.getId());
         return object;
     }
 
     @Override
     public void beforeDelete(String tenant, UUID id) {
-        log.debug("Before delete {} [{}]: {}", elementType, "id", id);
+        log.debug("Before delete {} [tenant='{}', id={}]", elementType, tenant, id);
     }
 
     @Override
     public void afterDelete(String tenant, UUID id) {
-        log.debug("After delete {} [{}]: {}", elementType, "id", id);
+        log.debug("After delete {} [tenant='{}', id={}]", elementType, tenant, id);
     }
 
     @Override
     public void beforeDelete(String tenant, List<T> objects) {
-        log.debug("Before delete {} batch [{}]: {} items", elementType, "size", objects.size());
+        log.debug("Before delete {} batch [tenant='{}', {} items]", elementType, tenant, objects.size());
     }
 
     @Override
     public void afterDelete(String tenant, List<T> objects) {
-        log.debug("After delete {} batch [{}]: {} items", elementType, "size", objects.size());
+        log.debug("After delete {} batch [tenant='{}', {} items]", elementType, tenant, objects.size());
     }
 
     @Override
     public T beforeCreate(String tenant, T object) {
-        log.debug("Before create {} [{}]: {}", elementType, "id", object.getId());
+        log.debug("Before create {} [tenant='{}', id={}]", elementType, tenant, object.getId());
         return object;
     }
 
     @Override
     public List<T> afterFindAll(String tenant, List<T> list) {
-        log.debug("After find all {} [{}]: {} items", elementType, "size", list.size());
+        log.debug("After find all {} [tenant='{}', {} items]", elementType, tenant, list.size());
         return list;
     }
 
     @Override
     public T afterFindById(String tenant, T object) {
-        log.debug("After find by id {} [{}]: {}", elementType, "id", object.getId());
+        log.debug("After find by id {} [tenant='{}', id={}]", elementType, tenant, object.getId());
         return object;
     }
 
     @Override
     public T afterCreate(String tenant, T object) {
-        log.debug("After create {} [{}]: {}", elementType, "id", object.getId());
+        log.debug("After create {} [tenant='{}', id={}]", elementType, tenant, object.getId());
         return object;
     }
 
-    // Tenant-specific helper methods
+    // ── Private helpers ───────────────────────────────────────────────────────
+
     private void validateTenant(String tenant) {
         if (!StringUtils.hasText(tenant)) {
             throw new InvalidTenantException("Tenant cannot be null or empty");
@@ -314,8 +389,10 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     }
 
     private E findEntityById(String tenant, UUID id) {
-        return repository().findByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant)
+        return repository()
+                .findByElementTypeAndJsonIdAndTenant(elementType, id.toString(), tenant)
                 .orElseThrow(() -> new ObjectNotFoundException(
-                        "Entity not found for type: %s, id: %s and tenant: %s".formatted(elementType, id, tenant)));
+                        "Entity not found for type='%s', id='%s', tenant='%s'"
+                                .formatted(elementType, id, tenant)));
     }
 }

@@ -11,6 +11,8 @@ import eu.isygoit.exception.OperationNotSupportedException;
 import eu.isygoit.exception.UpdateConstraintsViolationException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.JsonBasedEntityHelper;
+import eu.isygoit.json.JsonCriteriaQueryBuilder;
+import eu.isygoit.json.JsonQueryExecutor;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
 import eu.isygoit.model.json.JsonElement;
@@ -30,13 +32,27 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Generic JSON-based api implementation with CRUD operations.
- * Provides a flexible way to handle entities stored as JSON in the database.
+ * Generic JSON-based service with full CRUD support for entities stored as JSONB.
  *
- * @param <T>  JSON element type extending IIdAssignable and JsonElement
- * @param <IE> ID type for the entity (Serializable)
- * @param <E>  JSON entity type extending JsonBasedEntity and IIdAssignable
- * @param <R>  Repository type extending JsonBasedRepository
+ * <h3>Changes from the original</h3>
+ * <ul>
+ *   <li><b>Point 4 — DB criteria filtering:</b> {@code findAllByCriteriaFilter} now pushes
+ *       DB-compatible operators ({@code EQ, NE, LI, NL, GT, GE, LT, LE}) directly to
+ *       PostgreSQL via {@link eu.isygoit.json.JsonQueryExecutor}. Only the {@code BW} operator falls back
+ *       to in-memory evaluation on the already-narrowed result set.</li>
+ *   <li><b>Point 6 — Stable element type key:</b> The {@code elementType} discriminator is
+ *       resolved via {@link JsonBasedEntityHelper#resolveElementType}, which checks for an
+ *       {@link eu.isygoit.annotation.ElementType} annotation before falling back to the
+ *       simple class name. A missing annotation produces a startup warning.</li>
+ *   <li><b>Table name resolution:</b> The physical table name is resolved once at
+ *       construction time from {@link jakarta.persistence.Table#name()} rather than being
+ *       hardcoded in every {@code @Query}.</li>
+ * </ul>
+ *
+ * @param <T>  JSON element type — the POJO serialised into the JSONB column
+ * @param <IE> primary key type of the backing JPA entity
+ * @param <E>  the JPA entity type that stores the JSONB payload
+ * @param <R>  the Spring Data repository for {@code E}
  */
 @Slf4j
 @Transactional
@@ -52,23 +68,44 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     private final Class<T> jsonElementClass;
     private final Class<E> jsonEntityClass;
 
+    /** Stable discriminator key — resolved from @ElementType or class simple name. */
     private final String elementType;
+
+    /** Physical table name — resolved from @Table(name=...) or class simple name. */
+    private final String tableName;
+
     private final ObjectMapper objectMapper;
 
     /**
-     * Instantiates a new Json based api.
+     * Executes dynamic JSONB criteria queries. Injected by Spring after construction;
+     * field injection is used here so that concrete subclass constructors remain unchanged.
+     */
+    @Autowired
+    private JsonQueryExecutor queryExecutor;
+
+    /**
+     * Resolves generic type parameters and derives the element type key and table name
+     * from class-level metadata. Called by the Spring container when creating the
+     * concrete subclass bean.
      *
-     * @param objectMapper the object mapper
+     * @param objectMapper Jackson mapper used for JSONB serialisation/deserialisation
      */
     @Autowired
     public JsonBasedService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+
         var genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        var typeArguments = genericSuperclass.getActualTypeArguments();
+        var typeArguments     = genericSuperclass.getActualTypeArguments();
+
         this.jsonElementClass = (Class<T>) typeArguments[0];
-        this.jsonEntityClass = (Class<E>) typeArguments[2];
-        this.elementType = jsonElementClass.getSimpleName().toUpperCase();
+        this.jsonEntityClass  = (Class<E>) typeArguments[2];
+
+        // Point 6: use annotation-backed resolution instead of bare getSimpleName()
+        this.elementType = JsonBasedEntityHelper.resolveElementType(jsonElementClass);
+        this.tableName   = JsonBasedEntityHelper.resolveTableName(jsonEntityClass);
     }
+
+    // ── Count / exists ────────────────────────────────────────────────────────
 
     @Override
     public Long count() {
@@ -80,14 +117,16 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         return repository().existsByElementTypeAndJsonId(elementType, id.toString());
     }
 
+    // ── Create ────────────────────────────────────────────────────────────────
+
     @Override
     public T create(T object) {
         try {
             JsonBasedEntityHelper.assignIdIfNull(object);
             var beforeCreateResult = beforeCreate(object);
-            var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
-            var saved = repository().saveAndFlush(entity);
-            var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
+            var entity  = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
+            var saved   = repository().saveAndFlush(entity);
+            var result  = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
             return afterCreate(result);
         } catch (DataIntegrityViolationException e) {
             throw new CreateConstraintsViolationException(e.getMessage());
@@ -98,18 +137,18 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public List<T> createBatch(List<T> objects) {
         validateListNotEmpty(objects);
         objects.forEach(JsonBasedEntityHelper::assignIdIfNull);
-        var beforeCreateResults = objects.stream()
+        return objects.stream()
                 .map(this::beforeCreate)
-                .toList();
-        var entities = beforeCreateResults.stream()
                 .map(obj -> JsonBasedEntityHelper.toJsonEntity(obj, elementType, jsonEntityClass, objectMapper))
-                .toList();
-        return repository().saveAll(entities)
-                .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
-                .map(this::afterCreate)
-                .toList();
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        entities -> repository().saveAll(entities).stream()
+                                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+                                .map(this::afterCreate)
+                                .toList()));
     }
+
+    // ── Delete ────────────────────────────────────────────────────────────────
 
     @Override
     public void delete(UUID id) {
@@ -124,27 +163,25 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     public void deleteBatch(List<T> objects) {
         validateListNotEmpty(objects);
         beforeDelete(objects);
-        var ids = objects.stream()
-                .map(entity -> entity.getId().toString())
-                .toList();
+        var ids = objects.stream().map(e -> e.getId().toString()).toList();
         repository().deleteByElementTypeAndJsonIdIn(elementType, ids);
         afterDelete(objects);
     }
 
+    // ── Read ──────────────────────────────────────────────────────────────────
+
     @Override
     public List<T> findAll() {
-        var results = repository().findAllByElementType(elementType)
-                .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+        var results = repository().findAllByElementType(elementType).stream()
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .toList();
         return afterFindAll(results);
     }
 
     @Override
     public List<T> findAll(Pageable pageable) {
-        var results = repository().findAllByElementType(elementType, pageable)
-                .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+        var results = repository().findAllByElementType(elementType, pageable).stream()
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .toList();
         return afterFindAll(results);
     }
@@ -152,9 +189,11 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public Optional<T> findById(UUID id) throws ObjectNotFoundException {
         return repository().findByElementTypeAndJsonId(elementType, id.toString())
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .map(this::afterFindById);
     }
+
+    // ── Update ────────────────────────────────────────────────────────────────
 
     @Override
     public T saveOrUpdate(T object) {
@@ -164,9 +203,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public List<T> saveOrUpdate(List<T> objects) {
         validateListNotEmpty(objects);
-        return objects.stream()
-                .map(this::saveOrUpdate)
-                .toList();
+        return objects.stream().map(this::saveOrUpdate).toList();
     }
 
     @Override
@@ -175,7 +212,8 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
             var beforeUpdateResult = beforeUpdate(object);
             var entity = findEntityById(beforeUpdateResult.getId());
             entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
-            var result = JsonBasedEntityHelper.toJsonElement(repository().saveAndFlush(entity), jsonElementClass, objectMapper);
+            var result = JsonBasedEntityHelper.toJsonElement(
+                    repository().saveAndFlush(entity), jsonElementClass, objectMapper);
             return afterUpdate(result);
         } catch (DataIntegrityViolationException e) {
             throw new UpdateConstraintsViolationException(e.getMessage());
@@ -185,43 +223,77 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public List<T> updateBatch(List<T> objects) {
         validateListNotEmpty(objects);
-        return objects.stream()
-                .map(this::beforeUpdate)
-                .map(this::update)
-                .toList();
+        return objects.stream().map(this::beforeUpdate).map(this::update).toList();
     }
 
+    // ── Criteria filtering (point 4) ──────────────────────────────────────────
+
+    /**
+     * Returns all elements matching the given criteria.
+     *
+     * <p>DB-pushable operators ({@code EQ, NE, LI, NL, GT, GE, LT, LE}) are translated
+     * into a native JSONB query executed by {@link JsonQueryExecutor} — only matching rows
+     * are transferred over the wire. Remaining operators (currently only {@code BW}) are
+     * applied in-memory on the already-narrowed result set.
+     */
     @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
         if (criteria == null || criteria.isEmpty()) {
-            log.warn("No criteria provided, falling back to findAll");
+            log.warn("findAllByCriteriaFilter called with no criteria — falling back to findAll.");
             return findAll();
         }
 
         JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
-        List<T> entities = repository().findAllByElementType(elementType)
+
+        var split       = JsonCriteriaQueryBuilder.partition(criteria);
+        var dbCriteria  = split.getKey();
+        var memCriteria = split.getValue();
+
+        List<T> results = queryExecutor
+                .findByCriteria(tableName, elementType, null, dbCriteria, jsonEntityClass)
                 .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
-        List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
-        return afterFindAll(filtered);
+
+        if (!memCriteria.isEmpty()) {
+            results = JsonBasedEntityHelper.applyCriteriaFilter(results, memCriteria, elementType);
+        }
+
+        return afterFindAll(results);
     }
 
+    /**
+     * Returns a page of elements matching the given criteria.
+     *
+     * <p>Pagination is applied <em>after</em> all filtering (DB and in-memory) because
+     * in-memory operators may change the effective result count. When all criteria are
+     * DB-pushable, consider using the repository's pageable methods directly for
+     * true DB-side pagination.
+     */
     @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         if (criteria == null || criteria.isEmpty()) {
-            log.warn("No criteria provided, falling back to findAll");
+            log.warn("findAllByCriteriaFilter called with no criteria — falling back to findAll with pagination.");
             return findAll(pageRequest);
         }
 
         JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
-        List<T> entities = repository().findAllByElementType(elementType)
+
+        var split       = JsonCriteriaQueryBuilder.partition(criteria);
+        var dbCriteria  = split.getKey();
+        var memCriteria = split.getValue();
+
+        List<T> results = queryExecutor
+                .findByCriteria(tableName, elementType, null, dbCriteria, jsonEntityClass)
                 .stream()
-                .map(entity -> JsonBasedEntityHelper.toJsonElement(entity, jsonElementClass, objectMapper))
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
-        List<T> filtered = JsonBasedEntityHelper.applyCriteriaFilter(entities, criteria, elementType);
-        List<T> paginated = JsonBasedEntityHelper.applyPagination(filtered, pageRequest);
-        return afterFindAll(paginated);
+
+        if (!memCriteria.isEmpty()) {
+            results = JsonBasedEntityHelper.applyCriteriaFilter(results, memCriteria, elementType);
+        }
+
+        return afterFindAll(JsonBasedEntityHelper.applyPagination(results, pageRequest));
     }
 
     @Override
@@ -229,66 +301,69 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         throw new OperationNotSupportedException("Json based entity: getByIdIn");
     }
 
-    // Event lifecycle methods
+    // ── Lifecycle event hooks ─────────────────────────────────────────────────
+
     @Override
     public T beforeUpdate(T object) {
-        log.debug("Before update {}: {}", elementType, object.getId());
+        log.debug("Before update {} [id={}]", elementType, object.getId());
         return object;
     }
 
     @Override
     public T afterUpdate(T object) {
-        log.debug("After update {}: {}", elementType, object.getId());
+        log.debug("After update {} [id={}]", elementType, object.getId());
         return object;
     }
 
     @Override
     public void beforeDelete(UUID id) {
-        log.debug("Before delete {}: {}", elementType, id);
+        log.debug("Before delete {} [id={}]", elementType, id);
     }
 
     @Override
     public void afterDelete(UUID id) {
-        log.debug("After delete {}: {}", elementType, id);
+        log.debug("After delete {} [id={}]", elementType, id);
     }
 
     @Override
     public void beforeDelete(List<T> objects) {
-        log.debug("Before delete {} batch: {} items", elementType, objects.size());
+        log.debug("Before delete {} batch [{} items]", elementType, objects.size());
     }
 
     @Override
     public void afterDelete(List<T> objects) {
-        log.debug("After delete {} batch: {} items", elementType, objects.size());
+        log.debug("After delete {} batch [{} items]", elementType, objects.size());
     }
 
     @Override
     public T beforeCreate(T object) {
-        log.debug("Before create {}: {}", elementType, object.getId());
+        log.debug("Before create {} [id={}]", elementType, object.getId());
         return object;
     }
 
     @Override
     public List<T> afterFindAll(List<T> list) {
-        log.debug("After find all {}: {} items", elementType, list.size());
+        log.debug("After find all {} [{} items]", elementType, list.size());
         return list;
     }
 
     @Override
     public T afterFindById(T object) {
-        log.debug("After find by id {}: {}", elementType, object.getId());
+        log.debug("After find by id {} [id={}]", elementType, object.getId());
         return object;
     }
 
     @Override
     public T afterCreate(T object) {
-        log.debug("After create {}: {}", elementType, object.getId());
+        log.debug("After create {} [id={}]", elementType, object.getId());
         return object;
     }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
 
     private E findEntityById(UUID id) {
         return repository().findByElementTypeAndJsonId(elementType, id.toString())
                 .orElseThrow(() -> new ObjectNotFoundException(
-                        "Entity not found for type: %s and id: %s".formatted(elementType, id)));
+                        "Entity not found for type='%s' and id='%s'".formatted(elementType, id)));
     }
 }
