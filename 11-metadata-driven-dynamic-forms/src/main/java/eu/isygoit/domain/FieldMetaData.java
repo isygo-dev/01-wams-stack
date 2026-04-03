@@ -13,11 +13,12 @@ public record FieldMetaData(
         Map<String, Object> ui,
         List<FieldMetaData> children,
         ListConfig listConfig,
-        OptionsConfig options,
+        OptionsConfig options,              // Rich options
+        FileUploadConfig fileUploadConfig,  // File upload
         ConditionalRule conditional
 ) {
 
-    // === Common UI helpers ===
+    // UI Helpers
     public String placeholder()     { return getUi("placeholder"); }
     public String helpText()        { return getUi("helpText"); }
     public String tooltip()         { return getUi("tooltip"); }
@@ -27,37 +28,29 @@ public record FieldMetaData(
     public String thousandSeparator() { return getUi("thousandSeparator"); }
     public String decimalSeparator()  { return getUi("decimalSeparator"); }
 
-    // === Validation helpers ===
-    public Integer minLength() {
-        Object val = validation.get("minLength");
-        return val instanceof Integer ? (Integer) val : null;
-    }
+    // Validation Helpers
+    public Integer minLength() { return getInt(validation, "minLength"); }
+    public Integer maxLength() { return getInt(validation, "maxLength"); }
+    public Double minValue()   { return getDouble(validation, "minValue"); }
+    public Double maxValue()   { return getDouble(validation, "maxValue"); }
 
-    public Integer maxLength() {
-        Object val = validation.get("maxLength");
-        return val instanceof Integer ? (Integer) val : null;
-    }
+    public Integer rows()      { return getInt(ui, "rows"); }
 
-    public Double minValue() {
-        Object val = validation.get("minValue");
-        return val instanceof Double ? (Double) val : null;
-    }
-
-    public Double maxValue() {
-        Object val = validation.get("maxValue");
-        return val instanceof Double ? (Double) val : null;
-    }
-
-    public Integer rows() {
-        Object val = ui.get("rows");
-        return val instanceof Integer ? (Integer) val : null;
-    }
-
-    public Object defaultValue() {
-        return defaultValue != null ? defaultValue : null;
+    public String defaultValueStr() {
+        return defaultValue != null ? defaultValue.toString() : null;
     }
 
     private String getUi(String key) {
         return ui != null ? (String) ui.get(key) : null;
+    }
+
+    private Integer getInt(Map<String, Object> map, String key) {
+        Object v = map != null ? map.get(key) : null;
+        return v instanceof Integer ? (Integer) v : null;
+    }
+
+    private Double getDouble(Map<String, Object> map, String key) {
+        Object v = map != null ? map.get(key) : null;
+        return v instanceof Number ? ((Number) v).doubleValue() : null;
     }
 }

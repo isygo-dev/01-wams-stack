@@ -25,31 +25,20 @@ public class AnnotationProcessor {
         Map<String, Object> validation = buildValidationMap(field, formField);
         Map<String, Object> ui = buildUiMap(formField);
 
-        // ==================== CONDITIONAL LOGIC WITH @FormConditional ====================
-        FormConditional formConditional = field.getAnnotation(FormConditional.class);
+        // Rich Options Config
+        OptionsConfig optionsConfig = buildOptionsConfig(formField, type);
 
-        String visibleWhen = formConditional != null ? formConditional.visibleWhen() : formField.visibleWhen();
-        String enabledWhen = formConditional != null ? formConditional.enabledWhen() : formField.enabledWhen();
-        String requiredWhen = formConditional != null ? formConditional.requiredWhen() : formField.requiredWhen();
+        // File Upload Config
+        FileUploadConfig fileUploadConfig = buildFileUploadConfig(formField, type);
 
-        Map<String, Object> customConditions = new LinkedHashMap<>();
-
-        if (formConditional != null) {
-            // Add simple conditions to customConditions for easier frontend access
-            if (!visibleWhen.isBlank()) customConditions.put("visibleWhen", visibleWhen);
-            if (!enabledWhen.isBlank()) customConditions.put("enabledWhen", enabledWhen);
-            if (!requiredWhen.isBlank()) customConditions.put("requiredWhen", requiredWhen);
-
-            // Add all @Condition annotations
-            for (eu.isygoit.annotation.Condition cond : formConditional.value()) {
-                customConditions.put(cond.key(), cond.value());
-            }
-        }
+        // Conditional + customConditions
+        FormConditional fc = field.getAnnotation(FormConditional.class);
+        Map<String, Object> customConditions = buildCustomConditions(fc, formField);
 
         ConditionalRule conditional = new ConditionalRule(
-                visibleWhen,
-                enabledWhen,
-                requiredWhen,
+                fc != null ? fc.visibleWhen() : formField.visibleWhen(),
+                fc != null ? fc.enabledWhen() : formField.enabledWhen(),
+                fc != null ? fc.requiredWhen() : formField.requiredWhen(),
                 customConditions
         );
 
@@ -58,23 +47,8 @@ public class AnnotationProcessor {
                 ? scanNestedObject(field.getType(), depth + 1)
                 : List.of();
 
-        // List Support
-        ListConfig listConfig = null;
-        FormList formList = field.getAnnotation(FormList.class);
-        if (formList != null && (type == FieldType.LIST || type == FieldType.SET || type == FieldType.TABLE)) {
-            listConfig = new ListConfig(
-                    "",
-                    formList.editable(),
-                    formList.sortable(),
-                    formList.minItems(),
-                    formList.maxItems(),
-                    formList.emptyStateMessage(),
-                    formList.addButtonLabel(),
-                    Arrays.asList(formList.actions()),
-                    Arrays.asList(formList.bulkActions()),
-                    Map.of()
-            );
-        }
+        // List Config
+        ListConfig listConfig = buildListConfig(field, type);
 
         return new FieldMetaData(
                 key,
@@ -86,8 +60,93 @@ public class AnnotationProcessor {
                 ui,
                 children,
                 listConfig,
-                null,
+                optionsConfig,
+                fileUploadConfig,
                 conditional
+        );
+    }
+
+    private FieldType determineFieldType(FieldType declared, Class<?> javaType) {
+        if (declared != FieldType.AUTO) return declared;
+
+        if (String.class.equals(javaType)) return FieldType.TEXT;
+        if (Integer.class.equals(javaType) || int.class.equals(javaType)) return FieldType.INTEGER;
+        if (Double.class.equals(javaType) || double.class.equals(javaType)) return FieldType.DECIMAL;
+        if (Boolean.class.equals(javaType) || boolean.class.equals(javaType)) return FieldType.CHECKBOX;
+        if (java.time.LocalDate.class.equals(javaType) || java.time.LocalDateTime.class.equals(javaType))
+            return FieldType.DATE;
+        if (java.io.File.class.equals(javaType) || "org.springframework.web.multipart.MultipartFile".equals(javaType.getName()))
+            return FieldType.FILE;
+
+        return FieldType.TEXT;
+    }
+
+    private OptionsConfig buildOptionsConfig(FormField ff, FieldType type) {
+        if (type != FieldType.SELECT && type != FieldType.MULTISELECT &&
+                type != FieldType.AUTOCOMPLETE && type != FieldType.RADIO) {
+            return null;
+        }
+
+        return new OptionsConfig(
+                ff.multiple(),
+                ff.searchable(),
+                ff.clearable(),
+                ff.showSelectAll(),
+                ff.maxSelectable(),
+                ff.optionsSource(),
+                ff.dependsOn(),
+                ff.valueKey(),
+                ff.labelKey(),
+                ff.optionLayout(),
+                ff.allowCustomValue(),
+                ff.debounceTime(),
+                List.of()
+        );
+    }
+
+    private FileUploadConfig buildFileUploadConfig(FormField ff, FieldType type) {
+        if (type != FieldType.FILE) return null;
+
+        return new FileUploadConfig(
+                ff.multipleFiles(),
+                ff.acceptedTypes(),
+                ff.maxFileSize(),
+                ff.uploadUrl()
+        );
+    }
+
+    private Map<String, Object> buildCustomConditions(FormConditional fc, FormField ff) {
+        Map<String, Object> map = new LinkedHashMap<>();
+
+        if (fc != null) {
+            if (!fc.visibleWhen().isBlank()) map.put("visibleWhen", fc.visibleWhen());
+            if (!fc.enabledWhen().isBlank()) map.put("enabledWhen", fc.enabledWhen());
+            if (!fc.requiredWhen().isBlank()) map.put("requiredWhen", fc.requiredWhen());
+
+            for (eu.isygoit.annotation.Condition c : fc.value()) {
+                map.put(c.key(), c.value());
+            }
+        }
+        return map;
+    }
+
+    private ListConfig buildListConfig(Field field, FieldType type) {
+        FormList formList = field.getAnnotation(FormList.class);
+        if (formList == null || (type != FieldType.LIST && type != FieldType.SET && type != FieldType.TABLE)) {
+            return null;
+        }
+
+        return new ListConfig(
+                "",
+                formList.editable(),
+                formList.sortable(),
+                formList.minItems(),
+                formList.maxItems(),
+                formList.emptyStateMessage(),
+                formList.addButtonLabel(),
+                Arrays.asList(formList.actions()),
+                Arrays.asList(formList.bulkActions()),
+                Map.of()
         );
     }
 
@@ -110,17 +169,6 @@ public class AnnotationProcessor {
                 Boolean.class == clazz ||
                 Character.class == clazz ||
                 java.time.temporal.Temporal.class.isAssignableFrom(clazz);
-    }
-
-    private FieldType determineFieldType(FieldType declared, Class<?> javaType) {
-        if (declared != FieldType.AUTO) return declared;
-        if (String.class.equals(javaType)) return FieldType.TEXT;
-        if (Integer.class.equals(javaType) || int.class.equals(javaType)) return FieldType.INTEGER;
-        if (Double.class.equals(javaType) || double.class.equals(javaType)) return FieldType.DECIMAL;
-        if (Boolean.class.equals(javaType) || boolean.class.equals(javaType)) return FieldType.CHECKBOX;
-        if (java.time.LocalDate.class.equals(javaType) || java.time.LocalDateTime.class.equals(javaType))
-            return FieldType.DATE;
-        return FieldType.TEXT;
     }
 
     private Map<String, Object> buildValidationMap(Field field, FormField ff) {
@@ -152,13 +200,11 @@ public class AnnotationProcessor {
         map.put("helpText", ff.helpText());
         map.put("tooltip", ff.tooltip());
         map.put("rows", ff.rows());
-
         if (ff.useMask() && !ff.mask().isBlank()) map.put("mask", ff.mask());
         if (!ff.prefix().isBlank()) map.put("prefix", ff.prefix());
         if (!ff.suffix().isBlank()) map.put("suffix", ff.suffix());
         if (!ff.thousandSeparator().isBlank()) map.put("thousandSeparator", ff.thousandSeparator());
         if (!ff.decimalSeparator().isBlank()) map.put("decimalSeparator", ff.decimalSeparator());
-
         return map;
     }
 

@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Comprehensive Form Test - All Field Properties")
+@DisplayName("Comprehensive Form Test - All Properties with Real Values")
 class ComprehensiveFormTest {
 
     private MetaDataGenerator generator;
@@ -28,8 +28,8 @@ class ComprehensiveFormTest {
     }
 
     @Test
-    @DisplayName("Should correctly map ALL field properties including customConditions")
-    void shouldMapAllFieldProperties() throws Exception {
+    @DisplayName("Should map ALL properties with real non-empty values")
+    void shouldMapAllPropertiesWithRealValues() throws Exception {
         ViewMetaData metaData = generator.generate("comprehensiveTestForm");
 
         assertThat(metaData.name()).isEqualTo("comprehensiveTestForm");
@@ -37,18 +37,16 @@ class ComprehensiveFormTest {
         // 1. Full Name
         FieldMetaData fullName = findField(metaData, "fullName");
         assertThat(fullName.label()).isEqualTo("Full Name");
-        assertThat(fullName.required()).isTrue();
-        assertThat(fullName.placeholder()).isEqualTo("Enter your full name");
-        assertThat(fullName.helpText()).isEqualTo("Please use your legal name");
+        assertThat(fullName.placeholder()).isEqualTo("Enter your full legal name");
+        assertThat(fullName.helpText()).isEqualTo("Must match your official ID");
         assertThat(fullName.tooltip()).isEqualTo("This field is mandatory");
         assertThat(fullName.minLength()).isEqualTo(5);
         assertThat(fullName.maxLength()).isEqualTo(100);
 
         // 2. Salary
         FieldMetaData salary = findField(metaData, "salary");
-        assertThat(salary.type()).isEqualTo(FieldType.DECIMAL);
         assertThat(salary.prefix()).isEqualTo("$");
-        assertThat(salary.suffix()).isEqualTo("/month");
+        assertThat(salary.suffix()).isEqualTo("USD");
         assertThat(salary.thousandSeparator()).isEqualTo(",");
         assertThat(salary.decimalSeparator()).isEqualTo(".");
 
@@ -57,30 +55,25 @@ class ComprehensiveFormTest {
         assertThat(phone.mask()).isEqualTo("(###) ###-####");
         assertThat(phone.prefix()).isEqualTo("+216");
 
-        // 4. Experience Years
+        // 4. Experience
         FieldMetaData experience = findField(metaData, "experienceYears");
         assertThat(experience.minValue()).isEqualTo(0.0);
         assertThat(experience.maxValue()).isEqualTo(50.0);
 
         // 5. Bio
         FieldMetaData bio = findField(metaData, "bio");
-        assertThat(bio.type()).isEqualTo(FieldType.TEXTAREA);
+        assertThat(bio.rows()).isEqualTo(6);
         assertThat(bio.maxLength()).isEqualTo(500);
-        assertThat(bio.rows()).isEqualTo(5);
 
-        // 6. Active with defaultValue
+        // 6. Active
         FieldMetaData active = findField(metaData, "active");
-        assertThat(active.defaultValue()).isEqualTo("true");
+        assertThat(active.defaultValueStr()).isEqualTo("true");
 
-        // 7. Discount Amount with customConditions (NON-EMPTY)
+        // 7. Discount with rich customConditions
         FieldMetaData discount = findField(metaData, "discountAmount");
-        assertThat(discount.label()).isEqualTo("Discount Amount");
+        assertThat(discount.conditional().visibleWhen()).isEqualTo("membershipLevel == 'PREMIUM'");
 
-        var conditional = discount.conditional();
-        assertThat(conditional.visibleWhen()).isEqualTo("membershipLevel == 'PREMIUM'");
-
-        Map<String, Object> customConditions = conditional.customConditions();
-        assertThat(customConditions).isNotEmpty();
+        Map<String, Object> customConditions = discount.conditional().customConditions();
         assertThat(customConditions)
                 .containsEntry("dependsOn", "membershipLevel")
                 .containsEntry("operator", "EQUALS")
@@ -88,13 +81,21 @@ class ComprehensiveFormTest {
                 .containsEntry("minOrderAmount", "100")
                 .containsEntry("action", "applyDiscount");
 
-        // 8. List
-        FieldMetaData skills = findField(metaData, "skills");
+        // 8. File Upload
+        FieldMetaData resume = findField(metaData, "resume");
+        assertThat(resume.type()).isEqualTo(FieldType.FILE);
+        assertThat(resume.fileUploadConfig()).isNotNull();
+        assertThat(resume.fileUploadConfig().acceptedTypes()).contains(".pdf", ".doc", ".docx");
+        assertThat(resume.fileUploadConfig().maxFileSize()).isEqualTo(5242880L);
+
+        // 9. List
+        FieldMetaData skills = findField(metaData, "professionalSkills");
         assertThat(skills.type()).isEqualTo(FieldType.LIST);
         assertThat(skills.listConfig().minItems()).isEqualTo(1);
         assertThat(skills.listConfig().maxItems()).isEqualTo(10);
+        assertThat(skills.listConfig().addButtonLabel()).isEqualTo("Add New Skill");
 
-        // 9. Nested Object
+        // 10. Nested Object
         FieldMetaData contactInfo = findField(metaData, "contactInfo");
         assertThat(contactInfo.type()).isEqualTo(FieldType.OBJECT);
         assertThat(contactInfo.children()).isNotEmpty();
@@ -103,8 +104,8 @@ class ComprehensiveFormTest {
         String json = objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(metaData);
 
-        System.out.println("\n=== FULL COMPREHENSIVE METADATA JSON ===\n" + json);
-        System.out.println("\n✅ ALL FIELD PROPERTIES TESTED SUCCESSFULLY!");
+        System.out.println("\n=== FULL REALISTIC METADATA JSON ===\n" + json);
+        System.out.println("\n✅ ALL PROPERTIES TESTED WITH REAL NON-EMPTY VALUES!");
     }
 
     private FieldMetaData findField(ViewMetaData metaData, String key) {

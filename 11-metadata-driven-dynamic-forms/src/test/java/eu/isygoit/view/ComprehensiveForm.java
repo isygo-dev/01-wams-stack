@@ -7,25 +7,25 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
 @FormView(
         name = "comprehensiveTestForm",
         title = "Comprehensive Test Form",
-        description = "Tests all available form, field and list properties",
-        version = "1.2"
+        description = "Full test of all supported properties",
+        version = "1.3"
 )
 public class ComprehensiveForm {
 
     @FormField(
             label = "Full Name",
-            placeholder = "Enter your full name",
-            required = true,
-            order = 10,
+            placeholder = "Enter your full legal name",
+            helpText = "Must match your official ID",
             tooltip = "This field is mandatory",
-            helpText = "Please use your legal name"
+            required = true,
+            order = 10
     )
     @NotBlank
     @Size(min = 5, max = 100)
@@ -34,8 +34,8 @@ public class ComprehensiveForm {
     @FormField(
             label = "Email Address",
             type = FieldType.EMAIL,
-            required = true,
             placeholder = "user@company.com",
+            required = true,
             order = 20
     )
     @Email
@@ -51,10 +51,10 @@ public class ComprehensiveForm {
     private String password;
 
     @FormField(
-            label = "Salary",
+            label = "Monthly Salary",
             type = FieldType.DECIMAL,
             prefix = "$",
-            suffix = "/month",
+            suffix = "USD",
             thousandSeparator = ",",
             decimalSeparator = ".",
             order = 40
@@ -67,12 +67,13 @@ public class ComprehensiveForm {
             useMask = true,
             mask = "(###) ###-####",
             prefix = "+216",
+            placeholder = "(123) 456-7890",
             order = 45
     )
     private String phoneNumber;
 
     @FormField(
-            label = "Experience Years",
+            label = "Years of Experience",
             type = FieldType.INTEGER,
             minValue = 0,
             maxValue = 50,
@@ -81,27 +82,61 @@ public class ComprehensiveForm {
     private Integer experienceYears;
 
     @FormField(
-            label = "Bio",
+            label = "Bio / About You",
             type = FieldType.TEXTAREA,
             maxLength = 500,
-            rows = 5,
+            rows = 6,
+            placeholder = "Tell us about yourself...",
             order = 60
     )
     private String bio;
 
     @FormField(
-            label = "Is Active",
+            label = "Is Active Employee",
             type = FieldType.CHECKBOX,
             defaultValue = "true",
             order = 70
     )
-    private boolean active;
+    private boolean active = true;
 
-    // ==================== FIELD WITH NON-EMPTY customConditions ====================
+    // ==================== RICH OPTIONS ====================
+    @FormField(
+            label = "Department",
+            type = FieldType.SELECT,
+            required = true,
+            searchable = true,
+            clearable = true,
+            order = 80
+    )
+    private String department;
+
+    @FormField(
+            label = "Skills",
+            type = FieldType.MULTISELECT,
+            multiple = true,
+            searchable = true,
+            showSelectAll = true,
+            maxSelectable = 8,
+            order = 85
+    )
+    private List<String> skills;
+
+    // ==================== FILE UPLOAD ====================
+    @FormField(
+            label = "Resume / CV",
+            type = FieldType.FILE,
+            multipleFiles = false,
+            acceptedTypes = {".pdf", ".doc", ".docx"},
+            maxFileSize = 5242880L, // 5MB
+            order = 90
+    )
+    private Object resume;
+
+    // ==================== ADVANCED CONDITIONAL ====================
     @FormField(
             label = "Discount Amount",
             type = FieldType.DECIMAL,
-            order = 55
+            order = 95
     )
     @FormConditional(
             visibleWhen = "membershipLevel == 'PREMIUM'",
@@ -124,9 +159,9 @@ public class ComprehensiveForm {
     )
     private ContactInfo contactInfo;
 
-    // List
+    // List with full config
     @FormField(
-            key = "skills",
+            key = "professionalSkills",
             label = "Professional Skills",
             type = FieldType.LIST,
             order = 110
@@ -141,5 +176,5 @@ public class ComprehensiveForm {
             actions = {"add", "edit", "delete", "duplicate", "archive"},
             bulkActions = {"delete", "archive"}
     )
-    private List<Skill> skills;
+    private List<Skill> professionalSkills;
 }
