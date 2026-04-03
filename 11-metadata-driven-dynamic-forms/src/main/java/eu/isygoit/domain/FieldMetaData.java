@@ -13,12 +13,12 @@ public record FieldMetaData(
         Map<String, Object> ui,
         List<FieldMetaData> children,
         ListConfig listConfig,
-        OptionsConfig options,              // Rich options
-        FileUploadConfig fileUploadConfig,  // File upload
+        OptionsConfig options,
+        FileUploadConfig fileUploadConfig,
         ConditionalRule conditional
 ) {
 
-    // UI Helpers
+    // ==================== UI HELPERS ====================
     public String placeholder()     { return getUi("placeholder"); }
     public String helpText()        { return getUi("helpText"); }
     public String tooltip()         { return getUi("tooltip"); }
@@ -27,6 +27,13 @@ public record FieldMetaData(
     public String suffix()          { return getUi("suffix"); }
     public String thousandSeparator() { return getUi("thousandSeparator"); }
     public String decimalSeparator()  { return getUi("decimalSeparator"); }
+
+    // Options Helpers
+    public boolean multiple()       { return getBoolean(ui, "multiple"); }
+    public boolean searchable()     { return getBoolean(ui, "searchable"); }
+    public boolean clearable()      { return getBoolean(ui, "clearable"); }
+    public boolean showSelectAll()  { return getBoolean(ui, "showSelectAll"); }
+    public Integer maxSelectable()  { return getInt(ui, "maxSelectable"); }
 
     // Validation Helpers
     public Integer minLength() { return getInt(validation, "minLength"); }
@@ -40,8 +47,14 @@ public record FieldMetaData(
         return defaultValue != null ? defaultValue.toString() : null;
     }
 
+    // ==================== PRIVATE HELPERS ====================
     private String getUi(String key) {
         return ui != null ? (String) ui.get(key) : null;
+    }
+
+    private boolean getBoolean(Map<String, Object> map, String key) {
+        Object v = map != null ? map.get(key) : null;
+        return Boolean.TRUE.equals(v);
     }
 
     private Integer getInt(Map<String, Object> map, String key) {

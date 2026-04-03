@@ -200,11 +200,20 @@ public class AnnotationProcessor {
         map.put("helpText", ff.helpText());
         map.put("tooltip", ff.tooltip());
         map.put("rows", ff.rows());
+
+        // Rich Options
+        map.put("multiple", ff.multiple());
+        map.put("searchable", ff.searchable());
+        map.put("clearable", ff.clearable());
+        map.put("showSelectAll", ff.showSelectAll());
+        map.put("maxSelectable", ff.maxSelectable());
+
         if (ff.useMask() && !ff.mask().isBlank()) map.put("mask", ff.mask());
         if (!ff.prefix().isBlank()) map.put("prefix", ff.prefix());
         if (!ff.suffix().isBlank()) map.put("suffix", ff.suffix());
         if (!ff.thousandSeparator().isBlank()) map.put("thousandSeparator", ff.thousandSeparator());
         if (!ff.decimalSeparator().isBlank()) map.put("decimalSeparator", ff.decimalSeparator());
+
         return map;
     }
 
