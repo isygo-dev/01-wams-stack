@@ -1,4 +1,4 @@
-# Backend Metadata-Driven Dynamic Form System - Complete Requirements & Design Criteria
+# Backend MetaData-Driven Dynamic Form System - Complete Requirements & Design Criteria
 
 **Role:**  
 You are a senior backend architect and API designer with deep expertise in metadata-driven UIs, annotation-driven systems, and enterprise form platforms using Java/Spring Boot.
@@ -98,7 +98,7 @@ When `type` is `"list"`, `"set"`, or `"table"`:
 
 ---
 
-## Metadata JSON Structure
+## MetaData JSON Structure
 
 Define a clean, readable, hierarchical, and fully recursive JSON schema for the metadata output.
 
@@ -113,7 +113,7 @@ Provide **three realistic JSON examples**:
 
 ## API Endpoints Requirements
 
-### 1. Metadata Endpoint
+### 1. MetaData Endpoint
 - `GET /api/forms/{viewName}/metadata`
 - Parameters: `viewName`, optional `mode` (`create` | `edit`), optional `entityId`
 - In edit mode: merge existing data with annotation-defined defaults (entity values take precedence)
@@ -162,7 +162,7 @@ Organize your response with the following clear sections:
 4. Enhanced Requirements for Input Fields
 5. Enhanced Requirements for Options / Selection Inputs
 6. Enhanced Requirements for Lists, Sets, and Tables
-7. Metadata JSON Structure (with three detailed examples)
+7. MetaData JSON Structure (with three detailed examples)
 8. API Endpoints Requirements
 9. Key Design Principles
 10. Suggestions & Recommendations

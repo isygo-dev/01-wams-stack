@@ -59,6 +59,7 @@
             spring-boot-maven-plugin repackage is deliberately skipped.
         -->
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+        <caffeine.version>3.1.8</caffeine.version>
     </properties>
 
     <!-- =========================================================== -->
@@ -110,16 +111,22 @@
             <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- ── Spring Web MVC ─────────────────────────────────── -->
-        <!--
-            spring-webmvc brings: DispatcherServlet, @Controller,
-            @RestController, @RequestMapping, HttpMessageConverters,
-            content negotiation, and the full MVC infrastructure.
-            Version managed by Spring Boot BOM.
-        -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.26.3</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Jakarta Servlet API (provided — container supplies it) -->
@@ -319,6 +326,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
             </plugin>
 
             <!-- Surefire: JUnit 5 test runner                        -->
