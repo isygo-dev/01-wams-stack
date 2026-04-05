@@ -47,9 +47,9 @@ public class UserLoginEntity extends AbstractEntity<UUID>
 
     /**
      * @deprecated Tenant is stored on the JPA entity ({@link EventEntity}), not in the
-     *             JSONB payload. This method returns an empty string as a structural
-     *             placeholder. Use the tenant-aware service methods to scope operations
-     *             by tenant.
+     * JSONB payload. This method returns an empty string as a structural
+     * placeholder. Use the tenant-aware service methods to scope operations
+     * by tenant.
      */
     @Deprecated(since = "review-point-3")
     @Override

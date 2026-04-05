@@ -6,7 +6,6 @@ import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +36,9 @@ import java.util.Set;
 @Slf4j
 public final class JsonCriteriaQueryBuilder {
 
-    /** Operators whose semantics map directly to a PostgreSQL JSONB predicate. */
+    /**
+     * Operators whose semantics map directly to a PostgreSQL JSONB predicate.
+     */
     public static final Set<IEnumOperator.Types> DB_PUSHABLE = Set.of(
             IEnumOperator.Types.EQ,
             IEnumOperator.Types.NE,
@@ -49,7 +50,8 @@ public final class JsonCriteriaQueryBuilder {
             IEnumOperator.Types.LE
     );
 
-    private JsonCriteriaQueryBuilder() {}
+    private JsonCriteriaQueryBuilder() {
+    }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
@@ -66,7 +68,7 @@ public final class JsonCriteriaQueryBuilder {
     public static Map.Entry<List<QueryCriteria>, List<QueryCriteria>> partition(
             List<QueryCriteria> criteria) {
 
-        List<QueryCriteria> dbPart  = criteria.stream()
+        List<QueryCriteria> dbPart = criteria.stream()
                 .filter(c -> DB_PUSHABLE.contains(c.getOperator()))
                 .toList();
         List<QueryCriteria> memPart = criteria.stream()
@@ -102,7 +104,7 @@ public final class JsonCriteriaQueryBuilder {
      * @param params   the mutable parameter map to populate; must already contain the
      *                 base parameters ({@code elementType}, optionally {@code tenant})
      * @return a SQL fragment starting with {@code " AND "} or {@code " OR "}, or an empty
-     *         string when the criteria list is empty
+     * string when the criteria list is empty
      * @throws WrongCriteriaFilterException if a criterion uses a non-DB-pushable operator
      *                                      or if a numeric operator receives a non-numeric value
      */
@@ -113,8 +115,8 @@ public final class JsonCriteriaQueryBuilder {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < criteria.size(); i++) {
-            QueryCriteria c  = criteria.get(i);
-            String paramKey  = "crit" + i;
+            QueryCriteria c = criteria.get(i);
+            String paramKey = "crit" + i;
 
             // The first criterion always AND-connects to the fixed base predicates.
             // Subsequent criteria respect their declared combiner.

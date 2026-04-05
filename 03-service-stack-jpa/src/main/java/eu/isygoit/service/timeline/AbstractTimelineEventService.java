@@ -1,17 +1,12 @@
 package eu.isygoit.service.timeline;
 
-import eu.isygoit.constants.ErrorCodeConstants;
 import eu.isygoit.exception.TimelineEventDispatchException;
 import eu.isygoit.helper.JsonHelper;
-import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventMessage;
 import eu.isygoit.model.timeline.TimelineEventType;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;

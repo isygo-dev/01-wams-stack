@@ -1,6 +1,5 @@
 package eu.isygoit.listener;
 
-import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventType;
 import eu.isygoit.service.timeline.ITimelineEventService;

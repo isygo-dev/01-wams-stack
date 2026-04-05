@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +33,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JsonBasedEntityHelper {
 
-    private JsonBasedEntityHelper() {}
+    private JsonBasedEntityHelper() {
+    }
 
     // ── Element type and table name resolution (point 6) ─────────────────────
 
@@ -226,8 +228,8 @@ public class JsonBasedEntityHelper {
         try {
             Field field = entity.getClass().getDeclaredField(criterion.getName());
             field.setAccessible(true);
-            Object fieldValue    = field.get(entity);
-            String value         = fieldValue != null ? fieldValue.toString() : null;
+            Object fieldValue = field.get(entity);
+            String value = fieldValue != null ? fieldValue.toString() : null;
             String criterionValue = criterion.getValue();
 
             if (value == null
@@ -269,7 +271,7 @@ public class JsonBasedEntityHelper {
      */
     public static <T> List<T> applyPagination(List<T> entities, PageRequest pageRequest) {
         int start = (int) pageRequest.getOffset();
-        int end   = Math.min(start + pageRequest.getPageSize(), entities.size());
+        int end = Math.min(start + pageRequest.getPageSize(), entities.size());
         return start < entities.size() ? entities.subList(start, end) : List.of();
     }
 
@@ -300,7 +302,7 @@ public class JsonBasedEntityHelper {
             throw new WrongCriteriaFilterException("Invalid BETWEEN value format: " + criterionValue);
         }
         try {
-            double d   = Double.parseDouble(value);
+            double d = Double.parseDouble(value);
             double min = Double.parseDouble(range[0]);
             double max = Double.parseDouble(range[1]);
             return d >= min && d <= max;

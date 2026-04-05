@@ -1,7 +1,6 @@
 package eu.isygoit.model.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;

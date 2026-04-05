@@ -2,7 +2,6 @@ package eu.isygoit.model;
 
 import eu.isygoit.annotation.TrackChanges;
 import eu.isygoit.listener.TimelineEventListener;
-import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.jakarta.AuditableTenantEntity;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import jakarta.persistence.*;

@@ -19,6 +19,13 @@ import java.util.List;
 public class ComprehensiveForm {
 
     @FormField(
+            label = "Is Active Employee",
+            type = FieldType.CHECKBOX,
+            defaultValue = "true",
+            order = 70
+    )
+    private final boolean active = true;
+    @FormField(
             label = "Full Name",
             placeholder = "Enter your full legal name",
             helpText = "Must match your official ID",
@@ -29,7 +36,6 @@ public class ComprehensiveForm {
     @NotBlank
     @Size(min = 5, max = 100)
     private String fullName;
-
     @FormField(
             label = "Email Address",
             type = FieldType.EMAIL,
@@ -39,7 +45,6 @@ public class ComprehensiveForm {
     )
     @Email
     private String email;
-
     @FormField(
             label = "Password",
             type = FieldType.PASSWORD,
@@ -48,7 +53,6 @@ public class ComprehensiveForm {
     )
     @Size(min = 12)
     private String password;
-
     @FormField(
             label = "Monthly Salary",
             type = FieldType.DECIMAL,
@@ -59,7 +63,6 @@ public class ComprehensiveForm {
             order = 40
     )
     private Double salary;
-
     @FormField(
             label = "Phone Number",
             type = FieldType.TEXT,
@@ -70,7 +73,6 @@ public class ComprehensiveForm {
             order = 45
     )
     private String phoneNumber;
-
     @FormField(
             label = "Years of Experience",
             type = FieldType.INTEGER,
@@ -79,7 +81,6 @@ public class ComprehensiveForm {
             order = 50
     )
     private Integer experienceYears;
-
     @FormField(
             label = "Bio / About You",
             type = FieldType.TEXTAREA,
@@ -89,15 +90,6 @@ public class ComprehensiveForm {
             order = 60
     )
     private String bio;
-
-    @FormField(
-            label = "Is Active Employee",
-            type = FieldType.CHECKBOX,
-            defaultValue = "true",
-            order = 70
-    )
-    private final boolean active = true;
-
     // ==================== STATIC OPTIONS - Department ====================
     @FormField(
             label = "Department",

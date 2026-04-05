@@ -1,6 +1,5 @@
 package eu.isygoit.model;
 
-import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.json.JsonBasedEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

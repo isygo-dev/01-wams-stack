@@ -67,10 +67,14 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     private final Class<T> jsonElementClass;
     private final Class<E> jsonEntityClass;
 
-    /** Stable discriminator key — resolved from @ElementType or class simple name. */
+    /**
+     * Stable discriminator key — resolved from @ElementType or class simple name.
+     */
     private final String elementType;
 
-    /** Physical table name — resolved from @Table(name=...) or class simple name. */
+    /**
+     * Physical table name — resolved from @Table(name=...) or class simple name.
+     */
     private final String tableName;
 
     private final ObjectMapper objectMapper;
@@ -93,14 +97,14 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         this.objectMapper = objectMapper;
 
         var genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        var typeArguments     = genericSuperclass.getActualTypeArguments();
+        var typeArguments = genericSuperclass.getActualTypeArguments();
 
         this.jsonElementClass = (Class<T>) typeArguments[0];
-        this.jsonEntityClass  = (Class<E>) typeArguments[2];
+        this.jsonEntityClass = (Class<E>) typeArguments[2];
 
         // Point 6: annotation-backed resolution instead of bare getSimpleName()
         this.elementType = JsonBasedEntityHelper.resolveElementType(jsonElementClass);
-        this.tableName   = JsonBasedEntityHelper.resolveTableName(jsonEntityClass);
+        this.tableName = JsonBasedEntityHelper.resolveTableName(jsonEntityClass);
     }
 
     // ── Count / exists ────────────────────────────────────────────────────────
@@ -127,7 +131,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
             var beforeCreateResult = beforeCreate(tenant, object);
             var entity = JsonBasedEntityHelper.toJsonEntity(beforeCreateResult, elementType, jsonEntityClass, objectMapper);
             entity.setTenant(tenant);
-            var saved  = repository().save(entity);
+            var saved = repository().save(entity);
             var result = JsonBasedEntityHelper.toJsonElement(saved, jsonElementClass, objectMapper);
             return afterCreate(tenant, result);
         } catch (DataIntegrityViolationException e) {
@@ -265,8 +269,8 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
 
-        var split       = JsonCriteriaQueryBuilder.partition(criteria);
-        var dbCriteria  = split.getKey();
+        var split = JsonCriteriaQueryBuilder.partition(criteria);
+        var dbCriteria = split.getKey();
         var memCriteria = split.getValue();
 
         List<T> results = queryExecutor
@@ -300,8 +304,8 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
 
         JsonBasedEntityHelper.validateCriteriaAgainstJsonElement(jsonElementClass, criteria);
 
-        var split       = JsonCriteriaQueryBuilder.partition(criteria);
-        var dbCriteria  = split.getKey();
+        var split = JsonCriteriaQueryBuilder.partition(criteria);
+        var dbCriteria = split.getKey();
         var memCriteria = split.getValue();
 
         List<T> results = queryExecutor

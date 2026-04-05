@@ -13,7 +13,8 @@ public final class TrackChangesExtractor {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule());
 
-    private TrackChangesExtractor() {}
+    private TrackChangesExtractor() {
+    }
 
     /**
      * Walks the class hierarchy and collects only fields annotated with @TrackChanges.

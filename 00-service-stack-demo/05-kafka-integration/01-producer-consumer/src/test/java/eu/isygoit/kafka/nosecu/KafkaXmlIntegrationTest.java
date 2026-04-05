@@ -1,9 +1,9 @@
 package eu.isygoit.kafka.nosecu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.isygoit.kafka.consumer.XmlConsumer;   // ← changed to XmlConsumer (adjust if your class name is different)
+import eu.isygoit.kafka.consumer.XmlConsumer;
 import eu.isygoit.kafka.dto.TutorialDto;
-import eu.isygoit.kafka.producer.XmlProducer;     // ← changed to XmlProducer (adjust if your class name is different)
+import eu.isygoit.kafka.producer.XmlProducer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -25,12 +25,15 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Integration tests for Kafka XML message processing.
