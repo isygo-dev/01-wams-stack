@@ -1,7 +1,6 @@
 package eu.isygoit.domain;
 
 import java.util.List;
-import java.util.Map;
 
 public record OptionsConfig(
         boolean multiple,
@@ -18,4 +17,5 @@ public record OptionsConfig(
         int debounceTime,
         int size,
         List<OptionItem> options
-) {}
+) {
+}

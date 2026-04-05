@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Main orchestrator of the metadata library.
  * Provides clean API for generating ViewMetaData from annotated classes.
- *
+ * <p>
  * This is the primary class that users of the library will interact with.
  */
 public class MetaDataGenerator {

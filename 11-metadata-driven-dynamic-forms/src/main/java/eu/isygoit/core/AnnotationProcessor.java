@@ -5,7 +5,9 @@ import eu.isygoit.annotation.FormField;
 import eu.isygoit.annotation.FormList;
 import eu.isygoit.annotation.FormOption;
 import eu.isygoit.domain.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.lang.reflect.Field;
 import java.util.*;

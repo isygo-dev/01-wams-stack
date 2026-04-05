@@ -1,11 +1,13 @@
 # Backend MetaData-Driven Dynamic Form System
+
 **Plan de Réalisation – Partie Backend**  
 **Java 17 + Spring Boot 3.x**
 
 **Version** : 1.0  
 **Date** : Avril 2026  
 **Auteur** : Senior Backend Architect  
-**Objectif** : Fournir un plan clair, moderne, lisible et maintenable pour développer un système de génération de métadonnées de formulaires entièrement piloté par annotations.
+**Objectif** : Fournir un plan clair, moderne, lisible et maintenable pour développer un système de génération de
+métadonnées de formulaires entièrement piloté par annotations.
 
 ---
 
@@ -20,6 +22,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 - Assurer une excellente **lisibilité du code**, une **maintenabilité élevée** et un **design moderne**.
 
 **Principes directeurs** :
+
 - Annotation-first & reflection-based
 - Séparation claire des préoccupations
 - Extensibilité sans modification du core
@@ -51,7 +54,9 @@ Construire un backend **annotation-driven** puissant qui permet de :
 **Objectifs** : Définir des bases solides, lisibles et extensibles.
 
 **Activités principales** :
-- Conception finale des annotations (`@FormView`, `@FormField`, `@FormList`, `@FormTable`, `@FormOption`, `@DependsOn`, `@Conditional`, etc.).
+
+- Conception finale des annotations (`@FormView`, `@FormField`, `@FormList`, `@FormTable`, `@FormOption`, `@DependsOn`,
+  `@Conditional`, etc.).
 - Définition précise du **JSON Schema** hiérarchique et récursif.
 - Conception des modèles internes (records) de métadonnées.
 - Stratégie de mapping Jakarta Validation → MetaData.
@@ -60,6 +65,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 - Rédaction des trois exemples JSON demandés (simple, selections, complexe avec nested + table).
 
 **Livraisons** :
+
 - Document de design des annotations et du JSON Schema.
 - Diagrammes (C4 Model ou UML léger).
 - Stratégie de caching et versioning.
@@ -73,6 +79,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 **Objectifs** : Construire le cœur du système de manière propre et performante.
 
 **Composants clés** :
+
 - `FormMetaDataRegistry` – Enregistrement et pré-chargement des vues au démarrage.
 - `FormMetaDataService` – Service principal de génération.
 - `AnnotationProcessor` – Lecture et interprétation des annotations via reflection (une seule fois).
@@ -82,12 +89,14 @@ Construire un backend **annotation-driven** puissant qui permet de :
 - `DefaultValueMerger` – Fusion des valeurs par défaut et des données existantes (mode edit).
 
 **Améliorations modernité & maintenabilité** :
+
 - Utilisation de **records** pour tous les DTOs internes de métadonnées.
 - Pattern Visitor ou Strategy pour le traitement des différents types de champs.
 - Caching agressif avec `@Cacheable` et clés composites (`viewName:mode:version:locale`).
 - Pré-scanning au démarrage via `ApplicationReadyEvent`.
 
 **Livraisons** :
+
 - MetaData engine complet et testable.
 - Cache fonctionnel.
 - Tests unitaires couvrant > 90% du core.
@@ -99,22 +108,26 @@ Construire un backend **annotation-driven** puissant qui permet de :
 **Objectifs** : Exposer des endpoints REST clairs et robustes.
 
 **Endpoints principaux** :
+
 - `GET /api/forms/{viewName}/metadata?mode=create|edit&entityId=...`
 - `POST /api/forms/{viewName}/submit`
 
 **Composants** :
+
 - `FormController` (@RestController)
 - `FormSubmissionService` – Validation serveur + exécution des actions.
 - `FormDataBinder` – Binding et merge des données.
 - `GlobalExceptionHandler` (@ControllerAdvice) pour erreurs field-mapped.
 
 **Design moderne** :
+
 - Utilisation de **ResponseEntity** et records pour les réponses.
 - Validation avec `@Valid` + `BindingResult` enrichi.
 - OpenAPI 3 avec annotations SpringDoc pour documentation interactive.
 - Support CORS et security moderne (Spring Security 6).
 
 **Livraisons** :
+
 - Endpoints fonctionnels avec tests d’intégration.
 - Documentation Swagger complète.
 
@@ -123,6 +136,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 ### Phase 4 : Features Avancées & Polish (2-3 semaines)
 
 **Activités** :
+
 - Support complet i18n (MessageSource + LocaleResolver).
 - Gestion avancée des listes/tables (actions per-item, bulk actions, pagination metadata).
 - Mécanisme d’extensibilité (`CustomFieldHandler` registry).
@@ -131,6 +145,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 - Optimisations de performance pour vues très imbriquées.
 
 **Focus maintenabilité** :
+
 - Interfaces claires et abstractions pour chaque responsabilité.
 - Configuration externe via `@ConfigurationProperties`.
 - Logging structuré (MDC + structured JSON logging).
@@ -140,6 +155,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 ### Phase 5 : Tests, Optimisation & Documentation (1-2 semaines)
 
 **Activités** :
+
 - Tests unitaires (JUnit 5 + AssertJ + Mockito).
 - Tests d’intégration (@SpringBootTest).
 - Tests de performance (JMeter ou Gatling sur génération metadata).
@@ -148,6 +164,7 @@ Construire un backend **annotation-driven** puissant qui permet de :
 - Configuration CI/CD friendly (GitHub Actions / GitLab CI).
 
 **Livraisons** :
+
 - Code avec couverture > 85%.
 - Guide de développement complet.
 - Rapport de performance et recommandations.
@@ -156,16 +173,16 @@ Construire un backend **annotation-driven** puissant qui permet de :
 
 ## 4. Stack Technique Recommandée
 
-| Couche              | Technologie                          | Justification                          |
-|---------------------|--------------------------------------|----------------------------------------|
-| Langage             | Java 17                              | Records, sealed interfaces, pattern matching |
-| Framework           | Spring Boot 3.3+                     | Modernité, AOT, GraalVM ready          |
-| Validation          | Jakarta Bean Validation 3.0+         | Intégration native                     |
-| JSON                | Jackson 2.17+                        | Performance & custom serializers       |
-| Caching             | Caffeine (local) / Redis (distribué) | Haute performance                      |
-| Documentation       | SpringDoc OpenAPI                    | Documentation interactive              |
-| Testing             | JUnit 5 + Testcontainers             | Tests réalistes                        |
-| Logging             | SLF4J + Logback avec JSON layout     | Observabilité moderne                  |
+| Couche        | Technologie                          | Justification                                |
+|---------------|--------------------------------------|----------------------------------------------|
+| Langage       | Java 17                              | Records, sealed interfaces, pattern matching |
+| Framework     | Spring Boot 3.3+                     | Modernité, AOT, GraalVM ready                |
+| Validation    | Jakarta Bean Validation 3.0+         | Intégration native                           |
+| JSON          | Jackson 2.17+                        | Performance & custom serializers             |
+| Caching       | Caffeine (local) / Redis (distribué) | Haute performance                            |
+| Documentation | SpringDoc OpenAPI                    | Documentation interactive                    |
+| Testing       | JUnit 5 + Testcontainers             | Tests réalistes                              |
+| Logging       | SLF4J + Logback avec JSON layout     | Observabilité moderne                        |
 
 ---
 
@@ -191,13 +208,13 @@ Construire un backend **annotation-driven** puissant qui permet de :
 
 ## 7. Risques & Mitigations
 
-| Risque                              | Mitigation                                      |
-|-------------------------------------|-------------------------------------------------|
-| Performance reflection              | Pré-scanning + caching agressif                 |
-| Complexité nested/conditionals      | Tests exhaustifs + schéma JSON strict           |
-| Évolution des annotations           | Design composable + versioning                  |
-| i18n des options dynamiques         | Services dédiés injectables                     |
-| Maintenance à long terme            | Clean architecture + records + tests forts      |
+| Risque                         | Mitigation                                 |
+|--------------------------------|--------------------------------------------|
+| Performance reflection         | Pré-scanning + caching agressif            |
+| Complexité nested/conditionals | Tests exhaustifs + schéma JSON strict      |
+| Évolution des annotations      | Design composable + versioning             |
+| i18n des options dynamiques    | Services dédiés injectables                |
+| Maintenance à long terme       | Clean architecture + records + tests forts |
 
 ---
 
@@ -216,11 +233,13 @@ Construire un backend **annotation-driven** puissant qui permet de :
 **Conclusion**
 
 Ce plan privilégie un **design moderne**, une **lisibilité exceptionnelle** et une **maintenabilité durable**.  
-Il transforme un système potentiellement complexe en une solution élégante, extensible et agréable à maintenir pour les équipes de développement.
+Il transforme un système potentiellement complexe en une solution élégante, extensible et agréable à maintenir pour les
+équipes de développement.
 
 ---
 
 **Prochaines étapes recommandées** :
+
 1. Valider ce plan avec l’équipe.
 2. Démarrer par la Phase 1 (design des annotations et JSON Schema).
 3. Mettre en place le squelette du projet Spring Boot avec les bonnes pratiques modernes.

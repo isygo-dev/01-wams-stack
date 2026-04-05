@@ -6,6 +6,7 @@ import eu.isygoit.annotation.FormView;
 import eu.isygoit.domain.FieldType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+
 import java.time.LocalDate;
 import java.util.List;
 

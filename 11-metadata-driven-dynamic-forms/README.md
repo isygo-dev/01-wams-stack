@@ -1,13 +1,17 @@
 # Backend MetaData-Driven Dynamic Form System - Complete Requirements & Design Criteria
 
 **Role:**  
-You are a senior backend architect and API designer with deep expertise in metadata-driven UIs, annotation-driven systems, and enterprise form platforms using Java/Spring Boot.
+You are a senior backend architect and API designer with deep expertise in metadata-driven UIs, annotation-driven
+systems, and enterprise form platforms using Java/Spring Boot.
 
 ## Objective
 
-Design a complete, detailed set of **requirements and design criteria** for a powerful **annotation-driven** backend metadata API that enables fully automatic, dynamic forms in modern frontends (especially Angular).
+Design a complete, detailed set of **requirements and design criteria** for a powerful **annotation-driven** backend
+metadata API that enables fully automatic, dynamic forms in modern frontends (especially Angular).
 
-The backend should scan annotated Java classes (DTOs or dedicated View classes) using reflection and generate rich, hierarchical **JSON metadata**. This metadata will allow the frontend to dynamically render fields, handle validation, support complex structures, and manage submit/cancel actions without hardcoding forms.
+The backend should scan annotated Java classes (DTOs or dedicated View classes) using reflection and generate rich,
+hierarchical **JSON metadata**. This metadata will allow the frontend to dynamically render fields, handle validation,
+support complex structures, and manage submit/cancel actions without hardcoding forms.
 
 ---
 
@@ -16,11 +20,11 @@ The backend should scan annotated Java classes (DTOs or dedicated View classes) 
 - A **"View"** represents a complete form or screen definition.
 - Views are defined primarily through **Java annotations** on classes and fields.
 - The system must support:
-   - Simple primitive fields
-   - Nested objects (sub-forms)
-   - Advanced collections: Lists, Sets, and Tables
-   - Rich selection inputs (single & multiple)
-   - Highly configurable input fields
+    - Simple primitive fields
+    - Nested objects (sub-forms)
+    - Advanced collections: Lists, Sets, and Tables
+    - Rich selection inputs (single & multiple)
+    - Highly configurable input fields
 
 ---
 
@@ -30,7 +34,8 @@ The metadata generation **must** be primarily **annotation-driven**. Define clea
 
 - Custom annotations such as `@FormView`, `@FormField`, `@FormList`, `@FormOption`, etc.
 - How annotations are applied to classes, fields, and collection elements
-- Integration with Jakarta Validation annotations (`@NotNull`, `@NotBlank`, `@Size`, `@Email`, `@Pattern`, `@Min`, `@Max`, etc.) for automatic validation mapping
+- Integration with Jakarta Validation annotations (`@NotNull`, `@NotBlank`, `@Size`, `@Email`, `@Pattern`, `@Min`,
+  `@Max`, etc.) for automatic validation mapping
 - Support for default values, masks, options, and conditional logic directly in annotations
 - Reflection-based scanning to build the complete metadata JSON from annotated classes
 
@@ -42,7 +47,8 @@ Every field must support the following properties, configurable mainly via annot
 
 - **`key`** — Unique identifier (support hierarchical/dot notation for nested fields)
 - **`label`** — Human-readable label with i18n support
-- **`type`** — Field type (`text`, `email`, `password`, `number`, `decimal`, `integer`, `date`, `datetime`, `textarea`, `select`, `radio`, `checkbox`, `multiselect`, `autocomplete`, `object`, `list`, `set`, `table`, etc.)
+- **`type`** — Field type (`text`, `email`, `password`, `number`, `decimal`, `integer`, `date`, `datetime`, `textarea`,
+  `select`, `radio`, `checkbox`, `multiselect`, `autocomplete`, `object`, `list`, `set`, `table`, etc.)
 - **`defaultValue`** — Initial value (primitives, objects, or arrays)
 - **`required`** — Whether the field is mandatory
 - **`minLength`**, **`maxLength`**, **`minValue`**, **`maxValue`**
@@ -76,7 +82,8 @@ For all input-type fields (`text`, `number`, `date`, `textarea`, etc.), define d
 For selection fields (`select`, `radio`, `checkbox`, `multiselect`, `autocomplete`):
 
 - **`multiple`**, **`searchable`**, **`clearable`**, **`showSelectAll`**, **`maxSelectable`**
-- **`options`** — Rich option definition (`value`, `label`, `description`, `disabled`, `group`, `icon`, `color`, `order`)
+- **`options`** — Rich option definition (`value`, `label`, `description`, `disabled`, `group`, `icon`, `color`,
+  `order`)
 - **`optionsSource`** — `static`, `enum`, `api`, `dependent`
 - Support for grouped options, dependent/cascading dropdowns (`dependsOn`)
 - **`optionLayout`** (`dropdown`, `inline`, `chips`, `buttons`, `cards`)
@@ -94,7 +101,8 @@ When `type` is `"list"`, `"set"`, or `"table"`:
 - **`actions`** — Per item actions: `add`, `edit`, `delete`, `archive`, `duplicate`, `view`, and custom actions
 - **`bulkActions`** — Multi-selection actions
 - **`emptyStateMessage`**, **`addButtonLabel`**
-- For **`table`** specifically: `columns`, `rowSelection` (`single`/`multiple`), `pagination`, `searchable`, `sortableColumns`, `defaultSort`, UI style hints (`striped`, `compact`, `bordered`)
+- For **`table`** specifically: `columns`, `rowSelection` (`single`/`multiple`), `pagination`, `searchable`,
+  `sortableColumns`, `defaultSort`, UI style hints (`striped`, `compact`, `bordered`)
 
 ---
 
@@ -102,9 +110,11 @@ When `type` is `"list"`, `"set"`, or `"table"`:
 
 Define a clean, readable, hierarchical, and fully recursive JSON schema for the metadata output.
 
-The JSON must faithfully represent all annotation-defined properties, including nested structures, collections, options, masks, and actions.
+The JSON must faithfully represent all annotation-defined properties, including nested structures, collections, options,
+masks, and actions.
 
 Provide **three realistic JSON examples**:
+
 1. Simple form with various input fields (masks, formatting, required/optional, read-only)
 2. Form with rich selection inputs (static, grouped, dependent, autocomplete)
 3. Complex enterprise form with nested objects + advanced Table/List configuration
@@ -114,11 +124,13 @@ Provide **three realistic JSON examples**:
 ## API Endpoints Requirements
 
 ### 1. MetaData Endpoint
+
 - `GET /api/forms/{viewName}/metadata`
 - Parameters: `viewName`, optional `mode` (`create` | `edit`), optional `entityId`
 - In edit mode: merge existing data with annotation-defined defaults (entity values take precedence)
 
 ### 2. Submit Endpoint
+
 - `POST /api/forms/{viewName}/submit`
 - Accepts form data JSON matching the metadata structure
 - Performs server-side validation (from annotations + Jakarta Validation) and returns field-mapped errors
@@ -142,6 +154,7 @@ Additional requirements: error handling, metadata caching strategy, versioning, 
 ## Suggestions & Recommendations
 
 Include your expert suggestions for:
+
 - Best practices for annotation design (clean, reusable, composable)
 - Handling complex default values (especially for objects and lists)
 - Strategy for dynamic options and dependent fields
@@ -168,6 +181,8 @@ Organize your response with the following clear sections:
 10. Suggestions & Recommendations
 11. Potential Challenges & Mitigation Strategies
 
-Be exhaustive, precise, and professional. Focus on defining **what the system needs to support** and **why**. Do **not** provide any actual Java code, classes, or implementation details.
+Be exhaustive, precise, and professional. Focus on defining **what the system needs to support** and **why**. Do **not**
+provide any actual Java code, classes, or implementation details.
 
-Generate a high-quality, production-ready specification suitable for guiding a development team in building a robust annotation-driven dynamic form system.
+Generate a high-quality, production-ready specification suitable for guiding a development team in building a robust
+annotation-driven dynamic form system.

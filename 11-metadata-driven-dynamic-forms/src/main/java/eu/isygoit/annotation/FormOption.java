@@ -9,11 +9,18 @@ import java.lang.annotation.*;
 public @interface FormOption {
 
     String value();
+
     String label();
+
     String description() default "";
+
     boolean disabled() default false;
+
     String group() default "";
+
     String icon() default "";
+
     String color() default "";
+
     int order() default 0;
 }

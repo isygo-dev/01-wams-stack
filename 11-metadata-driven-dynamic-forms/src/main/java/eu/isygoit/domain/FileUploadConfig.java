@@ -5,4 +5,5 @@ public record FileUploadConfig(
         String[] acceptedTypes,
         long maxFileSize,
         String uploadUrl
-) {}
+) {
+}

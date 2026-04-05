@@ -8,9 +8,11 @@ import java.lang.annotation.*;
 public @interface FormList {
 
     int minItems() default 0;
+
     int maxItems() default Integer.MAX_VALUE;
 
     String emptyStateMessage() default "No items added yet";
+
     String addButtonLabel() default "Add Item";
 
     // Per-item actions
@@ -21,5 +23,6 @@ public @interface FormList {
 
     // For table-specific UI hints
     boolean sortable() default true;
+
     boolean editable() default true;
 }

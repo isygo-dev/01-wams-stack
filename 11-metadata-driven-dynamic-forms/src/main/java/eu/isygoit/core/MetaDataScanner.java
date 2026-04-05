@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Responsible for scanning classes annotated with @FormView
  * and delegating field processing to AnnotationProcessor.
- *
+ * <p>
  * Reflection is performed only once per view (cached externally later).
  */
 public class MetaDataScanner {
