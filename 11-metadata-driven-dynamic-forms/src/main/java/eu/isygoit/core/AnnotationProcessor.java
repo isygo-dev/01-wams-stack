@@ -3,6 +3,7 @@ package eu.isygoit.core;
 import eu.isygoit.annotation.FormConditional;
 import eu.isygoit.annotation.FormField;
 import eu.isygoit.annotation.FormList;
+import eu.isygoit.annotation.FormOption;
 import eu.isygoit.domain.*;
 import jakarta.validation.constraints.*;
 
@@ -25,13 +26,13 @@ public class AnnotationProcessor {
         Map<String, Object> validation = buildValidationMap(field, formField);
         Map<String, Object> ui = buildUiMap(formField);
 
-        // Rich Options Config
-        OptionsConfig optionsConfig = buildOptionsConfig(formField, type);
+        // Rich Options (static @FormOption support)
+        OptionsConfig optionsConfig = buildOptionsConfig(formField, field);
 
-        // File Upload Config
+        // File Upload
         FileUploadConfig fileUploadConfig = buildFileUploadConfig(formField, type);
 
-        // Conditional + customConditions
+        // Conditional
         FormConditional fc = field.getAnnotation(FormConditional.class);
         Map<String, Object> customConditions = buildCustomConditions(fc, formField);
 
@@ -42,7 +43,7 @@ public class AnnotationProcessor {
                 customConditions
         );
 
-        // Nested Object Support
+        // Nested Object
         List<FieldMetaData> children = (type == FieldType.OBJECT && !isPrimitiveOrWrapper(field.getType()))
                 ? scanNestedObject(field.getType(), depth + 1)
                 : List.of();
@@ -66,26 +67,32 @@ public class AnnotationProcessor {
         );
     }
 
-    private FieldType determineFieldType(FieldType declared, Class<?> javaType) {
-        if (declared != FieldType.AUTO) return declared;
-
-        if (String.class.equals(javaType)) return FieldType.TEXT;
-        if (Integer.class.equals(javaType) || int.class.equals(javaType)) return FieldType.INTEGER;
-        if (Double.class.equals(javaType) || double.class.equals(javaType)) return FieldType.DECIMAL;
-        if (Boolean.class.equals(javaType) || boolean.class.equals(javaType)) return FieldType.CHECKBOX;
-        if (java.time.LocalDate.class.equals(javaType) || java.time.LocalDateTime.class.equals(javaType))
-            return FieldType.DATE;
-        if (java.io.File.class.equals(javaType) || "org.springframework.web.multipart.MultipartFile".equals(javaType.getName()))
-            return FieldType.FILE;
-
-        return FieldType.TEXT;
-    }
-
-    private OptionsConfig buildOptionsConfig(FormField ff, FieldType type) {
-        if (type != FieldType.SELECT && type != FieldType.MULTISELECT &&
-                type != FieldType.AUTOCOMPLETE && type != FieldType.RADIO) {
+    private OptionsConfig buildOptionsConfig(FormField ff, Field field) {
+        if (ff.type() != FieldType.SELECT && ff.type() != FieldType.MULTISELECT &&
+                ff.type() != FieldType.AUTOCOMPLETE && ff.type() != FieldType.RADIO) {
             return null;
         }
+
+        List<OptionItem> staticOptions = new ArrayList<>();
+
+        // Support repeatable @FormOption
+        FormOption[] options = field.getAnnotationsByType(FormOption.class);
+        for (FormOption opt : options) {
+            staticOptions.add(new OptionItem(
+                    opt.value(),
+                    opt.label(),
+                    opt.description(),
+                    opt.disabled(),
+                    opt.group(),
+                    opt.icon(),
+                    opt.color(),
+                    opt.order(),
+                    Map.of()
+            ));
+        }
+
+        // Sort by order
+        staticOptions.sort(Comparator.comparingInt(OptionItem::order));
 
         return new OptionsConfig(
                 ff.multiple(),
@@ -100,7 +107,8 @@ public class AnnotationProcessor {
                 ff.optionLayout(),
                 ff.allowCustomValue(),
                 ff.debounceTime(),
-                List.of()
+                staticOptions.size(),
+                staticOptions
         );
     }
 
@@ -135,7 +143,6 @@ public class AnnotationProcessor {
         if (formList == null || (type != FieldType.LIST && type != FieldType.SET && type != FieldType.TABLE)) {
             return null;
         }
-
         return new ListConfig(
                 "",
                 formList.editable(),
@@ -171,6 +178,20 @@ public class AnnotationProcessor {
                 java.time.temporal.Temporal.class.isAssignableFrom(clazz);
     }
 
+    private FieldType determineFieldType(FieldType declared, Class<?> javaType) {
+        if (declared != FieldType.AUTO) return declared;
+        if (String.class.equals(javaType)) return FieldType.TEXT;
+        if (Integer.class.equals(javaType) || int.class.equals(javaType)) return FieldType.INTEGER;
+        if (Double.class.equals(javaType) || double.class.equals(javaType)) return FieldType.DECIMAL;
+        if (Boolean.class.equals(javaType) || boolean.class.equals(javaType)) return FieldType.CHECKBOX;
+        if (java.time.LocalDate.class.equals(javaType) || java.time.LocalDateTime.class.equals(javaType))
+            return FieldType.DATE;
+        if ("org.springframework.web.multipart.MultipartFile".equals(javaType.getName()) ||
+                java.io.File.class.equals(javaType))
+            return FieldType.FILE;
+        return FieldType.TEXT;
+    }
+
     private Map<String, Object> buildValidationMap(Field field, FormField ff) {
         Map<String, Object> map = new LinkedHashMap<>();
         if (ff.required()) map.put("required", true);
@@ -201,7 +222,7 @@ public class AnnotationProcessor {
         map.put("tooltip", ff.tooltip());
         map.put("rows", ff.rows());
 
-        // Rich Options
+        // Options mapping
         map.put("multiple", ff.multiple());
         map.put("searchable", ff.searchable());
         map.put("clearable", ff.clearable());

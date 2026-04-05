@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Comprehensive Form Test - All Properties")
+@DisplayName("Comprehensive Form Test - Real Values Coverage")
 class ComprehensiveFormTest {
 
     private MetaDataGenerator generator;
@@ -28,9 +28,11 @@ class ComprehensiveFormTest {
     }
 
     @Test
-    @DisplayName("Should validate every field and all helper methods")
-    void shouldValidateAllFieldsAndHelpers() throws Exception {
+    @DisplayName("Should validate every field with real non-empty values")
+    void shouldValidateAllFieldsWithRealValues() throws Exception {
         ViewMetaData metaData = generator.generate("comprehensiveTestForm");
+
+        assertThat(metaData.name()).isEqualTo("comprehensiveTestForm");
 
         // 1. Full Name
         FieldMetaData fullName = findField(metaData, "fullName");
@@ -62,18 +64,21 @@ class ComprehensiveFormTest {
         // 5. Bio
         FieldMetaData bio = findField(metaData, "bio");
         assertThat(bio.rows()).isEqualTo(6);
+        assertThat(bio.maxLength()).isEqualTo(500);
 
         // 6. Active
         FieldMetaData active = findField(metaData, "active");
         assertThat(active.defaultValueStr()).isEqualTo("true");
 
-        // 7. Department (Select)
+        // 7. Department (Select with static options)
         FieldMetaData department = findField(metaData, "department");
-        assertThat(department.clearable()).isTrue();
-        assertThat(department.searchable()).isTrue();
+        assertThat(department.type()).isEqualTo(FieldType.SELECT);
+        assertThat(department.options()).isNotNull();
+        assertThat(department.options().size()).isEqualTo(4);
 
         // 8. Skills (Multiselect)
         FieldMetaData skills = findField(metaData, "skills");
+        assertThat(skills.type()).isEqualTo(FieldType.MULTISELECT);
         assertThat(skills.multiple()).isTrue();
         assertThat(skills.searchable()).isTrue();
         assertThat(skills.showSelectAll()).isTrue();
@@ -82,20 +87,40 @@ class ComprehensiveFormTest {
         // 9. Resume (File Upload)
         FieldMetaData resume = findField(metaData, "resume");
         assertThat(resume.type()).isEqualTo(FieldType.FILE);
+        assertThat(resume.fileUploadConfig()).isNotNull();
+        assertThat(resume.fileUploadConfig().acceptedTypes()).contains(".pdf", ".doc", ".docx");
+        assertThat(resume.fileUploadConfig().maxFileSize()).isEqualTo(5242880L);
 
         // 10. Discount with customConditions
         FieldMetaData discount = findField(metaData, "discountAmount");
         assertThat(discount.conditional().visibleWhen()).isEqualTo("membershipLevel == 'PREMIUM'");
 
         Map<String, Object> customConditions = discount.conditional().customConditions();
-        assertThat(customConditions).containsEntry("dependsOn", "membershipLevel");
+        assertThat(customConditions).isNotEmpty();
+        assertThat(customConditions)
+                .containsEntry("dependsOn", "membershipLevel")
+                .containsEntry("operator", "EQUALS")
+                .containsEntry("logic", "AND")
+                .containsEntry("minOrderAmount", "100")
+                .containsEntry("action", "applyDiscount");
+
+        // 11. List
+        FieldMetaData profSkills = findField(metaData, "professionalSkills");
+        assertThat(profSkills.type()).isEqualTo(FieldType.LIST);
+        assertThat(profSkills.listConfig().minItems()).isEqualTo(1);
+        assertThat(profSkills.listConfig().maxItems()).isEqualTo(10);
+
+        // 12. Nested Object
+        FieldMetaData contactInfo = findField(metaData, "contactInfo");
+        assertThat(contactInfo.type()).isEqualTo(FieldType.OBJECT);
+        assertThat(contactInfo.children()).isNotEmpty();
 
         // Pretty JSON
         String json = objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(metaData);
 
-        System.out.println("\n=== FULL METADATA JSON ===\n" + json);
-        System.out.println("\n✅ All fields and helper methods tested successfully!");
+        System.out.println("\n=== FULL REALISTIC METADATA JSON ===\n" + json);
+        System.out.println("\n✅ ALL FIELDS AND FEATURES TESTED WITH REAL VALUES!");
     }
 
     private FieldMetaData findField(ViewMetaData metaData, String key) {

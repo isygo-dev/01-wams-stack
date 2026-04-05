@@ -14,7 +14,7 @@ import java.util.List;
 @FormView(
         name = "comprehensiveTestForm",
         title = "Comprehensive Test Form",
-        description = "Full test of all supported properties",
+        description = "Full demonstration of all supported features",
         version = "1.3"
 )
 public class ComprehensiveForm {
@@ -99,15 +99,20 @@ public class ComprehensiveForm {
     )
     private boolean active = true;
 
-    // ==================== RICH OPTIONS ====================
+    // ==================== RICH OPTIONS (Static) ====================
     @FormField(
             label = "Department",
             type = FieldType.SELECT,
             required = true,
             searchable = true,
             clearable = true,
+            optionsSource = "static",
             order = 80
     )
+    @FormOption(value = "IT", label = "Information Technology", order = 1)
+    @FormOption(value = "HR", label = "Human Resources", order = 2)
+    @FormOption(value = "FIN", label = "Finance", order = 3)
+    @FormOption(value = "MKT", label = "Marketing", group = "Sales", order = 4)
     private String department;
 
     @FormField(
@@ -117,8 +122,13 @@ public class ComprehensiveForm {
             searchable = true,
             showSelectAll = true,
             maxSelectable = 8,
+            optionsSource = "static",
             order = 85
     )
+    @FormOption(value = "Java", label = "Java Programming", order = 1)
+    @FormOption(value = "Spring", label = "Spring Boot", order = 2)
+    @FormOption(value = "Angular", label = "Angular", order = 3)
+    @FormOption(value = "React", label = "React.js", order = 4)
     private List<String> skills;
 
     // ==================== FILE UPLOAD ====================

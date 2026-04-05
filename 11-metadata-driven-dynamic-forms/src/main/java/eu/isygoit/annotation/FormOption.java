@@ -2,6 +2,7 @@ package eu.isygoit.annotation;
 
 import java.lang.annotation.*;
 
+@Repeatable(FormOptions.class)   // ← This makes it repeatable
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
