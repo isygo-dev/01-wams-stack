@@ -28,7 +28,7 @@ public class AnnotationProcessor {
         Map<String, Object> validation = buildValidationMap(field, formField);
         Map<String, Object> ui = buildUiMap(formField);
 
-        // Rich Options (static @FormOption support)
+        // Static Options
         OptionsConfig optionsConfig = buildOptionsConfig(formField, field);
 
         // File Upload
@@ -77,9 +77,8 @@ public class AnnotationProcessor {
 
         List<OptionItem> staticOptions = new ArrayList<>();
 
-        // Support repeatable @FormOption
-        FormOption[] options = field.getAnnotationsByType(FormOption.class);
-        for (FormOption opt : options) {
+        FormOption[] formOptions = field.getAnnotationsByType(FormOption.class);
+        for (FormOption opt : formOptions) {
             staticOptions.add(new OptionItem(
                     opt.value(),
                     opt.label(),
@@ -93,7 +92,6 @@ public class AnnotationProcessor {
             ));
         }
 
-        // Sort by order
         staticOptions.sort(Comparator.comparingInt(OptionItem::order));
 
         return new OptionsConfig(
@@ -109,14 +107,12 @@ public class AnnotationProcessor {
                 ff.optionLayout(),
                 ff.allowCustomValue(),
                 ff.debounceTime(),
-                staticOptions.size(),
                 staticOptions
         );
     }
 
     private FileUploadConfig buildFileUploadConfig(FormField ff, FieldType type) {
         if (type != FieldType.FILE) return null;
-
         return new FileUploadConfig(
                 ff.multipleFiles(),
                 ff.acceptedTypes(),
@@ -127,7 +123,6 @@ public class AnnotationProcessor {
 
     private Map<String, Object> buildCustomConditions(FormConditional fc, FormField ff) {
         Map<String, Object> map = new LinkedHashMap<>();
-
         if (fc != null) {
             if (!fc.visibleWhen().isBlank()) map.put("visibleWhen", fc.visibleWhen());
             if (!fc.enabledWhen().isBlank()) map.put("enabledWhen", fc.enabledWhen());
@@ -164,9 +159,7 @@ public class AnnotationProcessor {
         for (Field field : nestedClass.getDeclaredFields()) {
             if (field.isSynthetic() || java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
             FieldMetaData child = processField(field, depth);
-            if (child != null) {
-                children.add(child);
-            }
+            if (child != null) children.add(child);
         }
         return children;
     }
@@ -189,8 +182,7 @@ public class AnnotationProcessor {
         if (java.time.LocalDate.class.equals(javaType) || java.time.LocalDateTime.class.equals(javaType))
             return FieldType.DATE;
         if ("org.springframework.web.multipart.MultipartFile".equals(javaType.getName()) ||
-                java.io.File.class.equals(javaType))
-            return FieldType.FILE;
+                java.io.File.class.equals(javaType)) return FieldType.FILE;
         return FieldType.TEXT;
     }
 
@@ -224,7 +216,6 @@ public class AnnotationProcessor {
         map.put("tooltip", ff.tooltip());
         map.put("rows", ff.rows());
 
-        // Options mapping
         map.put("multiple", ff.multiple());
         map.put("searchable", ff.searchable());
         map.put("clearable", ff.clearable());

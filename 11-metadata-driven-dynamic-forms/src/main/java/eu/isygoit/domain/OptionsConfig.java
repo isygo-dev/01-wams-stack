@@ -15,7 +15,6 @@ public record OptionsConfig(
         String optionLayout,
         boolean allowCustomValue,
         int debounceTime,
-        int size,
         List<OptionItem> options
 ) {
 }

@@ -74,7 +74,7 @@ class ComprehensiveFormTest {
         FieldMetaData department = findField(metaData, "department");
         assertThat(department.type()).isEqualTo(FieldType.SELECT);
         assertThat(department.options()).isNotNull();
-        assertThat(department.options().size()).isEqualTo(4);
+        assertThat(department.options().options().size()).isEqualTo(4);
 
         // 8. Skills (Multiselect)
         FieldMetaData skills = findField(metaData, "skills");
