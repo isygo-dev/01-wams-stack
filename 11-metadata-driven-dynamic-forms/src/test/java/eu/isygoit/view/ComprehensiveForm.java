@@ -13,7 +13,7 @@ import java.util.List;
 @FormView(
         name = "comprehensiveTestForm",
         title = "Comprehensive Test Form",
-        description = "Full demonstration of all supported features",
+        description = "Full demonstration of all supported features with real values",
         version = "1.3"
 )
 public class ComprehensiveForm {
@@ -96,9 +96,9 @@ public class ComprehensiveForm {
             defaultValue = "true",
             order = 70
     )
-    private boolean active = true;
+    private final boolean active = true;
 
-    // ==================== RICH OPTIONS (Static) ====================
+    // ==================== STATIC OPTIONS - Department ====================
     @FormField(
             label = "Department",
             type = FieldType.SELECT,
@@ -114,6 +114,7 @@ public class ComprehensiveForm {
     @FormOption(value = "MKT", label = "Marketing", group = "Sales", order = 4)
     private String department;
 
+    // ==================== STATIC OPTIONS - Skills (Multiselect) ====================
     @FormField(
             label = "Skills",
             type = FieldType.MULTISELECT,

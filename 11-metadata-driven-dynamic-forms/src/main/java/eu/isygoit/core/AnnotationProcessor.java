@@ -77,6 +77,7 @@ public class AnnotationProcessor {
 
         List<OptionItem> staticOptions = new ArrayList<>();
 
+        // Collect repeatable @FormOption annotations
         FormOption[] formOptions = field.getAnnotationsByType(FormOption.class);
         for (FormOption opt : formOptions) {
             staticOptions.add(new OptionItem(
