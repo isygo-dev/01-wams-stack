@@ -7,6 +7,7 @@ import eu.isygoit.model.TimeLineEvent;
 import eu.isygoit.model.timeline.TimelineEventType;
 import eu.isygoit.repository.timeline.TimelineEventRepository;
 import eu.isygoit.utils.ITenantService;
+import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -36,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * The type Timeline events h 2 integration tests.
  */
 @SpringBootTest(properties = {
+        "timeline.queueName=seda:timelineEvents-postgres?concurrentConsumers=1",
         //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
@@ -45,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@CamelSpringBootTest
 class TimelineEventsPostgresIntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
@@ -110,14 +111,6 @@ class TimelineEventsPostgresIntegrationTests {
     }
 
     /**
-     * Clean up.
-     */
-    @AfterAll
-    static void cleanUp() {
-        // Any final cleanup if needed
-    }
-
-    /**
      * Sets up.
      */
     @BeforeEach
@@ -125,33 +118,17 @@ class TimelineEventsPostgresIntegrationTests {
         tutorialId = null; // Reset tutorialId for each test
     }
 
-    private List<TimeLineEvent> waitForEvents(String elementType, String elementId,
-                                              String tenant, int expectedCount, long timeoutMs)
-            throws InterruptedException {
-
-        System.out.println("[TEST] Waiting for " + expectedCount + " " + elementType
-                + " events for ID=" + elementId + ", tenant=" + tenant);
-
+    private List<TimeLineEvent> waitForEvents(String elementType, String elementId, String tenant, int expectedCount, long timeoutMs) throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(200);
         long startTime = System.currentTimeMillis();
         List<TimeLineEvent> events;
-
         do {
-            events = timelineEventRepository.findByElementTypeAndElementIdAndTenant(
-                    elementType, elementId, tenant);
-
+            events = timelineEventRepository.findByElementTypeAndElementIdAndTenant(elementType, elementId, tenant);
             if (events.size() >= expectedCount) {
-                System.out.println("[TEST] SUCCESS: Found " + events.size() + " events");
                 return events;
             }
-
-            TimeUnit.MILLISECONDS.sleep(200);  // longer poll interval for real DB
-        } while (System.currentTimeMillis() - startTime < 5000 + 1000); // extra buffer
-
-        // Debug output when failing
-        long totalEvents = timelineEventRepository.count();
-        System.out.println("[TEST] FAILED: Only found " + events.size()
-                + " events. Total TimeLineEvents in DB: " + totalEvents);
-
+            TimeUnit.MILLISECONDS.sleep(200);
+        } while (System.currentTimeMillis() - startTime < timeoutMs);
         return events;
     }
 
@@ -560,7 +537,7 @@ class TimelineEventsPostgresIntegrationTests {
 
         // Then
         List<TimeLineEvent> events =
-                waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 1, 1000);
+                waitForEvents("Tutorial", tutorialId.toString(), TENANT_1, 1, 2000);
 
         assertEquals(1, events.size(), "Should only have CREATED event");
         assertEquals(TimelineEventType.CREATED, events.get(0).getEventType());

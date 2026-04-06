@@ -10,7 +10,6 @@ import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -56,7 +55,8 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
         this.attributes = attributes;
     }
 
-    protected void doInit(String elementType, JsonNode attributes){}
+    protected void doInit(String elementType, JsonNode attributes) {
+    }
 
     /*
     update: elementType not permitted
@@ -73,7 +73,8 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
         this.attributes = attributes;
     }
 
-    protected void doUpdate(JsonNode attributes){}
+    protected void doUpdate(JsonNode attributes) {
+    }
 
     /**
      * To json entity json based entity.

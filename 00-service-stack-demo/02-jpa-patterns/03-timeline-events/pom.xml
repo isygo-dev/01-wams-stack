@@ -55,6 +55,13 @@
             <version>${stack.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring-junit5</artifactId>
+            <version>4.10.4</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Spring Boot starters — versions from Boot 3.5.13 BOM -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

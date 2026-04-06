@@ -5,7 +5,9 @@ import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventMessage;
 import eu.isygoit.model.timeline.TimelineEventType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -14,9 +16,12 @@ import java.time.LocalDateTime;
 /**
  * The type Timeline event service.
  */
+@Slf4j
 public abstract class AbstractTimelineEventService implements ITimelineEventService {
 
     private final ProducerTemplate producerTemplate;
+    @Value("${timeline.queueName}")
+    private String queueName;
 
     /**
      * Instantiates a new Timeline event service.
@@ -56,7 +61,8 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
 
     private void sendAfterCommit(TimelineEventMessage message) {
         try {
-            producerTemplate.sendBody("seda:timelineEvents", JsonHelper.toJson(message));
+            log.info("starting write route: " + (queueName != null ? queueName : "timelineEvents"));
+            producerTemplate.sendBody((queueName != null ? queueName : "timelineEvents"), JsonHelper.toJson(message));
         } catch (Exception e) {
             throw new TimelineEventDispatchException("Failed to dispatch event for element: " + message.getElementId(), e);
         }

@@ -1,6 +1,5 @@
 package eu.isygoit.helper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.annotation.ElementType;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
