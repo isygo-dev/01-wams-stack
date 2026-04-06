@@ -1,47 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>kafka-integration-demo</artifactId>
-    <version>WC-1.0.260331-T1652</version>
-    <packaging>pom</packaging>
-
-    <name>kafka-integration-demo</name>
-    <description>
-        Isygo-IT Service Stack Demo — Kafka messaging integration showcase aggregator.
-        Groups runnable Spring Boot applications demonstrating event-driven
-        messaging patterns built on service-stack-web's Kafka integration:
-        01-producer-consumer — Spring Kafka producer/consumer patterns:
-        KafkaTemplate publishing, @KafkaListener
-        consumption, consumer groups, offset management,
-        dead-letter topics, and Testcontainers Kafka
-        for hermetic integration tests
-    </description>
-    <url>https://isygo-it.eu</url>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-demo</artifactId>
-        <version>WC-1.0.260331-T1652</version>
+        <version>WS-1.0.250603-T1554</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
+    <artifactId>kafka-integration-demo</artifactId>
+    <name>kafka-integration-demo</name>
+    <description>Kafka integration POCs — producer/consumer, dead letter topics, retry backoff</description>
+    <packaging>pom</packaging>
     <modules>
         <module>01-producer-consumer</module>
     </modules>
-
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-    </properties>
-
 </project>

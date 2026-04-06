@@ -1,11 +1,11 @@
 package eu.isygoit.openai.dto;
 
-import lombok.Data;
+import lombok.Getter;
 
 /**
  * The type Conversation request.
  */
-@Data
+@Getter
 public class ConversationRequest {
     private String message;
     private String[] conversationHistory;

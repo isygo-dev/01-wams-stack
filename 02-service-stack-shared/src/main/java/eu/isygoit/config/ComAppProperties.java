@@ -1,12 +1,12 @@
 package eu.isygoit.config;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
  * The type Com app properties.
  */
-@Data
+@Getter
 public class ComAppProperties {
 
     @Value("${app.email.async}")

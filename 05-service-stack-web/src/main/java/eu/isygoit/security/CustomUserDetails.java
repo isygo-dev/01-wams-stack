@@ -1,7 +1,7 @@
 package eu.isygoit.security;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * The type Custom user details.
  */
-@Data
+@Getter
 @SuperBuilder
 public class CustomUserDetails implements UserDetails {
 

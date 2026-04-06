@@ -215,7 +215,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         try {
             var beforeUpdateResult = beforeUpdate(object);
             var entity = findEntityById(beforeUpdateResult.getId());
-            entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
+            entity.update(objectMapper.valueToTree(beforeUpdateResult));
             var result = JsonBasedEntityHelper.toJsonElement(
                     repository().saveAndFlush(entity), jsonElementClass, objectMapper);
             return afterUpdate(result);

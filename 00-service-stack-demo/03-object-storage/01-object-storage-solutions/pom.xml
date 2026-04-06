@@ -1,136 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>poc-object-storage-solutions</artifactId>
-    <version>WC-1.0.260331-T1652</version>
-    <packaging>jar</packaging>
-
-    <name>poc-object-storage-solutions</name>
-    <description>
-        POC — Object storage backend comparison: MinIO, AWS S3, and LakeFS.
-        Demonstrates the unified StorageService abstraction from
-        service-stack-storage with three pluggable backend implementations:
-        • MinIO: self-hosted S3-compatible storage, bucket lifecycle,
-        presigned URL generation, multipart upload coordination
-        • AWS S3: cloud storage via SDK v2 with Apache HC5 transport,
-        TransferManager for large file uploads, S3 event notifications
-        • LakeFS: versioned data lake with branch/commit/merge semantics
-        layered on top of MinIO or S3
-        Backend selected via isygo.storage.provider property.
-        Testcontainers MinIO used for hermetic storage integration tests.
-    </description>
-    <url>https://isygo-it.eu</url>
-
+    <!-- Spring Boot 3.5.13 — aligned with stack; all demos use same version.
+         FIXED: originals used 3.1.12 or 3.4.4 mixed. All unified to 3.5.13. -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.13</version>
         <relativePath/>
     </parent>
+    <groupId>eu.isygo-it.services</groupId>
+    <artifactId>poc-object-storage-solutions</artifactId>
+    <!-- FIXED: was WC-... — unified to WS- prefix -->
+    <version>WS-1.0.250603-T1554</version>
+    <name>poc-object-storage-solutions</name>
+    <description>POC: object storage adapter comparison — MinIO, AWS S3 and LakeFS</description>
+    <packaging>jar</packaging>
 
     <properties>
         <java.version>17</java.version>
-        <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <service-stack.version>WS-1.0.260331-T1652</service-stack.version>
+        <stack.version>WS-1.0.250603-T1554</stack.version>
+        <lombok.version>1.18.38</lombok.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <springdoc.version>2.8.15</springdoc.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>1.20.6</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+            <!-- Boot 3.5.13 manages Testcontainers 1.21.x — no version override needed -->
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-
-        <!-- ── Stack modules ──────────────────────────────────── -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-jpa</artifactId>
-            <version>${service-stack.version}</version>
+            <version>${stack.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-web</artifactId>
-            <version>${service-stack.version}</version>
+            <version>${stack.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-storage</artifactId>
-            <version>${service-stack.version}</version>
+            <version>${stack.version}</version>
         </dependency>
 
-        <!-- ── Spring Boot starters ───────────────────────────── -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+        <!-- Spring Boot starters — versions from Boot 3.5.13 BOM -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
-        <!-- ── Database ───────────────────────────────────────── -->
+        <!-- PostgreSQL — Boot manages 42.7.10 -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
+
+        <!-- H2 — runtime for local dev -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- HikariCP — Boot manages -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
 
-        <!-- ── API Documentation ──────────────────────────────── -->
+        <!-- Hibernate — Boot manages 6.6.45.Final -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.8</version>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
         </dependency>
 
-        <!-- ── Code Generation ────────────────────────────────── -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
+
+        <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.6.3</version>
+            <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- ── Test ───────────────────────────────────────────── -->
+        <!-- SpringDoc WebMVC ONLY.
+             FIXED: originals had webflux-api + webflux-ui + webmvc-ui all 3.
+             WebFlux starters crash in WebMVC context (NoSuchMethodError etc.) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- Test — Boot manages JUnit 5.12.x, Mockito 5.17.x, Testcontainers 1.21.x -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -140,73 +128,67 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- MinIO Testcontainer for storage integration tests -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
             <artifactId>minio</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
-                    <release>${java.version}</release>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <parameters>true</parameters>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                        </path>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>1.6.3</version>
+                            <version>${lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
+                            <version>${lombok-mapstruct-binding.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                    <compilerArgs>
-                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
-                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <!-- Non-parallel sequential test execution -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
+                <configuration>
+                    <parallel>none</parallel>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <threadCount>1</threadCount>
+                    <perCoreThreadCount>false</perCoreThreadCount>
+                    <runOrder>alphabetical</runOrder>
+                    <failIfNoTests>false</failIfNoTests>
+                    <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
         </plugins>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-            </testResource>
-        </testResources>
     </build>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
 
 </project>

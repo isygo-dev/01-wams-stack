@@ -11,7 +11,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  */
 @SpringBootApplication(
         exclude = {
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+                org.apache.camel.component.servlet.springboot.ServletMappingAutoConfiguration.class
         })
 @EnableConfigurationProperties
 //http://localhost:8081/swagger-ui/index.html

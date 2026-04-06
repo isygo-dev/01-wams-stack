@@ -1,5 +1,6 @@
 package eu.isygoit.helper;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.annotation.ElementType;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
@@ -105,8 +106,7 @@ public class JsonBasedEntityHelper {
         var json = objectMapper.valueToTree(element);
         try {
             var jsonEntity = jsonEntityClass.getDeclaredConstructor().newInstance();
-            jsonEntity.setElementType(elementType);
-            jsonEntity.setAttributes(json);
+            jsonEntity.init(elementType, json);
             return jsonEntity;
         } catch (Exception e) {
             throw new RuntimeException(

@@ -4,7 +4,7 @@ import eu.isygoit.enums.IEnumStorage;
 import eu.isygoit.s3.config.S3Config;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 /**
  * The type Lfs config.
  */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

@@ -7,6 +7,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.*;
@@ -17,21 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Service for interacting with the Ollama local LLM API.
- * Supports plain text generation, PDF bill analysis, and PDF CV analysis.
- *
- * <p>PDFBox 3.x migration note:
- * <ul>
- *   <li>{@code PDDocument.load(InputStream)} was removed in 3.x</li>
- *   <li>Use {@code Loader.loadPDF(byte[])} instead — PDFBox 3.x no longer
- *       accepts an InputStream directly; the content must be fully read
- *       into a byte array first</li>
- * </ul>
+ * Service for interacting with Ollama.
+ * Updated for Spring Boot 3.5+: modern RestTemplateBuilder API + improved error handling.
  */
 @Slf4j
 @Service
@@ -43,22 +37,19 @@ public class OllamaApiService {
     private final String ollamaApiUrl;
     private final String model;
 
-    /**
-     * Instantiates a new OllamaApiService.
-     *
-     * @param restTemplate   the rest template
-     * @param objectMapper   the object mapper
-     * @param resourceLoader the resource loader
-     * @param ollamaApiUrl   the Ollama API base URL (e.g. http://localhost:11434/api/generate)
-     * @param model          the Ollama model name (e.g. llama3, mistral)
-     */
     public OllamaApiService(
-            RestTemplate restTemplate,
+            RestTemplateBuilder restTemplateBuilder,
             ObjectMapper objectMapper,
             ResourceLoader resourceLoader,
             @Value("${ollama.api.url}") String ollamaApiUrl,
             @Value("${ollama.model}") String model) {
-        this.restTemplate = restTemplate;
+
+        // Updated for Spring Boot 3.5+: use fluent methods instead of deprecated setters
+        this.restTemplate = restTemplateBuilder
+                .connectTimeout(Duration.ofSeconds(10))
+                .readTimeout(Duration.ofSeconds(60))   // Suitable for smaller models like qwen2.5:3b
+                .build();
+
         this.objectMapper = objectMapper;
         this.resourceLoader = resourceLoader;
         this.ollamaApiUrl = ollamaApiUrl;
@@ -66,37 +57,24 @@ public class OllamaApiService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Content generation
+    // Plain text generation
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Generates content from a plain text prompt using default parameters.
-     *
-     * @param message the prompt message
-     * @return the generated text response
-     */
     public String generateContent(String message) {
         return generateContent(message, null, null);
     }
 
-    /**
-     * Generates content from a plain text prompt with optional tuning parameters.
-     *
-     * @param message     the prompt message (max ~12 000 characters)
-     * @param temperature sampling temperature — higher values produce more creative output
-     * @param maxTokens   maximum number of tokens to generate
-     * @return the generated text response
-     * @throws RuntimeException on API errors or validation failures
-     */
     public String generateContent(String message, Double temperature, Integer maxTokens) {
         if (message == null || message.trim().isEmpty()) {
-            throw new RuntimeException("Message cannot be empty");
+            throw new IllegalArgumentException("Message cannot be empty");
         }
-        if (message.length() > 4096 * 3) {
-            throw new RuntimeException("Message exceeds maximum allowed length");
+        if (message.length() > 12000) {
+            throw new IllegalArgumentException("Message exceeds maximum allowed length (12000 chars)");
         }
 
         try {
+            log.debug("Calling Ollama generate with prompt length: {} characters", message.length());
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -108,195 +86,141 @@ public class OllamaApiService {
 
             Map<String, Object> options = new HashMap<>();
             if (temperature != null) options.put("temperature", temperature);
-            if (maxTokens != null) options.put("num_predict", maxTokens);
+            if (maxTokens != null) options.put("num_predict", Math.min(maxTokens, 2000));
             if (!options.isEmpty()) requestBody.put("options", options);
 
             HttpEntity<String> request = new HttpEntity<>(JsonHelper.toJson(requestBody), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    ollamaApiUrl,
-                    HttpMethod.POST,
-                    request,
-                    String.class
-            );
+                    ollamaApiUrl, HttpMethod.POST, request, String.class);
 
             return parseAndValidateResponse(response.getBody());
 
         } catch (HttpClientErrorException ex) {
-            String msg = "Client error calling Ollama API: " + ex.getStatusCode()
-                    + " — " + ex.getResponseBodyAsString();
-            log.error(msg);
-            throw new RuntimeException(msg, ex);
-        } catch (RuntimeException ex) {
-            throw ex;
+            log.error("Ollama HTTP error: {} - {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw new RuntimeException("Ollama API error: " + ex.getResponseBodyAsString(), ex);
         } catch (Exception ex) {
-            log.error("Unexpected error calling Ollama API: {}", ex.getMessage());
-            throw new RuntimeException("Unexpected error: " + ex.getMessage(), ex);
+            log.error("Error calling Ollama API", ex);
+            throw new RuntimeException("Failed to call Ollama: " + ex.getMessage(), ex);
         }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // PDF analysis
+    // PDF Analysis - Bill & CV
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Extracts structured data from a bill PDF using the Ollama LLM.
-     * The output JSON structure is loaded from {@code classpath:bill-structure.json}.
-     *
-     * @param file        the uploaded bill PDF file
-     * @param temperature optional sampling temperature
-     * @param maxTokens   optional max tokens (defaults to 1000)
-     * @return cleaned JSON string matching the bill structure
-     * @throws RuntimeException on PDF parsing or API errors
-     */
     public String analyzeBill(MultipartFile file, Double temperature, Integer maxTokens) {
         try {
             String extractedText = extractTextFromPDF(file);
+            log.info("Bill PDF extracted text length: {} characters", extractedText.length());
 
             Resource resource = resourceLoader.getResource("classpath:bill-structure.json");
             String jsonStructure = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
-            String prompt = "Extract the following information from the provided bill text and return a pure JSON object " +
-                    "matching the structure below. Include all fields, using empty strings or 0 for missing values, " +
-                    "and handle multiple items if present. " +
-                    "Do NOT include any markdown, code blocks, or additional text — return only the JSON object:\n" +
-                    jsonStructure + "\nBill text:\n" + extractedText;
+            String prompt = """
+                    You are an expert bill parser. Extract all key information from the bill text below.
+                    Return ONLY a valid JSON object matching this exact structure (no extra text, no markdown, no explanations):
+                    
+                    """ + jsonStructure + """
+                    
+                    Bill text:
+                    """ + extractedText.substring(0, Math.min(extractedText.length(), 8000));
 
-            String jsonResponse = generateContent(prompt, temperature, maxTokens != null ? maxTokens : 1000);
+            String jsonResponse = generateContent(prompt, temperature, maxTokens != null ? maxTokens : 800);
             String cleanedJson = cleanJsonResponse(jsonResponse);
-            objectMapper.readTree(cleanedJson); // validate JSON syntax
+
+            // Validate JSON
+            objectMapper.readTree(cleanedJson);
             return cleanedJson;
 
         } catch (IOException ex) {
-            log.error("Error processing bill PDF or JSON structure: {}", ex.getMessage());
-            throw new RuntimeException("Failed to process bill PDF or JSON structure: " + ex.getMessage(), ex);
-        } catch (RuntimeException ex) {
-            log.error("Error analyzing bill: {}", ex.getMessage());
-            throw ex;
+            log.error("PDF processing failed", ex);
+            throw new RuntimeException("Failed to process bill PDF: " + ex.getMessage(), ex);
         } catch (Exception ex) {
-            log.error("Error analyzing bill: {}", ex.getMessage());
+            log.error("Bill analysis failed", ex);
             throw new RuntimeException("Failed to analyze bill: " + ex.getMessage(), ex);
         }
     }
 
-    /**
-     * Extracts structured data from a CV/résumé PDF using the Ollama LLM.
-     * The output JSON structure is loaded from {@code classpath:cv-structure.json}.
-     *
-     * @param file        the uploaded CV PDF file
-     * @param temperature optional sampling temperature
-     * @param maxTokens   optional max tokens (defaults to 1500)
-     * @return cleaned JSON string matching the CV structure
-     * @throws RuntimeException on PDF parsing or API errors
-     */
     public String analyzeCV(MultipartFile file, Double temperature, Integer maxTokens) {
         try {
             String extractedText = extractTextFromPDF(file);
+            log.info("CV PDF extracted text length: {} characters", extractedText.length());
 
             Resource resource = resourceLoader.getResource("classpath:cv-structure.json");
             String jsonStructure = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
-            String prompt = "Extract the following information from the provided CV/resume text and return a pure JSON object " +
-                    "matching the structure below. Include all fields, using empty strings or 0 for missing values, " +
-                    "and handle multiple entries for education, work experience/achievements, skills, certifications, " +
-                    "and languages if present. " +
-                    "Do NOT include any markdown, code blocks, or additional text — return only the JSON object:\n" +
-                    jsonStructure + "\nCV text:\n" + extractedText;
+            String prompt = """
+                    You are an expert resume parser. Extract all information from the CV text below.
+                    Return ONLY a valid JSON object matching this exact structure (no extra text, no markdown):
+                    
+                    """ + jsonStructure + """
+                    
+                    CV text:
+                    """ + extractedText.substring(0, Math.min(extractedText.length(), 10000));
 
-            String jsonResponse = generateContent(prompt, temperature, maxTokens != null ? maxTokens : 1500);
+            String jsonResponse = generateContent(prompt, temperature, maxTokens != null ? maxTokens : 1200);
             String cleanedJson = cleanJsonResponse(jsonResponse);
-            objectMapper.readTree(cleanedJson); // validate JSON syntax
+
+            objectMapper.readTree(cleanedJson);
             return cleanedJson;
 
         } catch (IOException ex) {
-            log.error("Error processing CV PDF or JSON structure: {}", ex.getMessage());
-            throw new RuntimeException("Failed to process CV PDF or JSON structure: " + ex.getMessage(), ex);
-        } catch (RuntimeException ex) {
-            log.error("Error analyzing CV: {}", ex.getMessage());
-            throw ex;
+            log.error("CV PDF processing failed", ex);
+            throw new RuntimeException("Failed to process CV PDF: " + ex.getMessage(), ex);
         } catch (Exception ex) {
-            log.error("Error analyzing CV: {}", ex.getMessage());
+            log.error("CV analysis failed", ex);
             throw new RuntimeException("Failed to analyze CV: " + ex.getMessage(), ex);
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Private helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Extracts plain text from a PDF multipart file.
-     *
-     * <p>PDFBox 3.x migration:
-     * <ul>
-     *   <li>{@code PDDocument.load(InputStream)} was removed — PDFBox 3.x no longer
-     *       accepts a streaming source because it needs random access internally</li>
-     *   <li>{@code Loader.loadPDF(byte[])} is the correct replacement — reads the
-     *       full byte array and wraps it in an in-memory random-access buffer</li>
-     * </ul>
-     *
-     * @param file the uploaded PDF file
-     * @return extracted plain text content
-     * @throws IOException if the file cannot be read or is encrypted
-     */
     private String extractTextFromPDF(MultipartFile file) throws IOException {
-        // PDFBox 3.x: read all bytes first, then pass to Loader.loadPDF(byte[])
-        // PDDocument.load(InputStream) no longer exists in 3.x
-        byte[] pdfBytes = file.getInputStream().readAllBytes();
+        byte[] pdfBytes = file.getBytes();
 
         try (PDDocument document = Loader.loadPDF(pdfBytes)) {
             if (document.isEncrypted()) {
                 throw new IOException("Encrypted PDFs are not supported");
             }
             PDFTextStripper stripper = new PDFTextStripper();
-            return stripper.getText(document);
+            return stripper.getText(document).trim();
         }
     }
 
-    /**
-     * Strips markdown code fences from an LLM response and validates JSON syntax.
-     *
-     * @param response raw LLM response string
-     * @return clean JSON string
-     * @throws IOException if the cleaned string is not valid JSON
-     */
     private String cleanJsonResponse(String response) throws IOException {
-        String cleaned = response.trim();
-        if (cleaned.startsWith("```json") && cleaned.endsWith("```")) {
-            cleaned = cleaned.substring(7, cleaned.length() - 3).trim();
-        } else if (cleaned.startsWith("```")) {
-            cleaned = cleaned.substring(3, cleaned.endsWith("```") ? cleaned.length() - 3 : cleaned.length()).trim();
+        if (response == null || response.trim().isEmpty()) {
+            throw new IOException("Empty response from Ollama");
         }
-        objectMapper.readTree(cleaned); // throws if invalid JSON
+
+        String cleaned = response.trim();
+
+        // Remove common markdown code fences
+        if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.substring(7).trim();
+        } else if (cleaned.startsWith("```")) {
+            cleaned = cleaned.substring(3).trim();
+        }
+        if (cleaned.endsWith("```")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 3).trim();
+        }
+
+        // Basic validation
+        objectMapper.readTree(cleaned);
         return cleaned;
     }
 
-    /**
-     * Parses the Ollama API JSON response envelope and extracts the generated text.
-     *
-     * @param responseBody raw HTTP response body
-     * @return the generated text from the {@code response} field
-     * @throws RuntimeException if the response is malformed or contains an error
-     */
     private String parseAndValidateResponse(String responseBody) {
         try {
             var jsonNode = objectMapper.readTree(responseBody);
-
             if (jsonNode.has("error")) {
-                throw new RuntimeException("Ollama API error: " + jsonNode.path("error").asText());
+                throw new RuntimeException("Ollama error: " + jsonNode.path("error").asText());
             }
-
-            String generatedText = jsonNode.path("response").asText();
-            if (generatedText == null || generatedText.trim().isEmpty()) {
-                throw new RuntimeException("Empty response from Ollama API");
+            String text = jsonNode.path("response").asText().trim();
+            if (text.isEmpty()) {
+                throw new RuntimeException("Empty response from Ollama");
             }
-
-            return generatedText;
-
-        } catch (RuntimeException ex) {
-            throw ex;
+            return text;
         } catch (Exception ex) {
-            throw new RuntimeException("Failed to parse Ollama API response: " + ex.getMessage(), ex);
+            throw new RuntimeException("Failed to parse Ollama response: " + ex.getMessage(), ex);
         }
     }
 }

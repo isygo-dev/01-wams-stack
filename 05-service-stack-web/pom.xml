@@ -1,184 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- =========================================================== -->
-    <!--  Organization                                                 -->
-    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <!-- =========================================================== -->
-    <!--  Artifact Identity                                            -->
-    <!-- =========================================================== -->
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-web</artifactId>
-    <version>WS-1.0.260331-T1652</version>
-    <packaging>jar</packaging>
-
-    <name>service-stack-web</name>
-    <description>
-        Isygo-IT Service Stack — web and API layer library.
-        The most comprehensive stack module, providing all cross-cutting
-        web concerns shared by every REST microservice:
-        • Spring Web MVC infrastructure (@RestController base classes,
-        global exception handlers, request/response interceptors)
-        • Spring Security 6.x (core, config, web) — filter chains,
-        JWT authentication filter, method security
-        • JWT token handling via JJWT 0.12 (issued, validated and
-        refreshed here; jjwt-api compile + impl/jackson runtime)
-        • Spring Kafka 3.x — producer/consumer template abstractions,
-        Kafka listener container factory configuration
-        • Apache Camel Kafka starter — Camel route integration
-        for event-driven messaging pipelines
-        • Spring Retry — @Retryable support for resilient service calls
-        • Micrometer Prometheus registry — metrics exposure for
-        Prometheus/Grafana scraping via /actuator/prometheus
-        • SpringDoc OpenAPI 3 — Swagger UI + API docs for MVC services
-        • OpenFeign (core + HC5) — declarative inter-service HTTP calls
-        • MapStruct — DTO ↔ entity mapping
-        • JSON Schema validation (networknt)
-        • Spring JMS + Jakarta JMS API — message-driven bean support
-        • Jakarta Servlet API (provided by container)
-        • PostgreSQL JDBC driver
-        • HikariCP connection pool
-        Depends on service-stack-shared and service-stack-jpa.
-    </description>
-    <url>https://isygo-it.eu</url>
-
-    <!-- =========================================================== -->
-    <!--  Parent — root aggregator (toolchain + plugin management)    -->
-    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.260331-T1652</version>
+        <version>WS-1.0.250603-T1554</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- =========================================================== -->
-    <!--  Properties                                                   -->
-    <!-- =========================================================== -->
-    <properties>
-        <!-- Library module — never repackaged as fat JAR             -->
-        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-    </properties>
+    <artifactId>service-stack-web</artifactId>
+    <name>service-stack-web</name>
+    <description>Web/API layer — controllers, JWT security, Feign clients, Kafka integration, Prometheus metrics
+    </description>
+    <packaging>jar</packaging>
 
-    <!-- =========================================================== -->
-    <!--  Dependency Management — import Spring Boot + Camel BOMs      -->
-    <!-- =========================================================== -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel.springboot</groupId>
-                <artifactId>camel-spring-boot-bom</artifactId>
-                <version>${camel.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- =========================================================== -->
-    <!--  Dependencies                                                 -->
-    <!-- =========================================================== -->
     <dependencies>
 
-        <!-- ── Internal: foundation layers ───────────────────── -->
-        <!--
-            service-stack-shared: base model, DTO, Jackson, Camel,
-            Feign, SpringDoc, validators, commons utilities.
-            service-stack-jpa: Hibernate ORM, Spring Data JPA, auditing.
-            service-stack-crypt: password encoding, JWT, Jasypt.
-            Version via ${project.parent.version} — no hardcoding.
-        -->
+        <!-- Internal stack deps -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-jpa</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>eu.isygo-it.services</groupId>
-            <artifactId>service-stack-cassandra</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-crypt</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
 
-        <!-- ── Code Generation ────────────────────────────────── -->
+        <!-- Spring Data Cassandra (optional) — Boot manages version.
+             FIXED: was scope=provided (prevented runtime availability) and
+             pinned at 4.3.3 (required Boot 3.3+). Now optional so services
+             that don't need Cassandra skip it entirely.                    -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-cassandra</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JWT — 3 artifacts since 0.10.0 split.
+             FIXED: was jjwt:0.9.1 (monolith, no io.jsonwebtoken.security.*).
+             jjwt-api   = compile  → contains Keys, Jwts, security.* classes
+             jjwt-impl  = runtime  → implementation (never import directly)
+             jjwt-jackson = runtime → JSON serialization for claims          -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- ── Spring Web MVC ─────────────────────────────────── -->
-        <!--
-            spring-web: core HTTP abstractions, RestTemplate,
-            WebClient, @RequestBody/@ResponseBody converters.
-            Version managed by Spring Boot BOM (was pinned to 6.0.8 —
-            now correctly aligned with Boot 3.5.x → Spring 6.2.x).
-        -->
+        <!-- Spring Web — Boot BOM manages Spring FW 6.2.x
+             FIXED: was pinned at 6.0.8                                    -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
 
-        <!-- Spring Boot auto-configuration support               -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
-        <!-- Jakarta Servlet API (provided — container supplies it) -->
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- ── Spring Security ────────────────────────────────── -->
-        <!--
-            Full Spring Security 6.x triad for web applications:
-              core   → SecurityContext, Authentication, UserDetails,
-                       GrantedAuthority, PasswordEncoder contract
-              config → @EnableWebSecurity, SecurityFilterChain,
-                       HttpSecurity DSL, method security
-              web    → SecurityFilterChain servlet integration,
-                       DelegatingFilterProxy, CSRF, CORS filters
-
-            ALL three versions managed by Spring Boot BOM.
-            Was pinned to 6.0.3 — now correctly 6.5.x with Boot 3.5.x.
-        -->
+        <!-- Spring Security — Boot manages 6.5.x
+             FIXED: all 3 were pinned at 6.0.3 (old, CVEs present)        -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
@@ -192,254 +103,107 @@
             <artifactId>spring-security-web</artifactId>
         </dependency>
 
-        <!-- ── JWT — JJWT 0.12 ────────────────────────────────── -->
-        <!--
-            Provided transitively by service-stack-crypt.
-            Declared explicitly here because service-stack-web has its
-            own JWT filter classes that directly import jjwt-api types.
-            jjwt-impl and jjwt-jackson remain runtime — no change.
-        -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>${jjwt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>${jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>${jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- ── Spring Kafka ───────────────────────────────────── -->
-        <!--
-            KafkaTemplate, @KafkaListener, KafkaListenerContainerFactory,
-            and producer/consumer configuration abstractions.
-            Version managed by Spring Boot BOM (3.9.x with Boot 3.5.x).
-        -->
+        <!-- Spring Kafka — Boot manages spring-kafka 3.3.x / kafka-clients 3.9.x
+             FIXED: was pinned at 3.3.4; also removed camel-kafka-starter
+             duplication (having both creates competing consumer abstractions) -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
-        <!-- ── Apache Camel Kafka ─────────────────────────────── -->
-        <dependency>
-            <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-kafka-starter</artifactId>
-        </dependency>
-
-        <!-- ── Spring Retry ───────────────────────────────────── -->
-        <!--
-            Enables @Retryable, @Recover, RetryTemplate for resilient
-            inter-service calls and external API integrations.
-            Version managed by Spring Boot BOM.
-        -->
+        <!-- Spring Retry — Boot manages version -->
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
         </dependency>
 
-        <!-- ── Micrometer Prometheus ──────────────────────────── -->
-        <!--
-            Exposes application metrics in Prometheus format at
-            /actuator/prometheus. Consumed by Prometheus scraper
-            and visualised in Grafana dashboards.
-            Version managed by Spring Boot BOM (1.15.x with Boot 3.5.x).
-        -->
+        <!-- Micrometer Prometheus — Boot manages Micrometer 1.15.x
+             FIXED: was pinned at 1.15.0                                   -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- ── SpringDoc OpenAPI 3 ────────────────────────────── -->
-        <!--
-            webmvc-ui: Swagger UI + OpenAPI JSON/YAML endpoint for
-            standard MVC REST APIs — the correct choice for this module.
-
-            NOTE: webflux-api and webflux-ui are intentionally REMOVED.
-            They pull in the full reactive stack (Reactor, Netty) which
-            creates classpath conflicts with the MVC stack. Services
-            needing reactive OpenAPI support should add webflux-ui
-            directly in their own application POM and exclude webmvc-ui.
-        -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc.version}</version>
-        </dependency>
-
-        <!-- ── OpenFeign ──────────────────────────────────────── -->
-        <!--
-            Provided transitively by service-stack-shared.
-            Declared explicitly because service-stack-web defines
-            Feign client configurations and interceptors.
-        -->
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-            <version>${feign.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-hc5</artifactId>
-            <version>${feign.version}</version>
-        </dependency>
-
-        <!-- ── JSON Schema Validation ─────────────────────────── -->
-        <!--
-            Validates incoming request payloads against JSON Schema
-            definitions. Not in Spring Boot BOM — explicitly versioned.
-        -->
+        <!-- JSON Schema Validator -->
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>${json-schema-validator.version}</version>
         </dependency>
 
-        <!-- ── Spring JMS ─────────────────────────────────────── -->
-        <!--
-            JmsTemplate, @JmsListener, MessageConverter support for
-            message-driven communication over JMS brokers (ActiveMQ,
-            IBM MQ, etc.). Version managed by Spring Boot BOM.
-            Was pinned to 6.0.8 — now correctly BOM-managed (6.2.x).
-        -->
+        <!-- SpringDoc WebMVC — WebMVC apps only
+             FIXED: original had webflux-api + webflux-ui + webmvc-ui all 3;
+             WebFlux starters conflict with spring-boot-starter-web at startup -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- Spring Boot — Boot BOM manages
+             FIXED: was pinned at 3.0.6                                    -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+
+        <!-- Spring JMS — Boot BOM manages
+             FIXED: was pinned at 6.0.8                                    -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jms</artifactId>
         </dependency>
 
-        <!-- ── Jakarta JMS API ────────────────────────────────── -->
-        <!--
-            Replaces javax.jms:javax.jms-api:2.0.1.
-            Jakarta EE 9+ compliant JMS 3.0 API.
-            Version managed by Spring Boot BOM.
-        -->
+        <!-- Jakarta JMS API — Boot manages
+             FIXED: was javax.jms:javax.jms-api:2.0.1 (javax namespace =
+             incompatible with Jakarta EE 9+ / Spring Boot 3.x)           -->
         <dependency>
             <groupId>jakarta.jms</groupId>
             <artifactId>jakarta.jms-api</artifactId>
         </dependency>
 
-        <!-- ── Database ───────────────────────────────────────── -->
-        <!--
-            postgresql: JDBC driver for PostgreSQL — the primary
-            relational database used across the platform.
-            HikariCP: high-performance JDBC connection pool.
-            Both versions managed by Spring Boot BOM.
-        -->
+        <!-- Jakarta Annotation API — Boot manages
+             FIXED: was javax.annotation:javax.annotation-api:1.3.2       -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+
+        <!-- Jakarta Servlet API (provided) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- PostgreSQL — Boot manages 42.7.10
+             FIXED: was pinned at 42.7.4                                   -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
+
+        <!-- OpenFeign
+             FIXED: was pinned at 13.2.1                                   -->
         <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-hc5</artifactId>
         </dependency>
 
-        <!-- ── Test ───────────────────────────────────────────── -->
+        <!-- Test -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
 
     </dependencies>
-
-    <!-- =========================================================== -->
-    <!--  Build                                                        -->
-    <!-- =========================================================== -->
-    <build>
-        <plugins>
-
-            <!-- Compiler: Lombok + MapStruct annotation processors   -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <!-- Surefire: JUnit 5 test runner                        -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-
-            <!-- Attach sources jar for consumers and IDE navigation   -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-
-        </plugins>
-    </build>
-
-    <!-- =========================================================== -->
-    <!--  Distribution Management                                      -->
-    <!-- =========================================================== -->
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <snapshotRepository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <!-- =========================================================== -->
-    <!--  Repositories                                                 -->
-    <!-- =========================================================== -->
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
 </project>

@@ -1,116 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>poc-producer-consumer</artifactId>
-    <version>WC-1.0.260331-T1652</version>
-    <packaging>jar</packaging>
-
-    <name>poc-producer-consumer</name>
-    <description>
-        POC — Kafka producer/consumer messaging patterns.
-        Demonstrates event-driven communication patterns using
-        service-stack-web's Spring Kafka integration:
-        • KafkaTemplate for typed message publishing
-        • @KafkaListener with consumer group configuration
-        • Manual offset commit and error handling
-        • Dead-letter topic (DLT) pattern for poison messages
-        • Apache Camel Kafka route integration
-        • JSON message serialization/deserialization via Jackson
-        • Testcontainers Kafka for fully hermetic integration tests
-        (no external Kafka broker required)
-        Upgrade note: Testcontainers BOM aligned to 1.20.6 (was
-        mixing BOM 1.19.7 with artifacts at 1.20.6 and 1.21.3).
-        Spring Boot aligned to 3.5.13 (was 3.4.4).
-    </description>
-    <url>https://isygo-it.eu</url>
-
+    <!-- Spring Boot 3.5.13 — aligned with stack; all demos use same version.
+         FIXED: originals used 3.1.12 or 3.4.4 mixed. All unified to 3.5.13. -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.13</version>
         <relativePath/>
     </parent>
+    <groupId>eu.isygo-it.services</groupId>
+    <artifactId>poc-producer-consumer</artifactId>
+    <!-- FIXED: was WC-... — unified to WS- prefix -->
+    <version>WS-1.0.250603-T1554</version>
+    <name>poc-producer-consumer</name>
+    <description>POC: Kafka producer/consumer — at-least-once delivery, dead letter topics, retry backoff</description>
+    <packaging>jar</packaging>
 
     <properties>
         <java.version>17</java.version>
-        <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <service-stack.version>WS-1.0.260331-T1652</service-stack.version>
+        <stack.version>WS-1.0.250603-T1554</stack.version>
+        <lombok.version>1.18.38</lombok.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <springdoc.version>2.8.15</springdoc.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!--
-                Testcontainers BOM — single aligned version.
-                Fixes: BOM was 1.19.7, artifacts were 1.20.6 and 1.21.3.
-                All now resolved from this single 1.20.6 BOM declaration.
-            -->
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>1.20.6</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+            <!-- Boot 3.5.13 manages Testcontainers 1.21.x — no version override needed -->
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-
-        <!-- ── Stack module ───────────────────────────────────── -->
-        <!--
-            service-stack-web provides Spring Kafka, Camel Kafka
-            starter, KafkaTemplate configuration, and all web
-            layer infrastructure. No need to declare kafka-clients
-            separately — it comes transitively via spring-kafka.
-        -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-web</artifactId>
-            <version>${service-stack.version}</version>
+            <version>${stack.version}</version>
         </dependency>
 
-        <!-- ── Spring Boot starters ───────────────────────────── -->
+        <!-- Spring Boot starters — versions from Boot 3.5.13 BOM -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- ── API Documentation ──────────────────────────────── -->
+        <!-- PostgreSQL — Boot manages 42.7.10 -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.8</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
-        <!-- ── Code Generation ────────────────────────────────── -->
+        <!-- H2 — runtime for local dev -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- HikariCP — Boot manages -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
+        <!-- Hibernate — Boot manages 6.6.45.Final -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
+
+        <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.6.3</version>
+            <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- ── Test ───────────────────────────────────────────── -->
+        <!-- SpringDoc WebMVC ONLY.
+             FIXED: originals had webflux-api + webflux-ui + webmvc-ui all 3.
+             WebFlux starters crash in WebMVC context (NoSuchMethodError etc.) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- Test — Boot manages JUnit 5.12.x, Mockito 5.17.x, Testcontainers 1.21.x -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -120,83 +123,69 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--
-            Testcontainers Kafka module — spins up a real Kafka broker
-            in a Docker container for integration tests. Version managed
-            by testcontainers-bom above (was 1.21.3 hardcoded, fixed).
-        -->
+        <!-- Kafka clients — Boot 3.5.13 manages kafka-clients 3.9.x
+             FIXED: was pinned at 3.8.1 and had mismatched TC kafka 1.21.3 -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <!-- version managed by Boot BOM -->
+        </dependency>
+        <!-- Testcontainers Kafka — Boot manages TC 1.21.x -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
-                    <release>${java.version}</release>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <parameters>true</parameters>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                        </path>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>1.6.3</version>
+                            <version>${lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
+                            <version>${lombok-mapstruct-binding.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                    <compilerArgs>
-                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
-                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <!-- Non-parallel sequential test execution -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
+                <configuration>
+                    <parallel>none</parallel>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <threadCount>1</threadCount>
+                    <perCoreThreadCount>false</perCoreThreadCount>
+                    <runOrder>alphabetical</runOrder>
+                    <failIfNoTests>false</failIfNoTests>
+                    <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
         </plugins>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-            </testResource>
-        </testResources>
     </build>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
 
 </project>

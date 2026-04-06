@@ -7,7 +7,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
-import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -23,7 +23,7 @@ import java.util.*;
  * The type Controller exception handler builder.
  */
 @Slf4j
-@Data
+@Getter
 @Component
 public abstract class ControllerExceptionHandlerBuilder {
 

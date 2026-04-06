@@ -63,11 +63,12 @@ class GarageStorageIntegrationTests {
      */
     @BeforeEach
     void setUp() {
-        s3Config = new S3Config();
-        s3Config.setTenant(TENANT);
-        s3Config.setUrl(minioContainer.getS3URL());
-        s3Config.setUserName(minioContainer.getUserName());
-        s3Config.setPassword(minioContainer.getPassword());
+        s3Config = S3Config.builder()
+                .tenant(TENANT)
+                .url(minioContainer.getS3URL())
+                .userName(minioContainer.getUserName())
+                .password(minioContainer.getPassword())
+                .build();
     }
 
     /**

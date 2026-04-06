@@ -2,22 +2,20 @@ package eu.isygoit.model.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.isygoit.model.ITenantAssignable;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 /**
  * The type Timeline event message.
  */
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TimelineEventMessage implements ITenantAssignable {
 
+    @Setter
     private String tenant;
 
     private TimelineEventType timelineEventType;

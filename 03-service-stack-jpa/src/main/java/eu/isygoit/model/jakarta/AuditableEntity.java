@@ -3,7 +3,7 @@ package eu.isygoit.model.jakarta;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
@@ -21,7 +21,7 @@ import java.util.Set;
  *
  * @param <T> the type parameter
  */
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,46 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>ai-integration-demo</artifactId>
-    <version>WC-1.0.260331-T1652</version>
-    <packaging>pom</packaging>
-
-    <name>ai-integration-demo</name>
-    <description>
-        Isygo-IT Service Stack Demo — AI integration showcase aggregator.
-        Groups runnable Spring Boot applications demonstrating AI and
-        LLM API integration patterns:
-        01-open-ai-apis — OpenAI REST API client patterns using
-        service-stack-web's Feign and RestTemplate
-        abstractions, PDF text extraction via
-        Apache PDFBox, and prompt engineering examples
-    </description>
-    <url>https://isygo-it.eu</url>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-demo</artifactId>
-        <version>WC-1.0.260331-T1652</version>
+        <version>WS-1.0.250603-T1554</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
+    <artifactId>ai-integration-demo</artifactId>
+    <name>ai-integration-demo</name>
+    <description>AI integration POCs — OpenAI REST API, PDF processing, embeddings</description>
+    <packaging>pom</packaging>
     <modules>
         <module>01-open-ai-apis</module>
     </modules>
-
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-    </properties>
-
 </project>

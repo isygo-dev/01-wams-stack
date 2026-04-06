@@ -5,12 +5,12 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 public abstract class AuditableTenantEntity<I extends Serializable>

@@ -5,11 +5,11 @@ import eu.isygoit.domain.FieldType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 
-@Data
+@Getter
 @FormView(
         name = "comprehensiveTestForm",
         title = "Comprehensive Test Form",

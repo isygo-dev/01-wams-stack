@@ -1,326 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- =========================================================== -->
-    <!--  Organization                                                 -->
-    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <!-- =========================================================== -->
-    <!--  Artifact Identity                                            -->
-    <!-- =========================================================== -->
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-crypt</artifactId>
-    <version>WS-1.0.260331-T1652</version>
-    <packaging>jar</packaging>
-
-    <name>service-stack-crypt</name>
-    <description>
-        Isygo-IT Service Stack — cryptography and security utilities library.
-        Provides reusable encryption, hashing, and token-handling abstractions
-        for all microservice applications in the platform:
-        • Password encoding via Spring Security Crypto (BCrypt, Argon2,
-        SCrypt, PBKDF2 — all Jakarta EE 9+ compatible)
-        • Symmetric and asymmetric encryption helpers via Jasypt 1.9
-        • JWT creation, signing, and validation via JJWT 0.12
-        (modern split-API: jjwt-api compile + jjwt-impl/jackson runtime)
-        • Date/time utilities backed by Joda-Time
-        • SLF4J logging facade (implementation supplied by application)
-        • Apache Commons (Lang3 for string/reflection, IO for streams)
-        Depends on service-stack-shared for base model and utility classes.
-    </description>
-    <url>https://isygo-it.eu</url>
-
-    <!-- =========================================================== -->
-    <!--  Parent — root aggregator (toolchain + plugin management)    -->
-    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.260331-T1652</version>
+        <version>WS-1.0.250603-T1554</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- =========================================================== -->
-    <!--  Properties                                                   -->
-    <!-- =========================================================== -->
-    <properties>
-        <!-- Library module — never repackaged as fat JAR             -->
-        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-    </properties>
+    <artifactId>service-stack-crypt</artifactId>
+    <name>service-stack-crypt</name>
+    <description>Cryptography utilities — password hashing, symmetric/asymmetric encryption and token handling
+    </description>
+    <packaging>jar</packaging>
 
-    <!-- =========================================================== -->
-    <!--  Dependency Management — import Spring Boot BOM               -->
-    <!-- =========================================================== -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- =========================================================== -->
-    <!--  Dependencies                                                 -->
-    <!-- =========================================================== -->
     <dependencies>
 
-        <!-- ── Internal: foundation layer ────────────────────── -->
-        <!--
-            Provides base model classes, DTO abstractions, Jackson
-            config, and common utilities (commons-io, joda-time).
-            Keeps crypt focused purely on security concerns.
-        -->
+        <!-- Internal: shared types -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
 
-        <!-- ── Code Generation ────────────────────────────────── -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- ── Spring Boot auto-configuration support ─────────── -->
-        <!--
-            Required for @Configuration, @ConditionalOnClass, and
-            @EnableConfigurationProperties used in crypto bean setup.
-            Version managed by Spring Boot BOM.
-        -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
-        <!-- ── Spring Security Crypto ─────────────────────────── -->
-        <!--
-            Provides password encoders (BCryptPasswordEncoder,
-            Argon2PasswordEncoder, SCryptPasswordEncoder, etc.)
-            and the PasswordEncoder contract used across the platform.
-            This is the minimal Spring Security artifact — it does NOT
-            pull in the full security filter chain or web security.
-            Version managed by Spring Boot BOM (was pinned to 6.0.3,
-            now correctly aligned with Spring Boot 3.5.x → 6.5.x).
-        -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-        </dependency>
-
-        <!-- ── JWT — JJWT 0.12 (modern split API) ─────────────── -->
-        <!--
-            Replaces the legacy monolithic jjwt:0.9.1 artifact which:
-              • Was released in 2019
-              • Had multiple CVEs (insecure none-algorithm, key confusion)
-              • Did not support Jakarta EE namespaces
-              • Used a deprecated builder API
-
-            New three-artifact split:
-              jjwt-api     → compile scope: JwtBuilder, JwtParser,
-                             Claims, Jwts factory class — what code uses
-              jjwt-impl    → runtime scope: actual signing/verification
-                             logic; kept off compile classpath by design
-                             so consumers cannot accidentally depend on
-                             implementation classes
-              jjwt-jackson → runtime scope: Jackson-based serialization
-                             of JWT claims
-
-            Version pinned via ${jjwt.version} property from root POM.
-        -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>${jjwt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>${jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>${jjwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- ── Jasypt ──────────────────────────────────────────── -->
-        <!--
-            Simple encryption library for symmetric encryption of
-            configuration values, database-stored secrets, and
-            arbitrary string/byte payloads. Used alongside Spring
-            Security Crypto (which focuses on password hashing).
-            Not in Spring Boot BOM — pinned via ${jasypt.version}.
-        -->
-        <dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt</artifactId>
-            <version>${jasypt.version}</version>
-        </dependency>
-
-        <!-- ── Logging facade ─────────────────────────────────── -->
-        <!--
-            SLF4J API only — this is a library module. The concrete
-            logging implementation (Logback via spring-boot-starter-logging)
-            is provided by the consuming application at runtime.
-            Version managed by Spring Boot BOM.
-        -->
+        <!-- SLF4J — Boot manages version -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- ── Date / Time ────────────────────────────────────── -->
-        <!--
-            Joda-Time is used for date arithmetic in token expiry
-            calculations, timestamp formatting, and duration handling.
-            Provided by service-stack-shared transitively, pinned here
-            explicitly for clarity since crypt actively uses it.
-            Not in Spring Boot BOM — pinned via ${joda-time.version}.
-        -->
+        <!-- Joda-Time -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>${joda-time.version}</version>
         </dependency>
 
-        <!-- ── Apache Commons ─────────────────────────────────── -->
-        <!--
-            commons-lang3: StringUtils, RandomStringUtils (key/salt
-            generation), reflection utilities, and type conversions.
-            commons-io: stream utilities for reading/writing key
-            material from files and byte arrays.
-            Both versions managed by Spring Boot BOM.
-        -->
+        <!-- Jasypt Spring Boot Starter
+             FIXED: original used jasypt:1.9.3 (bare library). That version
+             uses internal Java APIs removed in Java 17+ (illegal-access
+             was eliminated). The Spring Boot starter integrates cleanly with
+             Boot's Environment and supports @Value decryption out of the box. -->
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Apache Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.19.0</version>
         </dependency>
 
-        <!-- ── Test ───────────────────────────────────────────── -->
+        <!-- Spring Security Crypto — Boot manages 6.5.x
+             FIXED: was pinned at 6.0.3 (CVEs, misaligned with Boot 3.5.x) -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
+
+        <!-- Spring Boot — Boot BOM manages consistently
+             FIXED: was pinned at 3.0.6 (two minor versions behind)       -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
         </dependency>
+
+        <!-- Test -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
     </dependencies>
-
-    <!-- =========================================================== -->
-    <!--  Build                                                        -->
-    <!-- =========================================================== -->
-    <build>
-        <plugins>
-
-            <!-- Compiler: Lombok annotation processor                -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <!-- Surefire: JUnit 5 test runner                        -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-
-            <!-- Attach sources jar for consumers and IDE navigation   -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-
-        </plugins>
-    </build>
-
-    <!-- =========================================================== -->
-    <!--  Distribution Management                                      -->
-    <!-- =========================================================== -->
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <snapshotRepository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <!-- =========================================================== -->
-    <!--  Repositories                                                 -->
-    <!-- =========================================================== -->
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
 </project>

@@ -3,12 +3,12 @@ package eu.isygoit.model.jakarta;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass

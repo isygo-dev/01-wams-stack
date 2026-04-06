@@ -6,8 +6,9 @@ import eu.isygoit.annotation.JsonEntity;
 import eu.isygoit.model.jakarta.AbstractEntity;
 import eu.isygoit.model.json.JsonElement;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
@@ -25,7 +26,7 @@ import java.util.UUID;
  * JPA row — not stored inside the JSONB payload. See issue #3 in the review for a
  * discussion of removing this interface from JSON element types.
  */
-@Data
+@Getter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,6 +35,7 @@ import java.util.UUID;
 public class OrderPlacedEntity extends AbstractEntity<UUID>
         implements JsonElement<UUID>, ITenantAssignable {
 
+    @Setter
     @Criteria
     private UUID id;
 

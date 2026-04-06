@@ -8,7 +8,8 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.RollbackException;
 import jakarta.validation.ConstraintViolation;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
  * This class handles various exceptions and produces localized error messages.
  */
 @Slf4j
-@Data
+@Getter
 @Component
 public abstract class ControllerExceptionHandler extends ControllerExceptionHandlerBuilder implements IExceptionHandler {
 
@@ -65,6 +66,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     // Handler cache to improve exception type lookup performance
     private static final Map<Class<?>, Function<Throwable, String>> EXCEPTION_HANDLERS = new ConcurrentHashMap<>();
 
+    @Setter
     @Autowired
     private LocaleService localeService;
 

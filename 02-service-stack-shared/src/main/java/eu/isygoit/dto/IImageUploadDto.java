@@ -11,11 +11,4 @@ public interface IImageUploadDto {
      * @return the image path
      */
     String getImagePath();
-
-    /**
-     * Sets image path.
-     *
-     * @param path the path
-     */
-    void setImagePath(String path);
 }

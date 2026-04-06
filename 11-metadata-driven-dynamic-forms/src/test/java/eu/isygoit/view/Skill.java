@@ -3,9 +3,9 @@ package eu.isygoit.view;
 import eu.isygoit.annotation.FormField;
 import eu.isygoit.domain.FieldType;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class Skill {
 
     @FormField(label = "Skill Name", required = true)

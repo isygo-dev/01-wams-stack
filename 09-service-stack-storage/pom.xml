@@ -1,241 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- =========================================================== -->
-    <!--  Organization                                                 -->
-    <!-- =========================================================== -->
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <!-- =========================================================== -->
-    <!--  Artifact Identity                                            -->
-    <!-- =========================================================== -->
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-storage</artifactId>
-    <version>WS-1.0.260331-T1652</version>
-    <packaging>jar</packaging>
-
-    <name>service-stack-storage</name>
-    <description>
-        Isygo-IT Service Stack — object storage abstraction library.
-        Provides a unified, provider-agnostic storage API for all
-        microservice applications that need to store and retrieve
-        binary objects (files, images, documents, datasets):
-        • Unified StorageService interface with pluggable backends
-        • MinIO backend — S3-compatible self-hosted object storage
-        (buckets, presigned URLs, multipart upload, versioning)
-        • AWS S3 backend — Amazon S3 via AWS SDK v2 (Apache HC5
-        transport for production-grade connection pooling)
-        • LakeFS backend — Git-like versioned data lake on top of
-        S3/MinIO (branches, commits, diff, merge for data assets)
-        • Jakarta Servlet API integration for multipart file upload
-        handling and streaming download responses
-        • HikariCP for storage metadata persistence (file registry,
-        upload state tracking in relational database)
-        Depends on service-stack-shared for base model abstractions.
-        Test infrastructure uses Testcontainers MinIO module for
-        hermetic, containerised storage integration tests.
-    </description>
-    <url>https://isygo-it.eu</url>
-
-    <!-- =========================================================== -->
-    <!--  Parent — root aggregator (toolchain + plugin management)    -->
-    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.260331-T1652</version>
+        <version>WS-1.0.250603-T1554</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- =========================================================== -->
-    <!--  Properties                                                   -->
-    <!-- =========================================================== -->
-    <properties>
-        <!-- Library module — never repackaged as fat JAR             -->
-        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-    </properties>
+    <artifactId>service-stack-storage</artifactId>
+    <name>service-stack-storage</name>
+    <description>Object storage abstraction — MinIO, AWS S3 and LakeFS adapters behind a unified StorageService
+    </description>
+    <packaging>jar</packaging>
 
-    <!-- =========================================================== -->
-    <!--  Dependency Management                                        -->
-    <!--                                                               -->
-    <!--  Imports Spring Boot BOM for core version alignment and       -->
-    <!--  the Testcontainers BOM for aligned test infrastructure.      -->
-    <!--                                                               -->
-    <!--  NOTE: Previously the Testcontainers BOM was declared at      -->
-    <!--  version 1.19.7 while actual artifacts used 1.20.6 — a        -->
-    <!--  mismatch that caused unpredictable test failures. Both are   -->
-    <!--  now aligned at 1.20.6 via this single BOM declaration.       -->
-    <!-- =========================================================== -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>1.20.6</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- =========================================================== -->
-    <!--  Dependencies                                                 -->
-    <!-- =========================================================== -->
     <dependencies>
 
-        <!-- ── Internal: foundation layer ────────────────────── -->
-        <!--
-            service-stack-shared: base model abstractions, DTO
-            contracts, Jackson serialization (needed for S3/MinIO
-            response parsing), commons-io for stream handling,
-            and Jakarta validation for upload constraint checking.
-            Uses ${project.parent.version} — no hardcoding.
-        -->
+        <!-- Internal: shared types and utilities -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
 
-        <!-- ── Code Generation ────────────────────────────────── -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- ── Jakarta Servlet API ────────────────────────────── -->
-        <!--
-            Required for multipart file upload parsing
-            (MultipartFile, HttpServletRequest) and streaming
-            download responses (HttpServletResponse output stream).
-            Provided scope — container supplies implementation.
-            Version BOM-managed (was hardcoded to 6.0.0).
-        -->
+        <!-- MinIO SDK
+             FIXED: was pinned at 8.5.12                                   -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+        </dependency>
+
+        <!-- AWS SDK v2
+             FIXED: were pinned at 2.28.8                                  -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+        </dependency>
+
+        <!-- LakeFS SDK (optional) — heavy client only for data-lake versioning.
+             Services only needing MinIO/S3 don't pull this in.            -->
+        <dependency>
+            <groupId>io.lakefs</groupId>
+            <artifactId>sdk</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Jakarta Servlet API (provided) -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- ── MinIO Client ───────────────────────────────────── -->
-        <!--
-            Official MinIO Java SDK.
-            Provides: MinioClient builder, BucketOperations,
-            ObjectOperations, presigned URL generation, and
-            multipart upload coordination.
-            Not in Spring Boot BOM — pinned via ${minio.version}.
-        -->
+        <!-- Jakarta Annotation API
+             FIXED: was javax.annotation:javax.annotation-api:1.3.2       -->
         <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio</artifactId>
-            <version>${minio.version}</version>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
 
-        <!-- ── AWS SDK v2 — S3 + Apache HC5 transport ─────────── -->
-        <!--
-            AWS SDK for Java v2 (not v1 — v1 is in maintenance mode).
-            s3: S3Client, S3AsyncClient, S3Presigner, TransferManager.
-            apache-client: replaces the default URLConnection transport
-              with Apache HttpClient 5, giving production-grade:
-              • Connection pooling and keep-alive
-              • Configurable socket / connection timeouts
-              • Proxy support
-              • Better TLS handling
-            Not in Spring Boot BOM — pinned via ${aws-sdk.version}.
-        -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>apache-client</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-
-        <!-- ── LakeFS SDK ─────────────────────────────────────── -->
-        <!--
-            LakeFS Java client SDK.
-            Provides: BranchesApi, ObjectsApi, CommitsApi, DiffApi —
-            enabling Git-like versioning semantics over S3/MinIO
-            for data lake asset management (experiment tracking,
-            dataset versioning, model registry).
-            Not in Spring Boot BOM — pinned via ${lakefs-sdk.version}.
-        -->
-        <dependency>
-            <groupId>io.lakefs</groupId>
-            <artifactId>sdk</artifactId>
-            <version>${lakefs-sdk.version}</version>
-        </dependency>
-
-        <!-- ── HikariCP Connection Pool ───────────────────────── -->
-        <!--
-            Used for the storage metadata registry — a relational
-            table tracking uploaded file records, states, checksums,
-            and tenant ownership. Independent of the JPA datasource
-            (storage module is intentionally decoupled from JPA).
-            Version BOM-managed (was hardcoded to 5.1.0).
-        -->
+        <!-- HikariCP — Boot manages version
+             FIXED: was pinned at 5.1.0                                    -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
 
-        <!-- ── Spring Boot auto-configuration ────────────────── -->
-        <!--
-            Enables storage backend selection via
-            @ConditionalOnProperty (isygo.storage.provider=minio|s3|lakefs)
-            and @EnableConfigurationProperties for typed config binding.
-        -->
+        <!-- Test — FIXED: removed local dependencyManagement that pinned
+             testcontainers-bom at 1.19.7. Boot 3.5.13 manages TC 1.21.x  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
-        <!-- ── Test ───────────────────────────────────────────── -->
-        <!--
-            Full Testcontainers stack for hermetic storage tests:
-              testcontainers:     core container lifecycle management
-              junit-jupiter:      @Testcontainers + @Container JUnit 5
-              minio:              MinIO container for S3-compatible tests
-            All versions managed by testcontainers-bom imported above.
-            This fixes the previous BOM mismatch (1.19.7 BOM vs
-            1.20.6 artifacts that caused resolution warnings).
-        -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -255,90 +108,5 @@
         </dependency>
 
     </dependencies>
-
-    <!-- =========================================================== -->
-    <!--  Build                                                        -->
-    <!-- =========================================================== -->
-    <build>
-        <plugins>
-
-            <!-- Compiler: Lombok annotation processor                -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <!-- Surefire: JUnit 5 test runner                        -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-
-            <!-- Attach sources jar for consumers and IDE navigation   -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-
-        </plugins>
-
-        <!-- Test resources directory — aligned with project convention -->
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-            </testResource>
-        </testResources>
-    </build>
-
-    <!-- =========================================================== -->
-    <!--  Distribution Management                                      -->
-    <!-- =========================================================== -->
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <snapshotRepository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <!-- =========================================================== -->
-    <!--  Repositories                                                 -->
-    <!-- =========================================================== -->
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
 </project>

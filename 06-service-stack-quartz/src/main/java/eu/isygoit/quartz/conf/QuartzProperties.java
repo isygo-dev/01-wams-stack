@@ -1,12 +1,12 @@
 package eu.isygoit.quartz.conf;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * The type Quartz properties.
  */
-@Data
+@Getter
 @ConfigurationProperties(prefix = "spring.quartz")
 public class QuartzProperties {
 

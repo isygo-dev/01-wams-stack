@@ -230,7 +230,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
             validateTenant(tenant);
             var beforeUpdateResult = beforeUpdate(tenant, object);
             var entity = findEntityById(tenant, beforeUpdateResult.getId());
-            entity.setAttributes(objectMapper.valueToTree(beforeUpdateResult));
+            entity.update(objectMapper.valueToTree(beforeUpdateResult));
             var result = JsonBasedEntityHelper.toJsonElement(
                     repository().saveAndFlush(entity), jsonElementClass, objectMapper);
             return afterUpdate(tenant, result);

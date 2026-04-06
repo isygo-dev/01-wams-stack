@@ -6,14 +6,16 @@ import eu.isygoit.model.jakarta.AuditableTenantEntity;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Tutorial.
  */
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor

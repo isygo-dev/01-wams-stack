@@ -6,11 +6,11 @@ import eu.isygoit.domain.FieldType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
 @FormView(
         name = "userCreateForm",
         title = "Create New User",

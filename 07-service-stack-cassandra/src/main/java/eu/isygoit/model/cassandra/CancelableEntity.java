@@ -4,7 +4,7 @@ import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -17,7 +17,7 @@ import java.util.Date;
  *
  * @param <T> the type parameter
  */
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor

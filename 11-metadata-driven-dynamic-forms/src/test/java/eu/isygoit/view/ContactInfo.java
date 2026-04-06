@@ -2,9 +2,9 @@ package eu.isygoit.view;
 
 import eu.isygoit.annotation.FormField;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class ContactInfo {
 
     @FormField(label = "Phone", required = true)

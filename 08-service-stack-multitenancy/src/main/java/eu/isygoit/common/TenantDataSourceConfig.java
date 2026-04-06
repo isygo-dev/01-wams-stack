@@ -1,11 +1,13 @@
 package eu.isygoit.common;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * The type Tenant data source config.
  */
-@Data
+@Getter
+@Setter
 public class TenantDataSourceConfig {
 
     private String id;
