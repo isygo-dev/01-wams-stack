@@ -21,7 +21,7 @@
             <parent>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-parent</artifactId>
-                <version>WS-1.0.250603-T1554</version>
+                <version>WS-1.0.260331-T1652</version>
             </parent>
 
         KEY CHANGES vs original:
@@ -44,13 +44,12 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-parent</artifactId>
-    <version>WS-1.0.250603-T1554</version>
+    <version>WS-1.0.260331-T1652</version>
     <name>service-stack-parent</name>
     <description>Spring Boot 3.5.13 parent BOM for WAMS microservices</description>
     <packaging>pom</packaging>
 
     <properties>
-        <java.version>17</java.version>
         <java.source.version>17</java.source.version>
         <java.target.version>17</java.target.version>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>

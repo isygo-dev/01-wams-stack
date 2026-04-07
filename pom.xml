@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack</artifactId>
-    <version>WS-1.0.250603-T1554</version>
+    <version>WS-1.0.260331-T1652</version>
     <name>service-stack</name>
     <description>WAMS backend microservices stack — root aggregator</description>
     <packaging>pom</packaging>
@@ -43,7 +43,6 @@
            Testcontainers 1.21.x, JUnit Jupiter 5.12.x, Mockito 5.17.x.
          ================================================================ -->
     <properties>
-        <java.version>17</java.version>
         <java.source.version>17</java.source.version>
         <java.target.version>17</java.target.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -12,13 +12,13 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>service-stack-demo</artifactId>
     <!-- FIXED: was WC-... — unified to WS- prefix across entire project -->
-    <version>WS-1.0.250603-T1554</version>
+    <version>WS-1.0.260331-T1652</version>
     <name>service-stack-demo</name>
     <description>POC and demo applications showcasing stack capabilities</description>
     <packaging>pom</packaging>

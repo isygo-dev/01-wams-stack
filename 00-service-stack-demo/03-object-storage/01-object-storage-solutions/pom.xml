@@ -18,14 +18,16 @@
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-object-storage-solutions</artifactId>
     <!-- FIXED: was WC-... — unified to WS- prefix -->
-    <version>WS-1.0.250603-T1554</version>
+    <version>WS-1.0.260331-T1652</version>
     <name>poc-object-storage-solutions</name>
     <description>POC: object storage adapter comparison — MinIO, AWS S3 and LakeFS</description>
     <packaging>jar</packaging>
 
     <properties>
-        <java.version>17</java.version>
-        <stack.version>WS-1.0.250603-T1554</stack.version>
+
+        <java.source.version>17</java.source.version>
+        <java.target.version>17</java.target.version>
+        <stack.version>WS-1.0.260331-T1652</stack.version>
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
@@ -151,8 +153,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
                     <parameters>true</parameters>
                     <annotationProcessorPaths>
                         <path>
