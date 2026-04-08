@@ -7,17 +7,15 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,6 +33,7 @@ public class ContractEntity extends AuditableEntity<Long> implements ITenantAssi
     @SequenceGenerator(name = "contract_sequence_generator", sequenceName = "contract_sequence", allocationSize = 1)
     private Long id;
 
+    @Setter
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 

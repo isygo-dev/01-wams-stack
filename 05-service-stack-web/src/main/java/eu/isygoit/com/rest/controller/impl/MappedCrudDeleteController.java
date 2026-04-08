@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedCrudDeleteApi;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -27,19 +27,19 @@ import java.util.List;
 public abstract class MappedCrudDeleteController<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerSubMethods<I, T, M, F, S>
+        S extends ICrudServiceOperations<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudDeleteApi<I> {
 
     @Override
     public final ResponseEntity<?> delete(ContextRequestDto requestContext,
                                           I id) {
-        return subDelete(requestContext, id);
+        return performDelete(requestContext, id);
     }
 
     @Override
     public final ResponseEntity<?> batchDelete(ContextRequestDto requestContext,
                                                List<I> ids) {
-        return subDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
+        return performDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 }

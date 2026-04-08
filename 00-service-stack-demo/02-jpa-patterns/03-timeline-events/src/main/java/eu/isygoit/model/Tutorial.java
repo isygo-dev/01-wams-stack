@@ -2,31 +2,36 @@ package eu.isygoit.model;
 
 import eu.isygoit.annotation.TrackChanges;
 import eu.isygoit.listener.TimelineEventListener;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.jakarta.AuditableTenantEntity;
+import eu.isygoit.model.timeline.ITimelineEventSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Tutorial.
  */
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "TUTORIALS")
 @EntityListeners(TimelineEventListener.class)
-public class Tutorial extends AuditableEntity<Long> implements ITenantAssignable {
+public class Tutorial extends AuditableTenantEntity<Long> implements ITenantAssignable, IDirtyEntity, ITimelineEventSource {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tutorials_sequence_generator")
     @SequenceGenerator(name = "tutorials_sequence_generator", sequenceName = "tutorials_sequence", allocationSize = 1)
+    @TrackChanges
     private Long id;
 
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
+    @TrackChanges
     private String tenant;
 
     @TrackChanges

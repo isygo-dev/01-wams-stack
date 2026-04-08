@@ -9,125 +9,61 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-jpa</artifactId>
-    <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-jpa</name>
-    <description>service-stack-jpa</description>
-
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <artifactId>service-stack-jpa</artifactId>
+    <name>service-stack-jpa</name>
+    <description>JPA base layer — base entities, repositories, auditing and pagination utilities</description>
+    <packaging>jar</packaging>
 
     <dependencies>
+
+        <!-- Internal: shared DTOs, utilities and base types -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>${project.parent.version}</version>
+            <!-- version managed in root dependencyManagement -->
         </dependency>
+
+        <!-- Lombok on compile classpath for import resolution -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.4.4.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <version>3.0.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator-annotation-processor</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
+
+        <!-- Spring Security Core — Boot manages 6.5.x
+             FIXED: was pinned at 6.0.3 (old, contains known CVEs)        -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>6.0.3</version>
             <scope>compile</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+
+        <!-- Commons Text -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- NOTE: hibernate-core, hibernate-validator, spring-data-jpa come
+             transitively from service-stack-shared. They are NOT redeclared
+             here. FIXED: original re-declared them with old pinned versions
+             (hibernate 6.4.4, spring-data-jpa 3.0.5) that overrode Boot's
+             managed versions and caused classpath conflicts.               -->
+
+        <!-- Test -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.4</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito Core -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>6.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 Extension -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </repositories>
 </project>

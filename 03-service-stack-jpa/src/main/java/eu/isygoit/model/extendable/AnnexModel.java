@@ -11,7 +11,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
@@ -24,7 +24,7 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Data
+@Getter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

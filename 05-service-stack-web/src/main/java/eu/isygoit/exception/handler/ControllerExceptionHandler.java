@@ -7,7 +7,9 @@ import feign.FeignException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.RollbackException;
-import lombok.Data;
+import jakarta.validation.ConstraintViolation;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
@@ -25,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.naming.SizeLimitExceededException;
-import javax.validation.ConstraintViolation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
  * This class handles various exceptions and produces localized error messages.
  */
 @Slf4j
-@Data
+@Getter
 @Component
 public abstract class ControllerExceptionHandler extends ControllerExceptionHandlerBuilder implements IExceptionHandler {
 
@@ -65,6 +66,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     // Handler cache to improve exception type lookup performance
     private static final Map<Class<?>, Function<Throwable, String>> EXCEPTION_HANDLERS = new ConcurrentHashMap<>();
 
+    @Setter
     @Autowired
     private LocaleService localeService;
 
@@ -122,7 +124,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                 message.append(getLocaleService().getMessage(CANNOT_CREATE_TRANSACTION, currentLocale));
             } else if (throwable instanceof PSQLException) {
                 handlePSQLException(throwable, message, currentLocale);
-            } else if (throwable instanceof javax.validation.ConstraintViolationException validationEx) {
+            } else if (throwable instanceof jakarta.validation.ConstraintViolationException validationEx) {
                 handleConstraintViolation(validationEx, message, currentLocale);
             } else if (throwable instanceof EmptyResultDataAccessException) {
                 message.append(localeService.getMessage(OBJECT_NOT_FOUND, currentLocale));
@@ -195,7 +197,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     /**
      * Handles Bean Validation constraint violations.
      */
-    private void handleConstraintViolation(javax.validation.ConstraintViolationException validationEx,
+    private void handleConstraintViolation(jakarta.validation.ConstraintViolationException validationEx,
                                            StringBuilder message, Locale locale) {
         if (CollectionUtils.isEmpty(validationEx.getConstraintViolations())) {
             return;

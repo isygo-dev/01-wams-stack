@@ -31,8 +31,8 @@ import java.nio.file.Path;
 public abstract class FileTenantService<I extends Serializable,
         T extends IFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
-        extends FileTenantServiceSubMethods<I, T, R>
-        implements IFileTenantServiceMethods<I, T> {
+        extends FileTenantServiceOperations<I, T, R>
+        implements IFileTenantServiceOperations<I, T> {
 
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
@@ -184,7 +184,7 @@ public abstract class FileTenantService<I extends Serializable,
         return findById(tenant, id)
                 .map(entity -> {
                     try {
-                        return subDownloadFile(entity, version);
+                        return performDownloadFile(entity, version);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -219,7 +219,7 @@ public abstract class FileTenantService<I extends Serializable,
 
     private T handleFileUpload(String tenant, T entity, MultipartFile file) throws IOException {
         entity = beforeUpload(tenant, entity, file);
-        subUploadFile(file, entity);
+        performUploadFile(file, entity);
         return afterUpload(tenant, entity, file);
     }
 }

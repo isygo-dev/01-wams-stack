@@ -3,17 +3,12 @@ package eu.isygoit.model.jakarta;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 
-/**
- * The type Abstract entity.
- *
- * @param <T> the type parameter
- */
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass

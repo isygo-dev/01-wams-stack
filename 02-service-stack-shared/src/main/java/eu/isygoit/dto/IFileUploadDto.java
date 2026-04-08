@@ -11,11 +11,4 @@ public interface IFileUploadDto {
      * @return the original file name
      */
     String getOriginalFileName();
-
-    /**
-     * Sets original file name.
-     *
-     * @param originalFileName the original file name
-     */
-    void setOriginalFileName(String originalFileName);
 }

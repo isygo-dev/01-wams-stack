@@ -1,11 +1,13 @@
 package eu.isygoit.openai.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * The type Gemini response.
  */
-@Data
+@Getter
+@Setter
 public class GeminiResponse {
     private boolean success;
     private String generatedText;

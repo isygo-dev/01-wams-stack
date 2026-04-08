@@ -6,13 +6,10 @@ import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,12 +20,15 @@ public class UserEntity extends AuditableEntity<Long> implements ITenantAssignab
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_sequence_generator")
     @SequenceGenerator(name = "user_sequence_generator", sequenceName = "user_sequence", allocationSize = 1)
+    @Setter
     private Long id;
 
+    @Setter
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 
     //ICodeAssignable fields (should implement setCode & getCode)
+    @Setter
     @Column(name = "CODE", nullable = false)
     private String code;
 
@@ -45,6 +45,7 @@ public class UserEntity extends AuditableEntity<Long> implements ITenantAssignab
     private boolean active = Boolean.FALSE;
 
     //IImageEntity fields (should implement setImagePath & getImagePath)
+    @Setter
     @Column(name = "IMAGE_PATH")
     private String imagePath;
 }

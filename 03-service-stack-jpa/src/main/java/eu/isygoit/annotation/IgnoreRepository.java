@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 /**
  * The interface Ignore repository.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface IgnoreRepository {

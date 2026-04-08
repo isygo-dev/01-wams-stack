@@ -6,7 +6,7 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.helper.BeanHelper;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.util.CollectionUtils;
@@ -19,7 +19,7 @@ import java.util.Collection;
 /**
  * The type Abstract dto.
  */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

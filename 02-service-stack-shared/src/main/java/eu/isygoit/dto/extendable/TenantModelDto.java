@@ -1,13 +1,13 @@
 package eu.isygoit.dto.extendable;
 
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
 /**
@@ -15,7 +15,7 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

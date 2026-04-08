@@ -1,5 +1,6 @@
 package eu.isygoit.audit;
 
+import eu.isygoit.constants.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,7 +22,7 @@ public class AuditorAwareService implements IAuditAwereService<String> {
     public Optional<String> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            return Optional.of("anonymousUser");
+            return Optional.of(ErrorCodeConstants.UNKNOWN);
         }
 
         Object principal = authentication.getPrincipal();
@@ -31,6 +32,6 @@ public class AuditorAwareService implements IAuditAwereService<String> {
             return Optional.of(string);
         }
 
-        return Optional.of("anonymousUser");
+        return Optional.of(ErrorCodeConstants.UNKNOWN);
     }
 }

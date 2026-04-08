@@ -8,6 +8,11 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * using a Testcontainers-managed Kafka instance.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
@@ -41,6 +45,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
+
+// === FIXED: Exclude JPA/DataSource auto-configuration (this test doesn't need a database) ===
+@ImportAutoConfiguration(exclude = {
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class,
+        TransactionAutoConfiguration.class
+})
+// ==========================================================================================
+
 class KafkaStringIntegrationTest {
 
     private static final String TOPIC = "string-topic";
@@ -115,17 +129,15 @@ class KafkaStringIntegrationTest {
     @Order(1)
     @DisplayName("Verify single message production and consumption with HMAC and headers")
     void testSingleMessageWithHmac() throws Exception {
-        // Arrange
         String message = "Test message " + UUID.randomUUID();
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_value");
 
-        // Act
         stringProducer.send(message, headers);
 
-        // Assert
         String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "No message consumed within " + TIMEOUT_SECONDS + " seconds");
         assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "No headers consumed within " + TIMEOUT_SECONDS + " seconds");
         assertTrue(consumedHeader.containsKey("kafka_test_header"), "Consumed headers do not contain kafka_test_header");
@@ -138,7 +150,6 @@ class KafkaStringIntegrationTest {
     @Order(2)
     @DisplayName("Verify multiple message production and consumption with HMAC")
     void testMultipleMessagesWithHmac() throws Exception {
-        // Arrange
         int messageCount = 5;
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_multi_value");
         String[] messages = new String[messageCount];
@@ -146,17 +157,16 @@ class KafkaStringIntegrationTest {
             messages[i] = "Test message " + i + " " + UUID.randomUUID();
         }
 
-        // Act
         for (String message : messages) {
             stringProducer.send(message, headers);
         }
 
-        // Assert
         for (int i = 0; i < messageCount; i++) {
             String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             assertNotNull(consumedMessage, "Message " + i + " not consumed within " + TIMEOUT_SECONDS + " seconds");
             assertTrue(Arrays.asList(messages).contains(consumedMessage),
                     "Consumed message " + consumedMessage + " not in sent messages");
+
             Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             assertNotNull(consumedHeader, "Headers for message " + i + " not consumed within " + TIMEOUT_SECONDS + " seconds");
         }
@@ -168,17 +178,14 @@ class KafkaStringIntegrationTest {
     @Test
     @Order(3)
     @DisplayName("Verify empty message handling with HMAC")
-    void testEmptyMessageWithHmac() throws Exception {
-        // Arrange
+    void testEmptyMessageWithHmac() {
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_empty_value");
 
-        // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> stringProducer.send(null, headers),
                 "Producer should throw IllegalArgumentException for null message");
 
-        assertEquals("Message cannot be null", exception.getMessage(),
-                "Exception message should match expected text");
+        assertEquals("Message cannot be null", exception.getMessage());
     }
 
     /**
@@ -188,25 +195,23 @@ class KafkaStringIntegrationTest {
     @Order(4)
     @DisplayName("Verify multiple headers propagation with HMAC")
     void testMultipleHeadersWithHmac() throws Exception {
-        // Arrange
         String message = "Test message " + UUID.randomUUID();
         Map<String, String> headers = new HashMap<>();
         headers.put("kafka_test_header1", "test_value1");
         headers.put("kafka_test_header2", "test_value2");
         headers.put("kafka_test_header3", "test_value3");
 
-        // Act
         stringProducer.send(message, headers);
 
-        // Assert
         String consumedMessage = consumedMessages.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedMessage, "Message not consumed within " + TIMEOUT_SECONDS + " seconds");
         assertEquals(message, consumedMessage, "Consumed message does not match sent message");
+
         Map<String, String> consumedHeader = consumedHeaders.poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(consumedHeader, "Headers not consumed within " + TIMEOUT_SECONDS + " seconds");
-        assertTrue(consumedHeader.containsKey("kafka_test_header1"), "Consumed headers do not contain kafka_test_header1");
-        assertTrue(consumedHeader.containsKey("kafka_test_header2"), "Consumed headers do not contain kafka_test_header2");
-        assertTrue(consumedHeader.containsKey("kafka_test_header3"), "Consumed headers do not contain kafka_test_header3");
+        assertTrue(consumedHeader.containsKey("kafka_test_header1"));
+        assertTrue(consumedHeader.containsKey("kafka_test_header2"));
+        assertTrue(consumedHeader.containsKey("kafka_test_header3"));
     }
 
     /**
@@ -216,23 +221,20 @@ class KafkaStringIntegrationTest {
     @Order(5)
     @DisplayName("Verify invalid HMAC signature handling")
     void testInvalidHmacSignature() throws InterruptedException {
-        // Arrange
         String message = "Test message " + UUID.randomUUID();
         Map<String, String> headers = Collections.singletonMap("kafka_test_header", "test_invalid_hmac");
 
         // Set an invalid HMAC secret for the consumer to cause verification failure
         stringConsumer.setHmacSecret("wrong-hmac-secret-key");
 
-        // Act
         stringProducer.send(message, headers);
 
-        // Assert
         assertTrue(consumedMessages.isEmpty(), "No messages should be consumed due to HMAC failure");
         assertTrue(consumedHeaders.isEmpty(), "No headers should be consumed due to HMAC failure");
 
         Throwable thrown = stringConsumer.getExceptions().poll(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertNotNull(thrown, "No exception thrown within " + TIMEOUT_SECONDS + " seconds");
         assertTrue(thrown instanceof SecurityException, "Expected SecurityException but got " + thrown.getClass().getName());
-        assertEquals("HMAC signature verification failed", thrown.getMessage(), "Cause exception message does not match");
+        assertEquals("HMAC signature verification failed", thrown.getMessage());
     }
 }

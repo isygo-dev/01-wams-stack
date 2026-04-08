@@ -1,13 +1,13 @@
 package eu.isygoit.api;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Abstract request.
  */
-@Data
+@Getter
 @SuperBuilder
 @NoArgsConstructor
 public class AbstractRequest {

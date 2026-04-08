@@ -40,7 +40,7 @@ The application allows users to:
 - Contains fields for resume metadata and file/image paths
 
 ```java
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
@@ -63,7 +63,7 @@ public class ResumeDto extends AbstractAuditableDto<Long> implements IFileUpload
 - Represents file attachment metadata
 
 ```java
-@Data
+@Getter
 @AllArgsConstructor
 @SuperBuilder
 public class ResumeLinkedFileDto extends LinkedFileMinDto<Long> {

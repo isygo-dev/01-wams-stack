@@ -2,8 +2,9 @@ package eu.isygoit.model;
 
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -12,7 +13,8 @@ import java.util.List;
 /**
  * The type Resume.
  */
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor

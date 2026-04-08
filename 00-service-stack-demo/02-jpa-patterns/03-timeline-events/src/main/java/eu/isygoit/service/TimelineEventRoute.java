@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class TimelineEventRoute extends AbstractTimelineEventRoute<TimeLineEvent> {
 
     @Autowired
-    protected TimelineEventRoute(TimelineEventRepository timelineEventRepository) {
+    protected TimelineEventRoute(TimelineEventRepository<TimeLineEvent, Long> timelineEventRepository) {
         super(timelineEventRepository);
     }
 }

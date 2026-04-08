@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests focus on CRUD operations and data integrity of the JSON entity in a multitenant environment.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
@@ -54,7 +54,9 @@ class JsonBasedSqlPostgresIntegrationTests {
             .withDatabaseName("postgres")
             .withUsername("postgres")
             .withPassword("root")
-            .withInitScript("db/pg_init-multi-db.sql");
+            .withReuse(false)
+            .withInitScript("db/pg_init-multi-db.sql")
+            .withCreateContainerCmdModifier(cmd -> cmd.withName(UUID.randomUUID().toString()));
 
     // Test data storage for JSON entities
     private static UUID tenant1_userLoginId;
@@ -82,10 +84,10 @@ class JsonBasedSqlPostgresIntegrationTests {
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
         String tenants = baseUrl.replace("/postgres", "/tenants");
-        registry.add("multitenancy.tenants[0].id", () -> "tenants");
-        registry.add("multitenancy.tenants[0].url", () -> tenants);
-        registry.add("multitenancy.tenants[0].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[0].id", () -> "tenants");
+        registry.add("app.tenancy.tenants[0].url", () -> tenants);
+        registry.add("app.tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[0].password", postgres::getPassword);
     }
 
     /**

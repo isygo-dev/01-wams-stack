@@ -3,10 +3,11 @@ package eu.isygoit.exception.handler;
 import eu.isygoit.annotation.MsgLocale;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.helper.SpringClassScanner;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
-import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -15,7 +16,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -23,7 +23,7 @@ import java.util.*;
  * The type Controller exception handler builder.
  */
 @Slf4j
-@Data
+@Getter
 @Component
 public abstract class ControllerExceptionHandlerBuilder {
 

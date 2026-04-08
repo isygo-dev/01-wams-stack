@@ -2,8 +2,9 @@ package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.extendable.AuditableDto;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
@@ -11,12 +12,13 @@ import java.util.List;
 /**
  * The type Board item model dto.
  */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 public class BoardItemModelDto extends AuditableDto<Long> {
 
+    @Setter
     private Long id;
     private String code;
     private String state;

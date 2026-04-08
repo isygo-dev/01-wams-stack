@@ -2,21 +2,19 @@ package eu.isygoit.filter;
 
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Query criteria.
  */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 public class QueryCriteria {
 
+    @Setter
     @Builder.Default
     private IEnumCriteriaCombiner.Types combiner = IEnumCriteriaCombiner.Types.OR;
     private String name;

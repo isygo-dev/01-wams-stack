@@ -41,7 +41,7 @@ public abstract class MultiFileTenantService<
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I> & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>,
         RL extends JpaPagingAndSortingTenantAssignableRepository<L, I>
-        > extends MultiFileTenantServiceSubMethods<I, T, L, R, RL> implements IMultiFileTenantServiceMethods<I, T> {
+        > extends MultiFileTenantServiceSubOperations<I, T, L, R, RL> implements IMultiFileTenantServiceOperations<I, T> {
 
     private final Class<T> persistentClass;
     private final Class<L> linkedFileClass;
@@ -108,7 +108,7 @@ public abstract class MultiFileTenantService<
             var linkedFile = createLinkedFile(tenant, file);
 
             linkedFile = beforeUpload(tenant, linkedFile, file);
-            linkedFile = subUploadFile(file, linkedFile);
+            linkedFile = performUploadFile(file, linkedFile);
             linkedFile = afterUpload(tenant, linkedFile, file);
 
             if (CollectionUtils.isEmpty(entity.getAdditionalFiles())) {
@@ -169,7 +169,7 @@ public abstract class MultiFileTenantService<
             throw new ObjectNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
         log.debug("Downloading file for tenant: {}, parentId: {}, fileId: {}, version: {}", tenant, parentId, fileId, version);
-        return subDownloadFile(linkedFile, version);
+        return performDownloadFile(linkedFile, version);
     }
 
     /**

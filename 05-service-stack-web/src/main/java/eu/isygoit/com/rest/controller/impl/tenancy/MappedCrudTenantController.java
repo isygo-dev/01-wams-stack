@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.controller.impl.tenancy;
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
@@ -30,57 +30,57 @@ public abstract class MappedCrudTenantController<I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudTenantServiceMethods<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudTenantControllerSubMethods<I, T, M, F, S>
+        S extends ICrudTenantServiceOperations<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        extends CrudTenantControllerOperations<I, T, M, F, S>
         implements IMappedCrudApi<I, M, F> {
 
     @Override
     public final ResponseEntity<F> create(ContextRequestDto requestContext,
                                           F object) {
-        return subCreate(requestContext, object);
+        return performCreate(requestContext, object);
     }
 
     public final ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
-        return subCreate(requestContext, objects);
+        return performCreate(requestContext, objects);
     }
 
     @Override
     public final ResponseEntity<?> delete(ContextRequestDto requestContext, I id) {
-        return subDelete(requestContext, id);
+        return performDelete(requestContext, id);
     }
 
     @Override
     public final ResponseEntity<?> batchDelete(ContextRequestDto requestContext,
                                                List<I> ids) {
 
-        return subDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
+        return performDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
     @Override
     public final ResponseEntity<List<M>> findAll(ContextRequestDto requestContext,
                                                  Integer page,
                                                  Integer size) {
-        return subFindAll(requestContext, page, size);
+        return performFindAll(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext,
                                                      Integer page,
                                                      Integer size) {
-        return subFindAllFull(requestContext, page, size);
+        return performFindAllFull(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<F> findById(ContextRequestDto requestContext,
                                             I id) {
-        return subFindById(requestContext, id);
+        return performFindById(requestContext, id);
     }
 
     @Override
     public final ResponseEntity<F> update(ContextRequestDto requestContext,
                                           I id,
                                           F object) {
-        return subUpdate(requestContext, id, object);
+        return performUpdate(requestContext, id, object);
     }
 
     @Override
@@ -94,7 +94,7 @@ public abstract class MappedCrudTenantController<I extends Serializable,
                                                              String criteria,
                                                              Integer page,
                                                              Integer size) {
-        return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
+        return performFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 
     @Override

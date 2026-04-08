@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedCrudPersistApi;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -27,19 +27,19 @@ import java.util.List;
 public abstract class MappedCrudPersistController<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerSubMethods<I, T, M, F, S>
+        S extends ICrudServiceOperations<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudPersistApi<I, F> {
 
     public final ResponseEntity<F> create(ContextRequestDto requestContext, F object) {
-        return subCreate(requestContext, object);
+        return performCreate(requestContext, object);
     }
 
     public final ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
-        return subCreate(requestContext, objects);
+        return performCreate(requestContext, objects);
     }
 
     public final ResponseEntity<F> update(ContextRequestDto requestContext, I id, F object) {
-        return subUpdate(requestContext, id, object);
+        return performUpdate(requestContext, id, object);
     }
 }

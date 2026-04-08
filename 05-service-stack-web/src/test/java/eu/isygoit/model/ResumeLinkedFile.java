@@ -2,14 +2,16 @@ package eu.isygoit.model;
 
 import eu.isygoit.model.extendable.LinkedFileModel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Resume linked file.
  */
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,21 +1,19 @@
 package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.extendable.AbstractDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Next code dto.
  */
-@Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 public class NextCodeDto extends AbstractDto<Long> {
 
+    @Setter
     private Long id;
     private String tenant;
     private String entity;

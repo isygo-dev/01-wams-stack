@@ -155,18 +155,19 @@ public class LFSStorageIntegrationTests {
         repositoryName = "repo-" + UUID.randomUUID();
         storageNamespace = "bucket-" + UUID.randomUUID();
 
-        config = new LFSConfig();
-        config.setTenant(tenant);
-        config.setUrl("http://" + lakeFSContainer.getHost() + ":" + lakeFSContainer.getMappedPort(8000) + "/api/v1");
-        config.setUserName(ACCESS_KEY);
-        config.setPassword(SECRET_KEY);
-        config.setS3Config(S3Config.builder()
+        config = LFSConfig.builder()
                 .tenant(tenant)
-                .url("http://" + minioContainer.getHost() + ":" + minioContainer.getMappedPort(9000))
-                .userName(MINIO_ACCESS_KEY)
-                .password(MINIO_SECRET_KEY)
-                .region("us-east-1")
-                .build());
+                .url("http://" + lakeFSContainer.getHost() + ":" + lakeFSContainer.getMappedPort(8000) + "/api/v1")
+                .userName(ACCESS_KEY)
+                .password(SECRET_KEY)
+                .s3Config(S3Config.builder()
+                        .tenant(tenant)
+                        .url("http://" + minioContainer.getHost() + ":" + minioContainer.getMappedPort(9000))
+                        .userName(MINIO_ACCESS_KEY)
+                        .password(MINIO_SECRET_KEY)
+                        .region("us-east-1")
+                        .build())
+                .build();
 
         // Retry connection to LakeFS
         int maxRetries = 10;

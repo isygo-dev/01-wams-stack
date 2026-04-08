@@ -1,6 +1,6 @@
 package eu.isygoit.listener;
 
-import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventType;
 import eu.isygoit.service.timeline.ITimelineEventService;
 import jakarta.persistence.PostPersist;
@@ -34,7 +34,7 @@ public class TimelineEventListener implements ApplicationContextAware {
      * @param entity the entity
      */
     @PostPersist
-    public void onCreate(IIdAssignable entity) {
+    public void onCreate(ITimelineEventSource entity) {
         getTimelineEventService().recordEvent(entity, TimelineEventType.CREATED);
     }
 
@@ -44,7 +44,7 @@ public class TimelineEventListener implements ApplicationContextAware {
      * @param entity the entity
      */
     @PostUpdate
-    public void onUpdate(IIdAssignable entity) {
+    public void onUpdate(ITimelineEventSource entity) {
         getTimelineEventService().recordEvent(entity, TimelineEventType.UPDATED);
     }
 
@@ -54,7 +54,7 @@ public class TimelineEventListener implements ApplicationContextAware {
      * @param entity the entity
      */
     @PostRemove
-    public void onDelete(IIdAssignable entity) {
+    public void onDelete(ITimelineEventSource entity) {
         getTimelineEventService().recordEvent(entity, TimelineEventType.DELETED);
     }
 

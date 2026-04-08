@@ -1,14 +1,14 @@
 package eu.isygoit.model;
 
-import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.json.JsonBasedEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,13 +19,10 @@ public class EventEntity extends JsonBasedEntity<Long> implements ITenantAssigna
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "events_sequence_generator")
     @SequenceGenerator(name = "events_sequence_generator", sequenceName = "events_sequence", allocationSize = 1)
+    @Setter
     private Long id;
 
-    @Criteria
+    @Setter
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
-
-    @Criteria
-    @Column(name = "ELEMENT_TYPE", nullable = false)
-    private String elementType;
 }

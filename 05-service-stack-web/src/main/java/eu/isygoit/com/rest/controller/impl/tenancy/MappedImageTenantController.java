@@ -5,7 +5,7 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceMethods;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
@@ -41,7 +41,7 @@ public abstract class MappedImageTenantController<I extends Serializable,
         T extends IIdAssignable<I> & IImageEntity & ITenantAssignable,
         M extends IIdAssignableDto<I> & IDto & IImageUploadDto,
         F extends M,
-        S extends IImageTenantServiceMethods<I, T> & ICrudTenantServiceMethods<I, T> & ICrudServiceUtils<I, T>>
+        S extends IImageTenantServiceOperations<I, T> & ICrudTenantServiceOperations<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedImageApi<I, F> {
 

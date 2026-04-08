@@ -1,28 +1,32 @@
 package eu.isygoit.model.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import eu.isygoit.model.jakarta.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * The type Timeline event entity.
  */
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
-public abstract class TimelineEventEntity implements ITimelineEventEntity {
+public abstract class TimelineEventEntity<I extends Serializable> extends AbstractEntity<I> implements ITimelineEventEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

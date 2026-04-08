@@ -19,6 +19,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * This test suite verifies tenant isolation at the database level by simulating HTTP calls using MockMvc.
  */
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=DATABASE"
 })
@@ -48,7 +50,9 @@ class MultiTenancyDatabasePostgresIntegrationTests {
             .withDatabaseName("postgres") // initial database
             .withUsername("postgres")
             .withPassword("root")
-            .withInitScript("db/pg_init-multi-db.sql"); // creates tenant1 and tenant2
+            .withReuse(false)
+            .withInitScript("db/pg_init-multi-db.sql")
+            .withCreateContainerCmdModifier(cmd -> cmd.withName(UUID.randomUUID().toString()));
     private static Long tenant1TutorialId;
     private final String BASE_URL = "/api/tutorials";
     @Autowired
@@ -70,15 +74,15 @@ class MultiTenancyDatabasePostgresIntegrationTests {
         String tenant1Url = baseUrl.replace("/postgres", "/tenant1");
         String tenant2Url = baseUrl.replace("/postgres", "/tenant2");
 
-        registry.add("multitenancy.tenants[0].id", () -> "tenant1");
-        registry.add("multitenancy.tenants[0].url", () -> tenant1Url);
-        registry.add("multitenancy.tenants[0].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[0].id", () -> "tenant1");
+        registry.add("app.tenancy.tenants[0].url", () -> tenant1Url);
+        registry.add("app.tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[0].password", postgres::getPassword);
 
-        registry.add("multitenancy.tenants[1].id", () -> "tenant2");
-        registry.add("multitenancy.tenants[1].url", () -> tenant2Url);
-        registry.add("multitenancy.tenants[1].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[1].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[1].id", () -> "tenant2");
+        registry.add("app.tenancy.tenants[1].url", () -> tenant2Url);
+        registry.add("app.tenancy.tenants[1].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[1].password", postgres::getPassword);
     }
 
     /**

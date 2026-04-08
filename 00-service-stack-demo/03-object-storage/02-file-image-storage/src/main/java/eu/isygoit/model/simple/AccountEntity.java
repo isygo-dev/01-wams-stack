@@ -5,11 +5,12 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,8 +21,10 @@ public class AccountEntity extends AuditableEntity<Long> implements ITenantAssig
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_sequence_generator")
     @SequenceGenerator(name = "account_sequence_generator", sequenceName = "account_sequence", allocationSize = 1)
+    @Setter
     private Long id;
 
+    @Setter
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 

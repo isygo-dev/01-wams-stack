@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })

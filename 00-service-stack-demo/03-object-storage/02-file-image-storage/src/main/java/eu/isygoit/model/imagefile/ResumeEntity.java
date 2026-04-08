@@ -6,17 +6,15 @@ import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.multifile.ResumeLinkedFile;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,8 +33,10 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "resume_sequence_generator")
     @SequenceGenerator(name = "resume_sequence_generator", sequenceName = "resume_sequence", allocationSize = 1)
+    @Setter
     private Long id;
 
+    @Setter
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
 

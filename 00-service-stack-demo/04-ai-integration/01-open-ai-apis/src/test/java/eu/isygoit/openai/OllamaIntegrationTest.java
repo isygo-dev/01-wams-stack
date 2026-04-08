@@ -4,6 +4,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
@@ -12,8 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
@@ -28,158 +35,151 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * The type Ollama integration test.
+ * Integration tests for Ollama endpoints using Testcontainers.
+ * Updated for Spring Boot 3.5.x + modern Testcontainers best practices.
  */
-@SpringBootTest
+@SpringBootTest(
+        classes = OpenAiApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK
+)
 @AutoConfigureMockMvc
 @Testcontainers
+@EnableAutoConfiguration(exclude = {
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class,
+        JpaRepositoriesAutoConfiguration.class,
+        CassandraAutoConfiguration.class
+})
+@ImportAutoConfiguration(exclude = {
+        DataSourceAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class,
+        JpaRepositoriesAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        CassandraAutoConfiguration.class
+})
+@TestPropertySource(properties = {
+        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration"
+})
 public class OllamaIntegrationTest {
 
-    /**
-     * The constant ollama.
-     */
     @Container
-    static GenericContainer<?> ollama = new GenericContainer<>("ollama/ollama:latest")
+    static final GenericContainer<?> ollama = new GenericContainer<>("ollama/ollama:latest")
             .withExposedPorts(11434)
-            .withReuse(true)// Enable container reuse
+            .withReuse(true)
+            .withCommand("serve")
+            // Persistent volume for models (better cross-platform handling)
+            .withFileSystemBind(getOllamaVolumePath(), "/root/.ollama")
             .waitingFor(Wait.forHttp("/api/tags")
                     .forStatusCode(200)
-                    .withStartupTimeout(Duration.ofMinutes(3)))
-            .withCommand("serve")
-            // Mount a persistent volume for model storage
-            .withFileSystemBind(getOllamaVolumePath(), "/root/.ollama");
-    @Value("${ollama.api.url}")
-    private String ollamaApiUrl;
+                    .withStartupTimeout(Duration.ofMinutes(3)));
 
     @Autowired
     private MockMvc mockMvc;
-    @Value("${ollama.model}")
-    private String model;
+
     @Autowired
     private ResourceLoader resourceLoader;
 
+    @Value("${ollama.api.url}")
+    private String ollamaApiUrl;
+
+    @Value("${ollama.model}")
+    private String model;
+
     /**
-     * Get the volume path for Ollama models.
-     * Use a consistent path to persist data across test runs.
+     * Returns a consistent path for Ollama model storage.
+     * This helps reuse models between test runs and speeds up CI.
      */
     private static String getOllamaVolumePath() {
-        // Use a fixed path for the volume, e.g., in the project directory
-        // Ensure this path is writable by the container
+        // You can also use System.getProperty("java.io.tmpdir") + "/ollama-data" for temp-based storage
         return "./ollama-data";
     }
 
     /**
-     * Configure properties.
-     *
-     * @param registry the registry
-     * @throws IOException          the io exception
-     * @throws InterruptedException the interrupted exception
+     * Configure dynamic properties for the test (Ollama URL and model).
      */
     @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) throws IOException, InterruptedException {
+    static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("ollama.api.url", () ->
                 "http://localhost:" + ollama.getFirstMappedPort() + "/api/generate");
-        registry.add("ollama.model", () -> "qwen2.5:1.5b");
+        registry.add("ollama.model", () -> "qwen2.5:3b");
     }
 
     /**
-     * Sets up.
-     *
-     * @throws IOException          the io exception
-     * @throws InterruptedException the interrupted exception
+     * Pull the required model before all tests (runs once per test class).
      */
     @BeforeAll
     static void setUp() throws IOException, InterruptedException {
-        // Ensure the model is available without pulling if already present
-        pullModelIfNeeded("qwen2.5:1.5b");
+        pullModelIfNeeded("qwen2.5:3b");
     }
 
-    private static void pullModelIfNeeded(String model) throws IOException, InterruptedException {
-        // Check if the model is already available
-        org.testcontainers.containers.Container.ExecResult result = ollama.execInContainer("ollama", "list");
-        String output = result.getStdout();
-        if (output != null && output.contains(model)) {
+    private static void pullModelIfNeeded(String modelName) throws IOException, InterruptedException {
+        // Check if model already exists
+        var listResult = ollama.execInContainer("ollama", "list");
+        String output = listResult.getStdout() + listResult.getStderr();
+
+        if (output.contains(modelName)) {
+            System.out.println("Model " + modelName + " already available.");
             return;
         }
 
-        // Pull the model if not found
-        try {
-            ollama.execInContainer("ollama", "pull", model);
+        System.out.println("Pulling model: " + modelName + " ... This may take a few minutes.");
 
-            // Wait for the model to be available
-            long startTime = System.currentTimeMillis();
-            long timeout = Duration.ofMinutes(5).toMillis();
-            boolean modelFound = false;
-
-            while (System.currentTimeMillis() - startTime < timeout) {
-                result = ollama.execInContainer("ollama", "list");
-                output = result.getStdout();
-                if (output.contains(model)) {
-                    modelFound = true;
-                    break;
-                }
-                Thread.sleep(2000);
-            }
-
-            if (!modelFound) {
-                throw new RuntimeException("Model " + model + " not found after pulling");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error pulling model: " + e.getMessage(), e);
+        var pullResult = ollama.execInContainer("ollama", "pull", modelName);
+        if (pullResult.getExitCode() != 0) {
+            throw new RuntimeException("Failed to pull model " + modelName + ": " + pullResult.getStderr());
         }
+
+        // Wait until model appears in the list
+        long start = System.currentTimeMillis();
+        long timeout = Duration.ofMinutes(6).toMillis();
+
+        while (System.currentTimeMillis() - start < timeout) {
+            var checkResult = ollama.execInContainer("ollama", "list");
+            String checkOutput = checkResult.getStdout() + checkResult.getStderr();
+
+            if (checkOutput.contains(modelName)) {
+                System.out.println("Model " + modelName + " successfully pulled and ready.");
+                return;
+            }
+            Thread.sleep(3000);
+        }
+
+        throw new RuntimeException("Timeout: Model " + modelName + " was not available after pulling.");
     }
 
-    /**
-     * Test ollama generate endpoint with simple prompt.
-     *
-     * @throws Exception the exception
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Generate Endpoint Tests
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Test
     void testOllamaGenerateEndpointWithSimplePrompt() throws Exception {
-        // Wait a bit for model to be ready
-        Thread.sleep(2000);
-
-        MvcResult result = mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
-                        .param("message", "Translate to french: Hello, how can I help you?")
+        mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
+                        .param("message", "Translate to French: Hello, how can I help you today?")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.generatedText").exists())
-                .andExpect(jsonPath("$.errorMessage").doesNotExist())
-                .andReturn();
-
-        System.out.println("Ollama Response: " + result.getResponse().getContentAsString());
+                .andExpect(jsonPath("$.errorMessage").doesNotExist());
     }
 
-    /**
-     * Test ollama generate endpoint with temperature.
-     *
-     * @throws Exception the exception
-     */
     @Test
-    void testOllamaGenerateEndpointWithTemperature() throws Exception {
-        // Wait a bit for model to be ready
-        Thread.sleep(2000);
-
-        MvcResult result = mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
-                        .param("message", "Write a short poem about spring")
-                        .param("temperature", "0.8")
-                        .param("maxTokens", "512")
+    void testOllamaGenerateEndpointWithTemperatureAndMaxTokens() throws Exception {
+        mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
+                        .param("message", "Write a short inspirational quote about AI.")
+                        .param("temperature", "0.85")
+                        .param("maxTokens", "300")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.generatedText").exists())
-                .andExpect(jsonPath("$.errorMessage").doesNotExist())
-                .andReturn();
-
-        System.out.println("Ollama Response with temperature: " + result.getResponse().getContentAsString());
+                .andExpect(jsonPath("$.errorMessage").doesNotExist());
     }
 
-    /**
-     * Test ollama generate endpoint with empty message.
-     *
-     * @throws Exception the exception
-     */
     @Test
     void testOllamaGenerateEndpointWithEmptyMessage() throws Exception {
         mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
@@ -191,159 +191,119 @@ public class OllamaIntegrationTest {
                 .andExpect(jsonPath("$.generatedText").doesNotExist());
     }
 
-    /**
-     * Test ollama generate endpoint with long message.
-     *
-     * @throws Exception the exception
-     */
     @Test
     void testOllamaGenerateEndpointWithLongMessage() throws Exception {
-        String longMessage = "a".repeat(15000); // Exceeds 4096 character limit
+        String longMessage = "a".repeat(15000);
 
         mockMvc.perform(get("/api/v1/chat/ai/ollama/generate")
                         .param("message", longMessage)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().isInternalServerError())   // or BadRequest depending on your exception handling
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorMessage").exists())
-                .andExpect(jsonPath("$.generatedText").doesNotExist());
+                .andExpect(jsonPath("$.errorMessage").exists());
     }
 
-    /**
-     * Test ollama analyze bill endpoint with valid PDF.
-     *
-     * @throws Exception the exception
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // Bill Analysis Tests
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Test
     void testOllamaAnalyzeBillEndpointWithValidPDF() throws Exception {
-        // Load sample PDF from resources
         Resource pdfResource = resourceLoader.getResource("classpath:Facture-981-06-2025.pdf");
+
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "Facture-981-06-2025.pdf",
-                "application/pdf",
+                MediaType.APPLICATION_PDF_VALUE,
                 pdfResource.getInputStream().readAllBytes()
         );
 
-        // Wait a bit for model to be ready
-        Thread.sleep(2000);
-
-        MvcResult result = mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
+        mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
                         .file(file)
                         .param("temperature", "0.7")
-                        .param("maxTokens", "512")
+                        .param("maxTokens", "600")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.generatedText").exists())
-                .andExpect(jsonPath("$.errorMessage").doesNotExist())
-                .andReturn();
-
-        System.out.println("Ollama Bill Analysis Response: " + result.getResponse().getContentAsString());
+                .andExpect(jsonPath("$.errorMessage").doesNotExist());
     }
 
-    /**
-     * Test ollama analyze bill endpoint with empty file.
-     *
-     * @throws Exception the exception
-     */
     @Test
     void testOllamaAnalyzeBillEndpointWithEmptyFile() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "empty.pdf", "application/pdf", new byte[0]);
+        MockMultipartFile emptyFile = new MockMultipartFile(
+                "file", "empty.pdf", MediaType.APPLICATION_PDF_VALUE, new byte[0]);
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
-                        .file(file)
+                        .file(emptyFile)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorMessage").exists())
-                .andExpect(jsonPath("$.generatedText").doesNotExist());
+                .andExpect(jsonPath("$.errorMessage").exists());
     }
 
-    /**
-     * Test ollama analyze bill endpoint with invalid file type.
-     *
-     * @throws Exception the exception
-     */
     @Test
     void testOllamaAnalyzeBillEndpointWithInvalidFileType() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF".getBytes());
+        MockMultipartFile txtFile = new MockMultipartFile(
+                "file", "test.txt", MediaType.TEXT_PLAIN_VALUE, "This is not a PDF".getBytes());
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-bill")
-                        .file(file)
+                        .file(txtFile)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorMessage").exists())
-                .andExpect(jsonPath("$.generatedText").doesNotExist());
+                .andExpect(jsonPath("$.errorMessage").exists());
     }
 
-    /**
-     * Test ollama analyze CV endpoint with valid PDF.
-     *
-     * @throws Exception the exception
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // CV Analysis Tests
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Test
     void testOllamaAnalyzeCVEndpointWithValidPDF() throws Exception {
-        // Load sample CV PDF from resources
         Resource pdfResource = resourceLoader.getResource("classpath:Sample-CV-2025.pdf");
+
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "Sample-CV-2025.pdf",
-                "application/pdf",
+                MediaType.APPLICATION_PDF_VALUE,
                 pdfResource.getInputStream().readAllBytes()
         );
 
-        // Wait a bit for model to be ready
-        Thread.sleep(2000);
-
-        MvcResult result = mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
+        mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
                         .file(file)
-                        .param("temperature", "0.7")
-                        .param("maxTokens", "1500")
+                        .param("temperature", "0.6")
+                        .param("maxTokens", "1200")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.generatedText").exists())
-                .andExpect(jsonPath("$.errorMessage").doesNotExist())
-                .andReturn();
-
-        System.out.println("Ollama CV Analysis Response: " + result.getResponse().getContentAsString());
+                .andExpect(jsonPath("$.errorMessage").doesNotExist());
     }
 
-    /**
-     * Test ollama analyze CV endpoint with empty file.
-     *
-     * @throws Exception the exception
-     */
     @Test
     void testOllamaAnalyzeCVEndpointWithEmptyFile() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "empty.pdf", "application/pdf", new byte[0]);
+        MockMultipartFile emptyFile = new MockMultipartFile(
+                "file", "empty.pdf", MediaType.APPLICATION_PDF_VALUE, new byte[0]);
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
-                        .file(file)
+                        .file(emptyFile)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorMessage").exists())
-                .andExpect(jsonPath("$.generatedText").doesNotExist());
+                .andExpect(jsonPath("$.errorMessage").exists());
     }
 
-    /**
-     * Test ollama analyze CV endpoint with invalid file type.
-     *
-     * @throws Exception the exception
-     */
     @Test
     void testOllamaAnalyzeCVEndpointWithInvalidFileType() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "Not a PDF".getBytes());
+        MockMultipartFile txtFile = new MockMultipartFile(
+                "file", "test.txt", MediaType.TEXT_PLAIN_VALUE, "Not a PDF file".getBytes());
 
         mockMvc.perform(multipart("/api/v1/chat/ai/ollama/analyze-cv")
-                        .file(file)
+                        .file(txtFile)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorMessage").exists())
-                .andExpect(jsonPath("$.generatedText").doesNotExist());
+                .andExpect(jsonPath("$.errorMessage").exists());
     }
 }

@@ -9,55 +9,48 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-quartz</artifactId>
-    <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-quartz</name>
-    <description>service-stack-quartz</description>
-
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <artifactId>service-stack-quartz</artifactId>
+    <name>service-stack-quartz</name>
+    <description>Quartz scheduler integration — base job classes, triggers and persistence configuration</description>
+    <packaging>jar</packaging>
 
     <dependencies>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version> <!-- Feb 03, 2023 -->
+            <optional>true</optional>
         </dependency>
+
+        <!-- Joda-Time -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.12.5</version>
         </dependency>
+
+        <!-- Spring Boot Quartz Starter — Boot manages Quartz 2.5.x
+             FIXED: was pinned at 3.2.3 which pulled Boot 3.2.x transitive
+             deps into a project targeting Boot 3.5.x, causing binary conflicts -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
-            <version>3.2.3</version>
         </dependency>
+
+        <!-- Test — FIXED: module had zero test deps previously           -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </repositories>
 </project>

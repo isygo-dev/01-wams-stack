@@ -6,7 +6,7 @@ import eu.isygoit.enums.IEnumWebToken;
 import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,11 +19,13 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * The type Jwt api test.
+ * Complete JwtServiceTest for JJWT 0.13.0+.
+ * Covers ALL original tests + full dual (secured + unsecured) extraction paths.
+ * Uses a strong 512-bit key to satisfy RFC 7518.
  */
 class JwtServiceTest {
 
-    private final String testKey = "testkeytestkeytestkeytestkey";
+    private final String testKey = "thisIsASecretKeyForHS256ThatIsLongEnough1234567890ABCDEF"; // 64 chars = 512 bits
     private final String subject = "testSubject";
     private final Map<String, Object> claims = Map.of(
             JwtConstants.JWT_SENDER_TENANT, "example.com",
@@ -32,246 +34,189 @@ class JwtServiceTest {
             JwtConstants.JWT_SENDER_ACCOUNT_TYPE, "premium",
             JwtConstants.JWT_SENDER_USER, "testuser"
     );
+
     private JwtService jwtService;
 
-    /**
-     * Sets .
-     */
     @BeforeEach
     void setup() {
         jwtService = new JwtService();
     }
 
-    /**
-     * Test create token and basic claims.
-     */
+    // ========================================================================
+    // Token Creation + Basic Claims (both secured & unsecured)
+    // ========================================================================
+
     @Test
-    void testCreateTokenAndBasicClaims() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                claims,
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60 // 1 hour
-        );
+    void testCreateTokenAndAllExtractors() {
+        TokenResponseDto dto = jwtService.createToken(
+                subject, claims, "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
-        assertNotNull(tokenResponseDto);
-        assertEquals(IEnumWebToken.Types.Bearer, tokenResponseDto.getType());
-        assertNotNull(tokenResponseDto.getToken());
-        assertNotNull(tokenResponseDto.getExpiryDate());
+        String token = dto.getToken();
 
-        String token = tokenResponseDto.getToken();
+        assertNotNull(dto);
+        assertEquals(IEnumWebToken.Types.Bearer, dto.getType());
+        assertNotNull(dto.getToken());
+        assertNotNull(dto.getExpiryDate());
 
-        // Basic claim extractions
-        assertEquals(subject, jwtService.extractSubject(token, testKey).orElse(null));
+        // Unsecured extractors (no key)
+        assertEquals(subject, jwtService.extractSubject(token).orElse(null));
         assertEquals("example.com", jwtService.extractTenant(token).orElse(null));
         assertTrue(jwtService.extractIsAdmin(token));
         assertEquals("TestApp", jwtService.extractApplication(token).orElse(null));
         assertEquals("premium", jwtService.extractAccountType(token).orElse(null));
         assertEquals("testuser", jwtService.extractUserName(token).orElse(null));
+
+        // Secured extractors (with key)
+        assertEquals(subject, jwtService.extractSubject(token, testKey).orElse(null));
+        assertEquals("example.com", jwtService.extractTenant(token, testKey).orElse(null));
+        assertTrue(jwtService.extractIsAdmin(token, testKey));
+        assertEquals("TestApp", jwtService.extractApplication(token, testKey).orElse(null));
+        assertEquals("premium", jwtService.extractAccountType(token, testKey).orElse(null));
+        assertEquals("testuser", jwtService.extractUserName(token, testKey).orElse(null));
     }
 
-    /**
-     * Test extract subject unsigned.
-     */
+    // ========================================================================
+    // Subject extraction (both versions)
+    // ========================================================================
+
     @Test
     void testExtractSubjectUnsigned() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60 // 1 hour
-        );
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
-        String token = tokenResponseDto.getToken();
-
+        String token = dto.getToken();
         Optional<String> extracted = jwtService.extractSubject(token);
         assertTrue(extracted.isPresent());
         assertEquals(subject, extracted.get());
     }
 
-    /**
-     * Test extract subject with key.
-     */
     @Test
     void testExtractSubjectWithKey() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
-        String token = tokenResponseDto.getToken();
-
+        String token = dto.getToken();
         Optional<String> extracted = jwtService.extractSubject(token, testKey);
         assertTrue(extracted.isPresent());
         assertEquals(subject, extracted.get());
     }
 
-    /**
-     * Test extract claim with function and key.
-     */
+    // ========================================================================
+    // Generic claim extraction (both function + key and function no-key)
+    // ========================================================================
+
     @Test
     void testExtractClaimWithFunctionAndKey() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
-        String token = tokenResponseDto.getToken();
-
+        String token = dto.getToken();
         Optional<Date> expiration = jwtService.extractClaim(token, Claims::getExpiration, testKey);
         assertTrue(expiration.isPresent());
     }
 
-    /**
-     * Test extract claim with function no key.
-     */
     @Test
     void testExtractClaimWithFunctionNoKey() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
-        String token = tokenResponseDto.getToken();
-
+        String token = dto.getToken();
         Optional<Date> expiration = jwtService.extractClaim(token, Claims::getExpiration);
         assertTrue(expiration.isPresent());
     }
 
-    /**
-     * Test extract claim with claim key and class.
-     */
     @Test
     void testExtractClaimWithClaimKeyAndClass() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                claims,
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
+        TokenResponseDto dto = jwtService.createToken(
+                subject, claims, "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
-        String token = tokenResponseDto.getToken();
-
+        String token = dto.getToken();
         Optional<String> tenant = jwtService.extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
         assertTrue(tenant.isPresent());
         assertEquals("example.com", tenant.get());
     }
 
-    /**
-     * Test extract all claims signed.
-     */
+    // ========================================================================
+    // All claims extraction (both signed & unsigned)
+    // ========================================================================
+
     @Test
     void testExtractAllClaimsSigned() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
-        String token = tokenResponseDto.getToken();
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
+        String token = dto.getToken();
         assertDoesNotThrow(() -> {
-            var claims = jwtService.extractAllClaims(token, testKey);
+            Claims claims = jwtService.extractAllClaims(token, testKey);
             assertNotNull(claims);
             assertEquals(subject, claims.getSubject());
         });
     }
 
-    /**
-     * Test extract all claims unsigned.
-     */
     @Test
     void testExtractAllClaimsUnsigned() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
-        String token = tokenResponseDto.getToken();
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
+        String token = dto.getToken();
         assertDoesNotThrow(() -> {
-            var claims = jwtService.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
             assertNotNull(claims);
             assertEquals(subject, claims.getSubject());
         });
     }
 
-    /**
-     * Test is token expired false.
-     */
+    @Test
+    void testExtractAllClaimsUnsignedOnHs256TokenSucceeds() {
+        TokenResponseDto dto = jwtService.createToken(
+                subject, claims, "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+
+        Claims claims = jwtService.extractAllClaims(dto.getToken());
+        assertNotNull(claims);
+        assertEquals(subject, claims.getSubject());
+        assertEquals("example.com", claims.get(JwtConstants.JWT_SENDER_TENANT));
+        assertTrue(claims.get(JwtConstants.JWT_IS_ADMIN, Boolean.class));
+    }
+
+    // ========================================================================
+    // Expiration checks
+    // ========================================================================
+
     @Test
     void testIsTokenExpiredFalse() {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1000 * 60 * 60
-        );
-        String token = tokenResponseDto.getToken();
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
 
+        String token = dto.getToken();
         assertFalse(jwtService.isTokenExpired(token, testKey));
     }
 
-    /**
-     * Test is token expired true.
-     *
-     * @throws InterruptedException the interrupted exception
-     */
     @Test
     void testIsTokenExpiredTrue() throws InterruptedException {
-        TokenResponseDto tokenResponseDto = jwtService.createToken(
-                subject,
-                Collections.emptyMap(),
-                "issuerTest",
-                "audienceTest",
-                SignatureAlgorithm.HS256,
-                testKey,
-                1
-        );
-        String token = tokenResponseDto.getToken();
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1);
 
+        String token = dto.getToken();
         Thread.sleep(5);
 
         assertThrows(ExpiredJwtException.class, () -> jwtService.isTokenExpired(token, testKey));
     }
 
-    /**
-     * Test calc expiry date.
-     */
+    // ========================================================================
+    // Expiry date calculation
+    // ========================================================================
+
     @Test
     void testCalcExpiryDate() {
         Date now = new Date();
@@ -284,42 +229,62 @@ class JwtServiceTest {
         assertTrue(diff >= offsetMs);
     }
 
-    /**
-     * The type Validate token tests.
-     */
+    // ========================================================================
+    // Token Validation (full original nested suite)
+    // ========================================================================
+
+    @Test
+    void extractMissingClaimReturnsEmptyOptional() {
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+
+        String token = dto.getToken();
+
+        assertTrue(jwtService.extractTenant(token).isEmpty());
+        assertFalse(jwtService.extractIsAdmin(token)); // default false
+        assertTrue(jwtService.extractApplication(token).isEmpty());
+    }
+
+    // ========================================================================
+    // Extract Claims Error Handling (covers both secured & unsecured)
+    // ========================================================================
+
+    @Test
+    void extractMissingClaimSecuredReturnsEmptyOptional() {
+        TokenResponseDto dto = jwtService.createToken(
+                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+
+        String token = dto.getToken();
+
+        assertTrue(jwtService.extractTenant(token, testKey).isEmpty());
+        assertFalse(jwtService.extractIsAdmin(token, testKey));
+        assertTrue(jwtService.extractApplication(token, testKey).isEmpty());
+    }
+
+    // ========================================================================
+    // Additional useful edge-case tests
+    // ========================================================================
+
     @Nested
     class ValidateTokenTests {
 
         private String validToken;
 
-        /**
-         * Generate valid token.
-         */
         @BeforeEach
         void generateValidToken() {
-            TokenResponseDto tokenResponseDto = jwtService.createToken(
-                    subject,
-                    Collections.emptyMap(),
-                    "issuerTest",
-                    "audienceTest",
-                    SignatureAlgorithm.HS256,
-                    testKey,
-                    1000 * 60 * 60
-            );
-            validToken = tokenResponseDto.getToken();
+            TokenResponseDto dto = jwtService.createToken(
+                    subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                    Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+            validToken = dto.getToken();
         }
 
-        /**
-         * Validate token success.
-         */
         @Test
         void validateTokenSuccess() {
             assertDoesNotThrow(() -> jwtService.validateToken(validToken, subject, testKey));
         }
 
-        /**
-         * Validate token empty throws.
-         */
         @Test
         void validateTokenEmptyThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -327,9 +292,6 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().contains("null or empty"));
         }
 
-        /**
-         * Validate token wrong subject throws.
-         */
         @Test
         void validateTokenWrongSubjectThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -337,69 +299,42 @@ class JwtServiceTest {
             assertTrue(ex.getMessage().contains("subject does not match"));
         }
 
-        /**
-         * Validate token invalid signature throws.
-         */
         @Test
         void validateTokenInvalidSignatureThrows() {
             String invalidSignatureToken = validToken + "junk";
-
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
                     () -> jwtService.validateToken(invalidSignatureToken, subject, testKey));
             assertTrue(ex.getMessage().toLowerCase().contains("signature"));
         }
 
-        /**
-         * Validate token malformed throws.
-         */
         @Test
         void validateTokenMalformedThrows() {
             String malformedToken = "abc.def";
-
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
                     () -> jwtService.validateToken(malformedToken, subject, testKey));
             assertTrue(ex.getMessage().toLowerCase().contains("malformed"));
         }
 
-        /**
-         * Validate token expired throws.
-         *
-         * @throws InterruptedException the interrupted exception
-         */
         @Test
         void validateTokenExpiredThrows() throws InterruptedException {
-            TokenResponseDto shortLivedTokenResponseDto = jwtService.createToken(
-                    subject,
-                    Collections.emptyMap(),
-                    "issuerTest",
-                    "audienceTest",
-                    SignatureAlgorithm.HS256,
-                    testKey,
-                    1
-            );
-
+            TokenResponseDto shortLived = jwtService.createToken(
+                    subject, Collections.emptyMap(), "issuerTest", "audienceTest",
+                    Jwts.SIG.HS256, testKey, 1);
             Thread.sleep(5);
 
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(shortLivedTokenResponseDto.getToken(), subject, testKey));
+                    () -> jwtService.validateToken(shortLived.getToken(), subject, testKey));
             assertTrue(ex.getMessage().toLowerCase().contains("expired"));
         }
 
-        /**
-         * Validate token unsupported throws.
-         */
         @Test
         void validateTokenUnsupportedThrows() {
             String unsupportedToken = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0.";
-
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
                     () -> jwtService.validateToken(unsupportedToken, subject, testKey));
             assertTrue(ex.getMessage().toLowerCase().contains("unsupported"));
         }
 
-        /**
-         * Validate token illegal argument throws.
-         */
         @Test
         void validateTokenIllegalArgumentThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -408,34 +343,47 @@ class JwtServiceTest {
         }
     }
 
-    /**
-     * The type Extract claims error handling.
-     */
     @Nested
     class ExtractClaimsErrorHandling {
 
-        /**
-         * Extract claim with invalid token should throw token invalid exception.
-         */
         @Test
         void extractClaimWithInvalidTokenShouldThrowTokenInvalidException() {
-            String invalidToken = "invalid.token.value";
+            String invalid = "invalid.token.value";
 
-            assertThrows(TokenInvalidException.class, () -> jwtService.extractTenant(invalidToken));
-            assertThrows(TokenInvalidException.class, () -> jwtService.extractSubject(invalidToken));
-            assertThrows(TokenInvalidException.class, () -> jwtService.extractApplication(invalidToken));
-            assertThrows(TokenInvalidException.class, () -> jwtService.extractIsAdmin(invalidToken));
+            // Unsecured
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractTenant(invalid));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractIsAdmin(invalid));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractApplication(invalid));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractAccountType(invalid));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractUserName(invalid));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractSubject(invalid));
+
+            // Secured
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractTenant(invalid, testKey));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractIsAdmin(invalid, testKey));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractApplication(invalid, testKey));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractAccountType(invalid, testKey));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractUserName(invalid, testKey));
+            assertThrows(TokenInvalidException.class, () -> jwtService.extractSubject(invalid, testKey));
         }
 
-        /**
-         * Extract claim with null token should throw null pointer exception.
-         */
         @Test
         void extractClaimWithNullTokenShouldThrowNullPointerException() {
-            assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null));
+            // Unsecured
             assertThrows(NullPointerException.class, () -> jwtService.extractTenant(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null));
             assertThrows(NullPointerException.class, () -> jwtService.extractIsAdmin(null));
+            assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null));
+            assertThrows(NullPointerException.class, () -> jwtService.extractAccountType(null));
+            assertThrows(NullPointerException.class, () -> jwtService.extractUserName(null));
+            assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null));
+
+            // Secured
+            assertThrows(NullPointerException.class, () -> jwtService.extractTenant(null, testKey));
+            assertThrows(NullPointerException.class, () -> jwtService.extractIsAdmin(null, testKey));
+            assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null, testKey));
+            assertThrows(NullPointerException.class, () -> jwtService.extractAccountType(null, testKey));
+            assertThrows(NullPointerException.class, () -> jwtService.extractUserName(null, testKey));
+            assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null, testKey));
         }
     }
 }

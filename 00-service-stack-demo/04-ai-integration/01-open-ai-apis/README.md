@@ -87,12 +87,12 @@ google:
 ollama:
   api:
     url: http://localhost:11434
-  model: qwen2.5:1.5b
+  model: qwen2.5:3b
 ```
 
 - Replace `${GEMINI_API_KEY}` with your actual Gemini API key.
 - Update `ollama.api.url` if Ollama is running on a different host/port.
-- Specify the desired Ollama model (e.g., `qwen2.5:1.5b`).
+- Specify the desired Ollama model (e.g., `qwen2.5:3b`).
 
 ## Usage
 
@@ -231,7 +231,7 @@ Ollama, along with details on size, pertinence, precision, licensing, and scope.
 | **neural-chat**       | 7B                | High       | FP16      | Yes  | Conversational                   | Intel’s fine-tuned Mistral for conversational tasks.               |[](https://ollama.com/library)
 | **dolphin-mixtral**   | 8x7B (MoE)        | High       | FP16      | Yes  | General-purpose, coding          | Uncensored Mixtral variant, excels in coding.                      |[](https://ollama.com/library)
 | **starling-lm**       | 7B                | High       | FP16      | Yes  | Conversational, RLHF-tuned       | RLHF-tuned for improved dialogue performance.                      |[](https://ollama.com/library)
-| **qwen2.5:1.5b**      | 1.5B              | High       | FP16      | Yes  | General-purpose, multilingual    | Default model in this project, supports 128K tokens, multilingual. |[](https://ollama.com/library?sort=newest)
+| **qwen2.5:3b**      | 1.5B              | High       | FP16      | Yes  | General-purpose, multilingual    | Default model in this project, supports 128K tokens, multilingual. |[](https://ollama.com/library?sort=newest)
 | **deepseek-r1**       | 8B, 70B           | High       | FP16      | Yes  | Reasoning, general-purpose       | High-performance reasoning model, approaches Gemini 2.5 Pro.       |[](https://ollama.com/library)
 | **phi-4**             | 14B               | High       | FP16      | Yes  | Reasoning, multilingual          | Advanced reasoning model from Microsoft, rivals larger models.     |[](https://ollama.com/library?sort=newest)
 | **gemma3**            | 2B, 12B, 27B      | High       | FP16      | Yes  | Multimodal, reasoning            | Multimodal model with vision-language support, 128K context.       |[](https://deepinfra.com/)

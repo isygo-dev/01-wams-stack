@@ -25,6 +25,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -33,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = {
-        "spring.jpa.hibernate.ddl-auto=create",
+        //"spring.jpa.hibernate.ddl-auto=create",
         "app.tenancy.enabled=true",
         "app.tenancy.mode=GDM"
 })
@@ -54,7 +55,9 @@ class ImageFileCrudIntegrationTests {
             .withDatabaseName("postgres")
             .withUsername("postgres")
             .withPassword("root")
-            .withInitScript("db/pg_init-multi-db.sql");
+            .withReuse(false)
+            .withInitScript("db/pg_init-multi-db.sql")
+            .withCreateContainerCmdModifier(cmd -> cmd.withName(UUID.randomUUID().toString()));
 
     @Autowired
     private MockMvc mockMvc;
@@ -73,10 +76,10 @@ class ImageFileCrudIntegrationTests {
         String baseUrl = postgres.getJdbcUrl();
         registry.add("spring.datasource.url", () -> baseUrl);
         String tenants = baseUrl.replace("/postgres", "/tenants");
-        registry.add("multitenancy.tenants[0].id", () -> "tenants");
-        registry.add("multitenancy.tenants[0].url", () -> tenants);
-        registry.add("multitenancy.tenants[0].username", postgres::getUsername);
-        registry.add("multitenancy.tenants[0].password", postgres::getPassword);
+        registry.add("app.tenancy.tenants[0].id", () -> "tenants");
+        registry.add("app.tenancy.tenants[0].url", () -> tenants);
+        registry.add("app.tenancy.tenants[0].username", postgres::getUsername);
+        registry.add("app.tenancy.tenants[0].password", postgres::getPassword);
     }
 
     @BeforeAll

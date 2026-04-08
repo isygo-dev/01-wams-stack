@@ -170,9 +170,7 @@ class XmlHelperTest {
             book.setCategory("fiction");
             book.setTitle("Test Book");
 
-            Author author = new Author();
-            author.setFirstName("John");
-            author.setLastName("Doe");
+            Author author = new Author("John", "Doe");
             book.setAuthor(author);
 
             Price price = new Price();

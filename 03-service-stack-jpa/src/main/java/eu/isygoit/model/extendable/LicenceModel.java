@@ -9,7 +9,7 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
@@ -22,7 +22,7 @@ import java.util.Date;
  *
  * @param <T> the type parameter
  */
-@Data
+@Getter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

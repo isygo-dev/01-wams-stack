@@ -3,7 +3,7 @@ package eu.isygoit.model.jakarta;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
@@ -14,13 +14,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * The type Auditable entity.
  *
  * @param <T> the type parameter
  */
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,4 +46,8 @@ public abstract class AuditableEntity<T extends Serializable> extends AbstractEn
     @LastModifiedBy
     @Column(name = ComSchemaColumnConstantName.C_UPDATED_BY)
     private String updatedBy;
+
+    public Set<String> ignoreFields() {
+        return Set.of("createDate", "updateDate", "createdBy", "updatedBy");
+    }
 }

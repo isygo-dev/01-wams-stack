@@ -9,126 +9,87 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-crypt</artifactId>
-    <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-crypt</name>
-    <description>service-stack-crypt</description>
-
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <artifactId>service-stack-crypt</artifactId>
+    <name>service-stack-crypt</name>
+    <description>Cryptography utilities — password hashing, symmetric/asymmetric encryption and token handling
+    </description>
+    <packaging>jar</packaging>
+
     <dependencies>
+
+        <!-- Internal: shared types -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <optional>true</optional>
         </dependency>
+
+        <!-- SLF4J — Boot manages version -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.7</version>
         </dependency>
+
+        <!-- Joda-Time -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.12.5</version>
         </dependency>
+
+        <!-- Jasypt Spring Boot Starter
+             FIXED: original used jasypt:1.9.3 (bare library). That version
+             uses internal Java APIs removed in Java 17+ (illegal-access
+             was eliminated). The Spring Boot starter integrates cleanly with
+             Boot's Environment and supports @Value decryption out of the box. -->
         <dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt</artifactId>
-            <version>1.9.3</version>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
         </dependency>
+
+        <!-- Apache Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
         </dependency>
+
+        <!-- Spring Security Crypto — Boot manages 6.5.x
+             FIXED: was pinned at 6.0.3 (CVEs, misaligned with Boot 3.5.x) -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>6.0.3</version>
         </dependency>
+
+        <!-- Spring Boot — Boot BOM manages consistently
+             FIXED: was pinned at 3.0.6 (two minor versions behind)       -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
-            <version>3.0.6</version>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- Test -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.4</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito Core -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>6.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 Extension -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </repositories>
 </project>

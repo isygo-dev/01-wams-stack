@@ -1,6 +1,6 @@
 package eu.isygoit.config;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * The type Jasypt properties.
  */
-@Data
+@Getter
 @ConfigurationProperties(prefix = "jasypt")
 @ConditionalOnProperty(name = "app.crypt.enabled", havingValue = "true")
 public class JasyptProperties {

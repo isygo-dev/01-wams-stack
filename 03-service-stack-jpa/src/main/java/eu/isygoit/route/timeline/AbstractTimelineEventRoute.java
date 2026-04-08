@@ -9,6 +9,7 @@ import eu.isygoit.model.timeline.ITimelineEventEntity;
 import eu.isygoit.model.timeline.TimelineEventMessage;
 import eu.isygoit.repository.timeline.TimelineEventRepository;
 import org.apache.camel.builder.RouteBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.ParameterizedType;
@@ -21,6 +22,8 @@ import java.util.Optional;
 public abstract class AbstractTimelineEventRoute<T extends ITimelineEventEntity & IIdAssignable> extends RouteBuilder {
 
     private final TimelineEventRepository timelineEventRepository;
+    @Value("${timeline.queueName}")
+    private String queueName;
 
     protected AbstractTimelineEventRoute(TimelineEventRepository timelineEventRepository) {
         this.timelineEventRepository = timelineEventRepository;
@@ -29,7 +32,8 @@ public abstract class AbstractTimelineEventRoute<T extends ITimelineEventEntity 
     @Transactional
     @Override
     public void configure() throws Exception {
-        from("seda:timelineEvents?concurrentConsumers=1")
+        log.info("starting read route: " + (queueName != null ? queueName : "timelineEvents"));
+        from((queueName != null ? queueName : "timelineEvents"))
                 .routeId("timeline-event-processor")
                 .process(exchange -> {
                     String messageBody = exchange.getIn().getBody(String.class);
@@ -47,8 +51,8 @@ public abstract class AbstractTimelineEventRoute<T extends ITimelineEventEntity 
                         throw new RuntimeException("Failed to instantiate " + clazz.getName(), e);
                     }
 
-                    if (event instanceof ITenantAssignable tenantAssignable) {
-                        tenantAssignable.setTenant(message.getTenant());
+                    if (event instanceof ITenantAssignable eventTenantAssignable) {
+                        eventTenantAssignable.setTenant(message.getTenant());
                     }
 
                     event.setEventType(message.getTimelineEventType());

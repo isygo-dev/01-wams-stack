@@ -5,16 +5,13 @@ import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaTableConstantName;
 import eu.isygoit.model.schema.ComSchemaUcConstantName;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type App next code.
  */
-@Data
+@Getter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,5 +26,6 @@ public class AppNextCode extends NextCodeModel<Long> {
     @SequenceGenerator(name = "next_code_sequence_generator", sequenceName = "next_code_sequence", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "next_code_sequence_generator")
     @Column(name = ComSchemaColumnConstantName.C_ID, updatable = false, nullable = false)
+    @Setter
     private Long id;
 }

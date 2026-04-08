@@ -9,60 +9,64 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-cassandra</artifactId>
-    <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-cassandra</name>
-    <description>service-stack-cassandra</description>
-
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <artifactId>service-stack-cassandra</artifactId>
+    <name>service-stack-cassandra</name>
+    <description>Cassandra integration — base repositories, type converters and session configuration</description>
+    <packaging>jar</packaging>
 
     <dependencies>
+
+        <!-- Internal stack deps -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-shared</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-jpa</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+
+        <!-- Spring Data Cassandra — Boot 3.5.13 manages Spring Data 2025.0.x
+             which includes Spring Data for Apache Cassandra 5.x.
+             FIXED: was pinned at 4.3.3 which required Boot 3.3+ and caused
+             version conflicts with Boot 3.1.x targeted originally          -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-cassandra</artifactId>
-            <version>4.3.3</version>
         </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <optional>true</optional>
         </dependency>
+
+        <!-- Test — FIXED: module had no test deps previously              -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers — Boot manages Testcontainers 1.21.x           -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>cassandra</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </repositories>
 </project>

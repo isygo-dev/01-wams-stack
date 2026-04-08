@@ -1,22 +1,27 @@
 package eu.isygoit.service.timeline;
 
+import eu.isygoit.exception.TimelineEventDispatchException;
 import eu.isygoit.helper.JsonHelper;
-import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.timeline.ITimelineEventSource;
 import eu.isygoit.model.timeline.TimelineEventMessage;
 import eu.isygoit.model.timeline.TimelineEventType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 
 /**
  * The type Timeline event service.
  */
+@Slf4j
 public abstract class AbstractTimelineEventService implements ITimelineEventService {
 
     private final ProducerTemplate producerTemplate;
+    @Value("${timeline.queueName}")
+    private String queueName;
 
     /**
      * Instantiates a new Timeline event service.
@@ -27,53 +32,39 @@ public abstract class AbstractTimelineEventService implements ITimelineEventServ
         this.producerTemplate = producerTemplate;
     }
 
-    /**
-     * Record event.
-     *
-     * @param entity            the entity
-     * @param timelineEventType the event type
-     */
-    @Transactional
-    public void recordEvent(IIdAssignable entity, TimelineEventType timelineEventType) {
+    public void recordEvent(ITimelineEventSource entity, TimelineEventType eventType) {
+        TimelineEventMessage message = buildQueuedMessage(entity, eventType);
+        // sends ONLY after the DB transaction commits — no ghost events on rollback
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        sendAfterCommit(message);
+                    }
+                }
+        );
+    }
+
+    private TimelineEventMessage buildQueuedMessage(ITimelineEventSource entity, TimelineEventType timelineEventType) {
         TimelineEventMessage message = TimelineEventMessage.builder()
-                .tenant(getTenant(entity))
+                .tenant(entity.resolveTenant())
                 .timelineEventType(timelineEventType)
                 .elementType(entity.getClass().getSimpleName())
-                .elementId(getElementId(entity))
+                .elementId(entity.resolveElementId())
                 .timestamp(LocalDateTime.now())
-                .modifiedBy(getModifiedBy(entity))
-                //TODO Enhancement @TrackChanges to track only annotated fields
-                .attributes(JsonHelper.objectToNode(entity))
+                .modifiedBy(entity.resolveModifiedBy())
+                .attributes(TrackChangesExtractor.extract(entity))
                 .build();
 
-        sendToQueue(message);
+        return message;
     }
 
-    private void sendToQueue(TimelineEventMessage message) {
+    private void sendAfterCommit(TimelineEventMessage message) {
         try {
-            producerTemplate.sendBody("seda:timelineEvents", JsonHelper.toJson(message));
+            log.info("starting write route: " + (queueName != null ? queueName : "timelineEvents"));
+            producerTemplate.sendBody((queueName != null ? queueName : "timelineEvents"), JsonHelper.toJson(message));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send timeline event to queue", e);
+            throw new TimelineEventDispatchException("Failed to dispatch event for element: " + message.getElementId(), e);
         }
-    }
-
-    private String getElementId(IIdAssignable entity) {
-        return entity.getId() != null ? entity.getId().toString() : null;
-    }
-
-    private String getTenant(IIdAssignable entity) {
-        if (entity instanceof ITenantAssignable tenantAssignable) {
-            return tenantAssignable.getTenant();
-        }
-        throw new IllegalArgumentException("Entity must implement ITenantAssignable");
-    }
-
-    private String getModifiedBy(IIdAssignable entity) {
-        if (entity instanceof AuditableEntity auditableEntity) {
-            return auditableEntity.getUpdatedBy() != null
-                    ? auditableEntity.getUpdatedBy()
-                    : (auditableEntity.getCreatedBy() != null ? auditableEntity.getCreatedBy() : "test_user");
-        }
-        throw new IllegalArgumentException("Entity must implement ITenantAssignable");
     }
 }

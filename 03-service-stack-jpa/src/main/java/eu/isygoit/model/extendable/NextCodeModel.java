@@ -3,13 +3,15 @@ package eu.isygoit.model.extendable;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.jakarta.AbstractEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -20,11 +22,14 @@ import java.io.Serializable;
  *
  * @param <I> the type parameter
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @SuperBuilder
 @MappedSuperclass
-public abstract class NextCodeModel<I extends Serializable> implements IIdAssignable<I>, ITenantAssignable {
+public abstract class NextCodeModel<I extends Serializable>
+        extends AbstractEntity<I>
+        implements IIdAssignable<I>, ITenantAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")

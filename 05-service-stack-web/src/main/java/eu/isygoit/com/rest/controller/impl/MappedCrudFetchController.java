@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedCrudFetchApi;
 import eu.isygoit.com.rest.service.ICrudServiceEvents;
-import eu.isygoit.com.rest.service.ICrudServiceMethods;
+import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -28,24 +28,24 @@ import java.util.Map;
 public abstract class MappedCrudFetchController<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudServiceMethods<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
-        extends CrudControllerSubMethods<I, T, M, F, S>
+        S extends ICrudServiceOperations<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudFetchApi<I, M, F> {
 
 
     @Override
     public final ResponseEntity<List<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
-        return subFindAll(requestContext, page, size);
+        return performFindAll(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
-        return subFindAllFull(requestContext, page, size);
+        return performFindAllFull(requestContext, page, size);
     }
 
     @Override
     public final ResponseEntity<F> findById(ContextRequestDto requestContext, I id) {
-        return subFindById(requestContext, id);
+        return performFindById(requestContext, id);
     }
 
     @Override
@@ -56,7 +56,7 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
 
     @Override
     public ResponseEntity<List<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
-        return subFindAllFilteredByCriteria(requestContext, criteria, page, size);
+        return performFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 
     @Override

@@ -9,235 +9,178 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack-shared</artifactId>
-    <version>WS-1.0.250603-T1554</version>
-
-    <name>service-stack-shared</name>
-    <description>service-stack-shared</description>
-
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.250603-T1554</version>
+        <version>WS-1.0.260331-T1652</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <properties/>
+    <artifactId>service-stack-shared</artifactId>
+    <name>service-stack-shared</name>
+    <description>Shared DTOs, utilities, validators and cross-cutting concerns for the entire stack</description>
+    <packaging>jar</packaging>
 
     <dependencies>
+
+        <!-- LOMBOK — compile scope (not just annotationProcessorPaths)
+             Both are required:
+               • annotationProcessorPaths → drives APT code generation
+               • compile <dependency>     → makes 'import lombok.Setter' resolve
+             <optional>true</optional> prevents it being pulled transitively.  -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version> <!-- Feb 03, 2023 -->
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>6.0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.networknt</groupId>
-            <artifactId>json-schema-validator</artifactId>
-            <version>1.5.8</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.4.4.Final</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <version>3.0.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator-annotation-processor</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.12.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.18.2</version>
+            <optional>true</optional>
+            <!-- version managed in root dependencyManagement -->
         </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.18.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.18.2</version> <!-- Use the appropriate version for your project -->
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-csv</artifactId>
-            <version>2.18.2</version> <!-- Use the Jackson version that matches your project -->
-        </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>6.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-            <version>3.0.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>1.5.5.Final</version>
-        </dependency>
+        <!-- MapStruct runtime API -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.5.5.Final</version>
+            <!-- version managed in root -->
+        </dependency>
+
+        <!-- Spring Web MVC — no version; Boot BOM manages Spring FW 6.2.x
+             FIXED: was pinned at 6.0.9 which conflicted with Boot 3.5.x  -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+
+        <!-- Spring Boot autoconfiguration support
+             FIXED: was pinned at 3.0.6 (2 major minors behind)           -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA — Boot manages Spring Data 2025.0.x
+             FIXED: was pinned at 3.0.5 which conflicted with Boot 3.5.x  -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Hibernate ORM — Boot manages 6.6.45.Final
+             FIXED: was org.hibernate:6.4.4.Final with type=pom (wrong!).
+             groupId changed to org.hibernate.orm in Hibernate 6+           -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- Hibernate Validator (Bean Validation 3.0)
+             FIXED: was org.hibernate:hibernate-validator:8.0.0.Final
+             groupId changed in modern versions                              -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <!-- Jakarta XML Bind
+             FIXED: was javax.xml.bind:jaxb-api:2.3.1 (javax namespace =
+             incompatible with Jakarta EE 9+ / Spring Boot 3.x)            -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <!-- Boot BOM manages -->
+        </dependency>
+
+        <!-- Jakarta Servlet API (provided — container supplies it)        -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- JSON Schema Validator -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+        </dependency>
+
+        <!-- Jackson — Boot 3.5.13 manages 2.21.2
+             FIXED: all were pinned at 2.18.2                              -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+        </dependency>
+
+        <!-- Commons IO -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <!-- Joda-Time -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
+
+        <!-- Apache Camel Spring Boot — versions managed by Camel BOM 4.10.4
+             FIXED: all were pinned at 4.0.0                               -->
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-servlet-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-jackson-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-xml-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-stream-starter</artifactId>
-            <version>4.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-api</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>2.3.0</version>
-        </dependency>
+
+        <!-- SpringDoc WebMVC — WebMVC only (NOT webflux-ui/api)
+             FIXED: original had all 3 springdoc starters; webflux starters
+             conflict with spring-boot-starter-web in MVC applications     -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-spring-boot-starter</artifactId>
-            <version>4.0.0</version>
-        </dependency>
+
+        <!-- OpenFeign
+             FIXED: was pinned at 13.2.1                                   -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
-            <version>13.2.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.github.openfeign/feign-hc5 -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-hc5</artifactId>
-            <version>13.2.1</version>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- Test — Boot manages JUnit Jupiter 5.12.x and Mockito 5.17.x  -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>5.11.4</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito Core -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>6.2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 Extension -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>isygo-it-github-01</id>
-            <name>GitHub isygo-it Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
-        </repository>
-    </repositories>
 </project>

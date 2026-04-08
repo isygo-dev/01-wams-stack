@@ -104,6 +104,7 @@ For DISCRIMINATOR and GDM modes, entities should implement the tenant interface:
 @Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class MyEntity implements ITenantAssignable {
 
+    @Setter
     @Column(name = "TENANT_ID", nullable = false, updatable = false)
     private String tenant;
     
