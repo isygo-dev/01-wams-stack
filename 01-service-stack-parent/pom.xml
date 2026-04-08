@@ -50,8 +50,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <java.source.version>17</java.source.version>
-        <java.target.version>17</java.target.version>
+        <java.version>17</java.version>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <!-- Spring Cloud 2025.0.2 — the release train for Boot 3.5.13 -->
         <spring-cloud.version>2025.0.2</spring-cloud.version>
@@ -213,8 +212,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>${java.source.version}</source>
-                        <target>${java.target.version}</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                         <parameters>true</parameters>
                         <annotationProcessorPaths>
                             <path>

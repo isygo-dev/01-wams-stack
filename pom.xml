@@ -43,8 +43,7 @@
            Testcontainers 1.21.x, JUnit Jupiter 5.12.x, Mockito 5.17.x.
          ================================================================ -->
     <properties>
-        <java.source.version>17</java.source.version>
-        <java.target.version>17</java.target.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 
@@ -387,8 +386,8 @@
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
                         <encoding>${maven.compiler.encoding}</encoding>
-                        <source>${java.source.version}</source>
-                        <target>${java.target.version}</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                         <parameters>true</parameters>
                         <annotationProcessorPaths>
                             <path>
