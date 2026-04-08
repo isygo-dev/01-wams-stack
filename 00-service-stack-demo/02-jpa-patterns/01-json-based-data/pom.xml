@@ -18,7 +18,7 @@
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-json-based-data-pattern</artifactId>
     <!-- FIXED: was WC-... — unified to WS- prefix -->
-    <version>WS-1.0.260331-T1652</version>
+    <version>WS-1.0.260408-T1636</version>
     <name>poc-json-based-data-pattern</name>
     <description>POC: JSON-Based Data Patterns in SQL — JSONB columns, partial indexing</description>
     <packaging>jar</packaging>
@@ -26,7 +26,7 @@
     <properties>
 
         <java.version>17</java.version>
-        <stack.version>WS-1.0.260331-T1652</stack.version>
+        <stack.version>WS-1.0.260408-T1636</stack.version>
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>

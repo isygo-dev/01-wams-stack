@@ -18,7 +18,7 @@
     <!-- =========================================================== -->
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>metadata-driven-dynamic-forms</artifactId>
-    <version>WS-1.0.260331-T1652</version>
+    <version>WS-1.0.260408-T1636</version>
     <packaging>jar</packaging>
 
     <name>metadata-driven-dynamic-forms</name>
@@ -46,7 +46,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.260331-T1652</version>
+        <version>WS-1.0.260408-T1636</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

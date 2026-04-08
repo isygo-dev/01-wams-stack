@@ -11,7 +11,7 @@
 
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack</artifactId>
-    <version>WS-1.0.260331-T1652</version>
+    <version>WS-1.0.260408-T1636</version>
     <name>service-stack</name>
     <description>WAMS backend microservices stack — root aggregator</description>
     <packaging>pom</packaging>
