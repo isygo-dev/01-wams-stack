@@ -99,10 +99,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-            <!--
-                optional=true: Lombok is a compile-only annotation
-                processor. Consumers do not need it on their classpath.
-            -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
         </dependency>
 
         <dependency>
