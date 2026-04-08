@@ -1,10 +1,6 @@
 package eu.isygoit.form.core;
 
-import eu.isygoit.form.annotation.FormConditional;
-import eu.isygoit.form.annotation.FormField;
-import eu.isygoit.form.annotation.FormList;
-import eu.isygoit.form.annotation.FormOption;
-import eu.isygoit.form.annotation.Condition;
+import eu.isygoit.form.annotation.*;
 import eu.isygoit.form.domain.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

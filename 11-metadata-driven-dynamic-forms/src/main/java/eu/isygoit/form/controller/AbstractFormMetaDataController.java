@@ -7,7 +7,6 @@ import eu.isygoit.form.dto.FormSubmitResponse;
 import eu.isygoit.form.exception.MetaDataGenerationException;
 import eu.isygoit.form.service.IFormMetaDataService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StopWatch;
 
