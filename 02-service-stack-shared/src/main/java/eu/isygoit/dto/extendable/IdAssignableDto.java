@@ -5,6 +5,7 @@ import eu.isygoit.dto.IIdAssignableDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
+@Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
