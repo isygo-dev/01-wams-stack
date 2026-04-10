@@ -4,6 +4,7 @@ import eu.isygoit.dto.IFileUploadDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * The type Linked file request dto.
  */
+@Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
