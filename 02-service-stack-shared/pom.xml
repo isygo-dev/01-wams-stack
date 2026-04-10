@@ -31,16 +31,12 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-            <!-- version managed in root dependencyManagement -->
         </dependency>
 
         <!-- MapStruct runtime API -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <scope>provided</scope>
-            <!-- version managed in root -->
         </dependency>
 
         <!-- Spring Web MVC — no version; Boot BOM manages Spring FW 6.2.x
