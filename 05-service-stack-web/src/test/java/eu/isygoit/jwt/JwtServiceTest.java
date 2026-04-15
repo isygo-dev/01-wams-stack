@@ -371,7 +371,7 @@ class JwtServiceTest {
 
         @Test
         void validateTokenEmptyThrows() {
-            TokenInvalidException ex = assertThrows(TokenInvalidException.class,
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> jwtService.validateToken("", subject, testKey));
             assertTrue(ex.getMessage().contains("null or empty"));
         }
@@ -427,7 +427,7 @@ class JwtServiceTest {
 
         @Test
         void validateTokenIllegalArgumentThrows() {
-            TokenInvalidException ex = assertThrows(TokenInvalidException.class,
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     () -> jwtService.validateToken(null, subject, testKey));
             assertTrue(ex.getMessage().toLowerCase().contains("null or empty"));
         }

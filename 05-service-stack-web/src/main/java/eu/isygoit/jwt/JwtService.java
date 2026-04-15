@@ -242,7 +242,7 @@ public class JwtService implements IJwtService {
     public void validateToken(String token, String subject, String key) {
         log.info("Validating JWT token for subject: {}", subject);
         if (!StringUtils.hasText(token)) {
-            throw new TokenInvalidException("Invalid JWT token: null or empty");
+            throw new IllegalArgumentException("token cannot be null or empty");
         }
         try {
             Claims claims = Jwts.parser()
