@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,9 +12,15 @@
     </parent>
 
     <artifactId>service-stack-jpa</artifactId>
-    <name>service-stack-jpa</name>
-    <description>JPA base layer — base entities, repositories, auditing and pagination utilities</description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - JPA</name>
+    <description>JPA base layer — base entities, repositories, auditing and pagination utilities</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 

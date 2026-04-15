@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -18,9 +13,15 @@
 
     <artifactId>service-stack-demo</artifactId>
     <version>WS-1.0.260408-T1636</version>
-    <name>service-stack-demo</name>
-    <description>POC and demo applications showcasing stack capabilities</description>
     <packaging>pom</packaging>
+
+    <name>Service Stack - Demo</name>
+    <description>POC and demo applications showcasing stack capabilities</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <modules>
         <module>01-multitenancy</module>

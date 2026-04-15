@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,10 +12,15 @@
     </parent>
 
     <artifactId>service-stack-crypt</artifactId>
-    <name>service-stack-crypt</name>
-    <description>Cryptography utilities — password hashing, symmetric/asymmetric encryption and token handling
-    </description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - Crypt</name>
+    <description>Cryptography module — Jasypt integration and encryption helpers</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 

@@ -1,48 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- =========================================================== -->
-    <!--  Organization                                                 -->
-    <!-- =========================================================== -->
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
-    <!-- =========================================================== -->
-    <!--  Artifact Identity                                            -->
-    <!-- =========================================================== -->
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>metadata-driven-dynamic-forms</artifactId>
-    <version>WS-1.0.260408-T1636</version>
-    <packaging>jar</packaging>
-
-    <name>metadata-driven-dynamic-forms</name>
-    <description>
-        Isygo-IT Service Stack — shared foundation library.
-        Provides the universal building blocks consumed by every other
-        stack module and by all microservice applications:
-        • Base domain model classes and generic interfaces
-        • DTO abstractions and MapStruct mapper contracts
-        • Jackson serialization configuration (JSON, XML, YAML, CSV)
-        • Jakarta Bean Validation integration
-        • Apache Camel Spring Boot integration (servlet, jackson,
-        stream, spring-boot XML, spring-boot starter)
-        • OpenFeign declarative HTTP client support
-        • SpringDoc / OpenAPI 3 annotations and configuration
-        • JSON Schema validation (networknt)
-        • Common utilities: commons-io, joda-time, jaxb-api (Jakarta)
-        All other stack modules depend on this artifact.
-    </description>
-    <url>https://isygo-it.eu</url>
-
-    <!-- =========================================================== -->
-    <!--  Parent — root aggregator (toolchain + plugin management)    -->
-    <!-- =========================================================== -->
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -50,66 +11,61 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- =========================================================== -->
-    <!--  Properties                                                   -->
-    <!-- =========================================================== -->
+    <artifactId>metadata-driven-dynamic-forms</artifactId>
+    <version>WS-1.0.260408-T1636</version>
+    <packaging>jar</packaging>
+
+    <name>Service Stack - Dynamic Forms</name>
+    <description>Metadata-driven dynamic forms engine — shared foundation library</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
+
     <properties>
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
         <caffeine.version>3.1.8</caffeine.version>
     </properties>
 
-    <!-- =========================================================== -->
-    <!--  Dependency Management — import Spring Boot BOM               -->
-    <!--                                                               -->
-    <!--  Stack library modules do NOT inherit from                    -->
-    <!--  spring-boot-starter-parent (only service-stack-parent does). -->
-    <!--  They import the BOM here to get version-aligned deps         -->
-    <!--  without the starter-parent's plugin opinions.                -->
-    <!-- =========================================================== -->
     <dependencies>
 
-        <!-- ── Code Generation ────────────────────────────────── -->
+        <!-- Code Generation -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
 
+        <!-- Caching -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
 
+        <!-- Spring Web -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Jakarta Servlet API (provided — container supplies it) -->
+        <!-- Jakarta Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Spring Boot auto-configuration support               -->
+        <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
@@ -119,7 +75,7 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <!-- ── Validation ─────────────────────────────────────── -->
+        <!-- Validation -->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
@@ -129,7 +85,7 @@
             <artifactId>hibernate-validator</artifactId>
         </dependency>
 
-        <!-- ── Persistence (type definitions only) ────────────── -->
+        <!-- Persistence (type definitions only) -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -139,7 +95,7 @@
             <artifactId>spring-data-jpa</artifactId>
         </dependency>
 
-        <!-- ── Serialization — Jackson suite ──────────────────── -->
+        <!-- Serialization — Jackson suite -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -157,17 +113,19 @@
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
 
-        <!-- ── Jakarta XML Binding ────────────────────────────── -->
+        <!-- Jakarta XML Binding -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
 
-        <!-- ── JSON Schema Validation ─────────────────────────── -->
+        <!-- JSON Schema Validation -->
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
         </dependency>
+
+        <!-- Apache Camel -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-servlet-starter</artifactId>
@@ -189,7 +147,7 @@
             <artifactId>camel-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- ── OpenFeign ──────────────────────────────────────── -->
+        <!-- OpenFeign -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
@@ -199,13 +157,13 @@
             <artifactId>feign-hc5</artifactId>
         </dependency>
 
-        <!-- ── SpringDoc / OpenAPI 3 ──────────────────────────── -->
+        <!-- SpringDoc / OpenAPI 3 -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
-        <!-- ── Utilities ──────────────────────────────────────── -->
+        <!-- Utilities -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -219,7 +177,12 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
-        <!-- ── Test ───────────────────────────────────────────── -->
+        <!-- Test -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -259,9 +222,6 @@
         </plugins>
     </build>
 
-    <!-- =========================================================== -->
-    <!--  Distribution Management                                      -->
-    <!-- =========================================================== -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
@@ -284,9 +244,6 @@
         </snapshotRepository>
     </distributionManagement>
 
-    <!-- =========================================================== -->
-    <!--  Repositories                                                 -->
-    <!-- =========================================================== -->
     <repositories>
         <repository>
             <id>isygo-it-github-01</id>
@@ -308,5 +265,4 @@
             </snapshots>
         </repository>
     </repositories>
-
 </project>

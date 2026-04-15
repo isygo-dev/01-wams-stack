@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,17 +12,19 @@
     </parent>
 
     <artifactId>service-stack-shared</artifactId>
-    <name>service-stack-shared</name>
-    <description>Shared DTOs, utilities, validators and cross-cutting concerns for the entire stack</description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - Shared</name>
+    <description>Shared DTOs, utilities, validators and cross-cutting concerns for the entire stack</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 
-        <!-- LOMBOK — compile scope (not just annotationProcessorPaths)
-             Both are required:
-               • annotationProcessorPaths → drives APT code generation
-               • compile <dependency>     → makes 'import lombok.Setter' resolve
-             <optional>true</optional> prevents it being pulled transitively.  -->
+        <!-- LOMBOK -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -39,53 +36,43 @@
             <artifactId>mapstruct</artifactId>
         </dependency>
 
-        <!-- Spring Web MVC — no version; Boot BOM manages Spring FW 6.2.x
-             FIXED: was pinned at 6.0.9 which conflicted with Boot 3.5.x  -->
+        <!-- Spring Web MVC -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
 
-        <!-- Spring Boot autoconfiguration support
-             FIXED: was pinned at 3.0.6 (2 major minors behind)           -->
+        <!-- Spring Boot autoconfiguration support -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
 
-        <!-- Spring Data JPA — Boot manages Spring Data 2025.0.x
-             FIXED: was pinned at 3.0.5 which conflicted with Boot 3.5.x  -->
+        <!-- Spring Data JPA -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
         </dependency>
 
-        <!-- Hibernate ORM — Boot manages 6.6.45.Final
-             FIXED: was org.hibernate:6.4.4.Final with type=pom (wrong!).
-             groupId changed to org.hibernate.orm in Hibernate 6+           -->
+        <!-- Hibernate ORM -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
         </dependency>
 
-        <!-- Hibernate Validator (Bean Validation 3.0)
-             FIXED: was org.hibernate:hibernate-validator:8.0.0.Final
-             groupId changed in modern versions                              -->
+        <!-- Hibernate Validator -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
 
-        <!-- Jakarta XML Bind
-             FIXED: was javax.xml.bind:jaxb-api:2.3.1 (javax namespace =
-             incompatible with Jakarta EE 9+ / Spring Boot 3.x)            -->
+        <!-- Jakarta XML Bind -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
-            <!-- Boot BOM manages -->
         </dependency>
 
-        <!-- Jakarta Servlet API (provided — container supplies it)        -->
+        <!-- Jakarta Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
@@ -98,8 +85,7 @@
             <artifactId>json-schema-validator</artifactId>
         </dependency>
 
-        <!-- Jackson — Boot 3.5.13 manages 2.21.2
-             FIXED: all were pinned at 2.18.2                              -->
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -129,8 +115,7 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
-        <!-- Apache Camel Spring Boot — versions managed by Camel BOM 4.10.4
-             FIXED: all were pinned at 4.0.0                               -->
+        <!-- Apache Camel Spring Boot -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
@@ -152,16 +137,13 @@
             <artifactId>camel-stream-starter</artifactId>
         </dependency>
 
-        <!-- SpringDoc WebMVC — WebMVC only (NOT webflux-ui/api)
-             FIXED: original had all 3 springdoc starters; webflux starters
-             conflict with spring-boot-starter-web in MVC applications     -->
+        <!-- SpringDoc WebMVC -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
-        <!-- OpenFeign
-             FIXED: was pinned at 13.2.1                                   -->
+        <!-- OpenFeign -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
@@ -171,7 +153,7 @@
             <artifactId>feign-hc5</artifactId>
         </dependency>
 
-        <!-- Test — Boot manages JUnit Jupiter 5.12.x and Mockito 5.17.x  -->
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

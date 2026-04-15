@@ -4,17 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>eu.isygo-it.services</groupId>
+    <artifactId>service-stack</artifactId>
+    <version>WS-1.0.260408-T1636</version>
+    <packaging>pom</packaging>
+
+    <name>Service Stack - Root Aggregator</name>
+    <description>WAMS backend microservices stack — root aggregator</description>
+
     <organization>
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-
-    <groupId>eu.isygo-it.services</groupId>
-    <artifactId>service-stack</artifactId>
-    <version>WS-1.0.260408-T1636</version>
-    <name>service-stack</name>
-    <description>WAMS backend microservices stack — root aggregator</description>
-    <packaging>pom</packaging>
 
     <modules>
         <module>01-service-stack-parent</module>
@@ -31,62 +32,53 @@
     </modules>
 
     <!-- ================================================================
-         CENTRALIZED VERSION PROPERTIES — single source of truth.
-         Target: Spring Boot 3.5.13 (released 2026-03-26).
-         Spring Cloud 2025.0.2 is the release train for Boot 3.5.13.
-
-         BOOT-MANAGED versions (do NOT pin in sub-modules):
-           Spring Framework 6.2.x, Spring Security 6.5.x,
-           Spring Data 2025.0.x, Hibernate 6.6.45.Final,
-           Jackson 2.21.2 (2.19/2.20 reached EOL → Boot upgraded),
-           HikariCP, Flyway 11.x, Quartz 2.5.x, PostgreSQL 42.7.10,
-           Testcontainers 1.21.x, JUnit Jupiter 5.12.x, Mockito 5.17.x.
+         CENTRALIZED VERSION PROPERTIES
          ================================================================ -->
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 
-        <!-- ── Spring ──────────────────────────────────────────────── -->
+        <!-- Spring Ecosystem -->
         <spring-boot.version>3.5.13</spring-boot.version>
         <spring-cloud.version>2025.0.2</spring-cloud.version>
 
-        <!-- ── Code generation ─────────────────────────────────────── -->
+        <!-- Code Generation -->
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
-        <!-- ── Persistence (Boot-managed — listed for visibility) ───── -->
+        <!-- Persistence -->
         <hibernate.version>6.6.45.Final</hibernate.version>
         <postgresql.version>42.7.10</postgresql.version>
         <h2.version>2.3.232</h2.version>
         <flyway.version>11.9.1</flyway.version>
 
-        <!-- ── Web / API ────────────────────────────────────────────── -->
+        <!-- Web / API -->
         <springdoc.version>2.8.15</springdoc.version>
         <jjwt.version>0.12.6</jjwt.version>
         <feign.version>13.5</feign.version>
         <networknt-validator.version>1.5.8</networknt-validator.version>
 
-        <!-- ── Messaging ─────────────────────────────────────────────── -->
+        <!-- Messaging -->
         <camel.version>4.10.4</camel.version>
 
-        <!-- ── Storage ───────────────────────────────────────────────── -->
+        <!-- Storage -->
         <minio.version>8.5.17</minio.version>
         <aws-sdk.version>2.31.78</aws-sdk.version>
         <lakefs.version>1.52.0</lakefs.version>
 
-        <!-- ── Security ──────────────────────────────────────────────── -->
+        <!-- Security -->
         <jasypt-spring-boot.version>3.0.5</jasypt-spring-boot.version>
 
-        <!-- ── Utilities ─────────────────────────────────────────────── -->
+        <!-- Utilities -->
         <joda-time.version>2.13.1</joda-time.version>
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-text.version>1.13.1</commons-text.version>
         <commons-io.version>2.18.0</commons-io.version>
         <pdfbox.version>3.0.3</pdfbox.version>
 
-        <!-- ── Build plugins ─────────────────────────────────────────── -->
+        <!-- Build Plugins -->
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>

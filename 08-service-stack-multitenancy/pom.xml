@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,10 +12,15 @@
     </parent>
 
     <artifactId>service-stack-multitenancy</artifactId>
-    <name>service-stack-multitenancy</name>
-    <description>Multi-tenancy support — discriminator, schema and database isolation strategies with dynamic routing
-    </description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - Multitenancy</name>
+    <description>Multitenancy support — tenant resolution and context management</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 

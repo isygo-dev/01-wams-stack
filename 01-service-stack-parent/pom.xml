@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -19,14 +14,16 @@
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-parent</artifactId>
     <version>WS-1.0.260408-T1636</version>
-    <name>service-stack-parent</name>
-    <description>Spring Boot 3.5.13 parent for WAMS microservices — inherits from Boot Starter Parent</description>
     <packaging>pom</packaging>
 
-    <!--
-         MICROSERVICE PARENT — inherits from spring-boot-starter-parent.
-         Imports the root BOM to stay aligned with the rest of the stack.
-    -->
+    <name>Service Stack - Parent</name>
+    <description>Spring Boot 3.5.13 parent for WAMS microservices — inherits from Boot Starter Parent</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,10 +12,15 @@
     </parent>
 
     <artifactId>service-stack-web</artifactId>
-    <name>service-stack-web</name>
-    <description>Web/API layer — controllers, JWT security, Feign clients, Kafka integration, Prometheus metrics
-    </description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - Web</name>
+    <description>Web/API layer — controllers, JWT security, Feign clients and Kafka integration</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 
@@ -38,21 +38,14 @@
             <artifactId>service-stack-crypt</artifactId>
         </dependency>
 
-        <!-- Spring Data Cassandra (optional) — Boot manages version.
-             FIXED: was scope=provided (prevented runtime availability) and
-             pinned at 4.3.3 (required Boot 3.3+). Now optional so services
-             that don't need Cassandra skip it entirely.                    -->
+        <!-- Spring Data Cassandra (optional) -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-cassandra</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- JWT — 3 artifacts since 0.10.0 split.
-             FIXED: was jjwt:0.9.1 (monolith, no io.jsonwebtoken.security.*).
-             jjwt-api   = compile  → contains Keys, Jwts, security.* classes
-             jjwt-impl  = runtime  → implementation (never import directly)
-             jjwt-jackson = runtime → JSON serialization for claims          -->
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -81,15 +74,13 @@
             <artifactId>mapstruct</artifactId>
         </dependency>
 
-        <!-- Spring Web — Boot BOM manages Spring FW 6.2.x
-             FIXED: was pinned at 6.0.8                                    -->
+        <!-- Spring Web -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
 
-        <!-- Spring Security — Boot manages 6.5.x
-             FIXED: all 3 were pinned at 6.0.3 (old, CVEs present)        -->
+        <!-- Spring Security -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
@@ -103,22 +94,19 @@
             <artifactId>spring-security-web</artifactId>
         </dependency>
 
-        <!-- Spring Kafka — Boot manages spring-kafka 3.3.x / kafka-clients 3.9.x
-             FIXED: was pinned at 3.3.4; also removed camel-kafka-starter
-             duplication (having both creates competing consumer abstractions) -->
+        <!-- Spring Kafka -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
-        <!-- Spring Retry — Boot manages version -->
+        <!-- Spring Retry -->
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
         </dependency>
 
-        <!-- Micrometer Prometheus — Boot manages Micrometer 1.15.x
-             FIXED: was pinned at 1.15.0                                   -->
+        <!-- Micrometer Prometheus -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
@@ -130,59 +118,50 @@
             <artifactId>json-schema-validator</artifactId>
         </dependency>
 
-        <!-- SpringDoc WebMVC — WebMVC apps only
-             FIXED: original had webflux-api + webflux-ui + webmvc-ui all 3;
-             WebFlux starters conflict with spring-boot-starter-web at startup -->
+        <!-- SpringDoc WebMVC -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
-        <!-- Spring Boot — Boot BOM manages
-             FIXED: was pinned at 3.0.6                                    -->
+        <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
 
-        <!-- Spring JMS — Boot BOM manages
-             FIXED: was pinned at 6.0.8                                    -->
+        <!-- Spring JMS -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jms</artifactId>
         </dependency>
 
-        <!-- Jakarta JMS API — Boot manages
-             FIXED: was javax.jms:javax.jms-api:2.0.1 (javax namespace =
-             incompatible with Jakarta EE 9+ / Spring Boot 3.x)           -->
+        <!-- Jakarta JMS API -->
         <dependency>
             <groupId>jakarta.jms</groupId>
             <artifactId>jakarta.jms-api</artifactId>
         </dependency>
 
-        <!-- Jakarta Annotation API — Boot manages
-             FIXED: was javax.annotation:javax.annotation-api:1.3.2       -->
+        <!-- Jakarta Annotation API -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
 
-        <!-- Jakarta Servlet API (provided) -->
+        <!-- Jakarta Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- PostgreSQL — Boot manages 42.7.10
-             FIXED: was pinned at 42.7.4                                   -->
+        <!-- PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
 
-        <!-- OpenFeign
-             FIXED: was pinned at 13.2.1                                   -->
+        <!-- OpenFeign -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>

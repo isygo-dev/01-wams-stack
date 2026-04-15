@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,9 +12,15 @@
     </parent>
 
     <artifactId>service-stack-cassandra</artifactId>
-    <name>service-stack-cassandra</name>
-    <description>Cassandra integration — base repositories, type converters and session configuration</description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - Cassandra</name>
+    <description>Cassandra integration — base repositories, type converters and session configuration</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 

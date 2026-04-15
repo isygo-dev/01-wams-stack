@@ -4,11 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <organization>
-        <name>isygo-it-services</name>
-        <url>https://isygo-it.eu</url>
-    </organization>
-
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
@@ -17,9 +12,15 @@
     </parent>
 
     <artifactId>service-stack-quartz</artifactId>
-    <name>service-stack-quartz</name>
-    <description>Quartz scheduler integration — base job classes, triggers and persistence configuration</description>
     <packaging>jar</packaging>
+
+    <name>Service Stack - Quartz</name>
+    <description>Quartz scheduler integration — base job classes, triggers and persistence configuration</description>
+
+    <organization>
+        <name>isygo-it-services</name>
+        <url>https://isygo-it.eu</url>
+    </organization>
 
     <dependencies>
 
