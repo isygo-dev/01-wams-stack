@@ -84,7 +84,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<Long> getCount(ContextRequestDto requestContext) {
-        return subGetCount(requestContext);
+        return performGetCount(requestContext);
     }
 
     @Override
@@ -94,6 +94,6 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
 
     @Override
     public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
-        return subGetAnnotatedCriteria();
+        return performGetAnnotatedCriteria();
     }
 }

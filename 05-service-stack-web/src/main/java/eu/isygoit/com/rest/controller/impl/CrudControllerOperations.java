@@ -94,7 +94,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public ResponseEntity<List<F>> performCreate(ContextRequestDto context, List<F> dtos) {
-        return executeWithMonitoring("subCreateBulk", () -> {
+        return executeWithMonitoring("performCreateBulk", () -> {
             log.info("Bulk creating {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
 
@@ -122,7 +122,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, List<F> dtos) {
-        return executeWithMonitoring("subUpdateBulk", () -> {
+        return executeWithMonitoring("performUpdateBulk", () -> {
             log.info("Bulk updating {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
 
@@ -151,7 +151,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
-        return executeWithMonitoring("subUpdateById", () -> {
+        return executeWithMonitoring("performUpdateById", () -> {
             log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
             validateNotNull(dto, "DTO cannot be null");
@@ -336,8 +336,8 @@ public abstract class CrudControllerOperations<
      * @return ResponseEntity containing the count
      */
     @Override
-    public ResponseEntity<Long> subGetCount(ContextRequestDto context) {
-        return executeWithMonitoring("subGetCount", () -> {
+    public ResponseEntity<Long> performGetCount(ContextRequestDto context) {
+        return executeWithMonitoring("performGetCount", () -> {
             log.info("Counting {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             Long count = crudService().count();
             return ResponseFactory.responseOk(count);
@@ -350,8 +350,8 @@ public abstract class CrudControllerOperations<
      * @return ResponseEntity containing the map of filter criteria
      */
     @Override
-    public ResponseEntity<Map<String, String>> subGetAnnotatedCriteria() {
-        return executeWithMonitoring("subGetAnnotatedCriteria", () -> {
+    public ResponseEntity<Map<String, String>> performGetAnnotatedCriteria() {
+        return executeWithMonitoring("performGetAnnotatedCriteria", () -> {
             log.info("Retrieving filter criteria for {}", entityClass.getSimpleName());
             Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(entityClass);
             return createMapResponse(criteriaMap);

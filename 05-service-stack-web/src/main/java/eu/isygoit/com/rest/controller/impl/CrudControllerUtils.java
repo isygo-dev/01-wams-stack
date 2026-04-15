@@ -50,7 +50,7 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
      * @param objects List to validate
      * @throws BadArgumentException if list is empty or exceeds max size
      */
-    protected static void validateBulkOperation(List objects) {
+    protected static void validateBulkOperation(List<?> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new EmptyListException("Bulk operation list cannot be empty or null");
         }

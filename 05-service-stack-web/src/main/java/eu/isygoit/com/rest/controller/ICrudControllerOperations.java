@@ -118,14 +118,14 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param requestContext the request context
      * @return the response entity
      */
-    ResponseEntity<Long> subGetCount(ContextRequestDto requestContext);
+    ResponseEntity<Long> performGetCount(ContextRequestDto requestContext);
 
     /**
      * Sub find all filter criteria response entity.
      *
      * @return the response entity
      */
-    ResponseEntity<Map<String, String>> subGetAnnotatedCriteria();
+    ResponseEntity<Map<String, String>> performGetAnnotatedCriteria();
 
     /**
      * Sub find all filtered by criteria response entity.
