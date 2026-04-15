@@ -13,58 +13,84 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
  * The type Controller exception handler.
  */
 @Slf4j
-public abstract class ControllerExceptionHandler implements IControllerExceptionHandler {
+@Component
+public class ControllerExceptionHandler implements IControllerExceptionHandler {
 
     @Getter
     @Autowired
-    private ApplicationContextService applicationContextService;
+    protected ApplicationContextService applicationContextService;
 
-    private IExceptionHandler exceptionHandler;
+    // Cache to store the determined IExceptionHandler for each controller class
+    private final Map<Class<?>, IExceptionHandler> handlerCache = new ConcurrentHashMap<>();
 
     public final IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
-        if (this.exceptionHandler == null) {
+        return exceptionHandler(this.getClass());
+    }
+
+    public final IExceptionHandler exceptionHandler(Class<?> controllerClass) throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
+        return handlerCache.computeIfAbsent(controllerClass, (clazz) -> {
             // Récupération de la classe du handler via les annotations
             var handlerClass = Stream.of(
-                            Optional.ofNullable(this.getClass().getAnnotation(InjectExceptionHandler.class)).map(InjectExceptionHandler::value),
-                            Optional.ofNullable(this.getClass().getAnnotation(InjectMapperAndService.class)).map(InjectMapperAndService::handler)
+                            Optional.ofNullable(clazz.getAnnotation(InjectExceptionHandler.class)).map(InjectExceptionHandler::value),
+                            Optional.ofNullable(clazz.getAnnotation(InjectMapperAndService.class)).map(InjectMapperAndService::handler)
                     ).flatMap(Optional::stream)
                     .findFirst()
-                    .orElseThrow(() -> new ExceptionHandlerNotDefinedException(this.getClass().getSimpleName()));
+                    .orElseThrow(() -> new ExceptionHandlerNotDefinedException(clazz.getSimpleName()));
 
             // Récupération du bean correspondant
-            this.exceptionHandler = applicationContextService.getBean(handlerClass)
-                    .orElseThrow(() -> new BeanNotFoundException(this.getClass().getSimpleName()));
-        }
-
-        return this.exceptionHandler;
+            try {
+                return (IExceptionHandler) applicationContextService.getBean((Class) handlerClass)
+                        .orElseThrow(() -> new BeanNotFoundException(clazz.getSimpleName()));
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 
     @Override
     public String handleExceptionMessage(Throwable throwable) {
-        return Optional.ofNullable(exceptionHandler())
-                .map(handler -> handler.handleError(throwable))
-                .orElseGet(throwable::toString);
+        return handleExceptionMessage(this.getClass(), throwable);
+    }
+
+    public String handleExceptionMessage(Class<?> controllerClass, Throwable throwable) {
+        try {
+            return Optional.ofNullable(exceptionHandler(controllerClass))
+                    .map(handler -> handler.handleError(throwable))
+                    .orElseGet(throwable::toString);
+        } catch (Exception e) {
+            log.warn("Failed to determine exception handler for {}: {}", controllerClass.getSimpleName(), e.getMessage());
+            return throwable.toString();
+        }
     }
 
     @Override
     public ResponseEntity getBackExceptionResponse(Throwable e) {
+        return getBackExceptionResponse(this.getClass(), e);
+    }
+
+    public ResponseEntity getBackExceptionResponse(Class<?> controllerClass, Throwable e) {
         log.error("<Error>: Exception {}", e);
         try {
             if (e instanceof ManagedException managedException) {
                 return new ResponseEntity<>(e.getLocalizedMessage(), managedException.getHttpStatus());
             } else {
-                return ResponseFactory.responseInternalServerError(exceptionHandler().handleError(e));
+                IExceptionHandler handler = exceptionHandler(controllerClass);
+                return ResponseFactory.responseInternalServerError(handler.handleError(e));
             }
-        } catch (ExceptionHandlerNotDefinedException ex) {
+        } catch (Exception ex) {
+            log.warn("Error while building exception response for {}: {}", controllerClass.getSimpleName(), ex.getMessage());
             return ResponseFactory.responseInternalServerError(e.getLocalizedMessage());
         }
     }

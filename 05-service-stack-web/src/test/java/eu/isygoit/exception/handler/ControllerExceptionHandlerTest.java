@@ -21,6 +21,7 @@ import org.springframework.transaction.CannotCreateTransactionException;
 import javax.naming.SizeLimitExceededException;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -62,18 +63,29 @@ class ControllerExceptionHandlerTest {
         localeServiceMock = mock(LocaleService.class);
         localeContextHolderMock.when(LocaleContextHolder::getLocale).thenReturn(testLocale);
 
-        handler = new ControllerExceptionHandler() {
-            @Override
-            public java.util.Map<String, String> getExcepMessage() {
-                return Collections.singletonMap("some_constraint", "localized.constraint.message");
-            }
+        ControllerExceptionHandlerBuilder builder = mock(ControllerExceptionHandlerBuilder.class);
+        when(builder.getExcepMessage()).thenReturn(Collections.singletonMap("some_constraint", "localized.constraint.message"));
 
+        handler = new ControllerExceptionHandler() {
             @Override
             public void processUnmanagedException(String stackTrace) {
                 log.info("Email will be sent tou the admin");
             }
+
+            @Override
+            public Map<String, Class<?>> getEntityMap() {
+                return Collections.emptyMap();
+            }
         };
         handler.setLocaleService(localeServiceMock);
+        // Using reflection to set protected field builder
+        try {
+            java.lang.reflect.Field builderField = ControllerExceptionHandler.class.getDeclaredField("builder");
+            builderField.setAccessible(true);
+            builderField.set(handler, builder);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         // Manually trigger @PostConstruct as we're not using a Spring container
         try {

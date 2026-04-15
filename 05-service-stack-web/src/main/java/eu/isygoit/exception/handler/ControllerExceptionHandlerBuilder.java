@@ -25,7 +25,7 @@ import java.util.*;
 @Slf4j
 @Getter
 @Component
-public abstract class ControllerExceptionHandlerBuilder {
+public class ControllerExceptionHandlerBuilder {
 
     // Constants for message formatting
     private static final String TRANSLATED_MESSAGES = "translatedMessages";

@@ -46,7 +46,10 @@ import java.util.regex.Pattern;
 @Slf4j
 @Getter
 @Component
-public abstract class ControllerExceptionHandler extends ControllerExceptionHandlerBuilder implements IExceptionHandler {
+public abstract class ControllerExceptionHandler implements IExceptionHandler {
+
+    @Autowired
+    protected ControllerExceptionHandlerBuilder builder;
 
     // Message constants - defined as static final for better performance
     private static final String UNKNOWN_REASON = "unknown.reason";
@@ -216,12 +219,12 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
      * Handles PostgreSQL exceptions.
      */
     private void handlePSQLException(Throwable throwable, StringBuilder message, Locale locale) {
-        Optional<String> keyOptional = getExcepMessage().keySet().stream()
+        Optional<String> keyOptional = builder.getExcepMessage().keySet().stream()
                 .filter(throwable.getMessage()::contains)
                 .findFirst();
 
         if (keyOptional.isPresent()) {
-            message.append(localeService.getMessage(getExcepMessage().get(keyOptional.get()), locale));
+            message.append(localeService.getMessage(builder.getExcepMessage().get(keyOptional.get()), locale));
         } else {
             log.error("Unhandled DB error", throwable);
             message.append(localeService.getMessage(UNKNOWN_REASON, locale));
@@ -273,17 +276,17 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
         Optional<String> keyOptional = Optional.empty();
 
         if (ex.getConstraintName() != null) {
-            keyOptional = getExcepMessage().keySet().stream()
+            keyOptional = builder.getExcepMessage().keySet().stream()
                     .filter(ex.getConstraintName()::equals)
                     .findFirst();
         } else if (ex.getCause() instanceof SQLException) {
-            keyOptional = getExcepMessage().keySet().stream()
+            keyOptional = builder.getExcepMessage().keySet().stream()
                     .filter(ex.getCause().toString().toLowerCase()::equals)
                     .findFirst();
         }
 
         if (keyOptional.isPresent()) {
-            message.append(localeService.getMessage(getExcepMessage().get(keyOptional.get()), locale));
+            message.append(localeService.getMessage(builder.getExcepMessage().get(keyOptional.get()), locale));
         } else {
             log.error("Unhandled constraint violation", ex);
             message.append(localeService.getMessage(UNKNOWN_REASON, locale));
