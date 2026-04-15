@@ -522,7 +522,7 @@ public abstract class CrudService<I extends Serializable,
         log.info("Retrieving {} entities by criteria", persistentClass.getSimpleName());
         log.debug("Criteria: {}", criteria);
         var specification = CriteriaHelper.buildSpecification(null, criteria, persistentClass);
-        var result = repository().findAll((Sort) specification);
+        var result = (List<T>) repository().findAll((Specification) specification);
         log.debug("Retrieved {} filtered {} entities", result.size(), persistentClass.getSimpleName());
         return result;
     }
