@@ -238,19 +238,21 @@ public abstract class CrudTenantService<I extends Serializable,
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
 
+            T original = validateTenantAccess(tenant, object.getId())
+                    .orElseThrow(() -> {
+                        log.error("Entity {} with id {} not found or access denied for tenant {}",
+                                persistentClass.getSimpleName(), object.getId(), tenant);
+                        return new ObjectNotFoundException("with id: " + object.getId());
+                    });
+
             if (object instanceof IDirtyEntity) {
-                validateObjectUpdatable(object);
-            } else {
-                validateObjectExists(object);
+                validateObjectUpdatable(object, original);
             }
 
             log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
 
-            // Validate tenant access
-            validateTenantAccess(tenant, object.getId());
-
             // Preserve attributes and prepare update
-            keepOriginalAttributes(object);
+            keepOriginalAttributes(object, original);
             assignCodeIfEmpty(object);
             var preparedObject = beforeUpdate(tenant, object);
             log.debug("After pre-update hook: {}", preparedObject);
@@ -281,13 +283,35 @@ public abstract class CrudTenantService<I extends Serializable,
         validateListNotEmpty(objects);
         log.info("Updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
+        // Fetch all original entities in one batch
+        List<I> ids = objects.stream().map(IIdAssignable::getId).toList();
+        List<T> originals = getByIdIn(ids);
+        java.util.Map<I, T> originalsMap = originals.stream()
+                .collect(java.util.stream.Collectors.toMap(IIdAssignable::getId, o -> o));
+
         // Process bulk update in batch
         var result = jpaRepo.saveAll(objects.stream()
                 .peek(obj -> {
                     log.debug("Preparing entity for update: {}", obj);
-                    validateTenantAccess(tenant, obj.getId());
+                    T original = originalsMap.get(obj.getId());
+                    if (original == null) {
+                        log.error("Entity {} with id {} not found for update",
+                                persistentClass.getSimpleName(), obj.getId());
+                        throw new ObjectNotFoundException("with id: " + obj.getId());
+                    }
+
+                    // Validate tenant access
+                    if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant) && !tenant.equals(original.getTenant())) {
+                        log.error("Tenant {} has no access to entity with ID: {}", tenant, obj.getId());
+                        throw new TenantNotAllowedException("Tenant has no access to the object");
+                    }
+
+                    if (obj instanceof IDirtyEntity) {
+                        validateObjectUpdatable(obj, original);
+                    }
+
+                    keepOriginalAttributes(obj, original);
                 })
-                .map(this::keepOriginalAttributes)
                 .map(this::assignCodeIfEmpty)
                 .map(o -> beforeUpdate(tenant, (T) o))
                 .toList());
@@ -640,26 +664,32 @@ public abstract class CrudTenantService<I extends Serializable,
     /**
      * Preserves original attributes for file and image entities.
      *
-     * @param object the entity to update
+     * @param object   the entity to update
+     * @param existing the existing entity
      * @return the entity with preserved attributes
      */
+    private T keepOriginalAttributes(T object, T existing) {
+        log.debug("Preserving attributes for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
+            if (StringUtils.hasText(s.getPath())) {
+                t.setType(s.getType());
+                t.setFileName(s.getFileName());
+                t.setOriginalFileName(s.getOriginalFileName());
+                t.setPath(s.getPath());
+                t.setExtension(s.getExtension());
+            }
+        });
+        applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
+            if (StringUtils.hasText(s.getImagePath())) {
+                t.setImagePath(s.getImagePath());
+            }
+        });
+        return object;
+    }
+
     private T keepOriginalAttributes(T object) {
         repository().findById(object.getId()).ifPresent(existing -> {
-            log.debug("Preserving attributes for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
-            applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
-                if (StringUtils.hasText(s.getPath())) {
-                    t.setType(s.getType());
-                    t.setFileName(s.getFileName());
-                    t.setOriginalFileName(s.getOriginalFileName());
-                    t.setPath(s.getPath());
-                    t.setExtension(s.getExtension());
-                }
-            });
-            applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
-                if (StringUtils.hasText(s.getImagePath())) {
-                    t.setImagePath(s.getImagePath());
-                }
-            });
+            keepOriginalAttributes(object, existing);
         });
         return object;
     }
@@ -693,28 +723,20 @@ public abstract class CrudTenantService<I extends Serializable,
     /**
      * Validates that the entity has at least one dirty (changed) field before allowing an update.
      * <p>
-     * Fetches the persisted original from the repository, then performs a field-by-field
-     * comparison against the incoming object. Fields listed in {@link IDirtyEntity#ignoreFields()}
+     * Performs a field-by-field comparison against the incoming object.
+     * Fields listed in {@link IDirtyEntity#ignoreFields()}
      * are skipped entirely. If no meaningful difference is detected, the update is rejected.
      *
-     * @param object the incoming entity to be updated; must implement {@link IDirtyEntity}
-     * @throws ObjectNotFoundException    if no persisted record exists for the given ID
+     * @param object   the incoming entity to be updated; must implement {@link IDirtyEntity}
+     * @param original the persisted original entity
      * @throws ObjectNotModifiedException if the entity carries no dirty (changed) fields
      */
-    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
+    private void validateObjectUpdatable(T object, T original) throws ObjectNotModifiedException {
         IDirtyEntity dirtyEntity = (IDirtyEntity) object;
         Set<String> ignoredFields = dirtyEntity.ignoreFields();
 
         log.debug("Validating dirty state for {} entity with ID: {}",
                 persistentClass.getSimpleName(), object.getId());
-
-        // Fetch the persisted original — must exist for an update
-        T original = repository().findById(object.getId())
-                .orElseThrow(() -> {
-                    log.error("Entity {} with id {} not found during dirty check",
-                            persistentClass.getSimpleName(), object.getId());
-                    return new ObjectNotFoundException("with id: " + object.getId());
-                });
 
         // Walk every declared field in the class hierarchy and compare values
         if (!hasDirtyField(object, original, ignoredFields)) {
@@ -726,6 +748,18 @@ public abstract class CrudTenantService<I extends Serializable,
 
         log.debug("Dirty fields detected for {} entity with ID: {} — update allowed",
                 persistentClass.getSimpleName(), object.getId());
+    }
+
+    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
+        // Fetch the persisted original — must exist for an update
+        T original = repository().findById(object.getId())
+                .orElseThrow(() -> {
+                    log.error("Entity {} with id {} not found during dirty check",
+                            persistentClass.getSimpleName(), object.getId());
+                    return new ObjectNotFoundException("with id: " + object.getId());
+                });
+
+        validateObjectUpdatable(object, original);
     }
 
     /**

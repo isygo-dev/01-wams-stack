@@ -195,16 +195,21 @@ public abstract class CrudService<I extends Serializable,
             validateObjectNotNull(object);
             validateObjectIdNotNull(object);
 
+            T original = repository().findById(object.getId())
+                    .orElseThrow(() -> {
+                        log.error("Entity {} with id {} not found during update",
+                                persistentClass.getSimpleName(), object.getId());
+                        return new ObjectNotFoundException("with id: " + object.getId());
+                    });
+
             if (object instanceof IDirtyEntity) {
-                validateObjectUpdatable(object);
-            } else {
-                validateObjectExists(object);
+                validateObjectUpdatable(object, original);
             }
 
             log.info("Updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
 
             // Preserve existing attributes and prepare update
-            keepOriginalAttributes(object);
+            keepOriginalAttributes(object, original);
             assignCodeIfEmpty(object);
             var preparedObject = beforeUpdate(object);
             log.debug("After pre-update hook: {}", preparedObject);
@@ -228,28 +233,20 @@ public abstract class CrudService<I extends Serializable,
     /**
      * Validates that the entity has at least one dirty (changed) field before allowing an update.
      * <p>
-     * Fetches the persisted original from the repository, then performs a field-by-field
-     * comparison against the incoming object. Fields listed in {@link IDirtyEntity#ignoreFields()}
+     * Performs a field-by-field comparison against the incoming object.
+     * Fields listed in {@link IDirtyEntity#ignoreFields()}
      * are skipped entirely. If no meaningful difference is detected, the update is rejected.
      *
-     * @param object the incoming entity to be updated; must implement {@link IDirtyEntity}
-     * @throws ObjectNotFoundException    if no persisted record exists for the given ID
+     * @param object   the incoming entity to be updated; must implement {@link IDirtyEntity}
+     * @param original the persisted original entity
      * @throws ObjectNotModifiedException if the entity carries no dirty (changed) fields
      */
-    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
+    private void validateObjectUpdatable(T object, T original) throws ObjectNotModifiedException {
         IDirtyEntity dirtyEntity = (IDirtyEntity) object;
         Set<String> ignoredFields = dirtyEntity.ignoreFields();
 
         log.debug("Validating dirty state for {} entity with ID: {}",
                 persistentClass.getSimpleName(), object.getId());
-
-        // Fetch the persisted original — must exist for an update
-        T original = repository().findById(object.getId())
-                .orElseThrow(() -> {
-                    log.error("Entity {} with id {} not found during dirty check",
-                            persistentClass.getSimpleName(), object.getId());
-                    return new ObjectNotFoundException("with id: " + object.getId());
-                });
 
         // Walk every declared field in the class hierarchy and compare values
         if (!hasDirtyField(object, original, ignoredFields)) {
@@ -261,6 +258,18 @@ public abstract class CrudService<I extends Serializable,
 
         log.debug("Dirty fields detected for {} entity with ID: {} — update allowed",
                 persistentClass.getSimpleName(), object.getId());
+    }
+
+    private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
+        // Fetch the persisted original — must exist for an update
+        T original = repository().findById(object.getId())
+                .orElseThrow(() -> {
+                    log.error("Entity {} with id {} not found during dirty check",
+                            persistentClass.getSimpleName(), object.getId());
+                    return new ObjectNotFoundException("with id: " + object.getId());
+                });
+
+        validateObjectUpdatable(object, original);
     }
 
     /**
@@ -659,22 +668,28 @@ public abstract class CrudService<I extends Serializable,
     /**
      * Preserves original attributes for file and image entities.
      *
-     * @param object the entity to update
+     * @param object   the entity to update
+     * @param existing the existing entity
      * @return the entity with preserved attributes
      */
+    private T keepOriginalAttributes(T object, T existing) {
+        log.debug("Preserving attributes for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
+            t.setType(s.getType());
+            t.setFileName(s.getFileName());
+            t.setOriginalFileName(s.getOriginalFileName());
+            t.setPath(s.getPath());
+            t.setExtension(s.getExtension());
+        });
+        applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
+            t.setImagePath(s.getImagePath());
+        });
+        return object;
+    }
+
     private T keepOriginalAttributes(T object) {
         repository().findById(object.getId()).ifPresent(existing -> {
-            log.debug("Preserving attributes for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
-            applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
-                t.setType(s.getType());
-                t.setFileName(s.getFileName());
-                t.setOriginalFileName(s.getOriginalFileName());
-                t.setPath(s.getPath());
-                t.setExtension(s.getExtension());
-            });
-            applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
-                t.setImagePath(s.getImagePath());
-            });
+            keepOriginalAttributes(object, existing);
         });
         return object;
     }
