@@ -1,5 +1,7 @@
 package eu.isygoit.exception.handler;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.exception.ManagedException;
 import eu.isygoit.exception.UnknownException;
 import eu.isygoit.i18n.service.LocaleService;
@@ -26,6 +28,7 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import jakarta.annotation.PostConstruct;
 import javax.naming.SizeLimitExceededException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -33,7 +36,6 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -63,12 +65,57 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     private static final Pattern ERROR_VALUE_TOO_LONG_PATTERN =
             Pattern.compile("error\\.value\\.too\\.long\\.for\\.type\\.character\\.varying\\.");
 
-    // Handler cache to improve exception type lookup performance
-    private static final Map<Class<?>, Function<Throwable, String>> EXCEPTION_HANDLERS = new ConcurrentHashMap<>();
+    // Handler cache to improve exception type lookup performance using Caffeine
+    private static final Cache<Class<? extends Throwable>, Function<Throwable, String>> EXCEPTION_HANDLERS = Caffeine.newBuilder()
+            .maximumSize(100)
+            .build();
 
     @Setter
     @Autowired
     private LocaleService localeService;
+
+    @PostConstruct
+    private void initHandlers() {
+        EXCEPTION_HANDLERS.put(SizeLimitExceededException.class, ex ->
+                localeService.getMessage(SIZE_LIMIT_EXCEEDED, LocaleContextHolder.getLocale()));
+        EXCEPTION_HANDLERS.put(FeignException.class, ex ->
+                getLocaleService().getMessage(((FeignException) ex).contentUTF8(), LocaleContextHolder.getLocale()));
+        EXCEPTION_HANDLERS.put(CannotCreateTransactionException.class, ex ->
+                getLocaleService().getMessage(CANNOT_CREATE_TRANSACTION, LocaleContextHolder.getLocale()));
+        EXCEPTION_HANDLERS.put(PSQLException.class, ex -> {
+            StringBuilder msg = new StringBuilder();
+            handlePSQLException(ex, msg, LocaleContextHolder.getLocale());
+            return msg.toString();
+        });
+        EXCEPTION_HANDLERS.put(jakarta.validation.ConstraintViolationException.class, ex -> {
+            StringBuilder msg = new StringBuilder();
+            handleConstraintViolation((jakarta.validation.ConstraintViolationException) ex, msg, LocaleContextHolder.getLocale());
+            return msg.toString();
+        });
+        EXCEPTION_HANDLERS.put(EmptyResultDataAccessException.class, ex ->
+                localeService.getMessage(OBJECT_NOT_FOUND, LocaleContextHolder.getLocale()));
+        EXCEPTION_HANDLERS.put(EntityExistsException.class, ex ->
+                localeService.getMessage(OBJECT_ALREADY_EXISTS, LocaleContextHolder.getLocale()));
+        EXCEPTION_HANDLERS.put(PersistenceException.class, ex -> {
+            StringBuilder msg = new StringBuilder();
+            handlePersistenceException(ex, msg, LocaleContextHolder.getLocale());
+            return msg.toString();
+        });
+        EXCEPTION_HANDLERS.put(DataIntegrityViolationException.class, ex -> {
+            StringBuilder msg = new StringBuilder();
+            handlePersistenceException(ex, msg, LocaleContextHolder.getLocale());
+            return msg.toString();
+        });
+        EXCEPTION_HANDLERS.put(ManagedException.class, ex ->
+                getLocaleService().getMessage(((ManagedException) ex).getMsgLocale(), LocaleContextHolder.getLocale()));
+        EXCEPTION_HANDLERS.put(UnknownException.class, ex -> {
+            StringBuilder message = new StringBuilder(256);
+            Locale currentLocale = LocaleContextHolder.getLocale();
+            message.append(getLocaleService().getMessage(UNKNOWN_REASON, currentLocale)).append('\n');
+            message.append(getLocaleService().getMessage(UNMANAGED_EXCEPTION_NOTIFICATION, currentLocale)).append('\n');
+            return message.toString();
+        });
+    }
 
     /**
      * Returns a string representation of a throwable's stack trace.
@@ -107,40 +154,28 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
     public String handleError(Throwable throwable) {
         log.debug("Handling exception of type: {}", throwable.getClass().getName());
 
-        // Initialize string builder with capacity to avoid resizing
-        StringBuilder message = new StringBuilder(256);
-
         try {
-            throwable = unwrapException(throwable);
+            Throwable unwrapped = unwrapException(throwable);
 
-            // Get current locale once to avoid repeated calls
-            Locale currentLocale = LocaleContextHolder.getLocale();
+            // Handle the exception based on its type using the handler cache
+            Function<Throwable, String> handler = EXCEPTION_HANDLERS.getIfPresent(unwrapped.getClass());
+            if (handler == null) {
+                // If no direct match, check for assignable types (e.g., subclasses)
+                handler = EXCEPTION_HANDLERS.asMap().entrySet().stream()
+                        .filter(entry -> entry.getKey().isInstance(unwrapped))
+                        .map(Map.Entry::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
 
-            // Handle the exception based on its type
-            if (throwable instanceof SizeLimitExceededException) {
-                message.append(localeService.getMessage(SIZE_LIMIT_EXCEEDED, currentLocale));
-            } else if (throwable instanceof FeignException feignEx) {
-                message.append(getLocaleService().getMessage(feignEx.contentUTF8(), currentLocale));
-            } else if (throwable instanceof CannotCreateTransactionException) {
-                message.append(getLocaleService().getMessage(CANNOT_CREATE_TRANSACTION, currentLocale));
-            } else if (throwable instanceof PSQLException) {
-                handlePSQLException(throwable, message, currentLocale);
-            } else if (throwable instanceof jakarta.validation.ConstraintViolationException validationEx) {
-                handleConstraintViolation(validationEx, message, currentLocale);
-            } else if (throwable instanceof EmptyResultDataAccessException) {
-                message.append(localeService.getMessage(OBJECT_NOT_FOUND, currentLocale));
-            } else if (throwable instanceof EntityExistsException) {
-                message.append(localeService.getMessage(OBJECT_ALREADY_EXISTS, currentLocale));
-            } else if (throwable instanceof PersistenceException ||
-                    throwable instanceof DataIntegrityViolationException) {
-                handlePersistenceException(throwable, message, currentLocale);
-            } else if (throwable instanceof ManagedException managedEx) {
-                message.append(getLocaleService().getMessage(managedEx.getMsgLocale(), currentLocale));
+            if (handler != null) {
+                return handler.apply(unwrapped);
             } else {
-                throw new UnknownException(throwable);
+                return EXCEPTION_HANDLERS.getIfPresent(UnknownException.class).apply(unwrapped);
             }
         } catch (Throwable e) {
             // Handle any unexpected errors in the exception handling process
+            StringBuilder message = new StringBuilder(256);
             Locale currentLocale = LocaleContextHolder.getLocale();
             message.append(getLocaleService().getMessage(UNKNOWN_REASON, currentLocale)).append('\n');
             message.append(getLocaleService().getMessage(UNMANAGED_EXCEPTION_NOTIFICATION, currentLocale)).append('\n');
@@ -150,9 +185,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
                     throwable.getClass().getName(), e.getClass().getName(), e);
 
             processUnmanagedException(e.getMessage());
+            return message.toString();
         }
-
-        return message.toString();
     }
 
     /**

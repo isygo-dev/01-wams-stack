@@ -74,6 +74,15 @@ class ControllerExceptionHandlerTest {
             }
         };
         handler.setLocaleService(localeServiceMock);
+
+        // Manually trigger @PostConstruct as we're not using a Spring container
+        try {
+            java.lang.reflect.Method initMethod = ControllerExceptionHandler.class.getDeclaredMethod("initHandlers");
+            initMethod.setAccessible(true);
+            initMethod.invoke(handler);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
