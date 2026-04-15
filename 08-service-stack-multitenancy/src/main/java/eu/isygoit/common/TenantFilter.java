@@ -25,7 +25,6 @@ public class TenantFilter extends OncePerRequestFilter {
     private static final String SWAGGER_PATTERN = "/swagger-ui";
     private static final String API_DOCS_PATTERN = "/v3/api-docs";
     private static final String TENANT_HEADER = "X-Tenant-ID";
-    private static final Map<String, Boolean> URI_FILTER_CACHE = new ConcurrentHashMap<>();
 
     private final ITenantValidator tenantValidator;
 

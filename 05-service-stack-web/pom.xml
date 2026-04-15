@@ -161,6 +161,12 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
+        <!-- Caffeine Cache -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- OpenFeign -->
         <dependency>
             <groupId>io.github.openfeign</groupId>

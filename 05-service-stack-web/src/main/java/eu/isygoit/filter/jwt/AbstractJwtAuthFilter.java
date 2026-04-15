@@ -23,7 +23,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
  * Base JWT authentication filter that validates tokens and establishes security context.
@@ -38,8 +39,18 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     private static final String IMAGE_DOWNLOAD_PATTERN = "/image/download";
     private static final String FILE_DOWNLOAD_PATTERN = "/file/download";
 
+    @Value("${app.security.uri-cache.max-size:1000}")
+    private int cacheMaxSize;
+
     // Cache for request URIs that should not be filtered (thread-safe)
-    private static final Map<String, Boolean> URI_FILTER_CACHE = new ConcurrentHashMap<>();
+    private Cache<String, Boolean> uriFilterCache;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        uriFilterCache = Caffeine.newBuilder()
+                .maximumSize(cacheMaxSize)
+                .build();
+    }
 
     // Default RequestContextDto for unauthenticated requests (immutable singleton)
     private static final ContextRequestDto DEFAULT_CONTEXT = ContextRequestDto.builder()
@@ -84,7 +95,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         // Check cache first to avoid string operations for frequent requests
-        return URI_FILTER_CACHE.computeIfAbsent(uri, this::shouldSkipUri) ||
+        return Boolean.TRUE.equals(uriFilterCache.get(uri, this::shouldSkipUri)) ||
                 shouldNotFilterKey.equals(request.getHeader("SHOULD_NOT_FILTER_KEY"));
     }
 
