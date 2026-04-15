@@ -236,12 +236,22 @@ public abstract class CassandraCrudService<I extends Serializable,
     public List<T> saveOrUpdate(List<T> objects) {
         validateListNotEmpty(objects);
 
-        List<T> updatedObjects = new ArrayList<>();
-        objects.forEach(object -> {
-            updatedObjects.add(this.saveOrUpdate(object));
-        });
+        List<T> toCreate = objects.stream()
+                .filter(obj -> obj.getId() == null)
+                .toList();
+        List<T> toUpdate = objects.stream()
+                .filter(obj -> obj.getId() != null)
+                .toList();
 
-        return updatedObjects;
+        List<T> result = new ArrayList<>();
+        if (!toCreate.isEmpty()) {
+            result.addAll(this.createBatch(toCreate));
+        }
+        if (!toUpdate.isEmpty()) {
+            result.addAll(this.updateBatch(toUpdate));
+        }
+
+        return result;
     }
 
     @Override

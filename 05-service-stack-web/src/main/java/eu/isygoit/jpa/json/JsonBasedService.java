@@ -207,7 +207,23 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public List<T> saveOrUpdate(List<T> objects) {
         validateListNotEmpty(objects);
-        return objects.stream().map(this::saveOrUpdate).toList();
+
+        List<T> toCreate = objects.stream()
+                .filter(obj -> obj.getId() == null)
+                .toList();
+        List<T> toUpdate = objects.stream()
+                .filter(obj -> obj.getId() != null)
+                .toList();
+
+        List<T> result = new java.util.ArrayList<>();
+        if (!toCreate.isEmpty()) {
+            result.addAll(createBatch(toCreate));
+        }
+        if (!toUpdate.isEmpty()) {
+            result.addAll(updateBatch(toUpdate));
+        }
+
+        return result;
     }
 
     @Override
@@ -227,7 +243,20 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     @Override
     public List<T> updateBatch(List<T> objects) {
         validateListNotEmpty(objects);
-        return objects.stream().map(this::beforeUpdate).map(this::update).toList();
+
+        return objects.stream()
+                .map(this::beforeUpdate)
+                .map(obj -> {
+                    var entity = findEntityById(obj.getId());
+                    entity.update(objectMapper.valueToTree(obj));
+                    return entity;
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        entities -> repository().saveAll(entities).stream()
+                                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+                                .map(this::afterUpdate)
+                                .toList()));
     }
 
     // ── Criteria filtering (point 4) ──────────────────────────────────────────

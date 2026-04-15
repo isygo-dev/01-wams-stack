@@ -476,19 +476,26 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     @Transactional
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
-        var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
         log.info("Saving or updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
 
-        // Process save or update in batch
-        var result = jpaRepo.saveAll(objects.stream()
-                .peek(obj -> {
-                    log.debug("Processing save or update for entity: {}", obj);
-                    obj.setTenant(tenant);
-                })
-                .map(obj -> obj.getId() == null ? create(tenant, obj) : update(tenant, obj))
-                .toList());
+        // Separate entities into new (to create) and existing (to update)
+        List<T> toCreate = objects.stream()
+                .filter(obj -> obj.getId() == null)
+                .toList();
+        List<T> toUpdate = objects.stream()
+                .filter(obj -> obj.getId() != null)
+                .toList();
+
+        java.util.List<T> result = new java.util.ArrayList<>();
+        if (!toCreate.isEmpty()) {
+            result.addAll(createBatch(tenant, toCreate));
+        }
+        if (!toUpdate.isEmpty()) {
+            result.addAll(updateBatch(tenant, toUpdate));
+        }
+
         log.info("Successfully saved or updated {} {} entities for tenant: {}",
                 result.size(), persistentClass.getSimpleName(), tenant);
         return result;

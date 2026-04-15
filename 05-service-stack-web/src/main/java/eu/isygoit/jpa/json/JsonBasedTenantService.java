@@ -221,7 +221,23 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
         validateTenant(tenant);
         validateListNotEmpty(objects);
-        return objects.stream().map(obj -> saveOrUpdate(tenant, obj)).toList();
+
+        List<T> toCreate = objects.stream()
+                .filter(obj -> obj.getId() == null)
+                .toList();
+        List<T> toUpdate = objects.stream()
+                .filter(obj -> obj.getId() != null)
+                .toList();
+
+        List<T> result = new java.util.ArrayList<>();
+        if (!toCreate.isEmpty()) {
+            result.addAll(createBatch(tenant, toCreate));
+        }
+        if (!toUpdate.isEmpty()) {
+            result.addAll(updateBatch(tenant, toUpdate));
+        }
+
+        return result;
     }
 
     @Override
@@ -243,10 +259,20 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
     public List<T> updateBatch(String tenant, List<T> objects) {
         validateTenant(tenant);
         validateListNotEmpty(objects);
+
         return objects.stream()
                 .map(t -> beforeUpdate(tenant, t))
-                .map(obj -> update(tenant, obj))
-                .toList();
+                .map(obj -> {
+                    var entity = findEntityById(tenant, obj.getId());
+                    entity.update(objectMapper.valueToTree(obj));
+                    return entity;
+                })
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        entities -> repository().saveAll(entities).stream()
+                                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+                                .map(t -> afterUpdate(tenant, t))
+                                .toList()));
     }
 
     // ── Criteria filtering (point 4) ──────────────────────────────────────────

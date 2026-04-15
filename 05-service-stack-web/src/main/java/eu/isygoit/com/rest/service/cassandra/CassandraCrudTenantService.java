@@ -129,12 +129,38 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
 
     @Override
     public T saveOrUpdate(String tenant, T object) {
-        return null;
+        if (Objects.isNull(object)) {
+            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
+        }
+
+        if (Objects.isNull(object.getId())) { // to create
+            return this.create(tenant, object);
+        } else { //to update
+            return this.update(tenant, object);
+        }
     }
 
     @Override
+    @Transactional
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
-        return List.of();
+        validateListNotEmpty(objects);
+
+        List<T> toCreate = objects.stream()
+                .filter(obj -> obj.getId() == null)
+                .toList();
+        List<T> toUpdate = objects.stream()
+                .filter(obj -> obj.getId() != null)
+                .toList();
+
+        List<T> result = new ArrayList<>();
+        if (!toCreate.isEmpty()) {
+            result.addAll(this.createBatch(tenant, toCreate));
+        }
+        if (!toUpdate.isEmpty()) {
+            result.addAll(this.updateBatch(tenant, toUpdate));
+        }
+
+        return result;
     }
 
     @Override

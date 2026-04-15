@@ -483,11 +483,22 @@ public abstract class CrudService<I extends Serializable,
         validateListNotEmpty(objects);
         log.info("Saving or updating {} {} entities", objects.size(), persistentClass.getSimpleName());
 
-        // Process save or update in batch
-        var result = repository().saveAll(objects.stream()
-                .peek(obj -> log.debug("Processing save or update for entity: {}", obj))
-                .map(obj -> obj.getId() == null ? create(obj) : update(obj))
-                .toList());
+        // Separate entities into new (to create) and existing (to update)
+        List<T> toCreate = objects.stream()
+                .filter(obj -> obj.getId() == null)
+                .toList();
+        List<T> toUpdate = objects.stream()
+                .filter(obj -> obj.getId() != null)
+                .toList();
+
+        java.util.List<T> result = new java.util.ArrayList<>();
+        if (!toCreate.isEmpty()) {
+            result.addAll(createBatch(toCreate));
+        }
+        if (!toUpdate.isEmpty()) {
+            result.addAll(updateBatch(toUpdate));
+        }
+
         log.info("Successfully saved or updated {} {} entities", result.size(), persistentClass.getSimpleName());
         return result;
     }
