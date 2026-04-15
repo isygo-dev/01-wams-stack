@@ -3,13 +3,11 @@ package eu.isygoit.helper;
 import eu.isygoit.model.IDirtyEntity;
 import eu.isygoit.model.IIdAssignable;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.lang.invoke.MethodHandle;
 import java.util.List;
 import java.util.Set;
 
@@ -17,34 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FieldAccessorCacheTest {
 
-    @Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BaseEntity implements IIdAssignable<Long>, IDirtyEntity {
-        private Long id;
-        private String code;
-
-        @Override
-        public Set<String> ignoreFields() {
-            return Set.of("id");
-        }
-    }
-
-    @Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SimpleEntity extends BaseEntity {
-        private String name;
-        private Integer age;
-    }
-
     @Test
     public void testGetAccessors() {
         List<FieldAccessorCache.FieldAccessor> accessors = FieldAccessorCache.getAccessors(SimpleEntity.class);
         assertNotNull(accessors);
-        
+
         // Should contain fields from SimpleEntity and BaseEntity
         assertTrue(accessors.stream().anyMatch(a -> a.name().equals("name")));
         assertTrue(accessors.stream().anyMatch(a -> a.name().equals("age")));
@@ -62,7 +37,7 @@ public class FieldAccessorCacheTest {
                 .build();
 
         List<FieldAccessorCache.FieldAccessor> accessors = FieldAccessorCache.getAccessors(SimpleEntity.class);
-        
+
         FieldAccessorCache.FieldAccessor nameAccessor = accessors.stream()
                 .filter(a -> a.name().equals("name"))
                 .findFirst().orElseThrow();
@@ -164,5 +139,28 @@ public class FieldAccessorCacheTest {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
         return a.equals(b);
+    }
+
+    @Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BaseEntity implements IIdAssignable<Long>, IDirtyEntity {
+        private Long id;
+        private String code;
+
+        @Override
+        public Set<String> ignoreFields() {
+            return Set.of("id");
+        }
+    }
+
+    @Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SimpleEntity extends BaseEntity {
+        private String name;
+        private Integer age;
     }
 }

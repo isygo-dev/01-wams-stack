@@ -6,6 +6,7 @@ import eu.isygoit.exception.ManagedException;
 import eu.isygoit.exception.UnknownException;
 import eu.isygoit.i18n.service.LocaleService;
 import feign.FeignException;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.RollbackException;
@@ -28,7 +29,6 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.PostConstruct;
 import javax.naming.SizeLimitExceededException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -48,9 +48,6 @@ import java.util.regex.Pattern;
 @Component
 public abstract class ControllerExceptionHandler implements IExceptionHandler {
 
-    @Autowired
-    protected ControllerExceptionHandlerBuilder builder;
-
     // Message constants - defined as static final for better performance
     private static final String UNKNOWN_REASON = "unknown.reason";
     private static final String OPERATION_FAILED = "operation.failed";
@@ -59,7 +56,6 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
     private static final String CANNOT_CREATE_TRANSACTION = "cannot.create.transaction.exception";
     private static final String OBJECT_NOT_FOUND = "object.not.found";
     private static final String OBJECT_ALREADY_EXISTS = "object.already.exists";
-
     // Regex patterns for string replacements
     private static final Pattern SPACE_PATTERN = Pattern.compile(" ");
     private static final Pattern COLON_PATTERN = Pattern.compile(":");
@@ -67,11 +63,11 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
     private static final Pattern CLOSE_PAREN_PATTERN = Pattern.compile("\\)");
     private static final Pattern ERROR_VALUE_TOO_LONG_PATTERN =
             Pattern.compile("error\\.value\\.too\\.long\\.for\\.type\\.character\\.varying\\.");
-
     // Handler cache to improve exception type lookup performance using Caffeine
     private static final Cache<Class<? extends Throwable>, Function<Throwable, String>> EXCEPTION_HANDLERS = Caffeine.newBuilder()
             .build();
-
+    @Autowired
+    protected ControllerExceptionHandlerBuilder builder;
     @Setter
     @Autowired
     private LocaleService localeService;

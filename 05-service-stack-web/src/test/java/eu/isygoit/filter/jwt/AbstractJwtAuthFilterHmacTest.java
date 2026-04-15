@@ -5,7 +5,6 @@ import eu.isygoit.jwt.IJwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -25,20 +24,6 @@ class AbstractJwtAuthFilterHmacTest {
 
     @Mock
     private HttpServletRequest request;
-
-    // A concrete subclass for testing purposes
-    private static class TestJwtAuthFilter extends AbstractJwtAuthFilter {
-        @Override
-        public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
-            return true;
-        }
-
-        @Override
-        public void addAttributes(HttpServletRequest request, Map<String, Object> attributes) {
-            // No-op for test
-        }
-    }
-
     private TestJwtAuthFilter filter;
 
     @BeforeEach
@@ -94,5 +79,18 @@ class AbstractJwtAuthFilterHmacTest {
         when(request.getHeader("SHOULD_NOT_FILTER_KEY")).thenReturn(testSecret);
 
         assertFalse(filter.shouldNotFilter(request));
+    }
+
+    // A concrete subclass for testing purposes
+    private static class TestJwtAuthFilter extends AbstractJwtAuthFilter {
+        @Override
+        public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
+            return true;
+        }
+
+        @Override
+        public void addAttributes(HttpServletRequest request, Map<String, Object> attributes) {
+            // No-op for test
+        }
     }
 }

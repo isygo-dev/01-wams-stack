@@ -1,5 +1,7 @@
 package eu.isygoit.filter.jwt;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
@@ -25,8 +27,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
  * Base JWT authentication filter that validates tokens and establishes security context.
@@ -40,16 +40,6 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     private static final String PUBLIC_API_PREFIX = "/api/v1/public";
     private static final String IMAGE_DOWNLOAD_PATTERN = "/image/download";
     private static final String FILE_DOWNLOAD_PATTERN = "/file/download";
-
-    // Cache for request URIs that should not be filtered (thread-safe)
-    private Cache<String, Boolean> uriFilterCache;
-
-    @PostConstruct
-    public void init() {
-        uriFilterCache = Caffeine.newBuilder()
-                .build();
-    }
-
     // Default RequestContextDto for unauthenticated requests (immutable singleton)
     private static final ContextRequestDto DEFAULT_CONTEXT = ContextRequestDto.builder()
             .senderTenant(TenantConstants.SUPER_TENANT_NAME)
@@ -57,16 +47,21 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
             .isAdmin(true)
             .logApp("application")
             .build();
-
     // Predefined attribute map to avoid allocation in the error path
     private static final Map<String, Object> DEFAULT_ATTRIBUTES =
             Map.of(JwtConstants.JWT_USER_CONTEXT, DEFAULT_CONTEXT);
-
+    // Cache for request URIs that should not be filtered (thread-safe)
+    private Cache<String, Boolean> uriFilterCache;
     @Value("${app.feign.shouldNotFilterKey}")
     private String shouldNotFilterKey;
-
     @Autowired
     private IJwtService jwtService;
+
+    @PostConstruct
+    public void init() {
+        uriFilterCache = Caffeine.newBuilder()
+                .build();
+    }
 
     /**
      * Validates if the JWT token is valid for the given context.

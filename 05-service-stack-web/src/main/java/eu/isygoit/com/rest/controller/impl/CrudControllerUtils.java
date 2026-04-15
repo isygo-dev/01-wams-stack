@@ -4,8 +4,8 @@ import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.annotation.InjectService;
 import eu.isygoit.app.ApplicationContextService;
-import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.controller.IControllerExceptionHandler;
+import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
@@ -39,14 +39,12 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         S extends ICrudServiceUtils<I, T>>
         implements ICrudControllerUtils<I, T, M, F, S>, IControllerExceptionHandler {
 
-    @Autowired
-    private ControllerExceptionHandler controllerExceptionHandler;
-
-
     @Getter
     private final Class<F> fullDtoClass = (Class<F>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[3];
     @Getter
     private final Class<M> minDtoClass = (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
+    @Autowired
+    private ControllerExceptionHandler controllerExceptionHandler;
     private EntityMapper<T, F> fullEntityMapper;
     private EntityMapper<T, M> minEntityMapper;
     private S crudService;

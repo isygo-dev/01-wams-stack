@@ -1,5 +1,7 @@
 package eu.isygoit.common;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.audit.TenantContext;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
@@ -7,7 +9,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -15,8 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Map;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
  * The type Tenant to context filter.
@@ -30,16 +29,8 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     private static final String SWAGGER_PATTERN = "/swagger-ui";
     private static final String API_DOCS_PATTERN = "/v3/api-docs";
     private static final String TENANT_HEADER = "X-Tenant-ID";
-
-    private Cache<String, Boolean> uriFilterCache;
-
-    @jakarta.annotation.PostConstruct
-    public void init() {
-        uriFilterCache = Caffeine.newBuilder()
-                .build();
-    }
-
     private final ITenantValidator tenantValidator;
+    private Cache<String, Boolean> uriFilterCache;
 
     /**
      * Instantiates a new Tenant to context filter.
@@ -48,6 +39,12 @@ public class TenantToContextFilter extends OncePerRequestFilter {
      */
     public TenantToContextFilter(ITenantValidator tenantValidator) {
         this.tenantValidator = tenantValidator;
+    }
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        uriFilterCache = Caffeine.newBuilder()
+                .build();
     }
 
     private boolean shouldSkipUri(String uri) {

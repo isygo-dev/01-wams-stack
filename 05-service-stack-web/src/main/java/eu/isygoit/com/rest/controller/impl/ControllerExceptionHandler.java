@@ -27,12 +27,11 @@ import java.util.stream.Stream;
 @Component
 public class ControllerExceptionHandler implements IControllerExceptionHandler {
 
+    // Cache to store the determined IExceptionHandler for each controller class
+    private final Map<Class<?>, IExceptionHandler> handlerCache = new ConcurrentHashMap<>();
     @Getter
     @Autowired
     protected ApplicationContextService applicationContextService;
-
-    // Cache to store the determined IExceptionHandler for each controller class
-    private final Map<Class<?>, IExceptionHandler> handlerCache = new ConcurrentHashMap<>();
 
     public final IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
         return exceptionHandler(this.getClass());
