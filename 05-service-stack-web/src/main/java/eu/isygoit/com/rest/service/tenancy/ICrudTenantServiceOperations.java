@@ -5,6 +5,7 @@ import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import jakarta.transaction.NotSupportedException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -95,7 +96,7 @@ public interface ICrudTenantServiceOperations<I extends Serializable,
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAll(String tenant, Pageable pageable);
+    Page<T> findAll(String tenant, Pageable pageable);
 
     /**
      * Find by id optional.
@@ -166,7 +167,7 @@ public interface ICrudTenantServiceOperations<I extends Serializable,
      * @return the list
      * @throws NotSupportedException the not supported exception
      */
-    List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest);
+    Page<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest);
 
     /**
      * Gets by id in.

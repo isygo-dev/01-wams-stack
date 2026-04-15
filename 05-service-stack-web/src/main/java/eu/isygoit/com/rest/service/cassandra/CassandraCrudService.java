@@ -17,9 +17,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -191,18 +189,22 @@ public abstract class CassandraCrudService<I extends Serializable,
 
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(Pageable pageable) {
+    public Page<T> findAll(Pageable pageable) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)
                 && repository() instanceof JpaPagingAndSortingTenantAssignableRepository) {
             log.warn("Find all give vulnerability to SAS entity...");
         }
 
-        Slice<T> page = repository().findAll(pageable);
-        if (page.isEmpty()) {
-            return Collections.EMPTY_LIST;
+        Slice<T> slice = repository().findAll(pageable);
+        if (slice.isEmpty()) {
+            return Page.empty(pageable);
         }
 
-        return this.afterFindAll(page.getContent());
+        // Apply your post-processing (assuming afterFindAll takes List<T> and returns List<T>)
+        List<T> processedContent = this.afterFindAll(slice.getContent());
+
+        // Rebuild the Page with the processed content (preserves all metadata)
+        return new PageImpl<>(processedContent, pageable, slice.getNumberOfElements());
     }
 
     @Override
@@ -280,7 +282,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public Page<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         return null;
     }
 

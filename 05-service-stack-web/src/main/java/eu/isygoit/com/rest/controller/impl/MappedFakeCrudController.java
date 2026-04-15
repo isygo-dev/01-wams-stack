@@ -4,6 +4,7 @@ import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -72,7 +73,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
         log.warn("Attempted to call findAll on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
@@ -87,7 +88,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
         log.warn("Attempted to call findAllFull on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
@@ -173,7 +174,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
         log.warn("Attempted to call findAllFilteredByCriteria on fake controller with criteria: {}, page: {}, size: {}", criteria, page, size);
         throw UNSUPPORTED_OPERATION;
     }

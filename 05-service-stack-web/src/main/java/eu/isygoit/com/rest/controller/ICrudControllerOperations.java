@@ -5,6 +5,7 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -90,7 +91,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<F>> performFindAllFull(ContextRequestDto requestContext, Integer page, Integer size);
+    ResponseEntity<PaginatedResponseDto<F>> performFindAllFull(ContextRequestDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find all response entity.
@@ -100,7 +101,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<M>> performFindAll(ContextRequestDto requestContext, Integer page, Integer size);
+    ResponseEntity<PaginatedResponseDto<M>> performFindAll(ContextRequestDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find by id response entity.
@@ -136,5 +137,5 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param size           the size
      * @return the response entity
      */
-    ResponseEntity<List<F>> performFindAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size);
+    ResponseEntity<PaginatedResponseDto<F>> performFindAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size);
 }

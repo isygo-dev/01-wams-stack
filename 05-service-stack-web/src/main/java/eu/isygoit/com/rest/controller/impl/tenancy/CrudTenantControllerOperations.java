@@ -18,6 +18,8 @@ import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import eu.isygoit.dto.common.PaginatedResponseDto;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StopWatch;
@@ -234,20 +236,37 @@ public abstract class CrudTenantControllerOperations<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<M>> performFindAll(ContextRequestDto context, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<M>> performFindAll(ContextRequestDto context, Integer page, Integer size) {
         return executeWithMonitoring("performFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
 
-            List<T> entities = isPaginationRequested(page, size)
-                    ? findPaginatedEntities(context.getSenderTenant(), page, size)
-                    : crudService().findAll(context.getSenderTenant());
+            if (isPaginationRequested(page, size)) {
+                Page<T> entitiesPage = findPaginatedEntities(context.getSenderTenant(), page, size);
+                List<M> resultDtos = minDtoMapper().listEntityToDto(entitiesPage.getContent());
+                List<M> postProcessedDtos = afterFindAll(context, resultDtos);
 
-            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
-            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
+                return ResponseFactory.responseOk(PaginatedResponseDto.<M>builder()
+                        .content(postProcessedDtos)
+                        .totalElements(entitiesPage.getTotalElements())
+                        .totalPages(entitiesPage.getTotalPages())
+                        .pageNumber(entitiesPage.getNumber())
+                        .pageSize(entitiesPage.getSize())
+                        .build());
+            } else {
+                List<T> entities = crudService().findAll(context.getSenderTenant());
+                List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
+                List<M> postProcessedDtos = afterFindAll(context, resultDtos);
 
-            return createListResponse(postProcessedDtos);
+                return ResponseFactory.responseOk(PaginatedResponseDto.<M>builder()
+                        .content(postProcessedDtos)
+                        .totalElements(postProcessedDtos.size())
+                        .totalPages(1)
+                        .pageNumber(0)
+                        .pageSize(postProcessedDtos.size())
+                        .build());
+            }
         });
     }
 
@@ -261,20 +280,37 @@ public abstract class CrudTenantControllerOperations<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> performFindAllFull(ContextRequestDto context, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> performFindAllFull(ContextRequestDto context, Integer page, Integer size) {
         return executeWithMonitoring("performFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
                     entityClass.getSimpleName(), page, size, context.getSenderTenant());
 
-            List<T> entities = isPaginationRequested(page, size)
-                    ? findPaginatedEntities(context.getSenderTenant(), page, size)
-                    : crudService().findAll(context.getSenderTenant());
+            if (isPaginationRequested(page, size)) {
+                Page<T> entitiesPage = findPaginatedEntities(context.getSenderTenant(), page, size);
+                List<F> resultDtos = mapper().listEntityToDto(entitiesPage.getContent());
+                List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
-            List<F> resultDtos = mapper().listEntityToDto(entities);
-            List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
+                return ResponseFactory.responseOk(PaginatedResponseDto.<F>builder()
+                        .content(postProcessedDtos)
+                        .totalElements(entitiesPage.getTotalElements())
+                        .totalPages(entitiesPage.getTotalPages())
+                        .pageNumber(entitiesPage.getNumber())
+                        .pageSize(entitiesPage.getSize())
+                        .build());
+            } else {
+                List<T> entities = crudService().findAll(context.getSenderTenant());
+                List<F> resultDtos = mapper().listEntityToDto(entities);
+                List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
-            return createListResponse(postProcessedDtos);
+                return ResponseFactory.responseOk(PaginatedResponseDto.<F>builder()
+                        .content(postProcessedDtos)
+                        .totalElements(postProcessedDtos.size())
+                        .totalPages(1)
+                        .pageNumber(0)
+                        .pageSize(postProcessedDtos.size())
+                        .build());
+            }
         });
     }
 
@@ -289,7 +325,7 @@ public abstract class CrudTenantControllerOperations<
      * @throws BadArgumentException if page or size is invalid for paginated queries
      */
     @Override
-    public ResponseEntity<List<F>> performFindAllFilteredByCriteria(ContextRequestDto context, String criteria, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> performFindAllFilteredByCriteria(ContextRequestDto context, String criteria, Integer page, Integer size) {
         return executeWithMonitoring("performFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -297,14 +333,32 @@ public abstract class CrudTenantControllerOperations<
             log.debug("Filter criteria: {}", criteria);
 
             List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
-            List<T> entities = isPaginationRequested(page, size)
-                    ? findPaginatedFilteredEntities(context.getSenderTenant(), criteriaList, page, size)
-                    : crudService().findAllByCriteriaFilter(context.getSenderTenant(), criteriaList);
 
-            List<F> resultDtos = mapper().listEntityToDto(entities);
-            List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
+            if (isPaginationRequested(page, size)) {
+                Page<T> entitiesPage = findPaginatedFilteredEntities(context.getSenderTenant(), criteriaList, page, size);
+                List<F> resultDtos = mapper().listEntityToDto(entitiesPage.getContent());
+                List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
 
-            return createListResponse(postProcessedDtos);
+                return ResponseFactory.responseOk(PaginatedResponseDto.<F>builder()
+                        .content(postProcessedDtos)
+                        .totalElements(entitiesPage.getTotalElements())
+                        .totalPages(entitiesPage.getTotalPages())
+                        .pageNumber(entitiesPage.getNumber())
+                        .pageSize(entitiesPage.getSize())
+                        .build());
+            } else {
+                List<T> entities = crudService().findAllByCriteriaFilter(context.getSenderTenant(), criteriaList);
+                List<F> resultDtos = mapper().listEntityToDto(entities);
+                List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
+
+                return ResponseFactory.responseOk(PaginatedResponseDto.<F>builder()
+                        .content(postProcessedDtos)
+                        .totalElements(postProcessedDtos.size())
+                        .totalPages(1)
+                        .pageNumber(0)
+                        .pageSize(postProcessedDtos.size())
+                        .build());
+            }
         });
     }
 
@@ -577,7 +631,7 @@ public abstract class CrudTenantControllerOperations<
      * @param size     Page size
      * @return List of entities
      */
-    private List<T> findPaginatedEntities(String tenantId, Integer page, Integer size) {
+    private Page<T> findPaginatedEntities(String tenantId, Integer page, Integer size) {
         int validatedPage = validatePageNumber(page);
         int validatedSize = validatePageSize(size);
         PageRequest pageRequest = PageRequest.of(
@@ -597,7 +651,7 @@ public abstract class CrudTenantControllerOperations<
      * @param size         Page size
      * @return List of filtered entities
      */
-    private List<T> findPaginatedFilteredEntities(String tenantId, List<QueryCriteria> criteriaList, Integer page, Integer size) {
+    private Page<T> findPaginatedFilteredEntities(String tenantId, List<QueryCriteria> criteriaList, Integer page, Integer size) {
         int validatedPage = validatePageNumber(page);
         int validatedSize = validatePageSize(size);
         PageRequest pageRequest = PageRequest.of(

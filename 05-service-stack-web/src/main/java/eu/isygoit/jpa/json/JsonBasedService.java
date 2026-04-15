@@ -20,6 +20,8 @@ import eu.isygoit.repository.json.JsonBasedRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -183,11 +185,12 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
     }
 
     @Override
-    public List<T> findAll(Pageable pageable) {
-        var results = repository().findAllByElementType(elementType, pageable).stream()
-                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+    public Page<T> findAll(Pageable pageable) {
+        Page<E> page = repository().findAllByElementType(elementType, pageable);
+        List<T> results = page.stream()
+                .map(e -> (T) JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .toList();
-        return afterFindAll(results);
+        return new PageImpl<>(afterFindAll(results), pageable, page.getTotalElements());
     }
 
     @Override
@@ -304,7 +307,7 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
      * true DB-side pagination.
      */
     @Override
-    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public Page<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         if (criteria == null || criteria.isEmpty()) {
             log.warn("findAllByCriteriaFilter called with no criteria — falling back to findAll with pagination.");
             return findAll(pageRequest);
@@ -319,14 +322,18 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         List<T> results = queryExecutor
                 .findByCriteria(tableName, elementType, null, dbCriteria, jsonEntityClass)
                 .stream()
-                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+                .map(e -> (T) JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
                 .collect(Collectors.toList());
 
         if (!memCriteria.isEmpty()) {
             results = JsonBasedEntityHelper.applyCriteriaFilter(results, memCriteria, elementType);
         }
 
-        return afterFindAll(JsonBasedEntityHelper.applyPagination(results, pageRequest));
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min((start + pageRequest.getPageSize()), results.size());
+        List<T> pagedResults = (start <= results.size()) ? results.subList(start, end) : List.of();
+
+        return new PageImpl<>(afterFindAll(pagedResults), pageRequest, results.size());
     }
 
     @Override

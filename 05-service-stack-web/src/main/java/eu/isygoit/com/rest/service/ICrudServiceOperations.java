@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -76,7 +77,7 @@ public interface ICrudServiceOperations<I extends Serializable, T extends IIdAss
      * @param pageable the pageable
      * @return the list
      */
-    List<T> findAll(Pageable pageable);
+    Page<T> findAll(Pageable pageable);
 
     /**
      * Find by id optional.
@@ -134,7 +135,7 @@ public interface ICrudServiceOperations<I extends Serializable, T extends IIdAss
      * @param pageRequest the page request
      * @return the list
      */
-    List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest);
+    Page<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest);
 
     /**
      * Gets by id in.

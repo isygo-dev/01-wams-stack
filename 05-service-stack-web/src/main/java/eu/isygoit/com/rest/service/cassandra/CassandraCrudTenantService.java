@@ -18,6 +18,7 @@ import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableReposito
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -204,13 +205,18 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAll(String tenant, Pageable pageable) {
+    public Page<T> findAll(String tenant, Pageable pageable) {
         if (repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaPagingAndSortingTenantAssignableRepository) {
             Page<T> page = jpaPagingAndSortingTenantAssignableRepository.findByTenantIgnoreCase(tenant, pageable);
             if (page.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Page.empty(pageable);
             }
-            return this.afterFindAll(tenant, page.getContent());
+
+            // Apply post-processing
+            List<T> processedContent = this.afterFindAll(tenant, page.getContent());
+
+            // Reconstruct Page with processed content while preserving pagination metadata
+            return new PageImpl<>(processedContent, pageable, page.getTotalElements());
         } else {
             throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
         }
@@ -242,7 +248,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     }
 
     @Override
-    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public Page<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
         return null;
     }
 

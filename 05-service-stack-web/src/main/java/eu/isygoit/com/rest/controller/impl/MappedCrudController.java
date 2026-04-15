@@ -8,6 +8,7 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
@@ -56,16 +57,16 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
 
 
     @Override
-    public final ResponseEntity<List<F>> findAllFull(ContextRequestDto requestContext,
-                                                     Integer page,
-                                                     Integer size) {
+    public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(ContextRequestDto requestContext,
+                                                                    Integer page,
+                                                                    Integer size) {
         return performFindAllFull(requestContext, page, size);
     }
 
     @Override
-    public final ResponseEntity<List<M>> findAll(ContextRequestDto requestContext,
-                                                 Integer page,
-                                                 Integer size) {
+    public final ResponseEntity<PaginatedResponseDto<M>> findAll(ContextRequestDto requestContext,
+                                                                 Integer page,
+                                                                 Integer size) {
         return performFindAll(requestContext, page, size);
     }
 
@@ -88,7 +89,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     }
 
     @Override
-    public ResponseEntity<List<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
         return performFindAllFilteredByCriteria(requestContext, criteria, page, size);
     }
 

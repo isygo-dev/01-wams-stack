@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -403,19 +404,20 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(String tenant, Pageable pageable) {
+    public Page<T> findAll(String tenant, Pageable pageable) {
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
         log.info("Retrieving paginated {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Pageable: {}", pageable);
-        var page = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
-                ? jpaRepo.findAll(pageable)
-                : jpaRepo.findByTenantIgnoreCase(tenant, pageable);
+        Page<T> page = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                ? (Page<T>) jpaRepo.findAll(pageable)
+                : (Page<T>) jpaRepo.findByTenantIgnoreCase(tenant, pageable);
 
-        var result = page.isEmpty() ? List.<T>of() : afterFindAll(tenant, page.getContent());
-        log.debug("Retrieved {} paginated {} entities for tenant: {}",
-                result.size(), persistentClass.getSimpleName(), tenant);
-        return result;
+        return page.map(entity -> afterFindAllItem(tenant, entity));
+    }
+
+    private T afterFindAllItem(String tenant, T entity) {
+        return afterFindAll(tenant, List.of(entity)).get(0);
     }
 
     /**
@@ -539,20 +541,16 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public Page<T> findAllByCriteriaFilter(String tenant, List<QueryCriteria> criteria, PageRequest pageRequest) {
         validateTenantNotNull(tenant);
         validateListNotEmpty(criteria);
         var jpaRepo = getTenantAssignableRepository();
         log.info("Retrieving paginated {} entities by criteria for tenant: {}", persistentClass.getSimpleName(), tenant);
         log.debug("Criteria: {}, PageRequest: {}", criteria, pageRequest);
         var specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
-        var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
-                ? jpaRepo.findAll(specification, pageRequest).getContent()
-                : jpaRepo.findAll(specification, pageRequest).getContent();
+        Page<T> page = jpaRepo.findAll(specification, pageRequest);
 
-        log.debug("Retrieved {} filtered paginated {} entities for tenant: {}",
-                result.size(), persistentClass.getSimpleName(), tenant);
-        return result;
+        return page.map(entity -> afterFindAllItem(tenant, entity));
     }
 
     /**

@@ -13,6 +13,7 @@ import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -421,14 +422,15 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAll(Pageable pageable) {
+    public Page<T> findAll(Pageable pageable) {
         validateNotTenantSpecific("findAll ");
         log.info("Retrieving paginated {} entities", persistentClass.getSimpleName());
         log.debug("Pageable: {}", pageable);
-        var content = repository().findAll(pageable).getContent();
-        var result = content.isEmpty() ? List.<T>of() : afterFindAll(content);
-        log.debug("Retrieved {} paginated {} entities", result.size(), persistentClass.getSimpleName());
-        return result;
+        return repository().findAll(pageable).map(this::afterFindAllItem);
+    }
+
+    private T afterFindAllItem(T entity) {
+        return afterFindAll(List.of(entity)).get(0);
     }
 
     /**
@@ -534,7 +536,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     @Transactional(readOnly = true)
-    public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
+    public Page<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         validateNotTenantSpecific("findAllByCriteriaFilter ");
         if (CollectionUtils.isEmpty(criteria)) {
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
@@ -543,9 +545,7 @@ public abstract class CrudService<I extends Serializable,
         log.info("Retrieving paginated {} entities by criteria", persistentClass.getSimpleName());
         log.debug("Criteria: {}, PageRequest: {}", criteria, pageRequest);
         Specification<T> specification = CriteriaHelper.buildSpecification(null, criteria, persistentClass);
-        var result = repository().findAll(specification, pageRequest).getContent();
-        log.debug("Retrieved {} filtered paginated {} entities", result, persistentClass.getSimpleName());
-        return result;
+        return repository().findAll(specification, pageRequest).map(this::afterFindAllItem);
     }
 
     @Override

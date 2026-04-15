@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,7 +59,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     content = @Content)
     })
     @GetMapping(path = "")
-    ResponseEntity<List<M>> findAll(
+    ResponseEntity<PaginatedResponseDto<M>> findAll(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.PAGE, required = false)
@@ -89,7 +90,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     content = @Content)
     })
     @GetMapping(path = "/full")
-    ResponseEntity<List<F>> findAllFull(
+    ResponseEntity<PaginatedResponseDto<F>> findAllFull(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.PAGE, required = false)
@@ -171,7 +172,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     content = @Content)
     })
     @GetMapping(path = "/filter")
-    ResponseEntity<List<F>> findAllFilteredByCriteria(
+    ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(
             @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.CRITERIA)
