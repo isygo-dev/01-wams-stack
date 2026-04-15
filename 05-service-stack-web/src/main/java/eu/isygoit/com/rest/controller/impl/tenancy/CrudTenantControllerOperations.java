@@ -110,7 +110,7 @@ public abstract class CrudTenantControllerOperations<
                     .toList();
             List<F> resultDtos = mapper().listEntityToDto(postProcessedEntities);
 
-            return ResponseFactory.responseOk(List.copyOf(resultDtos));
+            return ResponseFactory.responseOk(resultDtos);
         });
     }
 
@@ -138,7 +138,7 @@ public abstract class CrudTenantControllerOperations<
                     .toList();
             List<F> resultDtos = mapper().listEntityToDto(postProcessedEntities);
 
-            return ResponseFactory.responseOk(List.copyOf(resultDtos));
+            return ResponseFactory.responseOk(resultDtos);
         });
     }
 
@@ -617,7 +617,7 @@ public abstract class CrudTenantControllerOperations<
     private <R> ResponseEntity<List<R>> createListResponse(List<R> results) {
         return CollectionUtils.isEmpty(results) ?
                 ResponseFactory.responseNoContent() :
-                ResponseFactory.responseOk(List.copyOf(results));
+                ResponseFactory.responseOk(results);
     }
 
     /**
