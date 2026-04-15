@@ -76,6 +76,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
      * @param throwable the throwable to get the stack trace from
      * @return the stack trace as a string
      */
+    @Deprecated
     public String getStackTrace(Throwable throwable) {
         StringWriter sw = new StringWriter(2048); // Pre-size for better performance
         try (PrintWriter pw = new PrintWriter(sw)) {
@@ -148,7 +149,7 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
             log.error("Exception handler failed to process: {} with secondary exception: {}",
                     throwable.getClass().getName(), e.getClass().getName(), e);
 
-            processUnmanagedException(getStackTrace(e));
+            processUnmanagedException(e.getMessage());
         }
 
         return message.toString();
@@ -188,9 +189,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
         if (keyOptional.isPresent()) {
             message.append(localeService.getMessage(getExcepMessage().get(keyOptional.get()), locale));
         } else {
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale))
-                    .append(' ')
-                    .append(getStackTrace(throwable));
+            log.error("Unhandled DB error", throwable);
+            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
         }
     }
 
@@ -227,9 +227,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
         } else if (throwable.getCause() instanceof DataException) {
             handleDataException((DataException) throwable.getCause(), message, locale);
         } else {
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale))
-                    .append(' ')
-                    .append(getStackTrace(throwable));
+            log.error("Unhandled persistence error", throwable);
+            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
         }
     }
 
@@ -252,9 +251,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
         if (keyOptional.isPresent()) {
             message.append(localeService.getMessage(getExcepMessage().get(keyOptional.get()), locale));
         } else {
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale))
-                    .append(' ')
-                    .append(getStackTrace(ex));
+            log.error("Unhandled constraint violation", ex);
+            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
         }
     }
 
@@ -274,9 +272,8 @@ public abstract class ControllerExceptionHandler extends ControllerExceptionHand
 
             message.append(localeService.getMessage(msgKey, locale)).append('\n');
         } else {
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale))
-                    .append(' ')
-                    .append(getStackTrace(ex));
+            log.error("Unhandled data error", ex);
+            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
         }
     }
 }
