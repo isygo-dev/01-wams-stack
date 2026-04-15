@@ -4,11 +4,13 @@ import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.exception.TokenInvalidException;
+import eu.isygoit.helper.HmacHelper;
 import eu.isygoit.helper.UrlHelper;
 import eu.isygoit.jwt.IJwtService;
 import eu.isygoit.security.CustomAuthentification;
 import eu.isygoit.security.CustomUserDetails;
 import io.jsonwebtoken.JwtException;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,7 +47,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     // Cache for request URIs that should not be filtered (thread-safe)
     private Cache<String, Boolean> uriFilterCache;
 
-    @jakarta.annotation.PostConstruct
+    @PostConstruct
     public void init() {
         uriFilterCache = Caffeine.newBuilder()
                 .maximumSize(cacheMaxSize)
@@ -94,9 +96,19 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     public boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
 
-        // Check cache first to avoid string operations for frequent requests
-        return Boolean.TRUE.equals(uriFilterCache.get(uri, this::shouldSkipUri)) ||
-                shouldNotFilterKey.equals(request.getHeader("SHOULD_NOT_FILTER_KEY"));
+        // Check cache first for public URIs to avoid string operations for frequent requests
+        if (Boolean.TRUE.equals(uriFilterCache.get(uri, this::shouldSkipUri))) {
+            return true;
+        }
+
+        // Check for request-scoped HMAC bypass (e.g., for internal Feign calls)
+        String signature = request.getHeader("X-Auth-Signature");
+        String message = request.getHeader("X-Auth-Message");
+        if (StringUtils.hasText(signature) && StringUtils.hasText(message)) {
+            return HmacHelper.validateHmac(message, signature, shouldNotFilterKey);
+        }
+
+        return false;
     }
 
     /**
