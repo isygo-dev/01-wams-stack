@@ -17,9 +17,7 @@ import org.springframework.util.StringUtils;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -39,14 +37,14 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractTenant(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting tenant from unsigned token");
         return extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
     }
 
     @Override
     public Boolean extractIsAdmin(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting isAdmin flag from unsigned token");
         return extractClaim(token, JwtConstants.JWT_IS_ADMIN, Boolean.class)
                 .map(Boolean.class::cast)
@@ -55,28 +53,28 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractApplication(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting application from unsigned token");
         return extractClaim(token, JwtConstants.JWT_LOG_APP, String.class);
     }
 
     @Override
     public Optional<String> extractAccountType(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting account type from unsigned token");
         return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class);
     }
 
     @Override
     public Optional<String> extractUserName(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting username from unsigned token");
         return extractClaim(token, JwtConstants.JWT_SENDER_USER, String.class);
     }
 
     @Override
     public Optional<String> extractSubject(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting subject from unsigned token");
         return extractClaim(token, Claims::getSubject);
     }
@@ -87,14 +85,14 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractTenant(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting tenant from signed token");
         return extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class, key);
     }
 
     @Override
     public Boolean extractIsAdmin(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting isAdmin flag from signed token");
         return extractClaim(token, JwtConstants.JWT_IS_ADMIN, Boolean.class, key)
                 .map(Boolean.class::cast)
@@ -103,28 +101,28 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractApplication(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting application from signed token");
         return extractClaim(token, JwtConstants.JWT_LOG_APP, String.class, key);
     }
 
     @Override
     public Optional<String> extractAccountType(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting account type from signed token");
         return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class, key);
     }
 
     @Override
     public Optional<String> extractUserName(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting username from signed token");
         return extractClaim(token, JwtConstants.JWT_SENDER_USER, String.class, key);
     }
 
     @Override
     public Optional<String> extractSubject(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting subject from signed token");
         return extractClaim(token, Claims::getSubject, key);
     }
@@ -159,7 +157,7 @@ public class JwtService implements IJwtService {
 
     @Override
     public Claims extractAllClaims(String token) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting all claims (unsigned) from token");
         try {
             String[] parts = token.split("\\.", 3);
@@ -182,7 +180,7 @@ public class JwtService implements IJwtService {
 
     @Override
     public Claims extractAllClaims(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting all claims from signed token");
         try {
             return Jwts.parser()
@@ -206,24 +204,37 @@ public class JwtService implements IJwtService {
     @Override
     public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
                                         MacAlgorithm algorithm, String key, Integer lifeTimeInMs) {
-        log.info("Creating new JWT token for subject: {}", subject);
-        Date expiryDate = calcExpiryDate(lifeTimeInMs);
-        SecretKey secretKey = buildSecretKey(key);
+        return createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(claims)
+                .issuer(issuer)
+                .audience(audience)
+                .algorithm(algorithm)
+                .key(key)
+                .lifeTimeInMs(lifeTimeInMs)
+                .build());
+    }
+
+    @Override
+    public TokenResponseDto createToken(JwtTokenRequest request) {
+        log.info("Creating new JWT token for subject: {}", request.subject());
+        Date expiryDate = calcExpiryDate(request.lifeTimeInMs());
+        SecretKey secretKey = buildSecretKey(request.key());
 
         JwtBuilder jwtBuilder = Jwts.builder()
-                .subject(subject)
-                .issuer(issuer)
+                .subject(request.subject())
+                .issuer(request.issuer())
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(expiryDate)
-                .audience().add(audience).and()
-                .signWith(secretKey, algorithm);
+                .audience().add(request.audience()).and()
+                .signWith(secretKey, request.algorithm());
 
-        if (!CollectionUtils.isEmpty(claims)) {
-            claims.forEach(jwtBuilder::claim);
+        if (!CollectionUtils.isEmpty(request.claims())) {
+            request.claims().forEach(jwtBuilder::claim);
         }
 
         String token = jwtBuilder.compact();
-        log.info("JWT token created successfully for subject: {}", subject);
+        log.info("JWT token created successfully for subject: {}", request.subject());
         return new TokenResponseDto(IEnumWebToken.Types.Bearer, token, expiryDate);
     }
 
@@ -268,7 +279,7 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<Date> extractExpiration(String token, String key) {
-        if (token == null) throw new NullPointerException("token cannot be null");
+        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
         log.debug("Extracting expiration date from signed token");
         return extractClaim(token, Claims::getExpiration, key);
     }

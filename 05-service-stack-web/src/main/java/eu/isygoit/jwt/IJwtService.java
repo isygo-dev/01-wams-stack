@@ -67,6 +67,14 @@ public interface IJwtService {
     TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
                                  MacAlgorithm algorithm, String key, Integer lifeTimeInMs);
 
+    /**
+     * Creates a signed JWT token based on the provided request parameters.
+     *
+     * @param request the token creation request
+     * @return a {@link TokenResponseDto} containing the generated token and expiry date
+     */
+    TokenResponseDto createToken(JwtTokenRequest request);
+
     void validateToken(String token, String subject, String key);
 
     Date calcExpiryDate(Integer lifeTimeInMs);

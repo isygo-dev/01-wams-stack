@@ -48,9 +48,15 @@ class JwtServiceTest {
 
     @Test
     void testCreateTokenAndAllExtractors() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, claims, "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(claims)
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
 
@@ -82,9 +88,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractSubjectUnsigned() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         Optional<String> extracted = jwtService.extractSubject(token);
@@ -94,9 +106,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractSubjectWithKey() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         Optional<String> extracted = jwtService.extractSubject(token, testKey);
@@ -110,9 +128,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractClaimWithFunctionAndKey() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         Optional<Date> expiration = jwtService.extractClaim(token, Claims::getExpiration, testKey);
@@ -121,9 +145,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractClaimWithFunctionNoKey() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         Optional<Date> expiration = jwtService.extractClaim(token, Claims::getExpiration);
@@ -132,9 +162,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractClaimWithClaimKeyAndClass() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, claims, "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(claims)
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         Optional<String> tenant = jwtService.extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
@@ -148,9 +184,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractAllClaimsSigned() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         assertDoesNotThrow(() -> {
@@ -162,9 +204,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractAllClaimsUnsigned() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         assertDoesNotThrow(() -> {
@@ -176,9 +224,15 @@ class JwtServiceTest {
 
     @Test
     void testExtractAllClaimsUnsignedOnHs256TokenSucceeds() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, claims, "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(claims)
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         Claims claims = jwtService.extractAllClaims(dto.getToken());
         assertNotNull(claims);
@@ -193,9 +247,15 @@ class JwtServiceTest {
 
     @Test
     void testIsTokenExpiredFalse() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
         assertFalse(jwtService.isTokenExpired(token, testKey));
@@ -203,9 +263,15 @@ class JwtServiceTest {
 
     @Test
     void testIsTokenExpiredTrue() throws InterruptedException {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1)
+                .build());
 
         String token = dto.getToken();
         Thread.sleep(5);
@@ -235,9 +301,15 @@ class JwtServiceTest {
 
     @Test
     void extractMissingClaimReturnsEmptyOptional() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
 
@@ -252,9 +324,15 @@ class JwtServiceTest {
 
     @Test
     void extractMissingClaimSecuredReturnsEmptyOptional() {
-        TokenResponseDto dto = jwtService.createToken(
-                subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+        TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                .subject(subject)
+                .claims(Collections.emptyMap())
+                .issuer("issuerTest")
+                .audience("audienceTest")
+                .algorithm(Jwts.SIG.HS256)
+                .key(testKey)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
 
         String token = dto.getToken();
 
@@ -274,9 +352,15 @@ class JwtServiceTest {
 
         @BeforeEach
         void generateValidToken() {
-            TokenResponseDto dto = jwtService.createToken(
-                    subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                    Jwts.SIG.HS256, testKey, 1000 * 60 * 60);
+            TokenResponseDto dto = jwtService.createToken(JwtTokenRequest.builder()
+                    .subject(subject)
+                    .claims(Collections.emptyMap())
+                    .issuer("issuerTest")
+                    .audience("audienceTest")
+                    .algorithm(Jwts.SIG.HS256)
+                    .key(testKey)
+                    .lifeTimeInMs(1000 * 60 * 60)
+                    .build());
             validToken = dto.getToken();
         }
 
@@ -317,9 +401,15 @@ class JwtServiceTest {
 
         @Test
         void validateTokenExpiredThrows() throws InterruptedException {
-            TokenResponseDto shortLived = jwtService.createToken(
-                    subject, Collections.emptyMap(), "issuerTest", "audienceTest",
-                    Jwts.SIG.HS256, testKey, 1);
+            TokenResponseDto shortLived = jwtService.createToken(JwtTokenRequest.builder()
+                    .subject(subject)
+                    .claims(Collections.emptyMap())
+                    .issuer("issuerTest")
+                    .audience("audienceTest")
+                    .algorithm(Jwts.SIG.HS256)
+                    .key(testKey)
+                    .lifeTimeInMs(1)
+                    .build());
             Thread.sleep(5);
 
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
@@ -368,22 +458,33 @@ class JwtServiceTest {
         }
 
         @Test
-        void extractClaimWithNullTokenShouldThrowNullPointerException() {
+        void extractClaimWithNullTokenShouldThrowIllegalArgumentException() {
             // Unsecured
-            assertThrows(NullPointerException.class, () -> jwtService.extractTenant(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractIsAdmin(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractAccountType(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractUserName(null));
-            assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractTenant(null));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractIsAdmin(null));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractApplication(null));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractAccountType(null));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractUserName(null));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractSubject(null));
 
             // Secured
-            assertThrows(NullPointerException.class, () -> jwtService.extractTenant(null, testKey));
-            assertThrows(NullPointerException.class, () -> jwtService.extractIsAdmin(null, testKey));
-            assertThrows(NullPointerException.class, () -> jwtService.extractApplication(null, testKey));
-            assertThrows(NullPointerException.class, () -> jwtService.extractAccountType(null, testKey));
-            assertThrows(NullPointerException.class, () -> jwtService.extractUserName(null, testKey));
-            assertThrows(NullPointerException.class, () -> jwtService.extractSubject(null, testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractTenant(null, testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractIsAdmin(null, testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractApplication(null, testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractAccountType(null, testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractUserName(null, testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractSubject(null, testKey));
+        }
+
+        @Test
+        void extractClaimWithEmptyTokenShouldThrowIllegalArgumentException() {
+            // Unsecured
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractTenant(""));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractIsAdmin(""));
+
+            // Secured
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractTenant("", testKey));
+            assertThrows(IllegalArgumentException.class, () -> jwtService.extractIsAdmin("", testKey));
         }
     }
 }
