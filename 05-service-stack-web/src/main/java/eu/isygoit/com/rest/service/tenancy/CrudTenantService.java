@@ -53,32 +53,6 @@ public abstract class CrudTenantService<I extends Serializable,
     @Autowired
     private EntityManager entityManager;
 
-    /**
-     * Validates that an object is not null.
-     *
-     * @param object the object to validate
-     * @throws BadArgumentException if the object is null
-     */
-    private static <I extends Serializable, T extends IIdAssignable<I>> void validateObjectNotNull(T object) {
-        if (object == null) {
-            log.error("Null object provided for operation");
-            throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
-        }
-    }
-
-    /**
-     * Validates that an object's ID is not null.
-     *
-     * @param object the object to validate
-     * @throws NullIdentifierException if the ID is null
-     */
-    private static <I extends Serializable, T extends IIdAssignable<I>> void validateObjectIdNotNull(T object) {
-        if (object.getId() == null) {
-            log.error("Null ID provided for object: {}", object.getClass().getSimpleName());
-            throw new NullIdentifierException(object.getClass().getSimpleName() + ": with id null");
-        }
-    }
-
     private static void validateTenantNotNull(String tenant) {
         if (!StringUtils.hasText(tenant)) {
             throw new BadArgumentException("tenant is null or empty");
@@ -666,32 +640,6 @@ public abstract class CrudTenantService<I extends Serializable,
         return object;
     }
 
-    /**
-     * Preserves original attributes for file and image entities.
-     *
-     * @param object   the entity to update
-     * @param existing the existing entity
-     * @return the entity with preserved attributes
-     */
-    private T keepOriginalAttributes(T object, T existing) {
-        log.debug("Preserving attributes for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
-        applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
-            if (StringUtils.hasText(s.getPath())) {
-                t.setType(s.getType());
-                t.setFileName(s.getFileName());
-                t.setOriginalFileName(s.getOriginalFileName());
-                t.setPath(s.getPath());
-                t.setExtension(s.getExtension());
-            }
-        });
-        applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {
-            if (StringUtils.hasText(s.getImagePath())) {
-                t.setImagePath(s.getImagePath());
-            }
-        });
-        return object;
-    }
-
     private T keepOriginalAttributes(T object) {
         repository().findById(object.getId()).ifPresent(existing -> {
             keepOriginalAttributes(object, existing);
@@ -702,21 +650,6 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     public List<T> getByIdIn(List<I> ids) {
         return repository().findByIdIn(ids);
-    }
-
-    /**
-     * Applies attribute copying for specific entity types.
-     *
-     * @param target the target entity
-     * @param source the source entity
-     * @param type   the entity type
-     * @param action the attribute copying action
-     */
-    private <X> void applyIfInstance(T target, T source, Class<X> type, BiConsumer<X, X> action) {
-        if (type.isInstance(target) && type.isInstance(source)) {
-            log.debug("Applying {} attributes for entity", type.getSimpleName());
-            action.accept(type.cast(target), type.cast(source));
-        }
     }
 
     private void validateObjectExists(T object) {
@@ -733,28 +666,8 @@ public abstract class CrudTenantService<I extends Serializable,
      * are skipped entirely. If no meaningful difference is detected, the update is rejected.
      *
      * @param object   the incoming entity to be updated; must implement {@link IDirtyEntity}
-     * @param original the persisted original entity
      * @throws ObjectNotModifiedException if the entity carries no dirty (changed) fields
      */
-    private void validateObjectUpdatable(T object, T original) throws ObjectNotModifiedException {
-        IDirtyEntity dirtyEntity = (IDirtyEntity) object;
-        Set<String> ignoredFields = dirtyEntity.ignoreFields();
-
-        log.debug("Validating dirty state for {} entity with ID: {}",
-                persistentClass.getSimpleName(), object.getId());
-
-        // Walk every declared field in the class hierarchy and compare values
-        if (!hasDirtyField(object, original, ignoredFields)) {
-            log.warn("No dirty fields detected for {} entity with ID: {} — update skipped",
-                    persistentClass.getSimpleName(), object.getId());
-            throw new ObjectNotModifiedException(
-                    persistentClass.getSimpleName() + " with id: " + object.getId());
-        }
-
-        log.debug("Dirty fields detected for {} entity with ID: {} — update allowed",
-                persistentClass.getSimpleName(), object.getId());
-    }
-
     private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
         // Fetch the persisted original — must exist for an update
         T original = repository().findById(object.getId())
@@ -765,49 +678,6 @@ public abstract class CrudTenantService<I extends Serializable,
                 });
 
         validateObjectUpdatable(object, original);
-    }
-
-    /**
-     * Performs a comparison between the incoming and the original entity using cached field accessors,
-     * walking up the entire class hierarchy. Fields whose names appear in {@code ignoredFields}
-     * are skipped.
-     *
-     * @param incoming      the entity carrying the requested changes
-     * @param original      the entity as currently persisted
-     * @param ignoredFields field names that must not be considered when determining dirtiness
-     * @return {@code true} if at least one tracked field differs between the two entities
-     */
-    private boolean hasDirtyField(T incoming, T original, Set<String> ignoredFields) {
-        for (FieldAccessorCache.FieldAccessor accessor : FieldAccessorCache.getAccessors(incoming.getClass())) {
-            if (ignoredFields != null && ignoredFields.contains(accessor.name())) {
-                log.trace("Skipping ignored field '{}' during dirty check", accessor.name());
-                continue;
-            }
-
-            Object incomingValue = accessor.get(incoming);
-            Object originalValue = accessor.get(original);
-
-            if (!objectsEqual(incomingValue, originalValue)) {
-                log.debug("Dirty field detected: '{}' changed from [{}] to [{}]",
-                        accessor.name(), originalValue, incomingValue);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Null-safe equality check used during dirty-field comparison.
-     *
-     * @param a first value
-     * @param b second value
-     * @return {@code true} if both values are considered equal
-     */
-    private boolean objectsEqual(Object a, Object b) {
-        if (a == null && b == null) return true;
-        if (a == null || b == null) return false;
-        return a.equals(b);
     }
 
     /**
