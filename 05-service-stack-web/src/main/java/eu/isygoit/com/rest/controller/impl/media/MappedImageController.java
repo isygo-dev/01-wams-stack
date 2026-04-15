@@ -14,6 +14,7 @@ import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -79,7 +80,7 @@ public abstract class MappedImageController<
     }
 
     @Override
-    public ResponseEntity<F> createWithImage(ContextRequestDto requestContext, MultipartFile file, F dto) {
+    public ResponseEntity<F> createWithImage(ContextRequestDto requestContext, MultipartFile file, @Valid F dto) {
         log.debug("Creating entity with image for tenant: {}", requestContext.getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -100,7 +101,7 @@ public abstract class MappedImageController<
     }
 
     @Override
-    public ResponseEntity<F> updateWithImage(ContextRequestDto requestContext, I id, MultipartFile file, F dto) {
+    public ResponseEntity<F> updateWithImage(ContextRequestDto requestContext, I id, MultipartFile file, @Valid F dto) {
         log.debug("Updating entity with image for entityId: {}", id);
         try {
             F processed = beforeUpdate(id, dto);               // ← now uses id (better)

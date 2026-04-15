@@ -14,6 +14,7 @@ import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -80,7 +81,7 @@ public abstract class MappedFileController<
     }
 
     @Override
-    public ResponseEntity<F> createWithFile(ContextRequestDto requestContext, MultipartFile file, F dto) {
+    public ResponseEntity<F> createWithFile(ContextRequestDto requestContext, MultipartFile file, @Valid F dto) {
         log.debug("Creating entity with file for tenant: {}", requestContext.getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -101,7 +102,7 @@ public abstract class MappedFileController<
     }
 
     @Override
-    public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext, I id, MultipartFile file, F dto) {
+    public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext, I id, MultipartFile file, @Valid F dto) {
         log.debug("Updating entity with file for entityId: {}", id);
         try {
             F processed = beforeUpdate(id, dto);               // ← now uses id

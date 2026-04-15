@@ -14,6 +14,7 @@ import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IIdAssignable;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -71,7 +72,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO is null
      */
     @Override
-    public ResponseEntity<F> performCreate(ContextRequestDto context, F dto) {
+    public ResponseEntity<F> performCreate(ContextRequestDto context, @Valid F dto) {
         return executeWithMonitoring("performCreate", () -> {
             log.info("Creating {} for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
             validateCreateRequest(dto);
@@ -95,7 +96,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> performCreate(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> performCreate(ContextRequestDto context, @Valid List<F> dtos) {
         return executeWithMonitoring("performCreateBulk", () -> {
             log.info("Bulk creating {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -123,7 +124,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, @Valid List<F> dtos) {
         return executeWithMonitoring("performUpdateBulk", () -> {
             log.info("Bulk updating {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);
@@ -152,7 +153,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if ID or DTO is null
      */
     @Override
-    public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
+    public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, @Valid F dto) {
         return executeWithMonitoring("performUpdateById", () -> {
             log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
             validateNotNull(id, "ID cannot be null");
@@ -203,7 +204,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<Void> performDelete(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<Void> performDelete(ContextRequestDto context, @Valid List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
             log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), context.getSenderTenant());
             validateBulkOperation(dtos);

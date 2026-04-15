@@ -314,6 +314,40 @@ public final class CriteriaHelper {
         if (!criteriaFields.containsKey(fieldName)) {
             throw new WrongCriteriaFilterException("Invalid field name: " + fieldName);
         }
+
+        var fieldInfo = criteriaFields.get(fieldName);
+        var operator = criterion.getOperator();
+        var fieldType = fieldInfo.type();
+
+        // Validate operator against field type
+        boolean isValid = switch (operator) {
+            case EQ, NE -> true; // Allowed for all types
+            case GT, GE, LT, LE -> Number.class.isAssignableFrom(wrapPrimitive(fieldType))
+                    || fieldType.equals(Date.class) || fieldType.equals(java.sql.Date.class)
+                    || fieldType.equals(java.time.LocalDate.class) || fieldType.equals(java.time.LocalDateTime.class);
+            case LI, NL -> fieldType.equals(String.class);
+            default -> false;
+        };
+
+        if (!isValid) {
+            throw new WrongCriteriaFilterException("Operator " + operator + " is not allowed for field " + fieldName + " of type " + fieldType.getSimpleName());
+        }
+    }
+
+    /**
+     * Wraps primitive types to their corresponding wrapper classes.
+     */
+    private static Class<?> wrapPrimitive(Class<?> type) {
+        if (!type.isPrimitive()) return type;
+        if (type == int.class) return Integer.class;
+        if (type == long.class) return Long.class;
+        if (type == double.class) return Double.class;
+        if (type == float.class) return Float.class;
+        if (type == boolean.class) return Boolean.class;
+        if (type == char.class) return Character.class;
+        if (type == byte.class) return Byte.class;
+        if (type == short.class) return Short.class;
+        return type;
     }
 
     /**

@@ -460,19 +460,59 @@ class CriteriaHelperTest {
         }
 
         @Test
-        @DisplayName("Should handle all operator types")
+        @DisplayName("Should handle all operator types for String fields")
         void testBuildSpecification_AllOperators() {
             IEnumOperator.Types[] operators = {
                     IEnumOperator.Types.EQ, IEnumOperator.Types.NE, IEnumOperator.Types.LI,
-                    IEnumOperator.Types.NL, IEnumOperator.Types.LT, IEnumOperator.Types.LE,
+                    IEnumOperator.Types.NL
+            };
+
+            for (IEnumOperator.Types operator : operators) {
+                QueryCriteria criteria = QueryCriteria.builder()
+                        .name("name") // String field
+                        .operator(operator)
+                        .value("value")
+                        .combiner(IEnumCriteriaCombiner.Types.OR)
+                        .build();
+
+                Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
+                        null, List.of(criteria), TestEntity.class);
+                assertNotNull(spec, "Failed for operator: " + operator);
+            }
+        }
+
+        @Test
+        @DisplayName("Should throw exception for incompatible operator (LIKE on Integer)")
+        void testBuildSpecification_IncompatibleOperator() {
+            QueryCriteria criteria = QueryCriteria.builder()
+                    .name("age") // Integer field
+                    .operator(IEnumOperator.Types.LI) // LIKE
+                    .value("25")
+                    .combiner(IEnumCriteriaCombiner.Types.OR)
+                    .build();
+
+            WrongCriteriaFilterException exception = assertThrows(
+                    WrongCriteriaFilterException.class,
+                    () -> CriteriaHelper.buildSpecification(null, List.of(criteria), TestEntity.class)
+            );
+
+            assertTrue(exception.getMessage().contains("Operator LI is not allowed for field age of type Integer"), 
+                "Expected message to contain 'Operator LI', but was: " + exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Should allow numeric operators on numeric fields")
+        void testBuildSpecification_NumericOperators() {
+            IEnumOperator.Types[] operators = {
+                    IEnumOperator.Types.LT, IEnumOperator.Types.LE,
                     IEnumOperator.Types.GT, IEnumOperator.Types.GE
             };
 
             for (IEnumOperator.Types operator : operators) {
                 QueryCriteria criteria = QueryCriteria.builder()
-                        .name("name")
+                        .name("age") // Integer field
                         .operator(operator)
-                        .value("value")
+                        .value("25")
                         .combiner(IEnumCriteriaCombiner.Types.OR)
                         .build();
 

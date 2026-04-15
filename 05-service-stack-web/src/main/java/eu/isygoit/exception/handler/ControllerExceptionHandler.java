@@ -28,6 +28,8 @@ import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.naming.SizeLimitExceededException;
 import java.io.PrintWriter;
@@ -88,6 +90,11 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
         EXCEPTION_HANDLERS.put(jakarta.validation.ConstraintViolationException.class, ex -> {
             StringBuilder msg = new StringBuilder();
             handleConstraintViolation((jakarta.validation.ConstraintViolationException) ex, msg, LocaleContextHolder.getLocale());
+            return msg.toString();
+        });
+        EXCEPTION_HANDLERS.put(MethodArgumentNotValidException.class, ex -> {
+            StringBuilder msg = new StringBuilder();
+            handleMethodArgumentNotValid((MethodArgumentNotValidException) ex, msg, LocaleContextHolder.getLocale());
             return msg.toString();
         });
         EXCEPTION_HANDLERS.put(EmptyResultDataAccessException.class, ex ->
@@ -247,6 +254,35 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
                             SPACE_PATTERN.matcher(cv.getMessage()).replaceAll("."),
                             locale))
                     .append('\n');
+        }
+    }
+
+    /**
+     * Handles MethodArgumentNotValidException for controller-level @Valid.
+     */
+    private void handleMethodArgumentNotValid(MethodArgumentNotValidException validationEx,
+                                              StringBuilder message, Locale locale) {
+        if (validationEx.getBindingResult().getAllErrors().isEmpty()) {
+            return;
+        }
+
+        for (var error : validationEx.getBindingResult().getAllErrors()) {
+            if (error instanceof FieldError fieldError) {
+                if (StringUtils.hasText(fieldError.getField())) {
+                    message.append(localeService.getMessage(
+                                    fieldError.getField().replace('_', '.'),
+                                    locale))
+                            .append(": ");
+                }
+            }
+
+            String code = error.getDefaultMessage();
+            if (code != null) {
+                message.append(localeService.getMessage(
+                                SPACE_PATTERN.matcher(code).replaceAll("."),
+                                locale))
+                        .append('\n');
+            }
         }
     }
 

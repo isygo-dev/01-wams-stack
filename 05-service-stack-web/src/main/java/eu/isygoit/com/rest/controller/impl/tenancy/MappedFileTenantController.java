@@ -16,6 +16,7 @@ import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
@@ -77,7 +78,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
     @Override
     public ResponseEntity<F> createWithFile(ContextRequestDto requestContext,
                                             MultipartFile file,
-                                            F dto) {
+                                            @Valid F dto) {
         log.info("Create with file request received");
         try {
             if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
@@ -96,7 +97,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
     public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext,
                                             I id,
                                             MultipartFile file,
-                                            F dto) {
+                                            @Valid F dto) {
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);
