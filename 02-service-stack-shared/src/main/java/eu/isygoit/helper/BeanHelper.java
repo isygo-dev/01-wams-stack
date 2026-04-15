@@ -179,9 +179,10 @@ public interface BeanHelper {
     // ========================================================================
 
     static void mergeCollectionField(Field field, Object fieldValue, Object destination) {
-        if (!(fieldValue instanceof Collection<?> sourceCollection)) {
+        if (!(fieldValue instanceof Collection<?>)) {
             return;
         }
+        Collection<?> sourceCollection = (Collection<?>) fieldValue;
 
         Collection<Object> destCollection = Optional.ofNullable(callGetter(destination, field.getName(), true))
                 .filter(Collection.class::isInstance)

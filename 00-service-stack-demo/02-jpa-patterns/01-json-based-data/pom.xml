@@ -17,7 +17,7 @@
     </parent>
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-json-based-data-pattern</artifactId>
-    <!-- FIXED: was WC-... — unified to WS- prefix -->
+
     <version>WS-1.0.260408-T1636</version>
     <name>poc-json-based-data-pattern</name>
     <description>POC: JSON-Based Data Patterns in SQL — JSONB columns, partial indexing</description>

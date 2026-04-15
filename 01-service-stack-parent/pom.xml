@@ -9,32 +9,6 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
-    <!--
-        PURPOSE: Maven parent for all downstream microservices.
-        Inheriting from spring-boot-starter-parent gives each service:
-          - spring-boot-maven-plugin management
-          - Resource filtering with @delimiter@
-          - All Boot 3.5.13 managed dependency versions
-          - Default compiler, surefire, and deploy configuration
-
-        Downstream microservices declare:
-            <parent>
-                <groupId>eu.isygo-it.services</groupId>
-                <artifactId>service-stack-parent</artifactId>
-                <version>WS-1.0.260408-T1636</version>
-            </parent>
-
-        KEY CHANGES vs original:
-          - Boot: 3.1.12 → 3.5.13
-          - Spring Cloud: 2022.0.3 → 2025.0.2 (correct train for Boot 3.5.x)
-          - All <dependencies> moved to <dependencyManagement> so child
-            services opt-in explicitly rather than getting everything forced.
-          - jjwt monolith 0.9.1 → 3 split artifacts at 0.12.6
-          - SpringDoc: 2.3.0 → 2.8.15 (min 2.8.9 required for Boot 3.5.x)
-          - Flyway: 9.16.3 → 11.9.1
-          - Lombok: 1.18.26 → 1.18.38
-          - Removed broken commented Zipkin exporter
-    -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -46,236 +20,60 @@
     <artifactId>service-stack-parent</artifactId>
     <version>WS-1.0.260408-T1636</version>
     <name>service-stack-parent</name>
-    <description>Spring Boot 3.5.13 parent BOM for WAMS microservices</description>
+    <description>Spring Boot 3.5.13 parent for WAMS microservices — inherits from Boot Starter Parent</description>
     <packaging>pom</packaging>
 
-    <properties>
-        <java.version>17</java.version>
-        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-        <!-- Spring Cloud 2025.0.2 — the release train for Boot 3.5.13 -->
-        <spring-cloud.version>2025.0.2</spring-cloud.version>
-        <lombok.version>1.18.38</lombok.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <springdoc.version>2.8.15</springdoc.version>
-        <jjwt.version>0.12.6</jjwt.version>
-        <flyway.version>11.9.1</flyway.version>
-        <commons-text.version>1.13.1</commons-text.version>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
-    </properties>
-
+    <!--
+         MICROSERVICE PARENT — inherits from spring-boot-starter-parent.
+         Imports the root BOM to stay aligned with the rest of the stack.
+    -->
     <dependencyManagement>
         <dependencies>
-
-            <!-- Spring Cloud BOM 2025.0.2 -->
             <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack</artifactId>
+                <version>WS-1.0.260408-T1636</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Cloud starters — versions from Cloud BOM above -->
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-webflux</artifactId>
-                <version>3.5.8</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-config</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-openfeign</artifactId>
-                <version>4.3.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-openfeign-core</artifactId>
-            </dependency>
-
-            <!-- Boot starters — versions from spring-boot-starter-parent -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-jpa</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-jdbc</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-web</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-actuator</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-validation</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-cache</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
-                <version>3.1.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- SpringDoc WebMVC (WebMVC apps only; not webflux-ui/api) -->
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>${springdoc.version}</version>
-            </dependency>
-
-            <!-- JWT — 3 artifacts since 0.10.0 -->
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jjwt.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jjwt.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-
-            <!-- Observability — Boot manages Micrometer 1.15.x -->
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-tracing-bridge-otel</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-otlp</artifactId>
-            </dependency>
-
-            <!-- Code generation -->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct</artifactId>
-                <version>${mapstruct.version}</version>
-            </dependency>
-
-            <!-- Database migrations -->
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-database-postgresql</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-
-            <!-- Utilities -->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-text</artifactId>
-                <version>${commons-text.version}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
     <build>
-        <pluginManagement>
-            <plugins>
-
-                <!-- Compiler with correct Lombok → binding → MapStruct order -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin.version}</version>
-                    <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                        <parameters>true</parameters>
-                        <annotationProcessorPaths>
-                            <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok</artifactId>
-                                <version>${lombok.version}</version>
-                            </path>
-                            <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok-mapstruct-binding</artifactId>
-                                <version>${lombok-mapstruct-binding.version}</version>
-                            </path>
-                            <path>
-                                <groupId>org.mapstruct</groupId>
-                                <artifactId>mapstruct-processor</artifactId>
-                                <version>${mapstruct.version}</version>
-                            </path>
-                        </annotationProcessorPaths>
-                    </configuration>
-                </plugin>
-
-                <!-- Sequential (non-parallel) test execution -->
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                    <configuration>
-                        <parallel>none</parallel>
-                        <forkCount>1</forkCount>
-                        <reuseForks>true</reuseForks>
-                        <threadCount>1</threadCount>
-                        <perCoreThreadCount>false</perCoreThreadCount>
-                        <runOrder>alphabetical</runOrder>
-                        <failIfNoTests>false</failIfNoTests>
-                        <useModulePath>false</useModulePath>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven-failsafe-plugin.version}</version>
-                    <configuration>
-                        <parallel>none</parallel>
-                        <forkCount>1</forkCount>
-                        <reuseForks>true</reuseForks>
-                        <threadCount>1</threadCount>
-                        <perCoreThreadCount>false</perCoreThreadCount>
-                        <runOrder>alphabetical</runOrder>
-                        <failIfNoTests>false</failIfNoTests>
-                    </configuration>
-                </plugin>
-
-            </plugins>
-        </pluginManagement>
+        <plugins>
+        </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

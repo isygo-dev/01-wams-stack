@@ -52,12 +52,8 @@
         <spring-cloud.version>2025.0.2</spring-cloud.version>
 
         <!-- ── Code generation ─────────────────────────────────────── -->
-        <!-- Lombok MUST be in <dependencies> (compile scope) so that
-             'import lombok.Setter' / 'import lombok.Data' resolves.
-             It also goes in annotationProcessorPaths to drive APT.      -->
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <!-- Binding shim: guarantees Lombok runs before MapStruct       -->
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
         <!-- ── Persistence (Boot-managed — listed for visibility) ───── -->
@@ -67,18 +63,13 @@
         <flyway.version>11.9.1</flyway.version>
 
         <!-- ── Web / API ────────────────────────────────────────────── -->
-        <!-- SpringDoc min 2.8.9 for Boot 3.5.x (Spring FW 6.2.x broke
-             older versions: ControllerAdviceBean(Object) was removed)   -->
         <springdoc.version>2.8.15</springdoc.version>
-        <!-- jjwt split into api+impl+jackson since 0.10.0              -->
         <jjwt.version>0.12.6</jjwt.version>
         <feign.version>13.5</feign.version>
         <networknt-validator.version>1.5.8</networknt-validator.version>
 
         <!-- ── Messaging ─────────────────────────────────────────────── -->
-        <!-- Camel 4.10.x LTS — compatible with Boot 3.x               -->
         <camel.version>4.10.4</camel.version>
-        <!-- spring-kafka and kafka-clients are Boot-managed             -->
 
         <!-- ── Storage ───────────────────────────────────────────────── -->
         <minio.version>8.5.17</minio.version>
@@ -101,22 +92,34 @@
         <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
         <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+        <spring-cloud-starter-openfeign.version>4.3.1</spring-cloud-starter-openfeign.version>
     </properties>
 
     <!-- ================================================================
-         CENTRALIZED DEPENDENCY MANAGEMENT
-         Sub-modules declare dependencies WITHOUT versions.
-         All versions are resolved from BOMs imported here or from
-         the properties above. No sub-module should redeclare versions
-         unless deliberately overriding a BOM-managed version.
+         ROOT AGGREGATOR — no direct build artifacts.
+         Dependency management centralized here for all modules.
          ================================================================ -->
     <dependencyManagement>
         <dependencies>
 
-            <!-- Spring Boot BOM ───────────────────────────────────────
-                 Manages Spring Framework, Security, Data, Hibernate,
-                 Jackson, Flyway, HikariCP, Testcontainers, JUnit,
-                 Mockito, PostgreSQL, Quartz, Kafka, and more.         -->
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-jcache</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>8.0.2.Final</version>
+            </dependency>
+
+            <!-- Spring Boot BOM 3.5.13 -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -125,8 +128,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Spring Cloud BOM 2025.0.2 — built on Boot 3.5.13
-                 Manages Eureka, Config, OpenFeign, Gateway, etc.      -->
+            <!-- Spring Cloud BOM 2025.0.2 -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -135,7 +137,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Apache Camel BOM — manages all camel-* consistently   -->
+            <!-- Apache Camel BOM -->
             <dependency>
                 <groupId>org.apache.camel.springboot</groupId>
                 <artifactId>camel-spring-boot-dependencies</artifactId>
@@ -144,107 +146,54 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Internal stack modules ─────────────────────────────── -->
+            <!-- Internal stack modules -->
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-shared</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-jpa</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-crypt</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-web</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-multitenancy</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-storage</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-cassandra</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-quartz</artifactId>
-                <version>${project.version}</version>
+                <version>WS-1.0.260408-T1636</version>
             </dependency>
 
-            <!-- Code generation ───────────────────────────────────── -->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct</artifactId>
-                <version>${mapstruct.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct-processor</artifactId>
-                <version>${mapstruct.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-mapstruct-binding</artifactId>
-                <version>${lombok-mapstruct-binding.version}</version>
-            </dependency>
-
-            <!-- Persistence ────────────────────────────────────────── -->
-            <!-- hibernate.orm groupId changed from org.hibernate in H6 -->
-            <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${hibernate.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgresql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-database-postgresql</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-
-            <!-- Web / API ──────────────────────────────────────────── -->
-            <!-- WebMVC only — do NOT use webflux-ui/api in MVC apps   -->
+            <!-- Web / API -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
-            <!-- jjwt 3 artifacts (split since 0.10.0):
-                 api=compile, impl+jackson=runtime only              -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
@@ -273,52 +222,43 @@
                 <version>${feign.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-openfeign</artifactId>
+                <version>${spring-cloud-starter-openfeign.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${networknt-validator.version}</version>
             </dependency>
 
-            <!-- Storage ────────────────────────────────────────────── -->
-            <dependency>
-                <groupId>io.minio</groupId>
-                <artifactId>minio</artifactId>
-                <version>${minio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>s3</artifactId>
-                <version>${aws-sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>apache-client</artifactId>
-                <version>${aws-sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.lakefs</groupId>
-                <artifactId>sdk</artifactId>
-                <version>${lakefs.version}</version>
-            </dependency>
-
-            <!-- Security / Crypto ──────────────────────────────────── -->
-            <!-- Replaced bare jasypt:1.9.3 (restricted internal APIs on
-                 Java 17+). Spring Boot starter integrates cleanly.    -->
+            <!-- Security -->
             <dependency>
                 <groupId>com.github.ulisesbocchio</groupId>
                 <artifactId>jasypt-spring-boot-starter</artifactId>
                 <version>${jasypt-spring-boot.version}</version>
             </dependency>
 
-            <!-- Utilities ──────────────────────────────────────────── -->
+            <!-- Utilities -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
                 <version>${joda-time.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -330,174 +270,98 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
 
-            <!-- Jackson (Boot manages 2.21.2 in 3.5.13) ──────────── -->
+            <!-- Storage -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.21.2</version>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-xml</artifactId>
-                <version>2.21.2</version>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>2.21.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-csv</artifactId>
-                <version>2.21.2</version>
+                <groupId>io.lakefs</groupId>
+                <artifactId>sdk</artifactId>
+                <version>${lakefs.version}</version>
             </dependency>
 
         </dependencies>
     </dependencyManagement>
 
-    <!-- ================================================================
-         CENTRALIZED BUILD CONFIGURATION
-         All sub-modules inherit compiler settings and surefire config.
-
-         TEST STRATEGY — NON-PARALLEL (sequential):
-           - Testcontainers port conflicts are avoided
-           - Spring ApplicationContext caching works optimally
-           - CI builds are reproducible and deterministic
-           - Debugging is straightforward (no interleaved output)
-         ================================================================ -->
     <build>
         <pluginManagement>
             <plugins>
-
-                <!-- Compiler — annotation processor order matters:
-                     1. lombok        → generates getters/setters/builders
-                     2. binding shim  → ensures ordering is enforced
-                     3. mapstruct     → reads Lombok-generated code
-                     Reverse order causes MapStruct to miss fields.    -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <encoding>${maven.compiler.encoding}</encoding>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                        <parameters>true</parameters>
-                        <annotationProcessorPaths>
-                            <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok</artifactId>
-                                <version>${lombok.version}</version>
-                            </path>
-                            <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok-mapstruct-binding</artifactId>
-                                <version>${lombok-mapstruct-binding.version}</version>
-                            </path>
-                            <path>
-                                <groupId>org.mapstruct</groupId>
-                                <artifactId>mapstruct-processor</artifactId>
-                                <version>${mapstruct.version}</version>
-                            </path>
-                        </annotationProcessorPaths>
+                        <release>${java.version}</release>
                     </configuration>
                 </plugin>
-
-                <!-- Surefire (unit tests) — SEQUENTIAL execution
-                     parallel=none  → no thread-level parallelism
-                     forkCount=1    → single forked JVM
-                     reuseForks=true → reuse JVM across test classes
-                     runOrder=alphabetical → reproducible ordering     -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
-                    <configuration>
-                        <parallel>none</parallel>
-                        <forkCount>1</forkCount>
-                        <reuseForks>true</reuseForks>
-                        <threadCount>1</threadCount>
-                        <perCoreThreadCount>false</perCoreThreadCount>
-                        <runOrder>alphabetical</runOrder>
-                        <failIfNoTests>false</failIfNoTests>
-                        <useModulePath>false</useModulePath>
-                    </configuration>
                 </plugin>
-
-                <!-- Failsafe (integration tests) — also SEQUENTIAL    -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven-failsafe-plugin.version}</version>
-                    <configuration>
-                        <parallel>none</parallel>
-                        <forkCount>1</forkCount>
-                        <reuseForks>true</reuseForks>
-                        <threadCount>1</threadCount>
-                        <perCoreThreadCount>false</perCoreThreadCount>
-                        <runOrder>alphabetical</runOrder>
-                        <failIfNoTests>false</failIfNoTests>
-                    </configuration>
                 </plugin>
-
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>${maven-deploy-plugin.version}</version>
                 </plugin>
-
                 <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
                 </plugin>
-
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
-    <!-- ================================================================
-         DISTRIBUTION — declared ONCE here, inherited by all sub-modules.
-         Sub-modules must NOT redeclare this block.
-         ================================================================ -->
     <distributionManagement>
         <repository>
             <id>isygo-it-github-01</id>
             <name>GitHub isygo-it Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
             <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <snapshotRepository>
+            <id>isygo-it-github-01</id>
+            <name>GitHub isygo-it Apache Maven Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/isygo-dev/01-wams-stack</url>
+            <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </repository>
+        </snapshotRepository>
     </distributionManagement>
 
     <repositories>
@@ -510,5 +374,4 @@
             </snapshots>
         </repository>
     </repositories>
-
 </project>

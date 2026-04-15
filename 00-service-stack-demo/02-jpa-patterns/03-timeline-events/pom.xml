@@ -17,7 +17,7 @@
     </parent>
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-timeline-events</artifactId>
-    <!-- FIXED: was WC-... — unified to WS- prefix -->
+
     <version>WS-1.0.260408-T1636</version>
     <name>poc-timeline-events</name>
     <description>POC: temporal/timeline event storage and querying using JPA</description>

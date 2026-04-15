@@ -17,7 +17,7 @@
     </parent>
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-open-ai-apis</artifactId>
-    <!-- FIXED: was WC-... — unified to WS- prefix -->
+
     <version>WS-1.0.260408-T1636</version>
     <name>poc-open-ai-apis</name>
     <description>POC: OpenAI REST API integration — chat completions, embeddings, PDF extraction</description>
