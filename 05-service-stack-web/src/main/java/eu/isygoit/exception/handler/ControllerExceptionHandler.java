@@ -70,7 +70,6 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
 
     // Handler cache to improve exception type lookup performance using Caffeine
     private static final Cache<Class<? extends Throwable>, Function<Throwable, String>> EXCEPTION_HANDLERS = Caffeine.newBuilder()
-            .maximumSize(100)
             .build();
 
     @Setter

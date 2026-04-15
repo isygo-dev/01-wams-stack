@@ -31,15 +31,11 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     private static final String API_DOCS_PATTERN = "/v3/api-docs";
     private static final String TENANT_HEADER = "X-Tenant-ID";
 
-    @Value("${app.tenancy.uri-cache.max-size:1000}")
-    private int cacheMaxSize;
-
     private Cache<String, Boolean> uriFilterCache;
 
     @jakarta.annotation.PostConstruct
     public void init() {
         uriFilterCache = Caffeine.newBuilder()
-                .maximumSize(cacheMaxSize)
                 .build();
     }
 

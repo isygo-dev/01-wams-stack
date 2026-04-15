@@ -115,6 +115,13 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
+        <!-- CAFFEINE -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
         <!-- Apache Camel Spring Boot -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>

@@ -16,7 +16,6 @@ public class MetaDataCache {
 
     public MetaDataCache() {
         this.cache = Caffeine.newBuilder()
-                .maximumSize(500)                    // Configurable via properties later
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .recordStats()
                 .build();

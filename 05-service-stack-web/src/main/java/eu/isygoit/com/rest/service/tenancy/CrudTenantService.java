@@ -7,6 +7,7 @@ import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
+import eu.isygoit.helper.FieldAccessorCache;
 import eu.isygoit.model.*;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
@@ -22,7 +23,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
 import java.util.Date;
@@ -763,7 +763,7 @@ public abstract class CrudTenantService<I extends Serializable,
     }
 
     /**
-     * Performs a reflective field-by-field comparison between the incoming and the original entity,
+     * Performs a comparison between the incoming and the original entity using cached field accessors,
      * walking up the entire class hierarchy. Fields whose names appear in {@code ignoredFields}
      * are skipped.
      *
@@ -773,30 +773,20 @@ public abstract class CrudTenantService<I extends Serializable,
      * @return {@code true} if at least one tracked field differs between the two entities
      */
     private boolean hasDirtyField(T incoming, T original, Set<String> ignoredFields) {
-        Class<?> cursor = incoming.getClass();
-
-        while (cursor != null && cursor != Object.class) {
-            for (Field field : cursor.getDeclaredFields()) {
-                if (ignoredFields != null && ignoredFields.contains(field.getName())) {
-                    log.trace("Skipping ignored field '{}' during dirty check", field.getName());
-                    continue;
-                }
-
-                field.setAccessible(true);
-                try {
-                    Object incomingValue = field.get(incoming);
-                    Object originalValue = field.get(original);
-
-                    if (!objectsEqual(incomingValue, originalValue)) {
-                        log.debug("Dirty field detected: '{}' changed from [{}] to [{}]",
-                                field.getName(), originalValue, incomingValue);
-                        return true;
-                    }
-                } catch (IllegalAccessException e) {
-                    log.warn("Could not access field '{}' during dirty check: {}", field.getName(), e.getMessage());
-                }
+        for (FieldAccessorCache.FieldAccessor accessor : FieldAccessorCache.getAccessors(incoming.getClass())) {
+            if (ignoredFields != null && ignoredFields.contains(accessor.name())) {
+                log.trace("Skipping ignored field '{}' during dirty check", accessor.name());
+                continue;
             }
-            cursor = cursor.getSuperclass();
+
+            Object incomingValue = accessor.get(incoming);
+            Object originalValue = accessor.get(original);
+
+            if (!objectsEqual(incomingValue, originalValue)) {
+                log.debug("Dirty field detected: '{}' changed from [{}] to [{}]",
+                        accessor.name(), originalValue, incomingValue);
+                return true;
+            }
         }
 
         return false;

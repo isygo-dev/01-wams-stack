@@ -41,16 +41,12 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     private static final String IMAGE_DOWNLOAD_PATTERN = "/image/download";
     private static final String FILE_DOWNLOAD_PATTERN = "/file/download";
 
-    @Value("${app.security.uri-cache.max-size:1000}")
-    private int cacheMaxSize;
-
     // Cache for request URIs that should not be filtered (thread-safe)
     private Cache<String, Boolean> uriFilterCache;
 
     @PostConstruct
     public void init() {
         uriFilterCache = Caffeine.newBuilder()
-                .maximumSize(cacheMaxSize)
                 .build();
     }
 
