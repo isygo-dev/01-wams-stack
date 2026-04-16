@@ -20,6 +20,7 @@ import org.springframework.transaction.CannotCreateTransactionException;
 
 import javax.naming.SizeLimitExceededException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,19 @@ class ControllerExceptionHandlerTest {
         localeContextHolderMock.when(LocaleContextHolder::getLocale).thenReturn(testLocale);
 
         ControllerExceptionHandlerBuilder builder = mock(ControllerExceptionHandlerBuilder.class);
-        when(builder.getExcepMessage()).thenReturn(Collections.singletonMap("some_constraint", "localized.constraint.message"));
+        Map<String, String> excepMessage = new HashMap<>();
+        excepMessage.put("some_constraint", "localized.constraint.message");
+        when(builder.getExcepMessage()).thenReturn(excepMessage);
+        when(builder.handlePSQLException(Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            StringBuilder sb = invocation.getArgument(1);
+            sb.append("Localized constraint message");
+            return sb;
+        });
+        when(builder.handleConstraintViolationException(Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            StringBuilder sb = invocation.getArgument(1);
+            sb.append("Localized constraint message");
+            return sb;
+        });
 
         handler = new ControllerExceptionHandler() {
             @Override
