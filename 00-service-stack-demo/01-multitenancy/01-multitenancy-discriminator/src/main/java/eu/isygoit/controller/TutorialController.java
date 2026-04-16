@@ -22,7 +22,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api/v1/tutorials")
-public class TutorialController extends AbstractTenantController {
+public class TutorialController {
 
     private final TutorialRepository tutorialRepository;
     private final TutorialMapper tutorialMapper;
