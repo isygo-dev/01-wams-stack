@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface JpaPagingAndSortingCodeAssingnableRepository<T extends ICodeAssignable & IIdAssignable<I>, I extends Serializable>
+public interface JpaPagingAndSortingCodeAssignableRepository<T extends ICodeAssignable & IIdAssignable<I>, I extends Serializable>
         extends JpaPagingAndSortingRepository<T, I> {
 
     /**

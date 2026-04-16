@@ -14,7 +14,7 @@ import org.springframework.data.domain.AuditorAware;
 public class CassandraConfig {
 
     @Autowired
-    private IAuditAwereService<String> auditAwereService;
+    private IAuditorAwareService<String> auditAwareService;
 
     /**
      * Auditor aware auditor aware.
@@ -23,6 +23,6 @@ public class CassandraConfig {
      */
     @Bean(name = "cassandra_auditorAware")
     public AuditorAware<String> auditorAware() {
-        return new AuditorAwareImpl(auditAwereService);
+        return new AuditorAwareImpl(auditAwareService);
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -300,7 +301,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         log.debug("Handling deletion for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
         if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
             cancelable.setCheckCancel(true);
-            cancelable.setCancelDate(Date.from(Instant.now()));
+            cancelable.setCancelDate(LocalDateTime.now());
             repository().save(object);
         } else {
             repository().delete(object);

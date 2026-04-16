@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -271,15 +272,20 @@ public final class CriteriaHelper {
     }
 
     /**
-     * Extracts criteria fields using reflection with enhanced stream processing.
+     * Extracts criteria fields using reflection, including inherited fields.
      */
     private static Map<String, FieldInfo> extractCriteriaFields(Class<?> classType) {
-        return Stream.of(classType.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Criteria.class))
-                .collect(HashMap::new,
-                        (map, field) -> map.put(field.getName(),
-                                new FieldInfo(field.getName(), field.getType(), field.getType().getSimpleName())),
-                        HashMap::putAll);
+        Map<String, FieldInfo> fieldMap = new HashMap<>();
+        Class<?> current = classType;
+        while (current != null && current != Object.class) {
+            for (Field field : current.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Criteria.class)) {
+                    fieldMap.putIfAbsent(field.getName(), new FieldInfo(field.getName(), field.getType(), field.getType().getSimpleName()));
+                }
+            }
+            current = current.getSuperclass();
+        }
+        return fieldMap;
     }
 
     /**
@@ -294,13 +300,15 @@ public final class CriteriaHelper {
     public static <T extends IIdAssignable> Specification<T> buildSpecification(
             String tenant, List<QueryCriteria> criteria, Class<?> classType) {
 
-        var criteriaFields = getCriteriaFieldInfo(classType);
-        var specification = Specification.<T>where(null);
+        Map<String, FieldInfo> criteriaFields = getCriteriaFieldInfo(classType);
+        Specification<T> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
-        for (var criterion : criteria) {
-            validateCriterion(criterion, criteriaFields);
-            var criteriaSpec = buildCriteriaSpecification(criterion, criteriaFields);
-            specification = combineCriteria(specification, (Specification<T>) criteriaSpec, criterion.getCombiner());
+        if (criteria != null) {
+            for (QueryCriteria criterion : criteria) {
+                validateCriterion(criterion, criteriaFields);
+                Specification<T> criteriaSpec = buildCriteriaSpecification(criterion, criteriaFields);
+                specification = combineCriteria(specification, criteriaSpec, criterion.getCombiner());
+            }
         }
 
         return addTenantFilter(specification, tenant);
@@ -356,12 +364,12 @@ public final class CriteriaHelper {
     private static <T extends IIdAssignable> Specification<T> buildCriteriaSpecification(
             QueryCriteria criterion, Map<String, FieldInfo> criteriaFields) {
 
-        var fieldName = criterion.getName();
-        var value = criterion.getValue();
-        var fieldInfo = criteriaFields.get(fieldName);
+        String fieldName = criterion.getName();
+        String value = criterion.getValue();
+        FieldInfo fieldInfo = criteriaFields.get(fieldName);
 
         // Convert value to appropriate type based on field type
-        var convertedValue = convertValue(value, fieldInfo.type());
+        Object convertedValue = convertValue(value, fieldInfo.type());
 
         return switch (criterion.getOperator()) {
             case EQ -> equal(fieldName, convertedValue);
@@ -403,14 +411,12 @@ public final class CriteriaHelper {
     /**
      * Combines specifications based on the combiner type.
      */
-    private static <T extends IIdAssignable> Specification<T> combineCriteria(
-            Specification<T> specification, Specification<T> criteriaSpec, IEnumCriteriaCombiner.Types combiner) {
-
-        return switch (combiner) {
-            case AND -> specification.and(criteriaSpec);
-            case OR -> specification.or(criteriaSpec);
-            default -> specification.or(criteriaSpec);
-        };
+    private static <T extends IIdAssignable> Specification<T> combineCriteria(Specification<T> specification, Specification<T> criteriaSpec, IEnumCriteriaCombiner.Types combiner) {
+        if (combiner == IEnumCriteriaCombiner.Types.AND) {
+            return specification.and(criteriaSpec);
+        } else {
+            return specification.or(criteriaSpec);
+        }
     }
 
     /**
@@ -435,7 +441,7 @@ public final class CriteriaHelper {
      */
     public static <T extends IIdAssignable> Specification<T> like(String fieldName, String value) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get(fieldName), "%" + value + "%");
+                criteriaBuilder.like(criteriaBuilder.lower(root.get(fieldName)), "%" + value.toLowerCase() + "%");
     }
 
     // Enhanced specification methods with better type handling
@@ -450,7 +456,7 @@ public final class CriteriaHelper {
      */
     public static <T extends IIdAssignable> Specification<T> notLike(String fieldName, String value) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.notLike(root.get(fieldName), "%" + value + "%");
+                criteriaBuilder.notLike(criteriaBuilder.lower(root.get(fieldName)), "%" + value.toLowerCase() + "%");
     }
 
     /**

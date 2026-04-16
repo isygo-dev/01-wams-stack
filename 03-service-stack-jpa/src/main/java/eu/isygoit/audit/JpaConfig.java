@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class JpaConfig {
 
     @Autowired
-    private IAuditAwereService<String> auditAwereService;
+    private IAuditorAwareService<String> auditorAwareService;
 
     /**
      * Auditor aware auditor aware.
@@ -23,6 +23,6 @@ public class JpaConfig {
      */
     @Bean(name = "jpa_auditorAware")
     public AuditorAware<String> auditorAware() {
-        return new AuditorAwareImpl(auditAwereService);
+        return new AuditorAwareImpl(auditorAwareService);
     }
 }

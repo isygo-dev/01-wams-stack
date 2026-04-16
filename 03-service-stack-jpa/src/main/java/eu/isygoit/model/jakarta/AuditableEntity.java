@@ -13,7 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
@@ -30,18 +30,16 @@ import java.util.Set;
 public abstract class AuditableEntity<T extends Serializable> extends AbstractEntity<T> {
 
     @CreatedDate
-    @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = ComSchemaColumnConstantName.C_CREATE_DATE, updatable = false)
-    private Date createDate;
+    private LocalDateTime createDate;
 
     @CreatedBy
     @Column(name = ComSchemaColumnConstantName.C_CREATED_BY, updatable = false)
     private String createdBy;
 
     @LastModifiedDate
-    @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = ComSchemaColumnConstantName.C_UPDATE_DATE)
-    private Date updateDate;
+    private LocalDateTime updateDate;
 
     @LastModifiedBy
     @Column(name = ComSchemaColumnConstantName.C_UPDATED_BY)

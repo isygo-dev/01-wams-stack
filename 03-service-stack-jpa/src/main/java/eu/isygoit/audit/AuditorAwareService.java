@@ -16,7 +16,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @Transactional
-public class AuditorAwareService implements IAuditAwereService<String> {
+public class AuditorAwareService implements IAuditorAwareService<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {

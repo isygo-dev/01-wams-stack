@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -35,13 +36,16 @@ public class GenericRepositoryService {
     /**
      * Gets repository.
      *
+     * @param <T>         the entity type
+     * @param <I>         the id type
      * @param entityClass the entity class
      * @return the repository
      */
-    public JpaRepository getRepository(Class<?> entityClass) {
+    @SuppressWarnings("unchecked")
+    public <T extends IIdAssignable<I>, I extends Serializable> JpaRepository<T, I> getRepository(Class<T> entityClass) {
         Optional<Object> optional = repositories.getRepositoryFor(entityClass);
         if (optional.isPresent()) {
-            return (JpaRepository) optional.get();
+            return (JpaRepository<T, I>) optional.get();
         }
         throw new JpaRepositoryNotDefinedException("for entity " + entityClass.getSimpleName());
     }
@@ -53,47 +57,60 @@ public class GenericRepositoryService {
      * @return the repository
      * @throws ClassNotFoundException the class not found exception
      */
-    public JpaRepository getRepository(String className) throws ClassNotFoundException {
-        Class itemClass = Class.forName(className);
-        return this.getRepository(itemClass);
+    @SuppressWarnings("unchecked")
+    public JpaRepository<? extends IIdAssignable<?>, ? extends Serializable> getRepository(String className) throws ClassNotFoundException {
+        Class<?> itemClass = Class.forName(className);
+        return this.getRepository((Class<IIdAssignable<Serializable>>) itemClass);
     }
 
     /**
      * Save id assignable.
      *
+     * @param <T>    the entity type
+     * @param <I>    the id type
      * @param entity the entity
      * @return the id assignable
      */
-    public IIdAssignable save(IIdAssignable entity) {
-        return (IIdAssignable) getRepository(entity.getClass()).save(entity);
+    @SuppressWarnings("unchecked")
+    public <T extends IIdAssignable<I>, I extends Serializable> T save(T entity) {
+        return (T) getRepository((Class<T>) entity.getClass()).save(entity);
     }
 
     /**
      * Find by id optional.
      *
+     * @param <T>    the entity type
+     * @param <I>    the id type
      * @param entity the entity
      * @return the optional
      */
-    public Optional<IIdAssignable> findById(IIdAssignable entity) {
-        return getRepository(entity.getClass()).findById(entity.getId());
+    @SuppressWarnings("unchecked")
+    public <T extends IIdAssignable<I>, I extends Serializable> Optional<T> findById(T entity) {
+        return getRepository((Class<T>) entity.getClass()).findById(entity.getId());
     }
 
     /**
      * Find all id assignable.
      *
+     * @param <T>    the entity type
+     * @param <I>    the id type
      * @param entity the entity
-     * @return the id assignable
+     * @return the list of id assignable
      */
-    public IIdAssignable findAll(IIdAssignable entity) {
-        return (IIdAssignable) getRepository(entity.getClass()).findAll();
+    @SuppressWarnings("unchecked")
+    public <T extends IIdAssignable<I>, I extends Serializable> Iterable<T> findAll(T entity) {
+        return getRepository((Class<T>) entity.getClass()).findAll();
     }
 
     /**
      * Delete.
      *
+     * @param <T>    the entity type
+     * @param <I>    the id type
      * @param entity the entity
      */
-    public void delete(IIdAssignable entity) {
-        getRepository(entity.getClass()).delete(entity);
+    @SuppressWarnings("unchecked")
+    public <T extends IIdAssignable<I>, I extends Serializable> void delete(T entity) {
+        getRepository((Class<T>) entity.getClass()).delete(entity);
     }
 }

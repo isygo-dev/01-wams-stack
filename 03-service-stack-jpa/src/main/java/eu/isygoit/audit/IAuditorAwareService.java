@@ -3,11 +3,11 @@ package eu.isygoit.audit;
 import java.util.Optional;
 
 /**
- * The interface Audit awere api.
+ * The interface Audit aware api.
  *
  * @param <T> the type parameter
  */
-public interface IAuditAwereService<T> {
+public interface IAuditorAwareService<T> {
 
     /**
      * Gets current auditor.

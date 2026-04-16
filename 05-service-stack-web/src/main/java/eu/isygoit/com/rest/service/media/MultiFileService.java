@@ -11,7 +11,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.IMultiFileEntity;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -34,7 +34,7 @@ import java.util.List;
  * @param <I>  the type of the identifier, extending {@link Serializable}
  * @param <T>  the entity type, extending {@link IMultiFileEntity}, {@link IIdAssignable}, and {@link ICodeAssignable}
  * @param <L>  the linked file type, extending {@link ILinkedFile}, {@link ICodeAssignable}, and {@link IIdAssignable}
- * @param <R>  the repository type for the entity, extending {@link JpaPagingAndSortingCodeAssingnableRepository}
+ * @param <R>  the repository type for the entity, extending {@link JpaPagingAndSortingCodeAssignableRepository}
  * @param <RL> the repository type for linked files, extending {@link JpaPagingAndSortingRepository}
  */
 @Slf4j
@@ -42,7 +42,7 @@ public abstract class MultiFileService<
         I extends Serializable,
         T extends IMultiFileEntity<L> & IIdAssignable<I> & ICodeAssignable,
         L extends ILinkedFile & ICodeAssignable & IIdAssignable<I>,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>,
+        R extends JpaPagingAndSortingCodeAssignableRepository<T, I>,
         RL extends JpaPagingAndSortingRepository<L, I>
         > extends MultiFileServiceOperations<I, T, L, R, RL> implements IMultiFileServiceOperations<I, T> {
 

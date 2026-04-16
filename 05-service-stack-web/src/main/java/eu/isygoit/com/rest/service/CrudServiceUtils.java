@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -235,13 +236,7 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
         log.debug("Handling deletion for {} entity with ID: {}", object.getClass().getSimpleName(), object.getId());
         if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
             cancelable.setCheckCancel(true);
-            cancelable.setCancelDate(Date.from(Instant.now()));
-            //We cannot call repository().save(object) here because we don't know the exact repository type and its methods
-            //But since the subclasses will use their own repository to save it, we just need to update the entity.
-            //However, CrudService was calling repository().save(object).
-            //CrudServiceUtils has a repository() method that returns R which extends Repository.
-            //But Repository interface doesn't have save(). CrudService repository R extends JpaPagingAndSortingRepository.
-            //This might be a problem if we want to call save() here.
+            cancelable.setCancelDate(LocalDateTime.now());
         }
     }
 }

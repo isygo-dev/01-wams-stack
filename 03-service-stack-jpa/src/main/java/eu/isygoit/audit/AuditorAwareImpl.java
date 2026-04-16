@@ -13,19 +13,19 @@ import java.util.Optional;
 public class AuditorAwareImpl implements AuditorAware<String> {
 
     @Autowired
-    private IAuditAwereService auditAwereService;
+    private IAuditorAwareService auditorAwareService;
 
     /**
      * Instantiates a new Auditor aware.
      *
-     * @param auditAwereService the audit awere api
+     * @param auditorAwareService the audit aware api
      */
-    public AuditorAwareImpl(IAuditAwereService auditAwereService) {
-        this.auditAwereService = auditAwereService;
+    public AuditorAwareImpl(IAuditorAwareService auditorAwareService) {
+        this.auditorAwareService = auditorAwareService;
     }
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        return auditAwereService.getCurrentAuditor();
+        return auditorAwareService.getCurrentAuditor();
     }
 }

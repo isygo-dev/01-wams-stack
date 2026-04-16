@@ -3,7 +3,7 @@ package eu.isygoit.repository.timeline;
 import eu.isygoit.annotation.IgnoreRepository;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.timeline.ITimelineEventEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 @IgnoreRepository
 @NoRepositoryBean
-public interface TimelineEventRepository<T extends ITimelineEventEntity & IIdAssignable<I>, I extends Serializable> extends JpaRepository<T, I> {
+public interface TimelineEventRepository<T extends ITimelineEventEntity & IIdAssignable<I>, I extends Serializable> extends JpaPagingAndSortingRepository<T, I> {
     /**
      * Find by element type and element id and tenant list.
      *

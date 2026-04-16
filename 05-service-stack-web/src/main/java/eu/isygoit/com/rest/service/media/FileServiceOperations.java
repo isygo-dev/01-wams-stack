@@ -9,7 +9,7 @@ import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +27,7 @@ import java.io.Serializable;
 @Slf4j
 public abstract class FileServiceOperations<I extends Serializable,
         T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
+        R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends CodeAssignableService<I, T, R> {
 
     @Autowired

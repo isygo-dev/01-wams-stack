@@ -13,7 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * The type Auditable cancelable entity.
@@ -29,18 +29,16 @@ import java.util.Date;
 public abstract class AuditableCancelableEntity<T extends Serializable> extends CancelableEntity<T> {
 
     @CreatedDate
-    @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = ComSchemaColumnConstantName.C_CREATE_DATE, updatable = false)
-    private Date createDate;
+    private LocalDateTime createDate;
 
     @CreatedBy
     @Column(name = ComSchemaColumnConstantName.C_CREATED_BY, updatable = false)
     private String createdBy;
 
     @LastModifiedDate
-    @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = ComSchemaColumnConstantName.C_UPDATE_DATE)
-    private Date updateDate;
+    private LocalDateTime updateDate;
 
     @LastModifiedBy
     @Column(name = ComSchemaColumnConstantName.C_UPDATED_BY)

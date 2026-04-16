@@ -4,7 +4,7 @@ import eu.isygoit.annotation.IgnoreRepository;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @IgnoreRepository
 @NoRepositoryBean
 public interface JpaPagingAndSortingTenantAndCodeAssignableRepository<T extends ITenantAssignable & ICodeAssignable & IIdAssignable<I>, I extends Serializable>
-        extends JpaPagingAndSortingTenantAssignableRepository<T, I>, JpaPagingAndSortingCodeAssingnableRepository<T, I> {
+        extends JpaPagingAndSortingTenantAssignableRepository<T, I>, JpaPagingAndSortingCodeAssignableRepository<T, I> {
 
     /**
      * Find by tenant ignore case and code ignore case optional.

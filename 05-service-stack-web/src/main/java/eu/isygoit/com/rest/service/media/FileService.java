@@ -8,7 +8,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +29,7 @@ import java.nio.file.Path;
  */
 @Slf4j
 public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
+        R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends FileServiceOperations<I, T, R>
         implements IFileServiceOperations<I, T> {
 

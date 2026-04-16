@@ -9,7 +9,7 @@ import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.helper.FileHelper;
 import eu.isygoit.model.*;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
@@ -35,7 +35,7 @@ import java.util.function.Function;
 @Slf4j
 public abstract class FileImageService<I extends Serializable,
         T extends IImageEntity & IFileEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
+        R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends FileService<I, T, R>
         implements IFileServiceOperations<I, T>, IImageServiceOperations<I, T> {
 

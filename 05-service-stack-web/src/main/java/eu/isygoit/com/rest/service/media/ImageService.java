@@ -13,7 +13,7 @@ import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.repository.JpaPagingAndSortingCodeAssingnableRepository;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
@@ -37,7 +37,7 @@ import java.nio.file.StandardOpenOption;
  */
 @Slf4j
 public abstract class ImageService<I extends Serializable, T extends IImageEntity & IIdAssignable<I> & ICodeAssignable,
-        R extends JpaPagingAndSortingCodeAssingnableRepository<T, I>>
+        R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends CodeAssignableService<I, T, R>
         implements IImageServiceOperations<I, T> {
 
