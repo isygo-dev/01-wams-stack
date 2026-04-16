@@ -6,9 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import eu.isygoit.helper.bo.Author;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -169,9 +176,176 @@ class JsonHelperTestPart1 {
         }
     }
 
-    /**
-     * The type Error handling tests.
-     */
+    @Nested
+    @DisplayName("JSON Utilities Tests")
+    class JsonUtilitiesTests {
+
+        @Test
+        @DisplayName("Pretty Print JSON")
+        void prettyPrintJson_shouldReturnFormattedJson() throws Exception {
+            JsonNode mockJsonNode = objectMapper.readTree("{\"name\":\"John\",\"age\":30}");
+            String result = JsonHelper.prettyPrintJson(mockJsonNode);
+            assertTrue(result.contains("\n"), "Pretty printed JSON should contain newlines");
+            assertTrue(result.contains("  \"name\" : \"John\""), "Pretty printed JSON should be indented");
+        }
+
+        @Test
+        @DisplayName("Object to Node conversion")
+        void objectToNode_shouldConvertObjectToJsonNode() {
+            Author author = Author.builder().firstName("John").lastName("Doe").build();
+            JsonNode result = JsonHelper.objectToNode(author);
+            System.out.println("[DEBUG_LOG] objectToNode result: " + result.toString());
+            assertEquals("John", result.get("firstName").asText());
+            assertEquals("Doe", result.get("lastName").asText());
+        }
+
+        @Test
+        @DisplayName("Node to Object conversion")
+        void nodeToObject_shouldConvertJsonNodeToObject() throws Exception {
+            JsonNode node = objectMapper.readTree("{\"firstName\":\"John\",\"lastName\":\"Doe\"}");
+            Author result = JsonHelper.nodeToObject(node, Author.class);
+            assertEquals("John", result.getFirstName());
+            assertEquals("Doe", result.getLastName());
+        }
+
+        @Test
+        @DisplayName("Create Empty Node")
+        void createEmptyNode_shouldReturnEmptyObjectNode() {
+            JsonNode result = JsonHelper.createEmptyNode();
+            assertTrue(result.isObject());
+            assertEquals(0, result.size());
+        }
+
+        @Test
+        @DisplayName("JSON to JsonNode conversion")
+        void jsonToJsonNode_shouldConvertStringToJsonNode() throws Exception {
+            String json = "{\"name\":\"John\"}";
+            JsonNode result = JsonHelper.jsonToJsonNode(json);
+            assertEquals("John", result.get("name").asText());
+        }
+    }
+
+    @Nested
+    @DisplayName("JSON Diff and Comparison Tests")
+    class JsonDiffTests {
+
+        @Test
+        @DisplayName("Compute Diff - Basic Changes")
+        void computeDiff_shouldReturnChanges() {
+            Map<String, Object> prev = new HashMap<>();
+            prev.put("firstName", "John");
+            prev.put("age", 30);
+
+            Map<String, Object> curr = new HashMap<>();
+            curr.put("firstName", "John"); // unchanged
+            curr.put("age", 31); // changed
+            curr.put("city", "New York"); // added
+
+            ObjectNode diff = JsonHelper.computeDiff(prev, curr);
+
+            assertFalse(diff.has("firstName"));
+            assertEquals(31, diff.get("age").asInt());
+            assertEquals("New York", diff.get("city").asText());
+        }
+
+        @Test
+        @DisplayName("Compute Diff - Removed Fields")
+        void computeDiff_shouldHandleRemovedFields() {
+            Map<String, Object> prev = new HashMap<>();
+            prev.put("firstName", "John");
+            prev.put("age", 30);
+
+            Map<String, Object> curr = new HashMap<>();
+            curr.put("firstName", "John");
+
+            ObjectNode diff = JsonHelper.computeDiff(prev, curr);
+
+            assertTrue(diff.has("age"));
+            assertTrue(diff.get("age").isNull());
+        }
+
+        @Test
+        @DisplayName("Compute Diff - Excluded Keys")
+        void computeDiff_shouldExcludeKeys() {
+            Map<String, Object> prev = new HashMap<>();
+            prev.put("id", 1L);
+            prev.put("name", "Old");
+
+            Map<String, Object> curr = new HashMap<>();
+            curr.put("id", 2L); // changed but excluded
+            curr.put("name", "New");
+
+            ObjectNode diff = JsonHelper.computeDiff(prev, curr);
+
+            assertFalse(diff.has("id"));
+            assertEquals("New", diff.get("name").asText());
+        }
+
+        @Test
+        @DisplayName("Compute Diff - Required Keys")
+        void computeDiff_shouldAlwaysIncludeRequiredKeys() {
+            Map<String, Object> prev = new HashMap<>();
+            prev.put("updatedBy", "user1");
+            prev.put("name", "Old");
+
+            Map<String, Object> curr = new HashMap<>();
+            curr.put("updatedBy", "user1"); // unchanged but required
+            curr.put("name", "New");
+
+            ObjectNode diff = JsonHelper.computeDiff(prev, curr);
+
+            assertEquals("user1", diff.get("updatedBy").asText());
+            assertEquals("New", diff.get("name").asText());
+        }
+
+        @Test
+        @DisplayName("Deep Equals - Complex Objects")
+        void computeDiff_deepEquals_shouldHandleComplexObjects() {
+            Map<String, Object> prev = new HashMap<>();
+            prev.put("tags", Arrays.asList("a", "b"));
+            Map<String, String> nestedPrev = new HashMap<>();
+            nestedPrev.put("k", "v");
+            prev.put("nested", nestedPrev);
+
+            Map<String, Object> curr = new HashMap<>();
+            curr.put("tags", Arrays.asList("a", "b")); // unchanged
+            Map<String, String> nestedCurr = new HashMap<>();
+            nestedCurr.put("k", "v2");
+            curr.put("nested", nestedCurr);
+
+            ObjectNode diff = JsonHelper.computeDiff(prev, curr);
+
+            System.out.println("[DEBUG_LOG] computeDiff_deepEquals result: " + diff.toString());
+            assertFalse(diff.has("tags"));
+            assertTrue(diff.has("nested"));
+            
+            // Convert POJONode to Tree for verification if needed, or check as Object
+            JsonNode nestedNode = objectMapper.valueToTree(diff.get("nested"));
+            assertEquals("v2", nestedNode.get("k").asText());
+        }
+
+        @Test
+        @DisplayName("Create Full Diff")
+        void createFullDiff_shouldReturnOldAndNewStates() {
+            Author oldAuthor = Author.builder().firstName("John").build();
+            Author newAuthor = Author.builder().firstName("Jane").build();
+
+            ObjectNode result = JsonHelper.createFullDiff(oldAuthor, newAuthor);
+
+            System.out.println("[DEBUG_LOG] createFullDiff result: " + result.toString());
+            assertTrue(result.has("state"));
+            JsonNode state = result.get("state");
+            assertTrue(state.has("old"));
+            assertTrue(state.has("new"));
+            
+            JsonNode oldNode = objectMapper.valueToTree(state.get("old"));
+            JsonNode newNode = objectMapper.valueToTree(state.get("new"));
+            
+            assertEquals("John", oldNode.get("firstName").asText());
+            assertEquals("Jane", newNode.get("firstName").asText());
+        }
+    }
+
     @Nested
     @DisplayName("Error Handling Tests")
     class ErrorHandlingTests {

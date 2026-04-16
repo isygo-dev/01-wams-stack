@@ -2,6 +2,7 @@ package eu.isygoit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.dto.ResumeDto;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -96,8 +97,9 @@ class ImageFileCrudIntegrationTests {
                 .andReturn();
 
         if (result.getResponse().getStatus() == HttpStatus.OK.value()) {
-            List<ResumeDto> resumes = objectMapper.readValue(result.getResponse().getContentAsString(),
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, ResumeDto.class));
+            PaginatedResponseDto<ResumeDto> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                    objectMapper.getTypeFactory().constructParametricType(PaginatedResponseDto.class, ResumeDto.class));
+            List<ResumeDto> resumes = response.getContent();
 
             for (ResumeDto resume : resumes) {
                 mockMvc.perform(delete(BASE_URL + "/{id}", resume.getId())

@@ -2,6 +2,7 @@ package eu.isygoit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.dto.UserDto;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -51,7 +52,7 @@ class ImageCrudIntegrationTests {
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_ID = "tenants";
     private static final String BASE_URL = "/api/v1/user";
-    private static final String IMAGE_URL = BASE_URL + "/image";
+    private static final String IMAGE_URL = "/api/v1/user/image";
     private static final int MAX_FIELD_LENGTH = 255;
 
     @Container
@@ -99,8 +100,9 @@ class ImageCrudIntegrationTests {
                 .andReturn();
 
         if (result.getResponse().getStatus() == HttpStatus.OK.value()) {
-            List<UserDto> users = objectMapper.readValue(result.getResponse().getContentAsString(),
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, UserDto.class));
+            PaginatedResponseDto<UserDto> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                    objectMapper.getTypeFactory().constructParametricType(PaginatedResponseDto.class, UserDto.class));
+            List<UserDto> users = response.getContent();
 
             for (UserDto user : users) {
                 mockMvc.perform(delete(BASE_URL + "/{id}", user.getId())
@@ -351,15 +353,15 @@ class ImageCrudIntegrationTests {
     @DisplayName("List all users - should succeed")
     void testListAllUsers() throws Exception {
         for (int i = 0; i < 3; i++) {
-            createUser("User" + i, "Test", false);
+            createUser("Paged" + i, "User", false);
         }
 
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_ID))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_ID))));
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(3))))
+                .andExpect(jsonPath("$.content[*].tenant", everyItem(is(TENANT_ID))));
     }
 
     @Test
@@ -445,7 +447,7 @@ class ImageCrudIntegrationTests {
                         .header(TENANT_HEADER, TENANT_ID))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(threadCount))));
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(threadCount))));
     }
 
     @Test
@@ -520,8 +522,8 @@ class ImageCrudIntegrationTests {
                         .param("page", "0")
                         .param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_ID))));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[*].tenant", everyItem(is(TENANT_ID))));
     }
 
     @Test
@@ -594,7 +596,7 @@ class ImageCrudIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonHelper.toJson(users)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$.length()").value(3))
                 .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_ID))));
     }
 
@@ -750,7 +752,7 @@ class ImageCrudIntegrationTests {
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(10)))
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_ID))));
+                .andExpect(jsonPath("$.content", hasSize(10)))
+                .andExpect(jsonPath("$.content[*].tenant", everyItem(is(TENANT_ID))));
     }
 }

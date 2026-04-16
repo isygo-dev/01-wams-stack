@@ -49,17 +49,16 @@ public interface MapHelper {
      * @return a Map containing the parsed key-value pairs
      */
     public static Map<String, String> convertStringArrayToMap(String[] data) {
+        if (data == null) {
+            logger.warn("Input array is null. Returning empty map.");
+            return new HashMap<>();
+        }
         logger.info("Converting an array of size {} to a Map.", data.length);
 
-        return Optional.ofNullable(data)
-                .map(arr -> Stream.of(arr)
-                        .map(keyValue -> keyValue.split(":"))
-                        .filter(parts -> parts.length == 2)
-                        .collect(Collectors.toMap(parts -> parts[0], parts -> parts[1])))
-                .orElseGet(() -> {
-                    logger.warn("Input array is null or empty.");
-                    return new HashMap<>();
-                });
+        return Stream.of(data)
+                .map(keyValue -> keyValue.split(":"))
+                .filter(parts -> parts.length == 2)
+                .collect(Collectors.toMap(parts -> parts[0], parts -> parts[1]));
     }
 
     /**
@@ -148,9 +147,13 @@ public interface MapHelper {
      * @return the value associated with the key or the default value
      */
     public static String safeGet(Map<String, String> map, String key, String defaultValue) {
-        logger.info("Retrieving value for key '{}' from map.", key);
+        if (map == null) {
+            logger.warn("Map is null, returning default value.");
+            return defaultValue;
+        }
 
-        return Optional.ofNullable(map.get(key)).orElse(defaultValue);
+        logger.info("Retrieving value for key '{}' from map.", key);
+        return map.getOrDefault(key, defaultValue);
     }
 
     /**

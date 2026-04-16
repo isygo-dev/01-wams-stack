@@ -31,6 +31,11 @@ public class SpringClassScanner {
      * @return a set of BeanDefinitions for the classes that match the annotation
      */
     public Set<BeanDefinition> findAnnotatedClasses(Class<? extends Annotation> annotationClass, String scanPackage) {
+        if (annotationClass == null) {
+            log.error("Invalid annotation class provided: null.");
+            return Set.of();
+        }
+
         log.info("Starting scan in package '{}' for classes annotated with '{}'.", scanPackage, annotationClass.getSimpleName());
 
         // Validate input parameters before proceeding

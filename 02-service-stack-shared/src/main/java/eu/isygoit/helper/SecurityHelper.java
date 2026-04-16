@@ -47,7 +47,7 @@ public interface SecurityHelper {
     public static ECPrivateKey generateECPrivateKeyFromHex(String hexPrivateKey) {
         try {
             var encodedKey = ByteArrayHelper.convertHexToBytes(hexPrivateKey);
-            var keyFactory = KeyFactory.getInstance("ECDSA");
+            var keyFactory = KeyFactory.getInstance("EC");
             var privateKeySpec = new PKCS8EncodedKeySpec(encodedKey);
             return (ECPrivateKey) keyFactory.generatePrivate(privateKeySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -65,7 +65,7 @@ public interface SecurityHelper {
     public static ECPublicKey generateECPublicKeyFromHex(String hexPublicKey) {
         try {
             var encodedKey = ByteArrayHelper.convertHexToBytes(hexPublicKey);
-            var keyFactory = KeyFactory.getInstance("ECDSA");
+            var keyFactory = KeyFactory.getInstance("EC");
             var publicKeySpec = new X509EncodedKeySpec(encodedKey);
             return (ECPublicKey) keyFactory.generatePublic(publicKeySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -175,7 +175,10 @@ public interface SecurityHelper {
      * @return true if the string is a valid hex string, false otherwise
      */
     public static boolean isHexStringValid(String hexString) {
-        return hexString != null && hexString.matches("^[0-9a-fA-F]+$");
+        if (hexString == null || hexString.isEmpty() || hexString.length() % 2 != 0) {
+            return false;
+        }
+        return hexString.matches("^[0-9a-fA-F]+$");
     }
 
     /**

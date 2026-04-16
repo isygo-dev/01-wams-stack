@@ -8,6 +8,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.time.format.ResolverStyle;
 import java.util.*;
 
 /**
@@ -60,11 +61,25 @@ public interface DateHelper {
             "MM-dd-yyyy",
             "MM/dd/yyyy",
             "MM/dd/yyyy HH:mm",
+            "EEEE, d MMM yyyy HH:mm:ss z",
             "EEEE, dd MMM yyyy HH:mm:ss z",
+            "EEE, d MMM yyyy HH:mm:ss z",
+            "EEE, dd MMM yyyy HH:mm:ss z",
+            "EEEE, dd MMM yyyy HH:mm:ss 'GMT'",
+            "EEE, dd MMM yyyy HH:mm:ss 'GMT'",
+            "E, dd MMM yyyy HH:mm:ss z",
+            "E, d MMM yyyy HH:mm:ss z",
+            "MMMM d, yyyy",
             "MMMM dd, yyyy",
             "yyyy/MM/dd HH:mm:ss",
+            "EEE MMM dd HH:mm:ss z yyyy",
             "epoch",
             "epoch_second"
+    );
+
+    List<DateTimeFormatter> DATE_FORMATTERS = List.of(
+            DateTimeFormatter.ofPattern("EEEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
     );
 
     /**
@@ -95,13 +110,78 @@ public interface DateHelper {
 
     private static Date tryParseDate(String dateString, String pattern) {
         try {
-            var formatter = DateTimeFormatter.ofPattern(pattern);
-            var localDate = LocalDate.parse(dateString, formatter);
-            if (!dateString.equals(formatter.format(localDate))) {
-                throw new DateTimeParseException("Invalid date", dateString, 0);
+            if ("epoch".equalsIgnoreCase(pattern)) {
+                return new Date(Long.parseLong(dateString));
+            } else if ("epoch_second".equalsIgnoreCase(pattern)) {
+                return new Date(Long.parseLong(dateString) * 1000);
             }
-            return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-        } catch (DateTimeParseException e) {
+
+            var formatter = DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH);
+            // .withResolverStyle(ResolverStyle.STRICT);
+            var temporalAccessor = formatter.parse(dateString);
+
+            Date result;
+            try {
+                result = Date.from(ZonedDateTime.from(temporalAccessor).toInstant());
+            } catch (Exception e1) {
+                try {
+                    result = Date.from(OffsetDateTime.from(temporalAccessor).toInstant());
+                } catch (Exception e2) {
+                    try {
+                        result = Date.from(LocalDateTime.from(temporalAccessor).atZone(ZoneId.systemDefault()).toInstant());
+                    } catch (Exception e3) {
+                        try {
+                            result = Date.from(LocalDate.from(temporalAccessor).atStartOfDay(ZoneId.systemDefault()).toInstant());
+                        } catch (Exception e4) {
+                            return null;
+                        }
+                    }
+                }
+            }
+
+            if (result != null) {
+                // Validation for strict mode
+                try {
+                    // Try to re-format and compare
+                    // This is the most reliable way to ensure the date is what we think it is
+                    // especially for things like Feb 31 -> Mar 3
+                    
+                    // For patterns with 'z', we should format with the original zone if possible
+                    // However, 'result' is a Date which is just an instant.
+                    // If we use systemDefault(), it might change GMT to CET/CEST etc.
+                    
+                    ZoneId zoneId = ZoneId.systemDefault();
+                    boolean skipStrict = false;
+                    if (pattern.contains("z") || pattern.contains("VV") || pattern.contains("X") || pattern.contains("x")) {
+                        // Extract zone if possible, or just skip strict validation for these for now
+                        // or use the zone from temporalAccessor
+                        try {
+                             zoneId = ZoneId.from(temporalAccessor);
+                        } catch (Exception e) {
+                             // Fallback to system default or UTC
+                             zoneId = ZoneId.of("UTC");
+                        }
+                        // Skip strict validation for zone patterns because re-formatting might change GMT to UTC or vice versa
+                        // or other zone name variations that are semantically identical but string-different
+                        skipStrict = true;
+                    }
+
+                    if (!skipStrict) {
+                        String reformatted = DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH)
+                                .format(result.toInstant().atZone(zoneId));
+
+                        // If they don't match, it might be an invalid date that was resolved (e.g. Feb 31)
+                        if (!dateString.equalsIgnoreCase(reformatted)) {
+                            return null;
+                        }
+                    }
+                } catch (Exception e) {
+                    // If we can't format it back, something is wrong
+                    return null;
+                }
+            }
+            return result;
+        } catch (Exception e) {
             logger.debug("Failed to parse date with pattern {}: {}", pattern, e.getMessage());
             return null;
         }
@@ -245,7 +325,7 @@ public interface DateHelper {
     static String formatDateToHumanReadable(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        return DateTimeFormatter.ofPattern("MMMM dd, yyyy")
+        return DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.ENGLISH)
                 .format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
     }
 

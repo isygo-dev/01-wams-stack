@@ -2,6 +2,7 @@ package eu.isygoit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.dto.UserLoginEventDto;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -324,12 +325,12 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(4)) // 1 single + 3 batch
-                .andExpect(jsonPath("$[?(@.userId == 'user_one')]").exists())
-                .andExpect(jsonPath("$[?(@.userId == 'batch_user_1')]").exists())
-                .andExpect(jsonPath("$[?(@.userId == 'batch_user_2')]").exists())
-                .andExpect(jsonPath("$[?(@.userId == 'batch_user_3')]").exists());
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(4)) // 1 single + 3 batch
+                .andExpect(jsonPath("$.content[?(@.userId == 'user_one')]").exists())
+                .andExpect(jsonPath("$.content[?(@.userId == 'batch_user_1')]").exists())
+                .andExpect(jsonPath("$.content[?(@.userId == 'batch_user_2')]").exists())
+                .andExpect(jsonPath("$.content[?(@.userId == 'batch_user_3')]").exists());
     }
 
     /**
@@ -342,11 +343,11 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(3)) // 1 single + 2 batch
-                .andExpect(jsonPath("$[?(@.userId == 'user_two')]").exists())
-                .andExpect(jsonPath("$[?(@.userId == 'batch_user_a')]").exists())
-                .andExpect(jsonPath("$[?(@.userId == 'batch_user_b')]").exists());
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(3)) // 1 single + 2 batch
+                .andExpect(jsonPath("$.content[?(@.userId == 'user_two')]").exists())
+                .andExpect(jsonPath("$.content[?(@.userId == 'batch_user_a')]").exists())
+                .andExpect(jsonPath("$.content[?(@.userId == 'batch_user_b')]").exists());
     }
 
     /**
@@ -361,8 +362,8 @@ class JsonBasedSqlPostgresIntegrationTests {
                         .param("page", "0")
                         .param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content").isArray());
     }
 
     /**
@@ -401,8 +402,8 @@ class JsonBasedSqlPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL + "/full")
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(4));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(4));
     }
 
     // === UPDATE TESTS ===
@@ -618,10 +619,10 @@ class JsonBasedSqlPostgresIntegrationTests {
                         .header(TENANT_HEADER, TENANT_1)
                         .param("criteria", "userId = 'user_one_updated' & ip = '192.168.1.100'"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].userId").value("user_one_updated"))
-                .andExpect(jsonPath("$[0].ip").value("192.168.1.100"));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].userId").value("user_one_updated"))
+                .andExpect(jsonPath("$.content[0].ip").value("192.168.1.100"));
     }
 
     /**
@@ -635,8 +636,8 @@ class JsonBasedSqlPostgresIntegrationTests {
                         .header(TENANT_HEADER, TENANT_1)
                         .param("criteria", "device ~ Device"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(3));
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(3));
     }
 
     /**
@@ -666,21 +667,23 @@ class JsonBasedSqlPostgresIntegrationTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        UserLoginEventDto[] tenant1Data = objectMapper.readValue(
-                tenant1Result.getResponse().getContentAsString(), UserLoginEventDto[].class);
+        PaginatedResponseDto<UserLoginEventDto> response1 = objectMapper.readValue(tenant1Result.getResponse().getContentAsString(),
+                objectMapper.getTypeFactory().constructParametricType(PaginatedResponseDto.class, UserLoginEventDto.class));
+        List<UserLoginEventDto> tenant1DataList = response1.getContent();
 
         MvcResult tenant2Result = mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        UserLoginEventDto[] tenant2Data = objectMapper.readValue(
-                tenant2Result.getResponse().getContentAsString(), UserLoginEventDto[].class);
+        PaginatedResponseDto<UserLoginEventDto> response2 = objectMapper.readValue(tenant2Result.getResponse().getContentAsString(),
+                objectMapper.getTypeFactory().constructParametricType(PaginatedResponseDto.class, UserLoginEventDto.class));
+        List<UserLoginEventDto> tenant2DataList = response2.getContent();
 
-        List<UUID> tenant1Ids = Arrays.stream(tenant1Data)
+        List<UUID> tenant1Ids = tenant1DataList.stream()
                 .map(UserLoginEventDto::getId)
                 .toList();
-        List<UUID> tenant2Ids = Arrays.stream(tenant2Data)
+        List<UUID> tenant2Ids = tenant2DataList.stream()
                 .map(UserLoginEventDto::getId)
                 .toList();
 

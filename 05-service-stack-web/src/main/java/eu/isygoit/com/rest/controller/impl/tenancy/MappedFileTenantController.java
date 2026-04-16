@@ -16,12 +16,15 @@ import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.constants.RestApiConstants;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
@@ -77,8 +80,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> createWithFile(ContextRequestDto requestContext,
-                                            MultipartFile file,
-                                            @Valid F dto) {
+                                            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+                                            @Valid @RequestPart(name = "dto") F dto) {
         log.info("Create with file request received");
         try {
             if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
@@ -95,9 +98,9 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext,
-                                            I id,
-                                            MultipartFile file,
-                                            @Valid F dto) {
+                                            @PathVariable(name = RestApiConstants.ID) I id,
+                                            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+                                            @Valid @RequestPart(name = "dto") F dto) {
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);

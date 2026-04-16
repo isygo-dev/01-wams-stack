@@ -153,7 +153,7 @@ public interface FileHelper {
     public static boolean deleteDirectoryRecursively(File directoryPath, boolean forceDelete) throws NotDirectoryException {
         if (directoryPath.isDirectory()) {
             for (File file : Objects.requireNonNull(directoryPath.listFiles())) {
-                boolean success = deleteDirectoryRecursively(file, forceDelete);
+                boolean success = deleteFileOrDirectoryRecursively(file, forceDelete);
                 if (!success) return false;
             }
             boolean deleted = directoryPath.delete();
@@ -163,6 +163,15 @@ public interface FileHelper {
             return deleted;
         }
         throw new NotDirectoryException(directoryPath.getName());
+    }
+
+    private static boolean deleteFileOrDirectoryRecursively(File path, boolean forceDelete) {
+        if (path.isDirectory()) {
+            for (File file : Objects.requireNonNull(path.listFiles())) {
+                if (!deleteFileOrDirectoryRecursively(file, forceDelete)) return false;
+            }
+        }
+        return path.delete();
     }
 
     //------------------- ZIP Compression & Extraction -------------------

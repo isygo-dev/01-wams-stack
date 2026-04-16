@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.when;
 /**
  * The type File storage test.
  */
-class FileStorageTest {
+class FileStorageTestPart1 {
 
     /**
      * The Temp dir.
@@ -84,6 +85,52 @@ class FileStorageTest {
                             StandardOpenOption.TRUNCATE_EXISTING,
                             StandardOpenOption.SYNC)
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteDirectoryRecursively() Tests")
+    class DeleteDirectoryRecursivelyTests {
+
+        @Test
+        @DisplayName("should delete directory recursively")
+        void deleteDirectoryRecursively_shouldDeleteDirectory() throws IOException {
+            Path subDir = tempDir.resolve("subDir");
+            Files.createDirectory(subDir);
+            Path fileInSubDir = subDir.resolve("file.txt");
+            Files.write(fileInSubDir, "content".getBytes());
+
+            boolean result = FileHelper.deleteDirectoryRecursively(subDir.toFile(), false);
+
+            assertTrue(result);
+            assertFalse(Files.exists(subDir));
+        }
+    }
+
+    @Nested
+    @DisplayName("isImage() Tests")
+    class IsImageTests {
+
+        @Test
+        @DisplayName("should return true for image content type")
+        void isImage_shouldReturnTrueForImage() {
+            MultipartFile mockFile = Mockito.mock(MultipartFile.class);
+            when(mockFile.getContentType()).thenReturn("image/jpeg");
+            assertTrue(FileHelper.isImage(mockFile));
+
+            when(mockFile.getContentType()).thenReturn("image/png");
+            assertTrue(FileHelper.isImage(mockFile));
+        }
+
+        @Test
+        @DisplayName("should return false for non-image content type")
+        void isImage_shouldReturnFalseForNonImage() {
+            MultipartFile mockFile = Mockito.mock(MultipartFile.class);
+            when(mockFile.getContentType()).thenReturn("text/plain");
+            assertFalse(FileHelper.isImage(mockFile));
+
+            when(mockFile.getContentType()).thenReturn(null);
+            assertFalse(FileHelper.isImage(mockFile));
         }
     }
 

@@ -59,7 +59,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                      @Valid @RequestPart D dto);
+                                      @Valid @RequestPart(name = "dto") D dto);
 
     /**
      * Update with image response entity.
@@ -97,7 +97,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @PathVariable(name = RestApiConstants.ID) I id,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                      @Valid @RequestPart D dto);
+                                      @Valid @RequestPart(name = "dto") D dto);
 
     /**
      * Upload image response entity.

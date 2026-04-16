@@ -6,6 +6,7 @@ import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
+import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
@@ -21,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -48,8 +51,8 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> uploadImage(ContextRequestDto requestContext,
-                                         I id,
-                                         MultipartFile file) {
+                                         @PathVariable(name = RestApiConstants.ID) I id,
+                                         @RequestPart(name = RestApiConstants.FILE) MultipartFile file) {
         log.info("Upload image request received");
         try {
             return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(requestContext.getSenderTenant(), id, file)));
@@ -61,7 +64,7 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadImage(ContextRequestDto requestContext,
-                                                  I id) throws IOException {
+                                                  @PathVariable(name = RestApiConstants.ID) I id) throws IOException {
         log.info("Download image request received");
         try {
             ResourceDto resource = crudService().downloadImage(requestContext.getSenderTenant(), id);
@@ -77,8 +80,8 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> createWithImage(ContextRequestDto requestContext,
-                                             MultipartFile file,
-                                             @Valid F dto) {
+                                             @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+                                             @Valid @RequestPart(name = "dto") F dto) {
         log.info("Create with image request received");
         try {
             if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
@@ -96,9 +99,9 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> updateWithImage(ContextRequestDto requestContext,
-                                             I id,
-                                             MultipartFile file,
-                                             @Valid F dto) {
+                                             @PathVariable(name = RestApiConstants.ID) I id,
+                                             @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+                                             @Valid @RequestPart(name = "dto") F dto) {
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);

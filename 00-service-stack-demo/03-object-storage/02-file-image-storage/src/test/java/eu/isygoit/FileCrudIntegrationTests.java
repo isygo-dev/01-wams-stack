@@ -2,6 +2,7 @@ package eu.isygoit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.dto.ContractDto;
+import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -95,8 +96,9 @@ class FileCrudIntegrationTests {
                 .andReturn();
 
         if (result.getResponse().getStatus() == HttpStatus.OK.value()) {
-            List<ContractDto> contracts = objectMapper.readValue(result.getResponse().getContentAsString(),
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, ContractDto.class));
+            PaginatedResponseDto<ContractDto> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                    objectMapper.getTypeFactory().constructParametricType(PaginatedResponseDto.class, ContractDto.class));
+            List<ContractDto> contracts = response.getContent();
 
             for (ContractDto contract : contracts) {
                 mockMvc.perform(delete(BASE_URL + "/{id}", contract.getId())
@@ -346,8 +348,8 @@ class FileCrudIntegrationTests {
                         .param("size", "10"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-                .andExpect(jsonPath("$[*].code", containsInAnyOrder("CON006", "CON007")));
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(2))))
+                .andExpect(jsonPath("$.content[*].code", containsInAnyOrder("CON006", "CON007")));
     }
 
     @Test

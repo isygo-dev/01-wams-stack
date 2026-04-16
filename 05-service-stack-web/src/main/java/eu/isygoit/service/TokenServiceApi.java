@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * The interface Token api api.
  */
+@RequestMapping("/api/v1")
 public interface TokenServiceApi {
 
     /**

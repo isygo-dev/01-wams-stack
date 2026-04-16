@@ -93,7 +93,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     @PostMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> createWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                     @Valid @RequestPart D dto);
+                                     @Valid @RequestPart(name = "dto") D dto);
 
 
     /**
@@ -132,6 +132,6 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
     ResponseEntity<D> updateWithFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                      @PathVariable(name = RestApiConstants.ID) I id,
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                     @Valid @RequestPart D dto);
+                                     @Valid @RequestPart(name = "dto") D dto);
 
 }

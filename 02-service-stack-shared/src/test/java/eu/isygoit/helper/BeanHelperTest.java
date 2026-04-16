@@ -276,4 +276,29 @@ public class BeanHelperTest {
             assertTrue(list.contains("X"));
         }
     }
+
+    @Nested
+    @DisplayName("Field Access Tests")
+    class FieldAccessTests {
+
+        @Test
+        @DisplayName("should get and set field value directly")
+        void testGetSetFieldValueDirect() throws NoSuchFieldException {
+            SampleBean bean = new SampleBean();
+            java.lang.reflect.Field field = BeanHelper.findField(SampleBean.class, "firstName");
+            assertNotNull(field);
+
+            BeanHelper.callSetter(bean, "firstName", "direct", false);
+            Object value = BeanHelper.getFieldValueDirect(bean, field);
+            assertEquals("direct", value);
+        }
+
+        @Test
+        @DisplayName("should get all fields")
+        void testGetAllFields() {
+            List<java.lang.reflect.Field> fields = BeanHelper.getAllFields(SampleBean.class);
+            assertTrue(fields.size() >= 2);
+            assertTrue(fields.stream().anyMatch(f -> f.getName().equals("firstName")));
+        }
+    }
 }

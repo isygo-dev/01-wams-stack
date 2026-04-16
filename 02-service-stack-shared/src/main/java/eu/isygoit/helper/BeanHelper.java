@@ -226,7 +226,7 @@ public interface BeanHelper {
     // Reflection Helpers
     // ========================================================================
 
-    private static Field findField(Class<?> clazz, String fieldName) {
+    public static Field findField(Class<?> clazz, String fieldName) {
         while (clazz != null && clazz != Object.class) {
             try {
                 return clazz.getDeclaredField(fieldName);
@@ -237,7 +237,7 @@ public interface BeanHelper {
         return null;
     }
 
-    private static List<Field> getAllFields(Class<?> clazz) {
+    public static List<Field> getAllFields(Class<?> clazz) {
         List<Field> fields = new ArrayList<>();
         while (clazz != null && clazz != Object.class) {
             fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
@@ -246,7 +246,7 @@ public interface BeanHelper {
         return fields;
     }
 
-    private static Object getFieldValueDirect(Object obj, Field field) {
+    public static Object getFieldValueDirect(Object obj, Field field) {
         try {
             field.setAccessible(true);
             return field.get(obj);

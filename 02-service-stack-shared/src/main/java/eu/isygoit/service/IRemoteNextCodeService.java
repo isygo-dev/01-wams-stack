@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * The interface Remote next code api.
  */
+@RequestMapping("/api/v1")
 public interface IRemoteNextCodeService {
 
     /**

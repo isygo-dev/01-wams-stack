@@ -2,6 +2,7 @@ package eu.isygoit.helper;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -32,8 +33,8 @@ public interface UrlHelper {
      * The constant SPECIAL_CHARACTERS.
      */
     public static final String[][] SPECIAL_CHARACTERS = {
-            {" ", "#", "$", "%", "&", "@", "`", "/", ":", ";", "<", "=", ">", "?", "[", "\\", "]", "^", "{", "|", "}", "~", "“", "‘", "+", ","},
-            {"20%", "24%", "26%", "60%", "%3A", "%3C", "%3E", "%5B", "%5D", "%7B", "%7D", "22%", "%2B", "23%", "25%", "40%", "%2F", "%3B", "%3D", "%3F", "%5C", "%5E", "%7C", "%7E", "27%", "%2C"}
+            {"%", " ", "#", "$", "&", "@", "`", "/", ":", ";", "<", "=", ">", "?", "[", "\\", "]", "^", "{", "|", "}", "~", "“", "‘", "+", ","},
+            {"25%", "20%", "23%", "24%", "26%", "40%", "%60", "%2F", "%3A", "%3B", "%3C", "%3D", "%3E", "%3F", "%5B", "%5C", "%5D", "%5E", "%7B", "%7C", "%7D", "%7E", "22%", "27%", "%2B", "%2C"}
     };
 
     /**
@@ -296,7 +297,11 @@ public interface UrlHelper {
      * @return The session ID, or null if no session exists.
      */
     public static String getSessionId(HttpServletRequest request) {
-        String sessionId = request.getSession(false) != null ? request.getSession().getId() : null;
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession(false);
+        String sessionId = session != null ? session.getId() : null;
         logger.debug("Session ID: {}", sessionId);
         return sessionId;
     }

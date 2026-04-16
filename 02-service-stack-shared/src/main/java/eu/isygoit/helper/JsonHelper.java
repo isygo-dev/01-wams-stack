@@ -465,7 +465,7 @@ public interface JsonHelper {
     /**
      * Creates a diff when one of the states is null.
      */
-    private static ObjectNode createFullDiff(Object previousState, Object currentState) {
+    public static ObjectNode createFullDiff(Object previousState, Object currentState) {
         ObjectNode diff = objectMapper.createObjectNode();
         ObjectNode change = objectMapper.createObjectNode();
         change.putPOJO("old", previousState);
