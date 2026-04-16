@@ -2,6 +2,7 @@ package eu.isygoit.exception.handler;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.exception.ManagedException;
 import eu.isygoit.exception.UnknownException;
 import eu.isygoit.i18n.service.LocaleService;
@@ -23,7 +24,7 @@ import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.orm.jpa.JpaSystemException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.CollectionUtils;
@@ -37,89 +38,83 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 /**
- * Abstract exception handler for controllers that provides standardized error handling.
+ * Exception handler service for controllers that provides standardized error handling.
  * This class handles various exceptions and produces localized error messages.
  */
 @Slf4j
 @Getter
-@Component
+@Service
 public abstract class ControllerExceptionHandler implements IExceptionHandler {
 
-    // Message constants - defined as static final for better performance
-    private static final String UNKNOWN_REASON = "unknown.reason";
-    private static final String OPERATION_FAILED = "operation.failed";
-    private static final String UNMANAGED_EXCEPTION_NOTIFICATION = "unmanaged.exception.notification";
-    private static final String SIZE_LIMIT_EXCEEDED = "size.limit.exceeded.exception";
-    private static final String CANNOT_CREATE_TRANSACTION = "cannot.create.transaction.exception";
-    private static final String OBJECT_NOT_FOUND = "object.not.found";
-    private static final String OBJECT_ALREADY_EXISTS = "object.already.exists";
-    // Regex patterns for string replacements
-    private static final Pattern SPACE_PATTERN = Pattern.compile(" ");
-    private static final Pattern COLON_PATTERN = Pattern.compile(":");
-    private static final Pattern OPEN_PAREN_PATTERN = Pattern.compile("\\(");
-    private static final Pattern CLOSE_PAREN_PATTERN = Pattern.compile("\\)");
-    private static final Pattern ERROR_VALUE_TOO_LONG_PATTERN =
-            Pattern.compile("error\\.value\\.too\\.long\\.for\\.type\\.character\\.varying\\.");
     // Handler cache to improve exception type lookup performance using Caffeine
     private static final Cache<Class<? extends Throwable>, Function<Throwable, String>> EXCEPTION_HANDLERS = Caffeine.newBuilder()
             .build();
     @Autowired
-    protected ControllerExceptionHandlerBuilder builder;
+    private ControllerExceptionHandlerBuilder builder;
+
     @Setter
     @Autowired
     private LocaleService localeService;
 
     @PostConstruct
     private void initHandlers() {
-        EXCEPTION_HANDLERS.put(SizeLimitExceededException.class, ex ->
-                localeService.getMessage(SIZE_LIMIT_EXCEEDED, LocaleContextHolder.getLocale()));
-        EXCEPTION_HANDLERS.put(FeignException.class, ex ->
+        registerHandler(SizeLimitExceededException.class, ex ->
+                localeService.getMessage(CtrlConstants.SIZE_LIMIT_EXCEEDED, LocaleContextHolder.getLocale()));
+        registerHandler(FeignException.class, ex ->
                 getLocaleService().getMessage(((FeignException) ex).contentUTF8(), LocaleContextHolder.getLocale()));
-        EXCEPTION_HANDLERS.put(CannotCreateTransactionException.class, ex ->
-                getLocaleService().getMessage(CANNOT_CREATE_TRANSACTION, LocaleContextHolder.getLocale()));
-        EXCEPTION_HANDLERS.put(PSQLException.class, ex -> {
+        registerHandler(CannotCreateTransactionException.class, ex ->
+                getLocaleService().getMessage(CtrlConstants.CANNOT_CREATE_TRANSACTION, LocaleContextHolder.getLocale()));
+        registerHandler(PSQLException.class, ex -> {
             StringBuilder msg = new StringBuilder();
             handlePSQLException(ex, msg, LocaleContextHolder.getLocale());
             return msg.toString();
         });
-        EXCEPTION_HANDLERS.put(jakarta.validation.ConstraintViolationException.class, ex -> {
+        registerHandler(jakarta.validation.ConstraintViolationException.class, ex -> {
             StringBuilder msg = new StringBuilder();
             handleConstraintViolation((jakarta.validation.ConstraintViolationException) ex, msg, LocaleContextHolder.getLocale());
             return msg.toString();
         });
-        EXCEPTION_HANDLERS.put(MethodArgumentNotValidException.class, ex -> {
+        registerHandler(MethodArgumentNotValidException.class, ex -> {
             StringBuilder msg = new StringBuilder();
             handleMethodArgumentNotValid((MethodArgumentNotValidException) ex, msg, LocaleContextHolder.getLocale());
             return msg.toString();
         });
-        EXCEPTION_HANDLERS.put(EmptyResultDataAccessException.class, ex ->
-                localeService.getMessage(OBJECT_NOT_FOUND, LocaleContextHolder.getLocale()));
-        EXCEPTION_HANDLERS.put(EntityExistsException.class, ex ->
-                localeService.getMessage(OBJECT_ALREADY_EXISTS, LocaleContextHolder.getLocale()));
-        EXCEPTION_HANDLERS.put(PersistenceException.class, ex -> {
+        registerHandler(EmptyResultDataAccessException.class, ex ->
+                localeService.getMessage(CtrlConstants.OBJECT_NOT_FOUND, LocaleContextHolder.getLocale()));
+        registerHandler(EntityExistsException.class, ex ->
+                localeService.getMessage(CtrlConstants.OBJECT_ALREADY_EXISTS, LocaleContextHolder.getLocale()));
+        registerHandler(PersistenceException.class, ex -> {
             StringBuilder msg = new StringBuilder();
             handlePersistenceException(ex, msg, LocaleContextHolder.getLocale());
             return msg.toString();
         });
-        EXCEPTION_HANDLERS.put(DataIntegrityViolationException.class, ex -> {
+        registerHandler(DataIntegrityViolationException.class, ex -> {
             StringBuilder msg = new StringBuilder();
             handlePersistenceException(ex, msg, LocaleContextHolder.getLocale());
             return msg.toString();
         });
-        EXCEPTION_HANDLERS.put(ManagedException.class, ex ->
+        registerHandler(ManagedException.class, ex ->
                 getLocaleService().getMessage(((ManagedException) ex).getMsgLocale(), LocaleContextHolder.getLocale()));
-        EXCEPTION_HANDLERS.put(UnknownException.class, ex -> {
+        registerHandler(UnknownException.class, ex -> {
             StringBuilder message = new StringBuilder(256);
             Locale currentLocale = LocaleContextHolder.getLocale();
-            message.append(getLocaleService().getMessage(UNKNOWN_REASON, currentLocale)).append('\n');
-            message.append(getLocaleService().getMessage(UNMANAGED_EXCEPTION_NOTIFICATION, currentLocale)).append('\n');
+            message.append(getLocaleService().getMessage(CtrlConstants.UNKNOWN_REASON, currentLocale)).append('\n');
+            message.append(getLocaleService().getMessage(CtrlConstants.UNMANAGED_EXCEPTION_NOTIFICATION, currentLocale)).append('\n');
             return message.toString();
         });
+    }
+
+    /**
+     * Registers a new exception handler.
+     *
+     * @param exceptionClass the exception class
+     * @param handler        the handler function
+     */
+    public void registerHandler(Class<? extends Throwable> exceptionClass, Function<Throwable, String> handler) {
+        EXCEPTION_HANDLERS.put(exceptionClass, handler);
     }
 
     /**
@@ -167,7 +162,7 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
             if (handler == null) {
                 // If no direct match, check for assignable types (e.g., subclasses)
                 handler = EXCEPTION_HANDLERS.asMap().entrySet().stream()
-                        .filter(entry -> entry.getKey().isInstance(unwrapped))
+                        .filter(entry -> entry.getKey().isAssignableFrom(unwrapped.getClass()))
                         .map(Map.Entry::getValue)
                         .findFirst()
                         .orElse(null);
@@ -182,8 +177,8 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
             // Handle any unexpected errors in the exception handling process
             StringBuilder message = new StringBuilder(256);
             Locale currentLocale = LocaleContextHolder.getLocale();
-            message.append(getLocaleService().getMessage(UNKNOWN_REASON, currentLocale)).append('\n');
-            message.append(getLocaleService().getMessage(UNMANAGED_EXCEPTION_NOTIFICATION, currentLocale)).append('\n');
+            message.append(getLocaleService().getMessage(CtrlConstants.UNKNOWN_REASON, currentLocale)).append('\n');
+            message.append(getLocaleService().getMessage(CtrlConstants.UNMANAGED_EXCEPTION_NOTIFICATION, currentLocale)).append('\n');
 
             // Log the original error and the error in exception handling
             log.error("Exception handler failed to process: {} with secondary exception: {}",
@@ -220,17 +215,8 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
     /**
      * Handles PostgreSQL exceptions.
      */
-    private void handlePSQLException(Throwable throwable, StringBuilder message, Locale locale) {
-        Optional<String> keyOptional = builder.getExcepMessage().keySet().stream()
-                .filter(throwable.getMessage()::contains)
-                .findFirst();
-
-        if (keyOptional.isPresent()) {
-            message.append(localeService.getMessage(builder.getExcepMessage().get(keyOptional.get()), locale));
-        } else {
-            log.error("Unhandled DB error", throwable);
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
-        }
+    private StringBuilder handlePSQLException(Throwable throwable, StringBuilder message, Locale locale) {
+        return builder.handlePSQLException(throwable, message, locale);
     }
 
     /**
@@ -251,7 +237,7 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
             }
 
             message.append(localeService.getMessage(
-                            SPACE_PATTERN.matcher(cv.getMessage()).replaceAll("."),
+                            CtrlConstants.SPACE_PATTERN.matcher(cv.getMessage()).replaceAll("."),
                             locale))
                     .append('\n');
         }
@@ -279,7 +265,7 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
             String code = error.getDefaultMessage();
             if (code != null) {
                 message.append(localeService.getMessage(
-                                SPACE_PATTERN.matcher(code).replaceAll("."),
+                                CtrlConstants.SPACE_PATTERN.matcher(code).replaceAll("."),
                                 locale))
                         .append('\n');
             }
@@ -296,32 +282,15 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
             handleDataException((DataException) throwable.getCause(), message, locale);
         } else {
             log.error("Unhandled persistence error", throwable);
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
+            message.append(localeService.getMessage(CtrlConstants.UNKNOWN_REASON, locale));
         }
     }
 
     /**
      * Handles constraint violation exceptions.
      */
-    private void handleConstraintViolationException(ConstraintViolationException ex, StringBuilder message, Locale locale) {
-        Optional<String> keyOptional = Optional.empty();
-
-        if (ex.getConstraintName() != null) {
-            keyOptional = builder.getExcepMessage().keySet().stream()
-                    .filter(ex.getConstraintName()::equals)
-                    .findFirst();
-        } else if (ex.getCause() instanceof SQLException) {
-            keyOptional = builder.getExcepMessage().keySet().stream()
-                    .filter(ex.getCause().toString().toLowerCase()::equals)
-                    .findFirst();
-        }
-
-        if (keyOptional.isPresent()) {
-            message.append(localeService.getMessage(builder.getExcepMessage().get(keyOptional.get()), locale));
-        } else {
-            log.error("Unhandled constraint violation", ex);
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
-        }
+    private StringBuilder handleConstraintViolationException(ConstraintViolationException ex, StringBuilder message, Locale locale) {
+        return builder.handleConstraintViolationException(ex, message, locale);
     }
 
     /**
@@ -331,17 +300,22 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
         SQLException sqlException = ex.getSQLException();
         if (sqlException != null) {
             String msgKey = sqlException.getMessage().toLowerCase();
-            msgKey = SPACE_PATTERN.matcher(msgKey).replaceAll(".");
-            msgKey = COLON_PATTERN.matcher(msgKey).replaceAll("");
-            msgKey = OPEN_PAREN_PATTERN.matcher(msgKey).replaceAll(".");
-            msgKey = CLOSE_PAREN_PATTERN.matcher(msgKey).replaceAll("");
-            msgKey = ERROR_VALUE_TOO_LONG_PATTERN.matcher(msgKey)
+            msgKey = CtrlConstants.SPACE_PATTERN.matcher(msgKey).replaceAll(".");
+            msgKey = CtrlConstants.COLON_PATTERN.matcher(msgKey).replaceAll("");
+            msgKey = CtrlConstants.OPEN_PAREN_PATTERN.matcher(msgKey).replaceAll(".");
+            msgKey = CtrlConstants.CLOSE_PAREN_PATTERN.matcher(msgKey).replaceAll("");
+            msgKey = CtrlConstants.ERROR_VALUE_TOO_LONG_PATTERN.matcher(msgKey)
                     .replaceAll("length.must.be.between.0.and.");
 
             message.append(localeService.getMessage(msgKey, locale)).append('\n');
         } else {
             log.error("Unhandled data error", ex);
-            message.append(localeService.getMessage(UNKNOWN_REASON, locale));
+            message.append(localeService.getMessage(CtrlConstants.UNKNOWN_REASON, locale));
         }
+    }
+
+    @Override
+    public Map<String, Class<?>> getEntityMap() {
+        return builder.getEntityMap();
     }
 }

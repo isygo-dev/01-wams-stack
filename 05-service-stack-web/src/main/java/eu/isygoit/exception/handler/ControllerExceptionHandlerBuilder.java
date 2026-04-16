@@ -3,12 +3,14 @@ package eu.isygoit.exception.handler;
 import eu.isygoit.annotation.MsgLocale;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.helper.SpringClassScanner;
+import eu.isygoit.i18n.service.LocaleService;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.env.Environment;
@@ -17,13 +19,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
  * The type Controller exception handler builder.
  */
 @Slf4j
-@Getter
 @Component
 public class ControllerExceptionHandlerBuilder {
 
@@ -35,7 +37,9 @@ public class ControllerExceptionHandlerBuilder {
     private static final String CAN_T_BE_VIOLATED = " can't be violated";
     private static final String FK = "FK:{}";
 
+    @Getter
     private final Map<String, Class<?>> entityMap = new HashMap<>();
+    @Getter
     private final Map<String, String> excepMessage = new HashMap<>();
     private final Map<String, List<String>> messages = new HashMap<>() {
         @Override
@@ -43,13 +47,15 @@ public class ControllerExceptionHandlerBuilder {
             return super.computeIfAbsent((String) key, k -> new ArrayList<>());
         }
     };
-    @Nullable
+
     @Autowired(required = false)
     private EntityManager entityManager;
     @Autowired
     private Environment environment;
     @Autowired
     private SpringClassScanner springClassScanner;
+    @Autowired
+    private LocaleService localeService;
 
     @PostConstruct
     private void generateConstraintMap() {
@@ -216,5 +222,43 @@ public class ControllerExceptionHandlerBuilder {
         }
 
         return translatedMessage.toString();
+    }
+
+    protected StringBuilder handlePSQLException(Throwable throwable, StringBuilder message, Locale locale) {
+        Optional<String> keyOptional = this.excepMessage.keySet().stream()
+                .filter(throwable.getMessage()::contains)
+                .findFirst();
+
+        if (keyOptional.isPresent()) {
+            message.append(localeService.getMessage(this.excepMessage.get(keyOptional.get()), locale));
+        } else {
+            log.error("Unhandled DB error", throwable);
+            message.append(localeService.getMessage(CtrlConstants.UNKNOWN_REASON, locale));
+        }
+
+        return message;
+    }
+
+    protected StringBuilder handleConstraintViolationException(ConstraintViolationException ex, StringBuilder message, Locale locale) {
+        Optional<String> keyOptional = Optional.empty();
+
+        if (ex.getConstraintName() != null) {
+            keyOptional = this.excepMessage.keySet().stream()
+                    .filter(ex.getConstraintName()::equals)
+                    .findFirst();
+        } else if (ex.getCause() instanceof SQLException) {
+            keyOptional = this.excepMessage.keySet().stream()
+                    .filter(ex.getCause().toString().toLowerCase()::equals)
+                    .findFirst();
+        }
+
+        if (keyOptional.isPresent()) {
+            message.append(localeService.getMessage(this.excepMessage.get(keyOptional.get()), locale));
+        } else {
+            log.error("Unhandled constraint violation", ex);
+            message.append(localeService.getMessage(CtrlConstants.UNKNOWN_REASON, locale));
+        }
+
+        return message;
     }
 }
