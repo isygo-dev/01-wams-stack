@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Column;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -30,7 +31,7 @@ public abstract class AuditableCancelableEntity<T> extends CancelableEntity<T> {
     @CreatedDate
     @CassandraType(type = CassandraType.Name.TIMESTAMP)
     @Column(ComSchemaColumnConstantName.C_CREATE_DATE)
-    private Date createDate;
+    private LocalDateTime createDate;
 
     @CreatedBy
     @CassandraType(type = CassandraType.Name.TEXT)
@@ -40,7 +41,7 @@ public abstract class AuditableCancelableEntity<T> extends CancelableEntity<T> {
     @LastModifiedDate
     @CassandraType(type = CassandraType.Name.TIMESTAMP)
     @Column(ComSchemaColumnConstantName.C_UPDATE_DATE)
-    private Date updateDate;
+    private LocalDateTime updateDate;
 
     @LastModifiedBy
     @CassandraType(type = CassandraType.Name.TEXT)

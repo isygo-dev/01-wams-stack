@@ -1,6 +1,7 @@
 package eu.isygoit.model;
 
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -59,14 +60,14 @@ public interface IBoardItem<S> {
      *
      * @return the create date
      */
-    Date getCreateDate();
+    LocalDateTime getCreateDate();
 
     /**
      * Gets update date.
      *
      * @return the update date
      */
-    Date getUpdateDate();
+    LocalDateTime getUpdateDate();
 
     /**
      * Gets image path.

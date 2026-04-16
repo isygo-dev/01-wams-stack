@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -20,8 +21,8 @@ import java.util.Date;
 @SuperBuilder
 public abstract class AuditableCancelableDto<T extends Serializable> extends CancelableDto<T> {
 
-    private Date createDate;
+    private LocalDateTime createDate;
     private String createdBy;
-    private Date updateDate;
+    private LocalDateTime updateDate;
     private String updatedBy;
 }
