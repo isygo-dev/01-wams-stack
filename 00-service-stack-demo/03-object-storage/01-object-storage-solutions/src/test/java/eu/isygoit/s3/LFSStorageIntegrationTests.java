@@ -157,7 +157,7 @@ public class LFSStorageIntegrationTests {
 
         config = LFSConfig.builder()
                 .tenant(tenant)
-                .url("http://" + lakeFSContainer.getHost() + ":" + lakeFSContainer.getMappedPort(8000) + "/api/v1")
+                .url("http://" + lakeFSContainer.getHost() + ":" + lakeFSContainer.getMappedPort(8000) + "/api/v1/v1")
                 .userName(ACCESS_KEY)
                 .password(SECRET_KEY)
                 .s3Config(S3Config.builder()

@@ -23,7 +23,7 @@ import java.util.List;
  * <h3>Example</h3>
  * <pre>{@code
  * @RestController
- * @RequestMapping("/api/hr/forms")
+ * @RequestMapping("/api/v1/hr/forms")
  * public class HrFormController extends AbstractFormMetaDataController {
  *
  *     @Autowired

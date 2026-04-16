@@ -109,8 +109,8 @@ Construire un backend **annotation-driven** puissant qui permet de :
 
 **Endpoints principaux** :
 
-- `GET /api/forms/{viewName}/metadata?mode=create|edit&entityId=...`
-- `POST /api/forms/{viewName}/submit`
+- `GET /api/v1/forms/{viewName}/metadata?mode=create|edit&entityId=...`
+- `POST /api/v1/forms/{viewName}/submit`
 
 **Composants** :
 

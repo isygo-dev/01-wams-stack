@@ -74,7 +74,7 @@ public class OllamaIntegrationTest {
             .withCommand("serve")
             // Persistent volume for models (better cross-platform handling)
             .withFileSystemBind(getOllamaVolumePath(), "/root/.ollama")
-            .waitingFor(Wait.forHttp("/api/tags")
+            .waitingFor(Wait.forHttp("/api/v1/tags")
                     .forStatusCode(200)
                     .withStartupTimeout(Duration.ofMinutes(3)));
 
@@ -105,7 +105,7 @@ public class OllamaIntegrationTest {
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("ollama.api.url", () ->
-                "http://localhost:" + ollama.getFirstMappedPort() + "/api/generate");
+                "http://localhost:" + ollama.getFirstMappedPort() + "/api/v1/generate");
         registry.add("ollama.model", () -> "qwen2.5:3b");
     }
 

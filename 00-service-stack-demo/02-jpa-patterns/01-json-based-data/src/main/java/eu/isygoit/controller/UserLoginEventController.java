@@ -17,7 +17,7 @@ import java.util.UUID;
 @InjectMapper(mapper = UserLoginEventMapper.class, minMapper = UserLoginEventMapper.class)
 @InjectService(UserLoginEventTenantService.class)
 @RestController
-@RequestMapping("/api/userlogin")
+@RequestMapping("/api/v1/userlogin")
 public class UserLoginEventController extends MappedCrudTenantController<UUID, UserLoginEntity,
         UserLoginEventDto, UserLoginEventDto, UserLoginEventTenantService> {
 }

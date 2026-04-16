@@ -54,7 +54,7 @@ class MultiTenancySchemaPostgresIntegrationTests {
             .withInitScript("db/pg_init-multi-db.sql")
             .withCreateContainerCmdModifier(cmd -> cmd.withName(UUID.randomUUID().toString()));
     private static Long tenant1TutorialId;
-    private final String BASE_URL = "/api/tutorials";
+    private final String BASE_URL = "/api/v1/tutorials";
     @Autowired
     private MockMvc mockMvc;
     @Autowired

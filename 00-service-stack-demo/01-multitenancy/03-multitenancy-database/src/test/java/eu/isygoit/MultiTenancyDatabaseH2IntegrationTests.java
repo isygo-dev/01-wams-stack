@@ -40,7 +40,7 @@ class MultiTenancyDatabaseH2IntegrationTests {
 
     private static Long tenant1TutorialId;
 
-    private final String BASE_URL = "/api/tutorials";
+    private final String BASE_URL = "/api/v1/tutorials";
 
     @Autowired
     private MockMvc mockMvc;

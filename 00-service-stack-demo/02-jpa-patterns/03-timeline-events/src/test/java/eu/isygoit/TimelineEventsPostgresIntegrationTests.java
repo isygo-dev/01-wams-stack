@@ -51,7 +51,7 @@ class TimelineEventsPostgresIntegrationTests {
 
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
-    private static final String BASE_URL = "/api/tutorials";
+    private static final String BASE_URL = "/api/v1/tutorials";
     /**
      * The constant postgres.
      */

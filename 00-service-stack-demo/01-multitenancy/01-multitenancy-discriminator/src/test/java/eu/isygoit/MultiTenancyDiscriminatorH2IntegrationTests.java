@@ -39,7 +39,7 @@ class MultiTenancyDiscriminatorH2IntegrationTests {
     private static final String TENANT_2 = "tenant2";
     private static final String INVALID_TENANT = "unknown";
 
-    private static final String BASE_URL = "/api/tutorials";
+    private static final String BASE_URL = "/api/v1/tutorials";
 
     private static Long tenant1TutorialId;
 

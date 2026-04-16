@@ -104,7 +104,7 @@ data. The `UserLoginEventTenantService` orchestrates tenant-aware operations usi
    ```
 
 5. **Access the API**:
-    - The API is available at `_http://localhost:8080/api/userlogin_`.
+    - The API is available at `_http://localhost:8080/api/v1/userlogin_`.
     - Cross-origin requests are allowed from `_http://localhost:8081_`.
 
 ## Usage
@@ -117,7 +117,7 @@ The demo provides a REST API to manage user login events. Each request must incl
 **Create a User Login Event**:
 
 ```bash
-curl -X POST http://localhost:8080/api/userlogin \
+curl -X POST http://localhost:8080/api/v1/userlogin \
 -H "Content-Type: application/json" \
 -H "X-Tenant-ID: tenant1" \
 -d '{
@@ -140,16 +140,16 @@ curl -X POST http://localhost:8080/api/userlogin \
 
 ## API Endpoints
 
-- **POST /api/userlogin**: Create a new user login event (for a tenant).
-- **GET /api/userlogin/{id}**: Retrieve a user login event by ID (for a tenant).
-- **GET /api/userlogin** : Retrieve all user login events (for a tenant).
+- **POST /api/v1/userlogin**: Create a new user login event (for a tenant).
+- **GET /api/v1/userlogin/{id}**: Retrieve a user login event by ID (for a tenant).
+- **GET /api/v1/userlogin** : Retrieve all user login events (for a tenant).
 
 **: List all user login events (for a tenant) (supports pagination).
 
-- **PUT /api/userlogin**: Update an existing user login event (for a tenant).
-- **DELETE /api/userlogin/{id}**: Delete a user login event by ID (for a tenant).
-- **POST /api/userlogin/batch**: Create or update multiple user login events.
-- **DELETE /api/userlogin/batch**: Delete multiple user login events.
+- **PUT /api/v1/userlogin**: Update an existing user login event (for a tenant).
+- **DELETE /api/v1/userlogin/{id}**: Delete a user login event by ID (for a tenant).
+- **POST /api/v1/userlogin/batch**: Create or update multiple user login events.
+- **DELETE /api/v1/userlogin/batch**: Delete multiple user login events.
 
 **For multitenancy mode, All endpoints require a tenant identifier via the `X-Tenant-ID` header.**
 

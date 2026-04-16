@@ -157,21 +157,21 @@ multitenancy-poc/
 
 ### API Endpoints
 
-The `TutorialController` exposes REST endpoints under `/api/tutorials`. Key endpoints include:
+The `TutorialController` exposes REST endpoints under `/api/v1/tutorials`. Key endpoints include:
 
-- **GET /api/tutorials**: Retrieve all tutorials for the current tenant or filter by title (case-insensitive).
+- **GET /api/v1/tutorials**: Retrieve all tutorials for the current tenant or filter by title (case-insensitive).
     - Query Parameter: `title` (optional).
-- **GET /api/tutorials/{id}**: Retrieve a tutorial by ID for the current tenant.
-- **POST /api/tutorials**: Create a new tutorial.
-- **PUT /api/tutorials/{id}**: Update an existing tutorial for the current tenant.
-- **DELETE /api/tutorials/{id}**: Delete a tutorial by ID.
-- **DELETE /api/tutorials**: Delete all tutorials.
-- **GET /api/tutorials/published**: Retrieve all published tutorials for the current tenant.
+- **GET /api/v1/tutorials/{id}**: Retrieve a tutorial by ID for the current tenant.
+- **POST /api/v1/tutorials**: Create a new tutorial.
+- **PUT /api/v1/tutorials/{id}**: Update an existing tutorial for the current tenant.
+- **DELETE /api/v1/tutorials/{id}**: Delete a tutorial by ID.
+- **DELETE /api/v1/tutorials**: Delete all tutorials.
+- **GET /api/v1/tutorials/published**: Retrieve all published tutorials for the current tenant.
 
 **Example Request** (Create a Tutorial):
 
 ```bash
-curl -X POST http://localhost:8081/api/tutorials \
+curl -X POST http://localhost:8081/api/v1/tutorials \
 -H "Content-Type: application/json" \
 -H "X-Tenant-Id: tenant1" \
 -d '{"title":"Sample Tutorial","description":"A sample tutorial","published":true,"tenant":"tenant1"}'

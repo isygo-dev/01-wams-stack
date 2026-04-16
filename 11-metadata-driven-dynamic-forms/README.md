@@ -125,13 +125,13 @@ Provide **three realistic JSON examples**:
 
 ### 1. MetaData Endpoint
 
-- `GET /api/forms/{viewName}/metadata`
+- `GET /api/v1/forms/{viewName}/metadata`
 - Parameters: `viewName`, optional `mode` (`create` | `edit`), optional `entityId`
 - In edit mode: merge existing data with annotation-defined defaults (entity values take precedence)
 
 ### 2. Submit Endpoint
 
-- `POST /api/forms/{viewName}/submit`
+- `POST /api/v1/forms/{viewName}/submit`
 - Accepts form data JSON matching the metadata structure
 - Performs server-side validation (from annotations + Jakarta Validation) and returns field-mapped errors
 

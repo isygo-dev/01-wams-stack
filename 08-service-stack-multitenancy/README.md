@@ -127,7 +127,7 @@ public class MyEntity implements ITenantAssignable {
 Include the tenant identifier in the request header:
 
 ```http
-GET /api/data
+GET /api/v1/data
 X-Tenant-ID: tenant1
 ```
 

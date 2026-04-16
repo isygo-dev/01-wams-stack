@@ -36,7 +36,7 @@ public abstract class LakeFSApiService implements ILakeFSApiService {
     private static final int RETRY_DELAY_MS = 1000;
     private static final int DEFAULT_PRESIGNED_URL_EXPIRY_HOURS = 2;
     private static final String DEFAULT_BRANCH = "main";
-    private static final String API_PATH_PREFIX = "/api/v1";
+    private static final String API_PATH_PREFIX = "/api/v1/v1";
     private static final int CONNECTION_TIMEOUT_MS = 5000;
     private static final int READ_TIMEOUT_MS = 10000;
     private static final int DEFAULT_PAGINATION_LIMIT = 100;

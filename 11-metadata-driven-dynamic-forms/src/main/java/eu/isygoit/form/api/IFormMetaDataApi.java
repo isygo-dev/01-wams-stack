@@ -20,15 +20,15 @@ import java.util.List;
  * <p>
  * Provides three endpoint groups:
  * <ul>
- *   <li>{@code GET  /api/forms/{viewName}/metadata}  — retrieve view metadata</li>
- *   <li>{@code GET  /api/forms}                       — list all registered view names</li>
- *   <li>{@code POST /api/forms/{viewName}/submit}     — submit and validate form data</li>
+ *   <li>{@code GET  /api/v1/forms/{viewName}/metadata}  — retrieve view metadata</li>
+ *   <li>{@code GET  /api/v1/forms}                       — list all registered view names</li>
+ *   <li>{@code POST /api/v1/forms/{viewName}/submit}     — submit and validate form data</li>
  * </ul>
  *
  * @see eu.isygoit.form.controller.AbstractFormMetaDataController
  */
 @Tag(name = "Form Metadata", description = "Dynamic form metadata and submission API")
-@RequestMapping(value = "/api/forms", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/forms", produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IFormMetaDataApi {
 
     /**

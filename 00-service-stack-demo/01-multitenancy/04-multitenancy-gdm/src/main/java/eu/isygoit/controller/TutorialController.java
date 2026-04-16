@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @InjectMapper(mapper = TutorialMapper.class, minMapper = TutorialMapper.class)
 @InjectService(TutorialService.class)
 @RestController
-@RequestMapping("/api/tutorials")
+@RequestMapping("/api/v1/tutorials")
 public class TutorialController extends MappedCrudTenantController<Long, Tutorial,
         TutorialDto, TutorialDto, TutorialService> {
 }
