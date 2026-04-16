@@ -4,6 +4,8 @@ import eu.isygoit.audit.TenantContext;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.TutorialDto;
 import eu.isygoit.mapper.TutorialMapper;
+import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.Tutorial;
 import eu.isygoit.repository.TutorialRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api/v1/tutorials")
@@ -35,6 +39,20 @@ public class TutorialController {
         this.tutorialMapper = tutorialMapper;
     }
 
+    protected void checkAndEnableTenantFilter() {
+        if (ITenantAssignable.class.isAssignableFrom(Tutorial.class)) {
+            String tenantId = TenantContext.getTenantId();
+            if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
+                try {
+                    Session session = entityManager.unwrap(Session.class);
+                    session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
+                } catch (Exception e) {
+                    log.warn("Could not enable 'tenantFilter' for entity {}: {}", Tutorial.class.getSimpleName(), e.getMessage());
+                }
+            }
+        }
+    }
+
     @Operation(summary = "Get all tutorials", description = "Retrieve all tutorials or filter by title (contains, case-insensitive).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Found tutorials"),
@@ -45,11 +63,7 @@ public class TutorialController {
     public ResponseEntity<List<TutorialDto>> getAllTutorials(
             @Parameter(description = "Filter tutorials by title") @RequestParam(required = false) String title) {
         try {
-            String tenantId = TenantContext.getTenantId();
-            if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
-                Session session = entityManager.unwrap(Session.class);
-                session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
-            }
+            checkAndEnableTenantFilter();
 
             var tutorials = (title == null)
                     ? tutorialRepository.findAll()
@@ -71,11 +85,7 @@ public class TutorialController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<TutorialDto> getTutorialById(@PathVariable long id) {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
-            Session session = entityManager.unwrap(Session.class);
-            session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
-        }
+        checkAndEnableTenantFilter();
 
         return tutorialRepository.findOneById(id)
                 .map(tutorialMapper::entityToDto)
@@ -106,11 +116,7 @@ public class TutorialController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<TutorialDto> updateTutorial(@PathVariable long id, @RequestBody TutorialDto TutorialDto) {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
-            Session session = entityManager.unwrap(Session.class);
-            session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
-        }
+        checkAndEnableTenantFilter();
 
         return tutorialRepository.findOneById(id)
                 .map(existing -> {
@@ -161,11 +167,7 @@ public class TutorialController {
     @GetMapping("/published")
     public ResponseEntity<List<TutorialDto>> findByPublished() {
         try {
-            String tenantId = TenantContext.getTenantId();
-            if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
-                Session session = entityManager.unwrap(Session.class);
-                session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
-            }
+            checkAndEnableTenantFilter();
 
             var tutorials = tutorialRepository.findByPublished(true);
             return tutorials.isEmpty()
