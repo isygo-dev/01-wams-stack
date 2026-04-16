@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * The type Min io api service.
  */
 @Slf4j
-public abstract class MinIOApiService implements IMinIOApiService {
+public class MinIOApiService implements IMinIOApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;

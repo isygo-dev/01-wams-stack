@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * The type S 3 bucket api service.
  */
 @Slf4j
-public abstract class S3BucketApiService implements IAWSS3ApiService {
+public class S3BucketApiService implements IAWSS3ApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;

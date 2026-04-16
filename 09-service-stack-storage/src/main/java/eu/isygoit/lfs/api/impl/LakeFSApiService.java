@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * The type Lake fs api service.
  */
 @Slf4j
-public abstract class LakeFSApiService implements ILakeFSApiService {
+public class LakeFSApiService implements ILakeFSApiService {
 
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
