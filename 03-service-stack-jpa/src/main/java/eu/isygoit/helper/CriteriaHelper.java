@@ -26,7 +26,8 @@ import java.util.stream.Stream;
 public final class CriteriaHelper {
 
     private static final Pattern CONDITION_PATTERN = Pattern.compile(
-            "([\\w.]+)\\s*([=<>!~]+)\\s*('[^']*'|\"[^\"]*\"|\\S+)"
+            "([\\w.]+)\\s*(IN|BW|[=<>!~]+)\\s*(\\(.*\\)|'[^']*'|\"[^\"]*\"|\\S+)",
+            Pattern.CASE_INSENSITIVE
     );
 
     private static final Pattern LOGICAL_OP_PATTERN = Pattern.compile("\\s*([&|])\\s*");
@@ -34,7 +35,7 @@ public final class CriteriaHelper {
     // Cache for criteria metadata to avoid repeated reflection
     private static final Map<Class<?>, Map<String, FieldInfo>> CRITERIA_CACHE = new ConcurrentHashMap<>();
 
-    private static final Set<String> SUPPORTED_OPERATORS = Set.of("=", "!=", "~", "!~", "<", "<=", ">", ">=");
+    private static final Set<String> SUPPORTED_OPERATORS = Set.of("=", "!=", "~", "!~", "<", "<=", ">", ">=", "IN", "BW");
 
     // Private constructor to prevent instantiation
     private CriteriaHelper() {
@@ -238,7 +239,7 @@ public final class CriteriaHelper {
      * Enhanced operator parsing with better error handling.
      */
     private static IEnumOperator.Types parseOperator(String operator) {
-        return switch (operator) {
+        return switch (operator.toUpperCase()) {
             case "=" -> IEnumOperator.Types.EQ;
             case "!=" -> IEnumOperator.Types.NE;
             case "~" -> IEnumOperator.Types.LI;
@@ -247,6 +248,8 @@ public final class CriteriaHelper {
             case "<=" -> IEnumOperator.Types.LE;
             case ">" -> IEnumOperator.Types.GT;
             case ">=" -> IEnumOperator.Types.GE;
+            case "IN" -> IEnumOperator.Types.IN;
+            case "BW" -> IEnumOperator.Types.BW;
             default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
         };
     }
@@ -380,8 +383,29 @@ public final class CriteriaHelper {
             case LE -> lessThanOrEqualTo(fieldName, convertedValue);
             case GT -> greaterThan(fieldName, convertedValue);
             case GE -> greaterThanOrEqualTo(fieldName, convertedValue);
+            case IN -> in(fieldName, (Collection<?>) convertedValue);
+            case BW -> between(fieldName, (List<?>) convertedValue);
             default -> throw new WrongCriteriaFilterException("Unsupported operator: " + criterion.getOperator());
         };
+    }
+
+    /**
+     * In specification.
+     */
+    public static <T extends IIdAssignable> Specification<T> in(String fieldName, Collection<?> values) {
+        return (root, query, criteriaBuilder) -> root.get(fieldName).in(values);
+    }
+
+    /**
+     * Between specification.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends IIdAssignable> Specification<T> between(String fieldName, List<?> values) {
+        if (values == null || values.size() != 2) {
+            throw new IllegalArgumentException("BETWEEN operator requires exactly two values");
+        }
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.between(root.get(fieldName), (Comparable<Object>) values.get(0), (Comparable<Object>) values.get(1));
     }
 
     /**
@@ -392,6 +416,22 @@ public final class CriteriaHelper {
             return null;
         }
 
+        if (value.startsWith("(") && value.endsWith(")")) {
+            String content = value.substring(1, value.length() - 1).trim();
+            String[] parts = content.split("\\s*,\\s*");
+            return Arrays.stream(parts)
+                    .map(CriteriaHelper::normalizeValue)
+                    .map(part -> convertSingleValue(part, fieldType))
+                    .toList();
+        }
+
+        return convertSingleValue(value, fieldType);
+    }
+
+    /**
+     * Converts a single string value to the appropriate type.
+     */
+    private static Object convertSingleValue(String value, Class<?> fieldType) {
         try {
             return switch (fieldType.getSimpleName()) {
                 case "String" -> value;
@@ -400,7 +440,7 @@ public final class CriteriaHelper {
                 case "Double", "double" -> Double.valueOf(value);
                 case "Float", "float" -> Float.valueOf(value);
                 case "Boolean", "boolean" -> Boolean.valueOf(value);
-                default -> value; // Fallback to string
+                default -> value;
             };
         } catch (NumberFormatException e) {
             log.warn("Failed to convert value '{}' to type {}, using string representation", value, fieldType.getSimpleName());

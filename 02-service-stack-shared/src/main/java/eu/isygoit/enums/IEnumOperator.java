@@ -45,9 +45,13 @@ public interface IEnumOperator {
          */
         LI(" ~ ", "LIKE"),
         /**
+         * In types.
+         */
+        IN(" IN ", "IN"),
+        /**
          * Bw types.
          */
-        BW(" <> ", "BETWEEN"),
+        BW(" BW ", "BETWEEN"),
         /**
          * The Nl.
          */
