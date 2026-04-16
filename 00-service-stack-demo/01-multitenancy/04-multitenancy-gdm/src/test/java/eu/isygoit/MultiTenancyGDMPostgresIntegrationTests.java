@@ -191,8 +191,19 @@ class MultiTenancyGDMPostgresIntegrationTests {
                         .param("page", "0")
                         .param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))));
+                // Check the wrapper structure
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))                    // adjust based on your test data
+                .andExpect(jsonPath("$.content[*].tenant", everyItem(is(TENANT_1))))
+
+                // Pagination metadata
+                .andExpect(jsonPath("$.totalElements").value(greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$.totalPages").isNumber())
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageSize").value(2))
+
+                // Optional: check that all items belong to the correct tenant
+                .andExpect(jsonPath("$.content[?(@.tenant != '" + TENANT_1 + "')]").doesNotExist());
     }
 
     @Test
@@ -245,6 +256,6 @@ class MultiTenancyGDMPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, SUPER_TENANT))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", hasItems(TENANT_1, TENANT_2)));
+                .andExpect(jsonPath("$.content[*].tenant", hasItems(TENANT_1, TENANT_2)));
     }
 }

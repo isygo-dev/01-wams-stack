@@ -44,7 +44,7 @@ class JwtKmsAuthFilterTest {
      */
     @Test
     void testAddNotFilterHostAndShouldNotFilterHost() {
-        String host = "example.com";
+        String host = "example2.com";
         String value = "api";
 
         assertFalse(JwtKmsAuthFilter.shouldNotFilterHost(host),

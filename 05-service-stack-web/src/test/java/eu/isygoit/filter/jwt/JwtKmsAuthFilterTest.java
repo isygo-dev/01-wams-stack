@@ -71,7 +71,7 @@ class JwtKmsAuthFilterTest {
     @Test
     @DisplayName("addNotFilterHost and shouldNotFilterHost should manage host list correctly")
     void testHostFiltering() {
-        String host = "example.com";
+        String host = "example1.com";
         JwtKmsAuthFilter.addNotFilterHost(host, "some-value");
         assertTrue(JwtKmsAuthFilter.shouldNotFilterHost(host));
         assertFalse(JwtKmsAuthFilter.shouldNotFilterHost("other.com"));
