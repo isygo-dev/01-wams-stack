@@ -142,4 +142,15 @@ public class TutorialController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @Operation(summary = "Bulk create tutorials")
+    @PostMapping("/batch")
+    public ResponseEntity<List<TutorialDto>> createTutorials(@Valid @RequestBody List<TutorialDto> dtos) {
+        try {
+            var saved = tutorialRepository.saveAll(tutorialMapper.listDtoToEntity(dtos));
+            return ResponseEntity.status(HttpStatus.OK).body(tutorialMapper.listEntityToDto(saved));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

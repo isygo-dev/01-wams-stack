@@ -7,14 +7,14 @@
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-    <!-- Spring Boot 3.5.13 — aligned with stack; all demos use same version.
-         FIXED: originals used 3.1.12 or 3.4.4 mixed. All unified to 3.5.13. -->
+
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <groupId>eu.isygo-it.services</groupId>
+        <artifactId>service-stack-parent</artifactId>
+        <version>WS-1.0.260408-T1636</version>
         <relativePath/>
     </parent>
+
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>poc-multitenancy-schema</artifactId>
 
@@ -24,7 +24,6 @@
     <packaging>jar</packaging>
 
     <properties>
-
         <java.version>17</java.version>
         <stack.version>WS-1.0.260408-T1636</stack.version>
         <lombok.version>1.18.38</lombok.version>
@@ -44,7 +43,6 @@
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
-            <version>${stack.version}</version>
         </dependency>
 
         <!-- Spring Boot starters — versions from Boot 3.5.13 BOM -->
@@ -87,7 +85,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -95,7 +92,6 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
         </dependency>
 
         <!-- SpringDoc WebMVC ONLY.
@@ -104,7 +100,6 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- Test — Boot manages JUnit 5.12.x, Mockito 5.17.x, Testcontainers 1.21.x -->
@@ -136,7 +131,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

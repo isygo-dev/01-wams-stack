@@ -6,6 +6,7 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -35,7 +36,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param object         the object
      * @return the response entity
      */
-    ResponseEntity<F> performCreate(ContextRequestDto requestContext, F object);
+    ResponseEntity<F> performCreate(ContextRequestDto requestContext, @Valid F object);
 
     /**
      * Sub create response entity.
@@ -44,7 +45,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> performCreate(ContextRequestDto requestContext, List<F> objects);
+    ResponseEntity<List<F>> performCreate(ContextRequestDto requestContext, @Valid List<F> objects);
 
     /**
      * Sub update response entity.
@@ -54,7 +55,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param object         the object
      * @return the response entity
      */
-    ResponseEntity<F> performUpdate(ContextRequestDto requestContext, I id, F object);
+    ResponseEntity<F> performUpdate(ContextRequestDto requestContext, I id, @Valid F object);
 
     /**
      * Sub update response entity.
@@ -63,7 +64,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> performUpdate(ContextRequestDto requestContext, List<F> objects);
+    ResponseEntity<List<F>> performUpdate(ContextRequestDto requestContext, @Valid List<F> objects);
 
     /**
      * Sub delete response entity.
@@ -81,7 +82,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param objects        the objects
      * @return the response entity
      */
-    ResponseEntity<Void> performDelete(ContextRequestDto requestContext, List<F> objects);
+    ResponseEntity<Void> performDelete(ContextRequestDto requestContext, @Valid List<F> objects);
 
     /**
      * Sub find all full response entity.

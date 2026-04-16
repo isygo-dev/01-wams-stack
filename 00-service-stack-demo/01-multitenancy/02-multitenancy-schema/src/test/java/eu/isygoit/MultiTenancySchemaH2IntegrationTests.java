@@ -14,6 +14,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -150,5 +152,31 @@ class MultiTenancySchemaH2IntegrationTests {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(8)
+    void shouldFilterByTitle() throws Exception {
+        mockMvc.perform(get(BASE_URL + "?title=Tutorial")
+                        .header(TENANT_HEADER, TENANT_2))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Tenant2 Tutorial"));
+    }
+
+    @Test
+    @Order(9)
+    void shouldCreateMultipleTutorialsForTenant1() throws Exception {
+        List<TutorialDto> tutorials = List.of(
+                buildDto("Bulk 1"),
+                buildDto("Bulk 2"),
+                buildDto("Bulk 3")
+        );
+
+        mockMvc.perform(post(BASE_URL + "/batch")
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonHelper.toJson(tutorials)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
     }
 }

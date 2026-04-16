@@ -56,7 +56,7 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
     private ControllerExceptionHandlerBuilder builder;
 
     @Setter
-    @Autowired
+    @Autowired(required = false)
     private LocaleService localeService;
 
     @PostConstruct

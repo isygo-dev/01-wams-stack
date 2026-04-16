@@ -54,7 +54,7 @@ public class ControllerExceptionHandlerBuilder {
     private Environment environment;
     @Autowired
     private SpringClassScanner springClassScanner;
-    @Autowired
+    @Autowired(required = false)
     private LocaleService localeService;
 
     @PostConstruct
