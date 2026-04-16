@@ -1,6 +1,7 @@
 package eu.isygoit.discriminator;
 
 import eu.isygoit.audit.TenantContext;
+import eu.isygoit.constants.TenantConstants;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.FilterChain;
@@ -35,10 +36,12 @@ public class TenantFilterActivationFilter extends OncePerRequestFilter {
         // Get current tenant from context
         String tenantId = TenantContext.getTenantId();
 
-        // Activate Hibernate filter
-        Session session = entityManager.unwrap(Session.class);
-        Filter filter = session.enableFilter("tenantFilter");
-        filter.setParameter("tenantId", tenantId);
+        if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
+            // Activate Hibernate filter
+            Session session = entityManager.unwrap(Session.class);
+            Filter filter = session.enableFilter("tenantFilter");
+            filter.setParameter("tenantId", tenantId);
+        }
 
         filterChain.doFilter(request, response);
     }

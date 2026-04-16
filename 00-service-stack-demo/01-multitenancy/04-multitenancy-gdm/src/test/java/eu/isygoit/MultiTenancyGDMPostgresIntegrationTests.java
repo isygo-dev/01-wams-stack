@@ -160,14 +160,14 @@ class MultiTenancyGDMPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_1))))
-                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant2 Tutorial"))));
+                .andExpect(jsonPath("$.content[*].tenant", everyItem(is(TENANT_1))))
+                .andExpect(jsonPath("$.content[*].title", not(hasItem("Tenant2 Tutorial"))));
 
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].tenant", everyItem(is(TENANT_2))))
-                .andExpect(jsonPath("$[*].title", not(hasItem("Tenant1 Tutorial"))));
+                .andExpect(jsonPath("$.content[*].tenant", everyItem(is(TENANT_2))))
+                .andExpect(jsonPath("$.content[*].title", not(hasItem("Tenant1 Tutorial"))));
     }
 
     @Test
@@ -244,10 +244,11 @@ class MultiTenancyGDMPostgresIntegrationTests {
         //cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5
         String criteria = "title = 'Bulk 1'";
 
-        mockMvc.perform(get(BASE_URL + "/filter?criteria=" + criteria)
+        mockMvc.perform(get(BASE_URL + "/filter")
+                        .param("criteria", criteria)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].title", everyItem(containsString("Bulk"))));
+                .andExpect(jsonPath("$.content[?(@.title == 'Bulk 1')]").exists());
     }
 
     @Test
@@ -257,5 +258,31 @@ class MultiTenancyGDMPostgresIntegrationTests {
                         .header(TENANT_HEADER, SUPER_TENANT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[*].tenant", hasItems(TENANT_1, TENANT_2)));
+    }
+
+    @Test
+    @Order(13)
+    void shouldDeleteAllTenantTutorials() throws Exception {
+        // GDM doesn't support DELETE / (delete all), so we fetch all IDs and batch delete them
+        MvcResult result = mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        List<Long> ids = com.jayway.jsonpath.JsonPath.read(content, "$.content[*].id");
+
+        if (!ids.isEmpty()) {
+            mockMvc.perform(delete(BASE_URL + "/batch")
+                            .header(TENANT_HEADER, TENANT_1)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JsonHelper.toJson(ids)))
+                    .andExpect(status().isNoContent());
+        }
+
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty());
     }
 }

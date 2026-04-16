@@ -1,6 +1,7 @@
 package eu.isygoit.service;
 
 import eu.isygoit.common.ITenantValidator;
+import eu.isygoit.constants.TenantConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -12,7 +13,7 @@ import java.util.Set;
 public class TenantValidator implements ITenantValidator {
 
     // You can later replace this with a dynamic source like DB or YAML config
-    private final Set<String> validTenants = Set.of("tenant1", "tenant2", "public");
+    private final Set<String> validTenants = Set.of("tenant1", "tenant2", TenantConstants.SUPER_TENANT_NAME);
 
     @Override
     public boolean isValid(String tenantId) {

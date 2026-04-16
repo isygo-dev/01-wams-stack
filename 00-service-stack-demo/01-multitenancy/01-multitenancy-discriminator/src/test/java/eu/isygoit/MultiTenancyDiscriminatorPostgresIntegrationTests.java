@@ -1,6 +1,7 @@
 package eu.isygoit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.TutorialDto;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.utils.ITenantService;
@@ -19,6 +20,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
@@ -44,6 +46,7 @@ class MultiTenancyDiscriminatorPostgresIntegrationTests {
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private static final String TENANT_1 = "tenant1";
     private static final String TENANT_2 = "tenant2";
+    private static final String SUPER_TENANT = TenantConstants.SUPER_TENANT_NAME;
     private static final String INVALID_TENANT = "unknown";
 
     private static final String BASE_URL = "/api/v1/tutorials";
@@ -210,6 +213,16 @@ class MultiTenancyDiscriminatorPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
+
+        // Re-create it for subsequent tests that expect it
+        var dto = buildDto("Tenant1 Tutorial");
+        MvcResult result = mockMvc.perform(post(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonHelper.toJson(dto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        tenant1TutorialId = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class).getId();
     }
 
     @Test
@@ -225,5 +238,64 @@ class MultiTenancyDiscriminatorPostgresIntegrationTests {
         mockMvc.perform(get(BASE_URL)
                         .header(TENANT_HEADER, INVALID_TENANT))
                 .andExpect(status().isBadRequest()); // Or 403 if your logic throws custom exception
+    }
+
+    @Test
+    @Order(12)
+    void shouldFilterByTitle() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                        .param("title", "Tutorial")
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$[0].title", containsString("Tutorial")));
+    }
+
+    @Test
+    @Order(13)
+    void superTenantShouldAccessAllData() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, SUPER_TENANT))
+                .andExpect(status().isOk())
+                // In DISCRIMINATOR mode, Super Tenant should see all tenants
+                .andExpect(jsonPath("$[*].tenant", hasItems(TENANT_1, TENANT_2)));
+    }
+
+    @Test
+    @Order(14)
+    void shouldCreateMultipleTutorialsForTenant1() throws Exception {
+        List<TutorialDto> tutorials = List.of(
+                buildDto("Bulk 1"),
+                buildDto("Bulk 2"),
+                buildDto("Bulk 3")
+        );
+
+        mockMvc.perform(post(BASE_URL + "/batch")
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonHelper.toJson(tutorials)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    @Test
+    @Order(15)
+    void shouldGetOnlyPublishedTutorials() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/published")
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].published", everyItem(is(true))));
+    }
+
+    @Test
+    @Order(16)
+    void shouldDeleteAllTenantTutorials() throws Exception {
+        mockMvc.perform(delete(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
     }
 }

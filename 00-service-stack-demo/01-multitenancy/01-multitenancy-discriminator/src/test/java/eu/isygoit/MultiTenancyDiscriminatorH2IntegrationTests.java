@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -186,6 +187,16 @@ class MultiTenancyDiscriminatorH2IntegrationTests {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
+
+        // Re-create it for subsequent tests that expect it
+        var dto = buildDto("Tenant1 Tutorial");
+        MvcResult result = mockMvc.perform(post(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonHelper.toJson(dto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        tenant1TutorialId = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class).getId();
     }
 
     @Test
@@ -206,7 +217,8 @@ class MultiTenancyDiscriminatorH2IntegrationTests {
     @Test
     @Order(12)
     void shouldFilterByTitle() throws Exception {
-        mockMvc.perform(get(BASE_URL + "?title=Tutorial")
+        mockMvc.perform(get(BASE_URL)
+                        .param("title", "Tutorial")
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(1))))
@@ -215,6 +227,16 @@ class MultiTenancyDiscriminatorH2IntegrationTests {
 
     @Test
     @Order(13)
+    void superTenantShouldAccessAllData() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, SUPER_TENANT))
+                .andExpect(status().isOk())
+                // In DISCRIMINATOR mode, Super Tenant should see all tenants
+                .andExpect(jsonPath("$[*].tenant", hasItems(TENANT_1, TENANT_2)));
+    }
+
+    @Test
+    @Order(14)
     void shouldCreateMultipleTutorialsForTenant1() throws Exception {
         List<TutorialDto> tutorials = List.of(
                 buildDto("Bulk 1"),
@@ -228,5 +250,26 @@ class MultiTenancyDiscriminatorH2IntegrationTests {
                         .content(JsonHelper.toJson(tutorials)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    @Test
+    @Order(15)
+    void shouldGetOnlyPublishedTutorials() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/published")
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].published", everyItem(is(true))));
+    }
+
+    @Test
+    @Order(16)
+    void shouldDeleteAllTenantTutorials() throws Exception {
+        mockMvc.perform(delete(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
     }
 }

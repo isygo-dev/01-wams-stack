@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication(
+        scanBasePackages = "eu.isygoit",
         exclude = {
                 org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
                 org.apache.camel.component.servlet.springboot.ServletMappingAutoConfiguration.class

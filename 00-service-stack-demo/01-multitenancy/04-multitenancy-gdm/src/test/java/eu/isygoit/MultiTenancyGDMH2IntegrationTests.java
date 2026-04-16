@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -208,7 +209,8 @@ class MultiTenancyGDMH2IntegrationTests {
         //cr1 = val1, OR cr2 != val2, AND cr3 > val3, OR cr4 >= val4, AND cr5 ~ val5
         String criteria = "title = 'Bulk 1'";
 
-        mockMvc.perform(get(BASE_URL + "/filter?criteria=" + criteria)
+        mockMvc.perform(get(BASE_URL + "/filter")
+                        .param("criteria", criteria)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[?(@.title == 'Bulk 1')]").exists());
@@ -221,5 +223,31 @@ class MultiTenancyGDMH2IntegrationTests {
                         .header(TENANT_HEADER, SUPER_TENANT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[*].tenant", hasItems(TENANT_1, TENANT_2)));
+    }
+
+    @Test
+    @Order(13)
+    void shouldDeleteAllTenantTutorials() throws Exception {
+        // GDM doesn't support DELETE / (delete all), so we fetch all IDs and batch delete them
+        MvcResult result = mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        List<Long> ids = com.jayway.jsonpath.JsonPath.read(content, "$.content[*].id");
+
+        if (!ids.isEmpty()) {
+            mockMvc.perform(delete(BASE_URL + "/batch")
+                            .header(TENANT_HEADER, TENANT_1)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JsonHelper.toJson(ids)))
+                    .andExpect(status().isNoContent());
+        }
+
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty());
     }
 }

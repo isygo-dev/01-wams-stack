@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -185,12 +185,23 @@ class MultiTenancyDatabaseH2IntegrationTests {
         mockMvc.perform(get(BASE_URL + "/" + tenant1TutorialId)
                         .header(TENANT_HEADER, TENANT_1))
                 .andExpect(status().isNotFound());
+
+        // Re-create it for subsequent tests
+        var dto = buildDto("Tenant1 Tutorial");
+        MvcResult result = mockMvc.perform(post(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonHelper.toJson(dto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        tenant1TutorialId = objectMapper.readValue(result.getResponse().getContentAsString(), TutorialDto.class).getId();
     }
 
     @Test
     @Order(8)
     void shouldFilterByTitle() throws Exception {
-        mockMvc.perform(get(BASE_URL + "?title=Tutorial")
+        mockMvc.perform(get(BASE_URL)
+                        .param("title", "Tutorial")
                         .header(TENANT_HEADER, TENANT_2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Tenant2 Tutorial"));
@@ -198,6 +209,15 @@ class MultiTenancyDatabaseH2IntegrationTests {
 
     @Test
     @Order(9)
+    void shouldGetOnlyPublishedTutorials() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/published")
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].published", everyItem(is(true))));
+    }
+
+    @Test
+    @Order(10)
     void shouldCreateMultipleTutorialsForTenant1() throws Exception {
         List<TutorialDto> tutorials = List.of(
                 buildDto("Bulk 1"),
@@ -211,5 +231,17 @@ class MultiTenancyDatabaseH2IntegrationTests {
                         .content(JsonHelper.toJson(tutorials)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    @Test
+    @Order(11)
+    void shouldDeleteAllTenantTutorials() throws Exception {
+        mockMvc.perform(delete(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(BASE_URL)
+                        .header(TENANT_HEADER, TENANT_1))
+                .andExpect(status().isNoContent());
     }
 }
