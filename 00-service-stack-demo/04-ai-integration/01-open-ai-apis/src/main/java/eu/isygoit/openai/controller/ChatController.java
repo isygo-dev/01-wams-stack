@@ -5,6 +5,14 @@ import eu.isygoit.openai.dto.GeminiResponse;
 import eu.isygoit.openai.exception.GeminiApiException;
 import eu.isygoit.openai.service.GeminiApiService;
 import eu.isygoit.openai.service.OllamaApiService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/chat")
 @Slf4j
+@Tag(name = "Chat Controller", description = "Endpoints for AI-powered chat and analysis using Gemini and Ollama")
+@SecurityRequirement(name = "BearerAuth")
 public class ChatController {
 
     private final GeminiApiService geminiApiService;
@@ -30,11 +40,28 @@ public class ChatController {
         this.ollamaApiService = ollamaApiService;
     }
 
+    @Operation(summary = "Generate content using Gemini AI",
+            description = "Sends a message to Gemini AI and returns the generated content")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully generated content",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GeminiResponse.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid input message",
+                    content = @Content),
+            @ApiResponse(responseCode = "429",
+                    description = "Rate limit exceeded",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
     @GetMapping(value = "/ai/gemini/generate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> geminiGenerateContent(
-            @RequestParam String message,
-            @RequestParam(required = false) Double temperature,
-            @RequestParam(required = false) Integer maxTokens) {
+            @Parameter(description = "Message to send to AI", required = true) @RequestParam String message,
+            @Parameter(description = "Sampling temperature") @RequestParam(required = false) Double temperature,
+            @Parameter(description = "Maximum number of tokens to generate") @RequestParam(required = false) Integer maxTokens) {
 
         try {
             GeminiResponse response = geminiApiService.generateContent(message);
@@ -54,11 +81,28 @@ public class ChatController {
         }
     }
 
+    @Operation(summary = "Generate content using Ollama AI",
+            description = "Sends a message to Ollama AI and returns the generated content")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully generated content",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GeminiResponse.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid input message",
+                    content = @Content),
+            @ApiResponse(responseCode = "429",
+                    description = "Rate limit exceeded",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
     @GetMapping(value = "/ai/ollama/generate", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> ollamaGenerateContent(
-            @RequestParam String message,
-            @RequestParam(required = false) Double temperature,
-            @RequestParam(required = false) Integer maxTokens) {
+            @Parameter(description = "Message to send to AI", required = true) @RequestParam String message,
+            @Parameter(description = "Sampling temperature") @RequestParam(required = false) Double temperature,
+            @Parameter(description = "Maximum number of tokens to generate") @RequestParam(required = false) Integer maxTokens) {
 
         try {
             String generatedText = ollamaApiService.generateContent(message, temperature, maxTokens);
@@ -79,11 +123,28 @@ public class ChatController {
         }
     }
 
+    @Operation(summary = "Analyze a bill using Ollama AI",
+            description = "Uploads a PDF bill and returns structured information extracted by Ollama AI")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully analyzed bill",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GeminiResponse.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid file or parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "429",
+                    description = "Rate limit exceeded",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
     @PostMapping(value = "/ai/ollama/analyze-bill", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> analyzeBill(
-            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-            @RequestParam(required = false) Double temperature,
-            @RequestParam(required = false) Integer maxTokens) {
+            @Parameter(description = "PDF bill file to analyze", required = true) @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Parameter(description = "Sampling temperature") @RequestParam(required = false) Double temperature,
+            @Parameter(description = "Maximum number of tokens to generate") @RequestParam(required = false) Integer maxTokens) {
 
         try {
             if (file == null || file.isEmpty()) {
@@ -112,11 +173,28 @@ public class ChatController {
         }
     }
 
+    @Operation(summary = "Analyze a CV using Ollama AI",
+            description = "Uploads a PDF CV and returns structured information extracted by Ollama AI")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully analyzed CV",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GeminiResponse.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid file or parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "429",
+                    description = "Rate limit exceeded",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
     @PostMapping(value = "/ai/ollama/analyze-cv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeminiResponse> analyzeCV(
-            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-            @RequestParam(required = false) Double temperature,
-            @RequestParam(required = false) Integer maxTokens) {
+            @Parameter(description = "PDF CV file to analyze", required = true) @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Parameter(description = "Sampling temperature") @RequestParam(required = false) Double temperature,
+            @Parameter(description = "Maximum number of tokens to generate") @RequestParam(required = false) Integer maxTokens) {
 
         try {
             if (file == null || file.isEmpty()) {

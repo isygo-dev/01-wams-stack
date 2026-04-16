@@ -30,13 +30,25 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
      * @param fileId         the file id
      * @return the response entity
      */
-    @Operation(summary = "Delete additional file for an object Api",
+    @Operation(summary = "Delete additional file for an object",
             description = "Delete additional file for an object")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
+                    description = "File successfully deleted",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                            schema = @Schema(implementation = Boolean.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "File or object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @DeleteMapping(path = "/multi-files")
     ResponseEntity<Boolean> deleteAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,

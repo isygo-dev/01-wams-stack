@@ -49,12 +49,18 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
             @ApiResponse(responseCode = "200",
                     description = "Successfully retrieved objects",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdAssignableDto.class))}),
+                            schema = @Schema(implementation = PaginatedResponseDto.class))}),
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "400",
                     description = "Invalid pagination parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @GetMapping(path = "")
@@ -80,12 +86,18 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
             @ApiResponse(responseCode = "200",
                     description = "Successfully retrieved objects",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdAssignableDto.class))}),
+                            schema = @Schema(implementation = PaginatedResponseDto.class))}),
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "400",
                     description = "Invalid pagination parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @GetMapping(path = "/full")
@@ -114,8 +126,14 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @GetMapping(path = "/{id}")
@@ -140,6 +158,12 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                             schema = @Schema(implementation = Long.class))}),
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @GetMapping(path = "/count")
@@ -162,12 +186,18 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
             @ApiResponse(responseCode = "200",
                     description = "Successfully retrieved filtered objects",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdAssignableDto.class))}),
+                            schema = @Schema(implementation = PaginatedResponseDto.class))}),
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "400",
                     description = "Invalid filter criteria or pagination parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @GetMapping(path = "/filter")
@@ -195,6 +225,12 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                             schema = @Schema(implementation = Map.class))}),
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @GetMapping(path = "/filter/criteria")

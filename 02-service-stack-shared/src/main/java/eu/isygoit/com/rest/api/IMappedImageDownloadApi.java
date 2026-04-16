@@ -40,9 +40,21 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
             description = "Download the image by linked object identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Resource.class))})
+                    description = "Image successfully downloaded",
+                    content = {@Content(mediaType = "application/octet-stream",
+                            schema = @Schema(implementation = Resource.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Image or object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @GetMapping(path = "/image/download/{id}")
     ResponseEntity<Resource> downloadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,

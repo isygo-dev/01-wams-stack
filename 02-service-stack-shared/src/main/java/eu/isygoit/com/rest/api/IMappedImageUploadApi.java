@@ -40,9 +40,21 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
             description = "Create a new object and upload linked image file")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
+                    description = "Object successfully created with image",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdAssignableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid object data or file",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
@@ -62,9 +74,24 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
             description = "Upload a new image file and update the linked object")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
+                    description = "Object and image successfully updated",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdAssignableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid object data or file",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @PutMapping(path = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
@@ -84,9 +111,24 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
             description = "Upload a new image file and link it to an object with object identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
+                    description = "Image successfully uploaded",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IdAssignableDto.class))})
+                            schema = @Schema(implementation = IdAssignableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid file",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @PutMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,

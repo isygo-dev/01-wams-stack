@@ -7,6 +7,7 @@ import eu.isygoit.dto.UserLoginEventDto;
 import eu.isygoit.mapper.UserLoginEventMapper;
 import eu.isygoit.model.OrderPlacedEntity;
 import eu.isygoit.service.OrderPlacedEventTenantService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @InjectService(OrderPlacedEventTenantService.class)
 @RestController
 @RequestMapping("/api/v1/orderplaced")
+@Tag(name = "Order Placed Event Management", description = "Endpoints for managing order placed events")
 public class OrderPlacedEventController extends MappedCrudTenantController<UUID, OrderPlacedEntity,
         UserLoginEventDto, UserLoginEventDto, OrderPlacedEventTenantService> {
 }

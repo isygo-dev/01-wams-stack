@@ -35,13 +35,25 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
      * @param version        the version
      * @return the response entity
      */
-    @Operation(summary = "Download a file by object id and version Api",
+    @Operation(summary = "Download a file by object id and version",
             description = "Download a file by object id and version")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Resource.class))})
+                    description = "File successfully downloaded",
+                    content = {@Content(mediaType = "application/octet-stream",
+                            schema = @Schema(implementation = Resource.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "File or object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @GetMapping(path = "/file/download/{id}")
     ResponseEntity<Resource> downloadFile(

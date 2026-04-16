@@ -32,13 +32,25 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
      * @param version        the version
      * @return the response entity
      */
-    @Operation(summary = "download Api",
-            description = "download")
+    @Operation(summary = "Download a multi-file by object id and file id",
+            description = "Download a multi-file by object id and file id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                    description = "File successfully downloaded",
+                    content = {@Content(mediaType = "application/octet-stream",
+                            schema = @Schema(implementation = Resource.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "File or object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @GetMapping(path = "/multi-files/download")
     ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,

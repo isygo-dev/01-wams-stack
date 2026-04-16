@@ -44,11 +44,17 @@ public interface IMappedCrudDeleteApi<I> {
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "Object not found",
                     content = @Content),
             @ApiResponse(responseCode = "400",
                     description = "Invalid identifier format",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @DeleteMapping(path = "/{id}")
@@ -74,11 +80,17 @@ public interface IMappedCrudDeleteApi<I> {
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "400",
                     description = "Invalid identifiers or empty list",
                     content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "One or more objects not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @DeleteMapping(path = "/batch")

@@ -35,13 +35,28 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
      * @param files          the files
      * @return the response entity
      */
-    @Operation(summary = "Upload additional files for an object Api",
+    @Operation(summary = "Upload additional files for an object",
             description = "Upload additional files for an object")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
+                    description = "Files successfully uploaded",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                            schema = @Schema(implementation = LinkedFileMinDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid files",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<List<L>> uploadAdditionalFiles(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
@@ -57,13 +72,28 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
      * @param file           the file
      * @return the response entity
      */
-    @Operation(summary = "Upload additional file for an object Api",
+    @Operation(summary = "Upload additional file for an object",
             description = "Upload additional file for an object")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Api executed successfully",
+                    description = "File successfully uploaded",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))})
+                            schema = @Schema(implementation = LinkedFileMinDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid file",
+                    content = @Content),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<List<L>> uploadAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,

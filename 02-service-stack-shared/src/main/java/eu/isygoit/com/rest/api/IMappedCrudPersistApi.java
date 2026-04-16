@@ -50,8 +50,14 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "409",
                     description = "Conflict - Object already exists",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @PostMapping(path = "", consumes = "application/json", produces = "application/json")
@@ -81,8 +87,14 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "409",
                     description = "Conflict - One or more objects already exist",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @PostMapping(path = "/batch", consumes = "application/json", produces = "application/json")
@@ -113,8 +125,14 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
                     content = @Content)
     })
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")

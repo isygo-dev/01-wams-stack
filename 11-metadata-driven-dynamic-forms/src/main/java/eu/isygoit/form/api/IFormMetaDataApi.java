@@ -48,6 +48,8 @@ public interface IFormMetaDataApi {
                     @ApiResponse(responseCode = "200", description = "Metadata resolved successfully",
                             content = @Content(schema = @Schema(implementation = ViewMetaData.class))),
                     @ApiResponse(responseCode = "400", description = "Invalid view name or version"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
                     @ApiResponse(responseCode = "404", description = "View not registered"),
                     @ApiResponse(responseCode = "500", description = "Metadata generation failed")
             }
@@ -76,7 +78,10 @@ public interface IFormMetaDataApi {
             summary = "List registered views",
             description = "Returns the names of all form views registered in this service.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "View names returned")
+                    @ApiResponse(responseCode = "200", description = "View names returned"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             }
     )
     @GetMapping
@@ -99,6 +104,8 @@ public interface IFormMetaDataApi {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Form submitted successfully"),
                     @ApiResponse(responseCode = "400", description = "Validation errors — see fieldErrors in response body"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
                     @ApiResponse(responseCode = "404", description = "View not registered"),
                     @ApiResponse(responseCode = "500", description = "Server error during submission")
             }
@@ -122,7 +129,10 @@ public interface IFormMetaDataApi {
             description = "Forces re-generation of metadata on next access for the given view.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Cache evicted"),
-                    @ApiResponse(responseCode = "404", description = "View not registered")
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+                    @ApiResponse(responseCode = "404", description = "View not registered"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             }
     )
     @DeleteMapping("/{viewName}/cache")
