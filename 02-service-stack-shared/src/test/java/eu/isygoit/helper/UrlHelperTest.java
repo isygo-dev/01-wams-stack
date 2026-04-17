@@ -16,6 +16,15 @@ import static org.mockito.Mockito.when;
 @DisplayName("UrlHelper Tests")
 class UrlHelperTest {
 
+    @Test
+    @DisplayName("isNullOrEmpty should work correctly")
+    void testIsNullOrEmpty() {
+        assertTrue(UrlHelper.isNullOrEmpty(null));
+        assertTrue(UrlHelper.isNullOrEmpty(""));
+        assertTrue(UrlHelper.isNullOrEmpty("  "));
+        assertFalse(UrlHelper.isNullOrEmpty("abc"));
+    }
+
     @Nested
     @DisplayName("Encoding/Decoding Tests")
     class EncodingTests {
@@ -136,14 +145,5 @@ class UrlHelperTest {
             when(request.getSession(false)).thenReturn(null);
             assertNull(UrlHelper.getSessionId(request));
         }
-    }
-
-    @Test
-    @DisplayName("isNullOrEmpty should work correctly")
-    void testIsNullOrEmpty() {
-        assertTrue(UrlHelper.isNullOrEmpty(null));
-        assertTrue(UrlHelper.isNullOrEmpty(""));
-        assertTrue(UrlHelper.isNullOrEmpty("  "));
-        assertFalse(UrlHelper.isNullOrEmpty("abc"));
     }
 }

@@ -10,13 +10,13 @@ import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -76,7 +76,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<F> performCreate(ContextRequestDto context, F dto) {
         return executeWithMonitoring("performCreate", () -> {
-            log.info("Creating {} for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
+            log.info("Creating {} for tenant: {}", entityClass.getSimpleName(),
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateCreateRequest(dto);
 
             F processedDto = beforeCreate(dto);
@@ -100,7 +101,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<List<F>> performCreate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("performCreateBulk", () -> {
-            log.info("Bulk creating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
+            log.info("Bulk creating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(),
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateBulkOperation(dtos);
 
             List<T> entities = dtos.stream()
@@ -128,7 +130,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("performUpdateBulk", () -> {
-            log.info("Bulk updating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
+            log.info("Bulk updating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(),
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateBulkOperation(dtos);
 
             List<T> entities = dtos.stream()
@@ -157,7 +160,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
         return executeWithMonitoring("performUpdateById", () -> {
-            log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
+            log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id,
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
             validateNotNull(dto, "DTO cannot be null");
             dto.setId(id);
@@ -183,7 +187,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Void> performDelete(ContextRequestDto context, I id) {
         return executeWithMonitoring("performDelete", () -> {
-            log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
+            log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id,
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
 
             if (!beforeDelete(id)) {
@@ -208,7 +213,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Void> performDelete(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
-            log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(), context.getSenderTenant());
+            log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(),
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateBulkOperation(dtos);
 
             if (!beforeDelete(dtos)) {
@@ -241,7 +247,8 @@ public abstract class CrudTenantControllerOperations<
         return executeWithMonitoring("performFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
+                    entityClass.getSimpleName(), page, size,
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
 
             if (isPaginationRequested(page, size)) {
                 Page<T> entitiesPage = findPaginatedEntities(context.getSenderTenant(), page, size);
@@ -285,7 +292,8 @@ public abstract class CrudTenantControllerOperations<
         return executeWithMonitoring("performFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
+                    entityClass.getSimpleName(), page, size,
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
 
             if (isPaginationRequested(page, size)) {
                 Page<T> entitiesPage = findPaginatedEntities(context.getSenderTenant(), page, size);
@@ -330,7 +338,8 @@ public abstract class CrudTenantControllerOperations<
         return executeWithMonitoring("performFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    entityClass.getSimpleName(), page, size, context.getSenderTenant());
+                    entityClass.getSimpleName(), page, size,
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             log.debug("Filter criteria: {}", criteria);
 
             List<QueryCriteria> criteriaList = CriteriaHelper.convertSqlWhereToCriteria(criteria);
@@ -374,7 +383,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<F> performFindById(ContextRequestDto context, I id) {
         return executeWithMonitoring("performFindById", () -> {
-            log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id, context.getSenderTenant());
+            log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id,
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
 
             Optional<T> entity = crudService().findById(context.getSenderTenant(), id);
@@ -395,7 +405,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Long> performGetCount(ContextRequestDto context) {
         return executeWithMonitoring("performGetCount", () -> {
-            log.info("Counting {}s for tenant: {}", entityClass.getSimpleName(), context.getSenderTenant());
+            log.info("Counting {}s for tenant: {}", entityClass.getSimpleName(),
+                    context != null?context.getSenderTenant(): TenantContext.getTenantId());
             Long count = crudService().count(context.getSenderTenant());
             return ResponseFactory.responseOk(count);
         });

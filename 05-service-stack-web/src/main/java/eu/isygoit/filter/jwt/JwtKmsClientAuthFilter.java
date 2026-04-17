@@ -1,6 +1,7 @@
 package eu.isygoit.filter.jwt;
 
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.service.TokenServiceApi;

@@ -24,10 +24,9 @@ class S3BucketApiServiceIntegrationTest {
     private static final MinIOContainer minioContainer = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
             .withUserName("minioadmin")
             .withPassword("minioadmin");
-
+    private final Map<String, S3Client> s3ClientMap = new HashMap<>();
     private S3BucketApiService s3BucketApiService;
     private S3Config s3Config;
-    private final Map<String, S3Client> s3ClientMap = new HashMap<>();
 
     @BeforeEach
     void setUp() {
@@ -77,7 +76,7 @@ class S3BucketApiServiceIntegrationTest {
 
         // Delete
         s3BucketApiService.deleteObject(s3Config, bucketName, objectName);
-        
+
         s3BucketApiService.deleteBucket(s3Config, bucketName);
     }
 }

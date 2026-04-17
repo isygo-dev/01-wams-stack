@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.service;
 
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.app.ApplicationContextService;
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.helper.FieldAccessorCache;
@@ -15,11 +14,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 

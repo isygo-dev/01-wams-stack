@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.helper.HmacHelper;
 import eu.isygoit.helper.UrlHelper;

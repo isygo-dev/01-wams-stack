@@ -1,12 +1,14 @@
 package eu.isygoit.com.rest.service;
 
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
+import eu.isygoit.com.rest.tenant.filter.TenantFilterable;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
-import eu.isygoit.helper.FieldAccessorCache;
-import eu.isygoit.model.*;
+import eu.isygoit.model.IDirtyEntity;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import jakarta.persistence.EntityManager;
@@ -22,12 +24,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
 
 /**
  * Abstract base class for CRUD api operations with tenant-aware functionality.
@@ -58,10 +56,10 @@ public abstract class CrudService<I extends Serializable,
      * @throws OperationNotAllowedException if the operation requires tenant-specific handling
      */
     private void validateNotTenantSpecific(String operationName) {
-        if (isTenantAssignable) {
+        /*if (isTenantAssignable) {
             log.error("{} operation on {} requires tenant-specific method", operationName, persistentClass.getSimpleName());
             throw new OperationNotAllowedException(operationName + persistentClass.getSimpleName() + " " + CtrlConstants.SHOULD_USE_SAAS_SPECIFIC_METHOD);
-        }
+        }*/
     }
 
     /**
@@ -69,8 +67,9 @@ public abstract class CrudService<I extends Serializable,
      *
      * @return the total number of entities
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public Long count() {
         validateNotTenantSpecific("count ");
         log.info("Counting all {} entities", persistentClass.getSimpleName());
@@ -85,8 +84,9 @@ public abstract class CrudService<I extends Serializable,
      * @param id the entity ID
      * @return true if the entity exists
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public boolean existsById(I id) {
         validateNotTenantSpecific("existsById ");
         log.info("Checking existence of {} with ID: {}", persistentClass.getSimpleName(), id);
@@ -211,7 +211,7 @@ public abstract class CrudService<I extends Serializable,
      * Fields listed in {@link IDirtyEntity#ignoreFields()}
      * are skipped entirely. If no meaningful difference is detected, the update is rejected.
      *
-     * @param object   the incoming entity to be updated; must implement {@link IDirtyEntity}
+     * @param object the incoming entity to be updated; must implement {@link IDirtyEntity}
      * @throws ObjectNotModifiedException if the entity carries no dirty (changed) fields
      */
     private void validateObjectUpdatable(T object) throws ObjectNotModifiedException {
@@ -313,8 +313,9 @@ public abstract class CrudService<I extends Serializable,
      *
      * @return the list of entities
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public List<T> findAll() {
         validateNotTenantSpecific("findAll ");
         log.info("Retrieving all {} entities", persistentClass.getSimpleName());
@@ -330,8 +331,9 @@ public abstract class CrudService<I extends Serializable,
      * @param pageable the pagination parameters
      * @return the list of entities
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public Page<T> findAll(Pageable pageable) {
         validateNotTenantSpecific("findAll ");
         log.info("Retrieving paginated {} entities", persistentClass.getSimpleName());
@@ -350,8 +352,9 @@ public abstract class CrudService<I extends Serializable,
      * @return an Optional containing the entity if found
      * @throws BadArgumentException if ID is null
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public Optional<T> findById(I id) {
         validateNotTenantSpecific("findById ");
         if (id == null) {
@@ -421,8 +424,9 @@ public abstract class CrudService<I extends Serializable,
      * @param criteria the list of filter criteria
      * @return the list of filtered entities
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public List<T> findAllByCriteriaFilter(List<QueryCriteria> criteria) {
         validateNotTenantSpecific("findAllByCriteriaFilter ");
         if (CollectionUtils.isEmpty(criteria)) {
@@ -444,8 +448,9 @@ public abstract class CrudService<I extends Serializable,
      * @param pageRequest the pagination parameters
      * @return the list of filtered entities
      */
-    @Override
     @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
     public Page<T> findAllByCriteriaFilter(List<QueryCriteria> criteria, PageRequest pageRequest) {
         validateNotTenantSpecific("findAllByCriteriaFilter ");
         if (CollectionUtils.isEmpty(criteria)) {
@@ -458,6 +463,8 @@ public abstract class CrudService<I extends Serializable,
         return repository().findAll(specification, pageRequest).map(this::afterFindAllItem);
     }
 
+    @Transactional(readOnly = true)
+    @TenantFilterable
     @Override
     public List<T> getByIdIn(List<I> ids) {
         return repository().findByIdIn(ids);
@@ -580,7 +587,6 @@ public abstract class CrudService<I extends Serializable,
      * Preserves original attributes for file and image entities.
      *
      * @param object   the entity to update
-     * @param existing the existing entity
      * @return the entity with preserved attributes
      */
     private T keepOriginalAttributes(T object) {

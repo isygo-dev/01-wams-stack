@@ -3,7 +3,6 @@ package eu.isygoit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.TutorialDto;
-import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.utils.ITenantService;
 import org.junit.jupiter.api.*;
@@ -18,7 +17,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

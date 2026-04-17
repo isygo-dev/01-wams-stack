@@ -6,9 +6,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.time.format.ResolverStyle;
 import java.util.*;
 
 /**
@@ -145,21 +143,21 @@ public interface DateHelper {
                     // Try to re-format and compare
                     // This is the most reliable way to ensure the date is what we think it is
                     // especially for things like Feb 31 -> Mar 3
-                    
+
                     // For patterns with 'z', we should format with the original zone if possible
                     // However, 'result' is a Date which is just an instant.
                     // If we use systemDefault(), it might change GMT to CET/CEST etc.
-                    
+
                     ZoneId zoneId = ZoneId.systemDefault();
                     boolean skipStrict = false;
                     if (pattern.contains("z") || pattern.contains("VV") || pattern.contains("X") || pattern.contains("x")) {
                         // Extract zone if possible, or just skip strict validation for these for now
                         // or use the zone from temporalAccessor
                         try {
-                             zoneId = ZoneId.from(temporalAccessor);
+                            zoneId = ZoneId.from(temporalAccessor);
                         } catch (Exception e) {
-                             // Fallback to system default or UTC
-                             zoneId = ZoneId.of("UTC");
+                            // Fallback to system default or UTC
+                            zoneId = ZoneId.of("UTC");
                         }
                         // Skip strict validation for zone patterns because re-formatting might change GMT to UTC or vice versa
                         // or other zone name variations that are semantically identical but string-different

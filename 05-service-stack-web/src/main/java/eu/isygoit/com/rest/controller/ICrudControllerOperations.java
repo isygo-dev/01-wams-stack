@@ -4,6 +4,7 @@ import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.validation.Valid;

@@ -14,7 +14,6 @@ import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Column;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * The type Auditable entity.

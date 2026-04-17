@@ -44,6 +44,18 @@ class CrudControllerUtilsTest {
     @InjectMocks
     private TestCrudController controller;
 
+    @BeforeEach
+    void setUp() {
+        // CrudControllerUtils uses @Autowired for ControllerExceptionHandler
+        ReflectionTestUtils.setField(controller, "controllerExceptionHandler", controllerExceptionHandler);
+    }
+
+    interface TestService extends ICrudServiceUtils<Long, TestEntity> {
+    }
+
+    interface TestMapper extends EntityMapper<TestEntity, TestDto> {
+    }
+
     // Test helper classes
     @Data
     @SuperBuilder
@@ -59,14 +71,17 @@ class CrudControllerUtilsTest {
     @AllArgsConstructor
     static class TestDto implements IIdAssignableDto<Long>, IDto {
         private Long id;
-        @Override
-        public boolean isEmpty() { return id == null; }
-        @Override
-        public String getSectionName() { return "test"; }
-    }
 
-    interface TestService extends ICrudServiceUtils<Long, TestEntity> {}
-    interface TestMapper extends EntityMapper<TestEntity, TestDto> {}
+        @Override
+        public boolean isEmpty() {
+            return id == null;
+        }
+
+        @Override
+        public String getSectionName() {
+            return "test";
+        }
+    }
 
     @InjectMapperAndService(
             mapper = TestMapper.class,
@@ -83,12 +98,6 @@ class CrudControllerUtilsTest {
     }
 
     static class TestCrudControllerNoAnnotations extends CrudControllerUtils<Long, TestEntity, TestDto, TestDto, TestService> {
-    }
-
-    @BeforeEach
-    void setUp() {
-        // CrudControllerUtils uses @Autowired for ControllerExceptionHandler
-        ReflectionTestUtils.setField(controller, "controllerExceptionHandler", controllerExceptionHandler);
     }
 
     @Nested
@@ -113,7 +122,7 @@ class CrudControllerUtilsTest {
         void testCrudServiceInjectionFromInjectService() throws Exception {
             TestCrudControllerWithSeparateAnnotations controller2 = new TestCrudControllerWithSeparateAnnotations();
             ReflectionTestUtils.setField(controller2, "controllerExceptionHandler", controllerExceptionHandler);
-            
+
             TestService mockService = mock(TestService.class);
             when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
             when(applicationContextService.getBean(TestService.class)).thenReturn(Optional.of(mockService));

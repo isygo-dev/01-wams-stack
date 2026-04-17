@@ -2,7 +2,6 @@ package eu.isygoit.s3.api.impl;
 
 import eu.isygoit.enums.IEnumStorage;
 import eu.isygoit.s3.config.S3Config;
-import eu.isygoit.s3.object.Bucket;
 import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,10 +23,9 @@ class MinIOApiServiceIntegrationTest {
     private static final MinIOContainer minioContainer = new MinIOContainer("minio/minio:RELEASE.2023-09-04T19-57-37Z")
             .withUserName("minioadmin")
             .withPassword("minioadmin");
-
+    private final Map<String, MinioClient> minIoMap = new HashMap<>();
     private MinIOApiService minIOApiService;
     private S3Config s3Config;
-    private final Map<String, MinioClient> minIoMap = new HashMap<>();
 
     @BeforeEach
     void setUp() {
@@ -84,7 +82,7 @@ class MinIOApiServiceIntegrationTest {
         minIOApiService.deleteObject(s3Config, bucketName, objectName);
         // Checking if object exists after deletion is tricky with current API without a dedicated exists method,
         // but getObject should fail or we can list objects.
-        
+
         minIOApiService.deleteBucket(s3Config, bucketName);
     }
 }

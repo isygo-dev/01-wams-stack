@@ -18,12 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ExtendWith(MockitoExtension.class)
 class LakeFSApiServiceTest {
 
+    private final Map<String, RestTemplate> lakeFSClientMap = new HashMap<>();
     private LakeFSApiService lakeFSApiService;
-
     @Mock
     private IMinIOApiService minIOApiService;
-
-    private final Map<String, RestTemplate> lakeFSClientMap = new HashMap<>();
 
     @BeforeEach
     void setUp() {

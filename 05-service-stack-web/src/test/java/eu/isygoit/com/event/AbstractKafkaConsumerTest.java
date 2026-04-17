@@ -22,18 +22,6 @@ class AbstractKafkaConsumerTest {
     private TestKafkaConsumer consumer;
     private AtomicReference<String> processedMessage = new AtomicReference<>();
 
-    private static class TestKafkaConsumer extends AbstractKafkaConsumer<String> {
-        @Override
-        protected String deserialize(byte[] data) {
-            return new String(data, StandardCharsets.UTF_8);
-        }
-
-        @Override
-        protected void processMessage(String message, Map<String, String> headers) {
-            // Handled by setProcessMethod in setup for some tests, or directly here
-        }
-    }
-
     @BeforeEach
     void setUp() {
         consumer = new TestKafkaConsumer();
@@ -87,7 +75,7 @@ class AbstractKafkaConsumerTest {
         ReflectionTestUtils.setField(consumer, "hmacSecret", secret);
 
         byte[] data = "signed message".getBytes(StandardCharsets.UTF_8);
-        
+
         // Manually sign for testing
         javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
         javax.crypto.spec.SecretKeySpec keySpec = new javax.crypto.spec.SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
@@ -113,5 +101,17 @@ class AbstractKafkaConsumerTest {
 
         assertThrows(RuntimeException.class, () -> consumer.consume(messageBytes, "test-topic", 0, 0, new HashMap<>()));
         assertFalse(consumer.getExceptions().isEmpty());
+    }
+
+    private static class TestKafkaConsumer extends AbstractKafkaConsumer<String> {
+        @Override
+        protected String deserialize(byte[] data) {
+            return new String(data, StandardCharsets.UTF_8);
+        }
+
+        @Override
+        protected void processMessage(String message, Map<String, String> headers) {
+            // Handled by setProcessMethod in setup for some tests, or directly here
+        }
     }
 }

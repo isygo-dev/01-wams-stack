@@ -1,12 +1,12 @@
 package eu.isygoit.config;
 
+import eu.isygoit.enums.IEnumJwtStorage;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import eu.isygoit.enums.IEnumJwtStorage;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("JwtProperties Tests")
 class JwtPropertiesTest {
@@ -15,7 +15,7 @@ class JwtPropertiesTest {
     @DisplayName("should correctly hold JWT properties")
     void testJwtProperties() {
         JwtProperties properties = new JwtProperties();
-        
+
         ReflectionTestUtils.setField(properties, "secretKey", "testSecret");
         ReflectionTestUtils.setField(properties, "signatureAlgorithm", SignatureAlgorithm.HS256);
         ReflectionTestUtils.setField(properties, "lifeTimeInMs", 3600000);

@@ -496,8 +496,8 @@ class CriteriaHelperTest {
                     () -> CriteriaHelper.buildSpecification(null, List.of(criteria), TestEntity.class)
             );
 
-            assertTrue(exception.getMessage().contains("Operator LI is not allowed for field age of type Integer"), 
-                "Expected message to contain 'Operator LI', but was: " + exception.getMessage());
+            assertTrue(exception.getMessage().contains("Operator LI is not allowed for field age of type Integer"),
+                    "Expected message to contain 'Operator LI', but was: " + exception.getMessage());
         }
 
         @Test

@@ -3,16 +3,15 @@ package eu.isygoit.helper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.isygoit.helper.bo.Author;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -318,7 +317,7 @@ class JsonHelperTestPart1 {
             System.out.println("[DEBUG_LOG] computeDiff_deepEquals result: " + diff.toString());
             assertFalse(diff.has("tags"));
             assertTrue(diff.has("nested"));
-            
+
             // Convert POJONode to Tree for verification if needed, or check as Object
             JsonNode nestedNode = objectMapper.valueToTree(diff.get("nested"));
             assertEquals("v2", nestedNode.get("k").asText());
@@ -337,10 +336,10 @@ class JsonHelperTestPart1 {
             JsonNode state = result.get("state");
             assertTrue(state.has("old"));
             assertTrue(state.has("new"));
-            
+
             JsonNode oldNode = objectMapper.valueToTree(state.get("old"));
             JsonNode newNode = objectMapper.valueToTree(state.get("new"));
-            
+
             assertEquals("John", oldNode.get("firstName").asText());
             assertEquals("Jane", newNode.get("firstName").asText());
         }

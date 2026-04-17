@@ -5,14 +5,15 @@ import eu.isygoit.repository.code.NextCodeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AbstractCodeGeneratorService Tests")
@@ -20,31 +21,6 @@ class AbstractCodeGeneratorServiceTest {
 
     @Mock
     private NextCodeRepository<TestNextCode, Long> repository;
-
-    static class TestNextCode extends NextCodeModel<Long> {
-        private Long id;
-        @Override
-        public Long getId() { return id; }
-        @Override
-        public void setId(Long id) { this.id = id; }
-        @Override
-        public String getTenant() { return "tenant"; }
-        @Override
-        public void setTenant(String tenant) {}
-    }
-
-    static class TestCodeGeneratorService extends AbstractCodeGeneratorService<TestNextCode> {
-        private final NextCodeRepository<TestNextCode, Long> repository;
-
-        TestCodeGeneratorService(NextCodeRepository<TestNextCode, Long> repository) {
-            this.repository = repository;
-        }
-
-        @Override
-        public NextCodeRepository nextCodeRepository() {
-            return repository;
-        }
-    }
 
     @Test
     @DisplayName("findByEntity should call repository")
@@ -108,5 +84,41 @@ class AbstractCodeGeneratorServiceTest {
 
         assertEquals(nextCode, result);
         verify(repository).save(nextCode);
+    }
+
+    static class TestNextCode extends NextCodeModel<Long> {
+        private Long id;
+
+        @Override
+        public Long getId() {
+            return id;
+        }
+
+        @Override
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        @Override
+        public String getTenant() {
+            return "tenant";
+        }
+
+        @Override
+        public void setTenant(String tenant) {
+        }
+    }
+
+    static class TestCodeGeneratorService extends AbstractCodeGeneratorService<TestNextCode> {
+        private final NextCodeRepository<TestNextCode, Long> repository;
+
+        TestCodeGeneratorService(NextCodeRepository<TestNextCode, Long> repository) {
+            this.repository = repository;
+        }
+
+        @Override
+        public NextCodeRepository nextCodeRepository() {
+            return repository;
+        }
     }
 }

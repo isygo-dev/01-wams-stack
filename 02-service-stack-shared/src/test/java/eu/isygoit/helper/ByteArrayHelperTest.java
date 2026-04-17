@@ -12,6 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("ByteArrayHelper Tests")
 class ByteArrayHelperTest {
 
+    @Test
+    @DisplayName("printByteArray() should not throw exception")
+    void testPrintByteArray() {
+        assertDoesNotThrow(() -> ByteArrayHelper.printByteArray(new byte[]{0x01}));
+        assertDoesNotThrow(() -> ByteArrayHelper.printByteArray(null));
+    }
+
     @Nested
     @DisplayName("convertBytesToHex() Tests")
     class ConvertBytesToHexTests {
@@ -86,29 +93,6 @@ class ByteArrayHelperTest {
     @DisplayName("Serialization/Deserialization Tests")
     class SerializationTests {
 
-        static class TestObject implements Serializable {
-            String name;
-            int value;
-
-            TestObject(String name, int value) {
-                this.name = name;
-                this.value = value;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
-                TestObject that = (TestObject) o;
-                return value == that.value && java.util.Objects.equals(name, that.name);
-            }
-
-            @Override
-            public int hashCode() {
-                return java.util.Objects.hash(name, value);
-            }
-        }
-
         @Test
         @DisplayName("should serialize and deserialize an object")
         void testSerializeDeserialize() throws IOException, ClassNotFoundException {
@@ -132,6 +116,29 @@ class ByteArrayHelperTest {
         void testDeserializeObject_nullOrEmpty() throws IOException, ClassNotFoundException {
             assertNull(ByteArrayHelper.deserializeObject(null));
             assertNull(ByteArrayHelper.deserializeObject(new byte[0]));
+        }
+
+        static class TestObject implements Serializable {
+            String name;
+            int value;
+
+            TestObject(String name, int value) {
+                this.name = name;
+                this.value = value;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                TestObject that = (TestObject) o;
+                return value == that.value && java.util.Objects.equals(name, that.name);
+            }
+
+            @Override
+            public int hashCode() {
+                return java.util.Objects.hash(name, value);
+            }
         }
     }
 
@@ -262,12 +269,5 @@ class ByteArrayHelperTest {
             assertArrayEquals(new byte[0][], ByteArrayHelper.splitArrayIntoChunks(null, 2));
             assertArrayEquals(new byte[0][], ByteArrayHelper.splitArrayIntoChunks(new byte[]{0x01}, 0));
         }
-    }
-
-    @Test
-    @DisplayName("printByteArray() should not throw exception")
-    void testPrintByteArray() {
-        assertDoesNotThrow(() -> ByteArrayHelper.printByteArray(new byte[]{0x01}));
-        assertDoesNotThrow(() -> ByteArrayHelper.printByteArray(null));
     }
 }

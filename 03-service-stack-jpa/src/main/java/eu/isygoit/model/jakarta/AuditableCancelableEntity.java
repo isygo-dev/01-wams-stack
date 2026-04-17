@@ -1,7 +1,9 @@
 package eu.isygoit.model.jakarta;
 
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

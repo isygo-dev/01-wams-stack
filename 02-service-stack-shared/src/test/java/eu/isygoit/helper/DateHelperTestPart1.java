@@ -77,50 +77,50 @@ class DateHelperTestPart1 {
          *
          * @param dateString the date string
          */
-         @ParameterizedTest
-         @ValueSource(strings = {
-                 "invalid-date",
-                 "2024-13-13",        // Invalid month
-                 "2024-02-31",        // Invalid day
-                 "abc",
-                 "13/13/2024",        // Invalid month
-                 "29/02/2023",        // Invalid leap year date
-                 "31/04/2024",        // April has only 30 days
-                 "31/06/2024",        // June has only 30 days
-                 "31/09/2024",        // September has only 30 days
-                 "31/11/2024"         // November has only 30 days
-         })
-         @DisplayName("Should throw exception for invalid date formats")
-         void shouldThrowExceptionForInvalidFormats(String dateString) {
-             assertThrows(IllegalArgumentException.class,
-                     () -> DateHelper.parseDateString(dateString, null));
-         }
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "invalid-date",
+                "2024-13-13",        // Invalid month
+                "2024-02-31",        // Invalid day
+                "abc",
+                "13/13/2024",        // Invalid month
+                "29/02/2023",        // Invalid leap year date
+                "31/04/2024",        // April has only 30 days
+                "31/06/2024",        // June has only 30 days
+                "31/09/2024",        // September has only 30 days
+                "31/11/2024"         // November has only 30 days
+        })
+        @DisplayName("Should throw exception for invalid date formats")
+        void shouldThrowExceptionForInvalidFormats(String dateString) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> DateHelper.parseDateString(dateString, null));
+        }
 
-         /**
-          * Should parse epoch and epoch_second.
-          */
-         @Test
-         @DisplayName("Should parse epoch and epoch_second")
-         void shouldParseEpochAndEpochSecond() {
-             long epochMillis = 1707838245123L; // 2024-02-13T15:30:45.123
-             // Note: Depending on patterns, DateHelper might try other patterns first.
-             // If "1707838245123" matches yyyyMMddHHmmss (it has 13 digits, yyyyMMddHHmmss has 14), it might fail or parse differently.
-             // Actually 1707838245123 is 13 digits.
-             
-             Date date = DateHelper.parseDateString(String.valueOf(epochMillis), null);
-             assertNotNull(date);
-             // If it matched "epoch", date.getTime() should be epochMillis
-             // If it matched something else, we need to be careful.
-             
-             long epochSeconds = 1707838245L;
-             Date date2 = DateHelper.parseDateString(String.valueOf(epochSeconds), null);
-             assertNotNull(date2);
-             
-             // Check if it's within a reasonable range or exactly equal
-             assertTrue(date.getTime() == epochMillis || date2.getTime() == epochSeconds * 1000, 
-                 "Epoch parsing failed. date.getTime()=" + date.getTime() + ", date2.getTime()=" + date2.getTime());
-         }
-     }
+        /**
+         * Should parse epoch and epoch_second.
+         */
+        @Test
+        @DisplayName("Should parse epoch and epoch_second")
+        void shouldParseEpochAndEpochSecond() {
+            long epochMillis = 1707838245123L; // 2024-02-13T15:30:45.123
+            // Note: Depending on patterns, DateHelper might try other patterns first.
+            // If "1707838245123" matches yyyyMMddHHmmss (it has 13 digits, yyyyMMddHHmmss has 14), it might fail or parse differently.
+            // Actually 1707838245123 is 13 digits.
+
+            Date date = DateHelper.parseDateString(String.valueOf(epochMillis), null);
+            assertNotNull(date);
+            // If it matched "epoch", date.getTime() should be epochMillis
+            // If it matched something else, we need to be careful.
+
+            long epochSeconds = 1707838245L;
+            Date date2 = DateHelper.parseDateString(String.valueOf(epochSeconds), null);
+            assertNotNull(date2);
+
+            // Check if it's within a reasonable range or exactly equal
+            assertTrue(date.getTime() == epochMillis || date2.getTime() == epochSeconds * 1000,
+                    "Epoch parsing failed. date.getTime()=" + date.getTime() + ", date2.getTime()=" + date2.getTime());
+        }
+    }
 
     /**
      * The type Format date to iso string tests.

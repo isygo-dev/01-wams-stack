@@ -55,7 +55,6 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
         return performDelete(requestContext, mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
-
     @Override
     public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(ContextRequestDto requestContext,
                                                                      Integer page,
@@ -69,6 +68,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
                                                                  Integer size) {
         return performFindAll(requestContext, page, size);
     }
+
 
     @Override
     public final ResponseEntity<F> findById(ContextRequestDto requestContext,

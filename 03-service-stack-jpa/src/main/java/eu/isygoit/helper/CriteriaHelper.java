@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Enhanced criteria helper for building dynamic JPA specifications from SQL-like WHERE clauses.

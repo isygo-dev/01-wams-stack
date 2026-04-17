@@ -10,6 +10,7 @@ import eu.isygoit.com.rest.service.tenancy.IMultiFileTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.mapper.EntityMapper;

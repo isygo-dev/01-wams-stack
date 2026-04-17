@@ -39,15 +39,15 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Stack: multitenancy -->
+        <!-- Stack: internal dep -->
         <dependency>
             <groupId>eu.isygo-it.services</groupId>
             <artifactId>service-stack-multitenancy</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <groupId>eu.isygo-it.services</groupId>
+            <artifactId>service-stack-web</artifactId>
         </dependency>
 
         <!-- Spring Boot starters — versions from Boot 3.5.13 BOM -->

@@ -1,6 +1,5 @@
 package eu.isygoit.com.event;
 
-import eu.isygoit.exception.KafkaPrepareDataException;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,17 +26,6 @@ class AbstractKafkaProducerTest {
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     private TestKafkaProducer producer;
-
-    private static class TestKafkaProducer extends AbstractKafkaProducer<String> {
-        public TestKafkaProducer(String topic) {
-            this.topic = topic;
-        }
-
-        @Override
-        protected byte[] serialize(String message) {
-            return message.getBytes(StandardCharsets.UTF_8);
-        }
-    }
 
     @BeforeEach
     void setUp() {
@@ -120,5 +108,16 @@ class AbstractKafkaProducerTest {
 
         String sentData = new String(captor.getValue().value(), StandardCharsets.UTF_8);
         assertTrue(sentData.contains("|"));
+    }
+
+    private static class TestKafkaProducer extends AbstractKafkaProducer<String> {
+        public TestKafkaProducer(String topic) {
+            this.topic = topic;
+        }
+
+        @Override
+        protected byte[] serialize(String message) {
+            return message.getBytes(StandardCharsets.UTF_8);
+        }
     }
 }

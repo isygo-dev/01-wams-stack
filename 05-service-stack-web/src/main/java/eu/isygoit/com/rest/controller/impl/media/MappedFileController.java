@@ -12,6 +12,7 @@ import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.validation.Valid;

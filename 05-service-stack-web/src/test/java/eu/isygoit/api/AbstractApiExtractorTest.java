@@ -17,56 +17,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("AbstractApiExtractor Tests")
 class AbstractApiExtractorTest {
 
-    @SuperBuilder
-    @NoArgsConstructor
-    public static class TestApiPermissionModel extends ApiPermissionModel<Long> {
-        private Long id;
-
-        @Override
-        public Long getId() {
-            return id;
-        }
-
-        @Override
-        public void setId(Long id) {
-            this.id = id;
-        }
-    }
-
-    private static class TestApiExtractor extends AbstractApiExtractor<TestApiPermissionModel> {
-        @Override
-        public TestApiPermissionModel saveApi(TestApiPermissionModel api) {
-            // Simulate saving by returning the same object
-            return api;
-        }
-
-        @Override
-        public TestApiPermissionModel newInstance() {
-            return new TestApiPermissionModel();
-        }
-    }
-
-    @RestController
-    @RequestMapping(path = "/api/test")
-    private static class SampleController {
-        @GetMapping(path = "/get-method")
-        public void getMethod() {}
-
-        @PostMapping(path = "/post-method")
-        public void postMethod() {}
-
-        @PutMapping(path = "/put-method")
-        public void putMethod() {}
-
-        @DeleteMapping(path = "/delete-method")
-        public void deleteMethod() {}
-
-        @PatchMapping(path = "/patch-method")
-        public void patchMethod() {}
-
-        public void nonApiMethod() {}
-    }
-
     private TestApiExtractor extractor;
 
     @BeforeEach
@@ -101,8 +51,65 @@ class AbstractApiExtractorTest {
     @Test
     @DisplayName("Should return empty list if controller has no RequestMapping")
     void testExtractApisNoRequestMapping() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        class NoMappingController {}
+        class NoMappingController {
+        }
         List<TestApiPermissionModel> apis = extractor.extractApis(NoMappingController.class);
         assertTrue(apis.isEmpty());
+    }
+
+    @SuperBuilder
+    @NoArgsConstructor
+    public static class TestApiPermissionModel extends ApiPermissionModel<Long> {
+        private Long id;
+
+        @Override
+        public Long getId() {
+            return id;
+        }
+
+        @Override
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+
+    private static class TestApiExtractor extends AbstractApiExtractor<TestApiPermissionModel> {
+        @Override
+        public TestApiPermissionModel saveApi(TestApiPermissionModel api) {
+            // Simulate saving by returning the same object
+            return api;
+        }
+
+        @Override
+        public TestApiPermissionModel newInstance() {
+            return new TestApiPermissionModel();
+        }
+    }
+
+    @RestController
+    @RequestMapping(path = "/api/test")
+    private static class SampleController {
+        @GetMapping(path = "/get-method")
+        public void getMethod() {
+        }
+
+        @PostMapping(path = "/post-method")
+        public void postMethod() {
+        }
+
+        @PutMapping(path = "/put-method")
+        public void putMethod() {
+        }
+
+        @DeleteMapping(path = "/delete-method")
+        public void deleteMethod() {
+        }
+
+        @PatchMapping(path = "/patch-method")
+        public void patchMethod() {
+        }
+
+        public void nonApiMethod() {
+        }
     }
 }

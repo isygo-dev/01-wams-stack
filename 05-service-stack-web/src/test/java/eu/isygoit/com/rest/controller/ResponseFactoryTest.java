@@ -8,7 +8,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @DisplayName("ResponseFactory Tests")
 class ResponseFactoryTest {

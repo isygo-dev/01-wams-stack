@@ -20,7 +20,7 @@ class SpringClassScannerTest {
     void findAnnotatedClasses_shouldFindClasses() {
         // Search for @Service in eu.isygoit.helper package
         Set<BeanDefinition> candidates = scanner.findAnnotatedClasses(Service.class, "eu.isygoit.helper");
-        
+
         assertFalse(candidates.isEmpty(), "Should find at least SpringClassScanner itself");
         assertTrue(candidates.stream().anyMatch(bd -> bd.getBeanClassName().equals(SpringClassScanner.class.getName())));
     }

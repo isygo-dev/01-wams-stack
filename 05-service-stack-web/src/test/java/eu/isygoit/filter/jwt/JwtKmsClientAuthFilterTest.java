@@ -1,6 +1,7 @@
 package eu.isygoit.filter.jwt;
 
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.audit.TenantContext;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.service.TokenServiceApi;
@@ -15,7 +16,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,11 +26,6 @@ class JwtKmsClientAuthFilterTest {
 
     @Mock
     private TokenServiceApi tokenService;
-
-    // Concrete implementation for testing abstract class
-    static class TestJwtKmsClientAuthFilter extends JwtKmsClientAuthFilter {
-    }
-
     @InjectMocks
     private TestJwtKmsClientAuthFilter filter;
 
@@ -107,5 +104,9 @@ class JwtKmsClientAuthFilterTest {
         filter.addAttributes(request, attributes);
 
         verify(request).setAttribute("attr1", "val1");
+    }
+
+    // Concrete implementation for testing abstract class
+    static class TestJwtKmsClientAuthFilter extends JwtKmsClientAuthFilter {
     }
 }
