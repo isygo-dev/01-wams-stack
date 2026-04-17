@@ -39,20 +39,7 @@ public class TutorialController {
         this.tutorialMapper = tutorialMapper;
     }
 
-    protected void checkAndEnableTenantFilter() {
-        if (ITenantAssignable.class.isAssignableFrom(Tutorial.class)) {
-            String tenantId = TenantContext.getTenantId();
-            if (tenantId != null && !tenantId.equals(TenantConstants.SUPER_TENANT_NAME)) {
-                try {
-                    Session session = entityManager.unwrap(Session.class);
-                    session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
-                } catch (Exception e) {
-                    log.warn("Could not enable 'tenantFilter' for entity {}: {}", Tutorial.class.getSimpleName(), e.getMessage());
-                }
-            }
-        }
-    }
-
+    @TenantFilterable(entity = Tutorial.class)
     @Operation(summary = "Get all tutorials", description = "Retrieve all tutorials or filter by title (contains, case-insensitive).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Found tutorials"),
@@ -63,8 +50,6 @@ public class TutorialController {
     public ResponseEntity<List<TutorialDto>> getAllTutorials(
             @Parameter(description = "Filter tutorials by title") @RequestParam(required = false) String title) {
         try {
-            checkAndEnableTenantFilter();
-
             var tutorials = (title == null)
                     ? tutorialRepository.findAll()
                     : tutorialRepository.findByTitleContainingIgnoreCase(title);
@@ -78,6 +63,7 @@ public class TutorialController {
         }
     }
 
+    @TenantFilterable(entity = Tutorial.class)
     @Operation(summary = "Get tutorial by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Tutorial found"),
@@ -85,8 +71,6 @@ public class TutorialController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<TutorialDto> getTutorialById(@PathVariable long id) {
-        checkAndEnableTenantFilter();
-
         return tutorialRepository.findOneById(id)
                 .map(tutorialMapper::entityToDto)
                 .map(ResponseEntity::ok)
@@ -108,6 +92,7 @@ public class TutorialController {
         }
     }
 
+    @TenantFilterable(entity = Tutorial.class)
     @Operation(summary = "Update tutorial by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Tutorial updated"),
@@ -116,8 +101,6 @@ public class TutorialController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<TutorialDto> updateTutorial(@PathVariable long id, @RequestBody TutorialDto TutorialDto) {
-        checkAndEnableTenantFilter();
-
         return tutorialRepository.findOneById(id)
                 .map(existing -> {
                     existing.setTitle(TutorialDto.getTitle());
@@ -158,6 +141,7 @@ public class TutorialController {
         }
     }
 
+    @TenantFilterable(entity = Tutorial.class)
     @Operation(summary = "Get all published tutorials")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Published tutorials found"),
@@ -167,8 +151,6 @@ public class TutorialController {
     @GetMapping("/published")
     public ResponseEntity<List<TutorialDto>> findByPublished() {
         try {
-            checkAndEnableTenantFilter();
-
             var tutorials = tutorialRepository.findByPublished(true);
             return tutorials.isEmpty()
                     ? ResponseEntity.noContent().build()
