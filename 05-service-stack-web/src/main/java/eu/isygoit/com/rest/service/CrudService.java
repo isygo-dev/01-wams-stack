@@ -1,6 +1,5 @@
 package eu.isygoit.com.rest.service;
 
-import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.tenant.filter.TenantFilterable;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.exception.*;
@@ -586,7 +585,7 @@ public abstract class CrudService<I extends Serializable,
     /**
      * Preserves original attributes for file and image entities.
      *
-     * @param object   the entity to update
+     * @param object the entity to update
      * @return the entity with preserved attributes
      */
     private T keepOriginalAttributes(T object) {

@@ -2,7 +2,6 @@ package eu.isygoit.service;
 
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.com.rest.service.CrudService;
-import eu.isygoit.com.rest.service.tenancy.CrudTenantService;
 import eu.isygoit.model.Tutorial;
 import eu.isygoit.repository.TutorialRepository;
 import org.springframework.stereotype.Service;

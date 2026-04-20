@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.service.media;
 import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
-import eu.isygoit.audit.TenantContext;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.ResourceDto;

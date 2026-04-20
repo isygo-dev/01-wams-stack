@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.audit.TenantContext;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
-import eu.isygoit.audit.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

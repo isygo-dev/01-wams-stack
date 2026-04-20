@@ -10,7 +10,6 @@ import eu.isygoit.com.rest.service.media.IMultiFileServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
-import eu.isygoit.audit.TenantContext;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;

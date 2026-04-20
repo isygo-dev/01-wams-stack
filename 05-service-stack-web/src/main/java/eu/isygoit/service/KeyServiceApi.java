@@ -3,7 +3,6 @@ package eu.isygoit.service;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
-import eu.isygoit.audit.TenantContext;
 import eu.isygoit.enums.IEnumCharSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

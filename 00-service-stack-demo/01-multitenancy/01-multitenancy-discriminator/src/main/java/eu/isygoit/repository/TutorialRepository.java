@@ -1,7 +1,6 @@
 package eu.isygoit.repository;
 
 import eu.isygoit.model.Tutorial;
-import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 
 import java.util.List;
 
