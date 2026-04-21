@@ -7,6 +7,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -254,13 +256,13 @@ class DateHelperTestPart3 {
         @DisplayName("Should verify all null checks")
         void shouldVerifyAllNullChecks() {
             // Test all methods that should throw NullPointerException
-            assertThrows(NullPointerException.class, () -> DateHelper.occurredInLastXHours(null, 1));
+            assertThrows(NullPointerException.class, () -> DateHelper.occurredInLastXHours((LocalDateTime) null, 1));
             assertThrows(NullPointerException.class, () -> DateHelper.areDatesOnSameDay(null, new Date()));
             assertThrows(NullPointerException.class, () -> DateHelper.areDatesOnSameDay(new Date(), null));
             assertThrows(NullPointerException.class, () -> DateHelper.addDaysToDate(null, 1));
             assertThrows(NullPointerException.class, () -> DateHelper.addMonthsToDate(null, 1));
-            assertThrows(NullPointerException.class, () -> DateHelper.getStartOfWeek(null));
-            assertThrows(NullPointerException.class, () -> DateHelper.getEndOfWeek(null));
+            assertThrows(NullPointerException.class, () -> DateHelper.getStartOfWeek((LocalDate) null));
+            assertThrows(NullPointerException.class, () -> DateHelper.getEndOfWeek((LocalDate) null));
             assertThrows(NullPointerException.class, () -> DateHelper.formatDateToHumanReadable(null));
         }
     }
