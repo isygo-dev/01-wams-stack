@@ -10,36 +10,58 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
- * The interface Date helper with support for modern Java 17 date/time types.
- * All methods using java.util.Date are deprecated in favor of LocalDate, LocalDateTime, and LocalTime.
+ * Utility interface providing comprehensive, thread-safe date and time handling
+ * for both legacy {@link java.util.Date} and modern Java Time API types
+ * ({@link LocalDate}, {@link LocalDateTime}, {@link LocalTime}, etc.).
+ * <p>
+ * All new/public methods are based on the modern Java Time API (Java 8+)
+ * and should be preferred for new code. Legacy {@code java.util.Date} methods
+ * are retained for backward compatibility and are marked {@code @Deprecated}
+ * (for removal in a future version). They delegate to the modern implementations
+ * wherever possible to avoid code duplication while preserving exact original behavior.
+ * </p>
+ * <p>
+ * Supports parsing of a wide range of common date/time string formats (including ISO,
+ * RFC, epoch, and localized variants) with robust fallback and strict round-trip validation.
+ * Provides rich utilities for date arithmetic, comparisons, range checks, formatting,
+ * and calendar operations.
+ * </p>
+ *
+ * @since 2.0
  */
 public interface DateHelper {
 
     /**
-     * The constant logger.
+     * The logger for this utility.
      */
     Logger logger = LoggerFactory.getLogger(DateHelper.class);
 
     /**
-     * The constant CALENDAR_START.
+     * The constant representing the earliest supported calendar date/time.
      */
     LocalDateTime CALENDAR_START = LocalDateTime.of(1900, 1, 1, 0, 0);
+
     /**
-     * The constant CALENDAR_END.
+     * The constant representing the latest supported calendar date/time.
      */
     LocalDateTime CALENDAR_END = LocalDateTime.of(2999, 12, 31, 23, 59);
 
     /**
-     * The constant TIME_START.
+     * The constant representing the start of a day (00:00:00.000000000).
      */
     LocalTime TIME_START = LocalTime.of(0, 0, 0, 0);
+
     /**
-     * The constant TIME_END.
+     * The constant representing the end of a day (23:59:59.999999999).
      */
     LocalTime TIME_END = LocalTime.of(23, 59, 59, 999999999);
 
     /**
-     * The constant DATE_PATTERNS.
+     * Supported date/time patterns for parsing (in priority order).
+     * <p>
+     * Includes ISO variants, common European/US formats, epoch timestamps,
+     * and several RFC-style patterns with timezone information.
+     * </p>
      */
     List<String> DATE_PATTERNS = List.of(
             "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
@@ -76,19 +98,22 @@ public interface DateHelper {
             "epoch_second"
     );
 
-    List<DateTimeFormatter> DATE_FORMATTERS = List.of(
-            DateTimeFormatter.ofPattern("EEEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH),
-            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
-    );
-
-    // ==================== NEW METHODS - LocalDateTime ====================
+    // ==================== MODERN METHODS - Java Time API ====================
 
     /**
-     * Parse date string to LocalDateTime.
+     * Parses the given date string into a {@link LocalDateTime} using the supported patterns.
+     * <p>
+     * If the input is blank or equals "null" (case-insensitive), the {@code defaultIfNull}
+     * value is returned immediately. Otherwise, patterns are tried in order until a
+     * successful parse is found. Strict round-trip validation is performed for non-zoned
+     * patterns to ensure the entire input was consumed correctly.
+     * </p>
      *
-     * @param dateString    the date string
-     * @param defaultIfNull the default if null
-     * @return the LocalDateTime
+     * @param dateString    the date/time string to parse (may be {@code null} or blank)
+     * @param defaultIfNull the value to return if {@code dateString} is blank or {@code null}
+     * @return the parsed {@link LocalDateTime} or {@code defaultIfNull}
+     * @throws IllegalArgumentException if {@code dateString} is non-blank but cannot be parsed
+     *                                  with any supported pattern
      */
     static LocalDateTime parseLocalDateTime(String dateString, LocalDateTime defaultIfNull) {
         logger.debug("Attempting to parse LocalDateTime from string: {}", dateString);
@@ -140,7 +165,7 @@ public interface DateHelper {
             }
 
             if (result != null) {
-                // Validation for strict mode
+                // Strict round-trip validation (skipped for patterns containing zone/offset info)
                 try {
                     ZoneId zoneId = ZoneId.systemDefault();
                     boolean skipStrict = false;
@@ -173,11 +198,13 @@ public interface DateHelper {
     }
 
     /**
-     * Parse date string to LocalDate.
+     * Parses the given date string into a {@link LocalDate} (time component is ignored/truncated).
+     * Delegates to {@link #parseLocalDateTime(String, LocalDateTime)} internally.
      *
-     * @param dateString    the date string
-     * @param defaultIfNull the default if null
-     * @return the LocalDate
+     * @param dateString    the date string to parse (may be {@code null} or blank)
+     * @param defaultIfNull the value to return if {@code dateString} is blank or {@code null}
+     * @return the parsed {@link LocalDate} or {@code defaultIfNull}
+     * @throws IllegalArgumentException if {@code dateString} is non-blank but cannot be parsed
      */
     static LocalDate parseLocalDate(String dateString, LocalDate defaultIfNull) {
         logger.debug("Attempting to parse LocalDate from string: {}", dateString);
@@ -192,10 +219,11 @@ public interface DateHelper {
     }
 
     /**
-     * Format LocalDateTime to ISO string.
+     * Formats the given {@link LocalDateTime} to an ISO-8601 offset date-time string
+     * (e.g. {@code 2023-01-01T12:00:00+01:00}).
      *
-     * @param dateTime the LocalDateTime
-     * @return the ISO formatted string
+     * @param dateTime the {@link LocalDateTime} to format
+     * @return the ISO-formatted string, or {@code null} if the input is {@code null}
      */
     static String formatToIsoString(LocalDateTime dateTime) {
         logger.debug("Attempting to format LocalDateTime: {}", dateTime);
@@ -209,10 +237,10 @@ public interface DateHelper {
     }
 
     /**
-     * Format LocalDate to ISO string.
+     * Formats the given {@link LocalDate} to an ISO-8601 date string (e.g. {@code 2023-01-01}).
      *
-     * @param date the LocalDate
-     * @return the ISO formatted string
+     * @param date the {@link LocalDate} to format
+     * @return the ISO-formatted string, or {@code null} if the input is {@code null}
      */
     static String formatToIsoString(LocalDate date) {
         logger.debug("Attempting to format LocalDate: {}", date);
@@ -226,10 +254,12 @@ public interface DateHelper {
     }
 
     /**
-     * Format LocalDateTime to human readable string.
+     * Formats the given {@link LocalDateTime} to a human-readable English string
+     * (e.g. {@code January 01, 2023 12:00:00}).
      *
-     * @param dateTime the LocalDateTime
-     * @return the formatted string
+     * @param dateTime the {@link LocalDateTime} to format (must not be {@code null})
+     * @return the formatted human-readable string
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static String formatToHumanReadable(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -239,10 +269,12 @@ public interface DateHelper {
     }
 
     /**
-     * Format LocalDate to human readable string.
+     * Formats the given {@link LocalDate} to a human-readable English string
+     * (e.g. {@code January 01, 2023}).
      *
-     * @param date the LocalDate
-     * @return the formatted string
+     * @param date the {@link LocalDate} to format (must not be {@code null})
+     * @return the formatted human-readable string
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static String formatToHumanReadable(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -252,11 +284,12 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDateTime occurred in last X hours.
+     * Checks whether the given {@link LocalDateTime} occurred within the last {@code hours} hours.
      *
-     * @param dateTime the LocalDateTime
-     * @param hours    the hours
-     * @return true if within last X hours
+     * @param dateTime the {@link LocalDateTime} to check (must not be {@code null})
+     * @param hours    the number of hours (may be negative)
+     * @return {@code true} if {@code dateTime} is after {@code LocalDateTime.now() - hours}
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static boolean occurredInLastXHours(LocalDateTime dateTime, int hours) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -269,11 +302,12 @@ public interface DateHelper {
     }
 
     /**
-     * Check if two LocalDate are on the same day.
+     * Determines whether two {@link LocalDate} instances represent the same calendar day.
      *
-     * @param date1 the first LocalDate
-     * @param date2 the second LocalDate
-     * @return true if on same day
+     * @param date1 the first {@link LocalDate} (must not be {@code null})
+     * @param date2 the second {@link LocalDate} (must not be {@code null})
+     * @return {@code true} if both dates are equal
+     * @throws NullPointerException if either argument is {@code null}
      */
     static boolean areDatesOnSameDay(LocalDate date1, LocalDate date2) {
         Objects.requireNonNull(date1, "First LocalDate must not be null");
@@ -283,11 +317,13 @@ public interface DateHelper {
     }
 
     /**
-     * Check if two LocalDateTime are on the same day.
+     * Determines whether two {@link LocalDateTime} instances fall on the same calendar day
+     * (time component is ignored).
      *
-     * @param dateTime1 the first LocalDateTime
-     * @param dateTime2 the second LocalDateTime
-     * @return true if on same day
+     * @param dateTime1 the first {@link LocalDateTime} (must not be {@code null})
+     * @param dateTime2 the second {@link LocalDateTime} (must not be {@code null})
+     * @return {@code true} if both share the same date part
+     * @throws NullPointerException if either argument is {@code null}
      */
     static boolean areDatesOnSameDay(LocalDateTime dateTime1, LocalDateTime dateTime2) {
         Objects.requireNonNull(dateTime1, "First LocalDateTime must not be null");
@@ -297,11 +333,12 @@ public interface DateHelper {
     }
 
     /**
-     * Add days to LocalDate.
+     * Adds the specified number of days to the given {@link LocalDate}.
      *
-     * @param date the LocalDate
-     * @param days the days to add
-     * @return the new LocalDate
+     * @param date the base {@link LocalDate} (must not be {@code null})
+     * @param days the number of days to add (may be negative)
+     * @return a new {@link LocalDate} with the days added
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate addDays(LocalDate date, int days) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -309,11 +346,12 @@ public interface DateHelper {
     }
 
     /**
-     * Add days to LocalDateTime.
+     * Adds the specified number of days to the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @param days     the days to add
-     * @return the new LocalDateTime
+     * @param dateTime the base {@link LocalDateTime} (must not be {@code null})
+     * @param days     the number of days to add (may be negative)
+     * @return a new {@link LocalDateTime} with the days added
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime addDays(LocalDateTime dateTime, int days) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -321,11 +359,12 @@ public interface DateHelper {
     }
 
     /**
-     * Add months to LocalDate.
+     * Adds the specified number of months to the given {@link LocalDate}.
      *
-     * @param date   the LocalDate
-     * @param months the months to add
-     * @return the new LocalDate
+     * @param date   the base {@link LocalDate} (must not be {@code null})
+     * @param months the number of months to add (may be negative)
+     * @return a new {@link LocalDate} with the months added
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate addMonths(LocalDate date, int months) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -333,11 +372,12 @@ public interface DateHelper {
     }
 
     /**
-     * Add months to LocalDateTime.
+     * Adds the specified number of months to the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @param months   the months to add
-     * @return the new LocalDateTime
+     * @param dateTime the base {@link LocalDateTime} (must not be {@code null})
+     * @param months   the number of months to add (may be negative)
+     * @return a new {@link LocalDateTime} with the months added
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime addMonths(LocalDateTime dateTime, int months) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -345,11 +385,12 @@ public interface DateHelper {
     }
 
     /**
-     * Add years to LocalDate.
+     * Adds the specified number of years to the given {@link LocalDate}.
      *
-     * @param date  the LocalDate
-     * @param years the years to add
-     * @return the new LocalDate
+     * @param date  the base {@link LocalDate} (must not be {@code null})
+     * @param years the number of years to add (may be negative)
+     * @return a new {@link LocalDate} with the years added
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate addYears(LocalDate date, int years) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -357,11 +398,12 @@ public interface DateHelper {
     }
 
     /**
-     * Add years to LocalDateTime.
+     * Adds the specified number of years to the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @param years    the years to add
-     * @return the new LocalDateTime
+     * @param dateTime the base {@link LocalDateTime} (must not be {@code null})
+     * @param years    the number of years to add (may be negative)
+     * @return a new {@link LocalDateTime} with the years added
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime addYears(LocalDateTime dateTime, int years) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -369,20 +411,21 @@ public interface DateHelper {
     }
 
     /**
-     * Check if year is a leap year.
+     * Determines whether the specified year is a leap year.
      *
-     * @param year the year
-     * @return true if leap year
+     * @param year the year to check
+     * @return {@code true} if the year is a leap year
      */
     static boolean isLeapYear(int year) {
         return Year.isLeap(year);
     }
 
     /**
-     * Get start of week (Monday) for LocalDate.
+     * Returns the start of the week (Monday) for the given {@link LocalDate}.
      *
-     * @param date the LocalDate
-     * @return the start of week
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return the Monday of the week containing the given date
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate getStartOfWeek(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -390,10 +433,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get start of week (Monday) for LocalDateTime.
+     * Returns the start of the week (Monday at 00:00:00) for the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @return the start of week
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return the Monday of the week at midnight
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime getStartOfWeek(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -401,10 +445,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get end of week (Sunday) for LocalDate.
+     * Returns the end of the week (Sunday) for the given {@link LocalDate}.
      *
-     * @param date the LocalDate
-     * @return the end of week
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return the Sunday of the week containing the given date
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate getEndOfWeek(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -412,10 +457,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get end of week (Sunday) for LocalDateTime.
+     * Returns the end of the week (Sunday at 23:59:59.999999999) for the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @return the end of week
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return the Sunday of the week at the end of the day
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime getEndOfWeek(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -423,10 +469,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get start of month for LocalDate.
+     * Returns the first day of the month for the given {@link LocalDate}.
      *
-     * @param date the LocalDate
-     * @return the start of month
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return the first day of the month
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate getStartOfMonth(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -434,10 +481,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get start of month for LocalDateTime.
+     * Returns the first day of the month (at 00:00:00) for the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @return the start of month
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return the first day of the month at midnight
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime getStartOfMonth(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -445,10 +493,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get end of month for LocalDate.
+     * Returns the last day of the month for the given {@link LocalDate}.
      *
-     * @param date the LocalDate
-     * @return the end of month
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return the last day of the month
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static LocalDate getEndOfMonth(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -456,10 +505,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get end of month for LocalDateTime.
+     * Returns the last day of the month (at 23:59:59.999999999) for the given {@link LocalDateTime}.
      *
-     * @param dateTime the LocalDateTime
-     * @return the end of month
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return the last day of the month at the end of the day
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static LocalDateTime getEndOfMonth(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -468,10 +518,11 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDate is today.
+     * Checks whether the given {@link LocalDate} is today (in the system default timezone).
      *
-     * @param date the LocalDate
-     * @return true if today
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return {@code true} if the date is the current date
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static boolean isToday(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -479,10 +530,11 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDateTime is today.
+     * Checks whether the given {@link LocalDateTime} falls on today (date part only).
      *
-     * @param dateTime the LocalDateTime
-     * @return true if today
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return {@code true} if the date part is the current date
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static boolean isToday(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -490,10 +542,11 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDate is in the past.
+     * Checks whether the given {@link LocalDate} is in the past (strictly before today).
      *
-     * @param date the LocalDate
-     * @return true if in the past
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return {@code true} if the date is before today
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static boolean isPast(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -501,10 +554,11 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDateTime is in the past.
+     * Checks whether the given {@link LocalDateTime} is in the past (strictly before now).
      *
-     * @param dateTime the LocalDateTime
-     * @return true if in the past
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return {@code true} if the date-time is before now
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static boolean isPast(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -512,10 +566,11 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDate is in the future.
+     * Checks whether the given {@link LocalDate} is in the future (strictly after today).
      *
-     * @param date the LocalDate
-     * @return true if in the future
+     * @param date the {@link LocalDate} (must not be {@code null})
+     * @return {@code true} if the date is after today
+     * @throws NullPointerException if {@code date} is {@code null}
      */
     static boolean isFuture(LocalDate date) {
         Objects.requireNonNull(date, "LocalDate must not be null");
@@ -523,10 +578,11 @@ public interface DateHelper {
     }
 
     /**
-     * Check if LocalDateTime is in the future.
+     * Checks whether the given {@link LocalDateTime} is in the future (strictly after now).
      *
-     * @param dateTime the LocalDateTime
-     * @return true if in the future
+     * @param dateTime the {@link LocalDateTime} (must not be {@code null})
+     * @return {@code true} if the date-time is after now
+     * @throws NullPointerException if {@code dateTime} is {@code null}
      */
     static boolean isFuture(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "LocalDateTime must not be null");
@@ -534,11 +590,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get maximum of two LocalDate values.
+     * Returns the later of two {@link LocalDate} values (null-safe).
      *
-     * @param date1 the first LocalDate
-     * @param date2 the second LocalDate
-     * @return the maximum LocalDate
+     * @param date1 the first {@link LocalDate} (may be {@code null})
+     * @param date2 the second {@link LocalDate} (may be {@code null})
+     * @return the later date, or the non-null argument if one is {@code null}
      */
     static LocalDate max(LocalDate date1, LocalDate date2) {
         if (date1 == null) return date2;
@@ -547,11 +603,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get maximum of two LocalDateTime values.
+     * Returns the later of two {@link LocalDateTime} values (null-safe).
      *
-     * @param dateTime1 the first LocalDateTime
-     * @param dateTime2 the second LocalDateTime
-     * @return the maximum LocalDateTime
+     * @param dateTime1 the first {@link LocalDateTime} (may be {@code null})
+     * @param dateTime2 the second {@link LocalDateTime} (may be {@code null})
+     * @return the later date-time, or the non-null argument if one is {@code null}
      */
     static LocalDateTime max(LocalDateTime dateTime1, LocalDateTime dateTime2) {
         if (dateTime1 == null) return dateTime2;
@@ -560,11 +616,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get minimum of two LocalDate values.
+     * Returns the earlier of two {@link LocalDate} values (null-safe).
      *
-     * @param date1 the first LocalDate
-     * @param date2 the second LocalDate
-     * @return the minimum LocalDate
+     * @param date1 the first {@link LocalDate} (may be {@code null})
+     * @param date2 the second {@link LocalDate} (may be {@code null})
+     * @return the earlier date, or the non-null argument if one is {@code null}
      */
     static LocalDate min(LocalDate date1, LocalDate date2) {
         if (date1 == null) return date2;
@@ -573,11 +629,11 @@ public interface DateHelper {
     }
 
     /**
-     * Get minimum of two LocalDateTime values.
+     * Returns the earlier of two {@link LocalDateTime} values (null-safe).
      *
-     * @param dateTime1 the first LocalDateTime
-     * @param dateTime2 the second LocalDateTime
-     * @return the minimum LocalDateTime
+     * @param dateTime1 the first {@link LocalDateTime} (may be {@code null})
+     * @param dateTime2 the second {@link LocalDateTime} (may be {@code null})
+     * @return the earlier date-time, or the non-null argument if one is {@code null}
      */
     static LocalDateTime min(LocalDateTime dateTime1, LocalDateTime dateTime2) {
         if (dateTime1 == null) return dateTime2;
@@ -586,11 +642,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate seconds between two LocalDateTime values.
+     * Calculates the number of whole seconds between two {@link LocalDateTime} values.
      *
-     * @param start the start LocalDateTime
-     * @param end   the end LocalDateTime
-     * @return the number of seconds
+     * @param start the start {@link LocalDateTime} (must not be {@code null})
+     * @param end   the end {@link LocalDateTime} (must not be {@code null})
+     * @return the number of seconds between the two instants
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long secondsBetween(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start, "Start LocalDateTime must not be null");
@@ -599,11 +656,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate hours between two LocalDateTime values.
+     * Calculates the number of whole hours between two {@link LocalDateTime} values.
      *
-     * @param start the start LocalDateTime
-     * @param end   the end LocalDateTime
-     * @return the number of hours
+     * @param start the start {@link LocalDateTime} (must not be {@code null})
+     * @param end   the end {@link LocalDateTime} (must not be {@code null})
+     * @return the number of hours between the two instants
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long hoursBetween(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start, "Start LocalDateTime must not be null");
@@ -612,11 +670,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate minutes between two LocalDateTime values.
+     * Calculates the number of whole minutes between two {@link LocalDateTime} values.
      *
-     * @param start the start LocalDateTime
-     * @param end   the end LocalDateTime
-     * @return the number of minutes
+     * @param start the start {@link LocalDateTime} (must not be {@code null})
+     * @param end   the end {@link LocalDateTime} (must not be {@code null})
+     * @return the number of minutes between the two instants
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long minutesBetween(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start, "Start LocalDateTime must not be null");
@@ -625,11 +684,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate days between two LocalDate values.
+     * Calculates the number of whole days between two {@link LocalDate} values.
      *
-     * @param start the start LocalDate
-     * @param end   the end LocalDate
-     * @return the number of days
+     * @param start the start {@link LocalDate} (must not be {@code null})
+     * @param end   the end {@link LocalDate} (must not be {@code null})
+     * @return the number of days between the two dates
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long daysBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start, "Start LocalDate must not be null");
@@ -638,11 +698,13 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate days between two LocalDateTime values.
+     * Calculates the number of whole days between two {@link LocalDateTime} values
+     * (time components are ignored for the day count).
      *
-     * @param start the start LocalDateTime
-     * @param end   the end LocalDateTime
-     * @return the number of days
+     * @param start the start {@link LocalDateTime} (must not be {@code null})
+     * @param end   the end {@link LocalDateTime} (must not be {@code null})
+     * @return the number of days between the two dates
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long daysBetween(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start, "Start LocalDateTime must not be null");
@@ -651,11 +713,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate months between two LocalDate values.
+     * Calculates the number of whole months between two {@link LocalDate} values.
      *
-     * @param start the start LocalDate
-     * @param end   the end LocalDate
-     * @return the number of months
+     * @param start the start {@link LocalDate} (must not be {@code null})
+     * @param end   the end {@link LocalDate} (must not be {@code null})
+     * @return the number of months between the two dates
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long monthsBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start, "Start LocalDate must not be null");
@@ -664,11 +727,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate months between two LocalDateTime values.
+     * Calculates the number of whole months between two {@link LocalDateTime} values.
      *
-     * @param start the start LocalDateTime
-     * @param end   the end LocalDateTime
-     * @return the number of months
+     * @param start the start {@link LocalDateTime} (must not be {@code null})
+     * @param end   the end {@link LocalDateTime} (must not be {@code null})
+     * @return the number of months between the two dates
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long monthsBetween(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start, "Start LocalDateTime must not be null");
@@ -677,11 +741,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate years between two LocalDate values.
+     * Calculates the number of whole years between two {@link LocalDate} values.
      *
-     * @param start the start LocalDate
-     * @param end   the end LocalDate
-     * @return the number of years
+     * @param start the start {@link LocalDate} (must not be {@code null})
+     * @param end   the end {@link LocalDate} (must not be {@code null})
+     * @return the number of years between the two dates
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long yearsBetween(LocalDate start, LocalDate end) {
         Objects.requireNonNull(start, "Start LocalDate must not be null");
@@ -690,11 +755,12 @@ public interface DateHelper {
     }
 
     /**
-     * Calculate years between two LocalDateTime values.
+     * Calculates the number of whole years between two {@link LocalDateTime} values.
      *
-     * @param start the start LocalDateTime
-     * @param end   the end LocalDateTime
-     * @return the number of years
+     * @param start the start {@link LocalDateTime} (must not be {@code null})
+     * @param end   the end {@link LocalDateTime} (must not be {@code null})
+     * @return the number of years between the two dates
+     * @throws NullPointerException if either argument is {@code null}
      */
     static long yearsBetween(LocalDateTime start, LocalDateTime end) {
         Objects.requireNonNull(start, "Start LocalDateTime must not be null");
@@ -703,10 +769,10 @@ public interface DateHelper {
     }
 
     /**
-     * Convert LocalDateTime to Date.
+     * Converts a {@link LocalDateTime} to a legacy {@link java.util.Date} using the system default zone.
      *
-     * @param dateTime the LocalDateTime
-     * @return the Date
+     * @param dateTime the {@link LocalDateTime} to convert (may be {@code null})
+     * @return the corresponding {@link Date}, or {@code null} if the input is {@code null}
      */
     static Date localDateTimetoLegacyDate(LocalDateTime dateTime) {
         if (dateTime != null) {
@@ -716,10 +782,11 @@ public interface DateHelper {
     }
 
     /**
-     * Convert LocalDate to Date (at start of day).
+     * Converts a {@link LocalDate} to a legacy {@link java.util.Date} at the start of the day
+     * using the system default zone.
      *
-     * @param date the LocalDate
-     * @return the Date
+     * @param date the {@link LocalDate} to convert (may be {@code null})
+     * @return the corresponding {@link Date} at midnight, or {@code null} if the input is {@code null}
      */
     static Date localDatetoLegacyDate(LocalDate date) {
         if (date != null) {
@@ -729,10 +796,10 @@ public interface DateHelper {
     }
 
     /**
-     * Convert Date to LocalDateTime.
+     * Converts a legacy {@link java.util.Date} to a {@link LocalDateTime} using the system default zone.
      *
-     * @param date the Date to convert
-     * @return the LocalDateTime
+     * @param date the {@link Date} to convert (may be {@code null})
+     * @return the corresponding {@link LocalDateTime}, or {@code null} if the input is {@code null}
      */
     static LocalDateTime legacyDatetoLocalDateTime(Date date) {
         if (date != null) {
@@ -744,10 +811,11 @@ public interface DateHelper {
     }
 
     /**
-     * Convert Date to LocalDate.
+     * Converts a legacy {@link java.util.Date} to a {@link LocalDate} (time component discarded)
+     * using the system default zone.
      *
-     * @param date the Date to convert
-     * @return the LocalDate
+     * @param date the {@link Date} to convert (may be {@code null})
+     * @return the corresponding {@link LocalDate}, or {@code null} if the input is {@code null}
      */
     static LocalDate legacyDatetoLocalDate(Date date) {
         if (date != null) {
@@ -758,10 +826,12 @@ public interface DateHelper {
         return null;
     }
 
-    // ==================== DEPRECATED METHODS - java.util.Date ====================
+    // ==================== DEPRECATED METHODS - java.util.Date (retro-compatible) ====================
 
     /**
-     * @deprecated Use {@link #parseLocalDateTime(String, LocalDateTime)} instead
+     * @deprecated Use {@link #parseLocalDateTime(String, LocalDateTime)} instead.
+     *             Retained for backward compatibility; parses using the same patterns
+     *             but returns a legacy {@link Date} (instant-based semantics).
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date parseDateString(String dateString, Date defaultIfNull) {
@@ -846,119 +916,98 @@ public interface DateHelper {
     }
 
     /**
-     * @deprecated Use {@link #formatToIsoString(LocalDateTime)} instead
+     * @deprecated Use {@link #formatToIsoString(LocalDateTime)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static String formatDateToIsoString(Date date) {
-        logger.debug("Attempting to format date: {}", date);
-
-        return Optional.ofNullable(date)
-                .map(d -> d.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                .orElseGet(() -> {
-                    logger.warn("Provided date is null, returning null.");
-                    return null;
-                });
+        return formatToIsoString(legacyDatetoLocalDateTime(date));
     }
 
     /**
-     * @deprecated Use {@link #occurredInLastXHours(LocalDateTime, int)} instead
+     * @deprecated Use {@link #occurredInLastXHours(LocalDateTime, int)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static boolean occurredInLastXHours(Date date, int hours) {
         Objects.requireNonNull(date, "Date must not be null");
-
-        Instant threshold = Instant.now().minus(hours, ChronoUnit.HOURS);
-        boolean isRecent = date.toInstant().isAfter(threshold);
-
-        logger.debug("Checking if date {} occurred in the last {} hours. Threshold: {}, Result: {}", date, hours, threshold, isRecent);
-        return isRecent;
+        LocalDateTime ldt = legacyDatetoLocalDateTime(date);
+        return occurredInLastXHours(ldt, hours);
     }
 
     /**
-     * @deprecated Use {@link #areDatesOnSameDay(LocalDate, LocalDate)} instead
+     * @deprecated Use {@link #areDatesOnSameDay(LocalDate, LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static boolean areDatesOnSameDay(Date date1, Date date2) {
         Objects.requireNonNull(date1, "First date must not be null");
         Objects.requireNonNull(date2, "Second date must not be null");
 
-        return date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-                .isEqual(date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        return areDatesOnSameDay(
+                legacyDatetoLocalDate(date1),
+                legacyDatetoLocalDate(date2)
+        );
     }
 
     /**
-     * @deprecated Use {@link #addDays(LocalDate, int)} instead
+     * @deprecated Use {@link #addDays(LocalDate, int)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date addDaysToDate(Date date, int days) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        var newDate = date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .plusDays(days);
-
-        return Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDate ld = legacyDatetoLocalDate(date);
+        LocalDate newLd = addDays(ld, days);
+        return localDatetoLegacyDate(newLd);
     }
 
     /**
-     * @deprecated Use {@link #addMonths(LocalDate, int)} instead
+     * @deprecated Use {@link #addMonths(LocalDate, int)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date addMonthsToDate(Date date, int months) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        var newDate = date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .plusMonths(months);
-
-        return Date.from(newDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDate ld = legacyDatetoLocalDate(date);
+        LocalDate newLd = addMonths(ld, months);
+        return localDatetoLegacyDate(newLd);
     }
 
     /**
-     * @deprecated Use {@link #getStartOfWeek(LocalDate)} instead
+     * @deprecated Use {@link #getStartOfWeek(LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date getStartOfWeek(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        var startOfWeek = date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .with(DayOfWeek.MONDAY);
-
-        return Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDate ld = legacyDatetoLocalDate(date);
+        LocalDate start = getStartOfWeek(ld);
+        return localDatetoLegacyDate(start);
     }
 
     /**
-     * @deprecated Use {@link #getEndOfWeek(LocalDate)} instead
+     * @deprecated Use {@link #getEndOfWeek(LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date getEndOfWeek(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        var endOfWeek = date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .with(DayOfWeek.SUNDAY);
-
-        return Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDate ld = legacyDatetoLocalDate(date);
+        LocalDate end = getEndOfWeek(ld);
+        return localDatetoLegacyDate(end);
     }
 
     /**
-     * @deprecated Use {@link #formatToHumanReadable(LocalDate)} instead
+     * @deprecated Use {@link #formatToHumanReadable(LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static String formatDateToHumanReadable(Date date) {
         Objects.requireNonNull(date, "Date must not be null");
 
-        return DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.ENGLISH)
-                .format(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        LocalDate ld = legacyDatetoLocalDate(date);
+        return formatToHumanReadable(ld);
     }
 
     /**
-     * @deprecated Use {@link #isToday(LocalDate)} instead
+     * @deprecated Use {@link #isToday(LocalDate)} or {@link #areDatesOnSameDay(LocalDate, LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static boolean isToday(Date date) {
@@ -966,145 +1015,139 @@ public interface DateHelper {
     }
 
     /**
-     * @deprecated Use {@link #clearTime(LocalDateTime)} instead
+     * @deprecated Use {@link #clearTime(LocalDateTime)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date clearTime(Date date) {
-        if (date == null) return null;
-
-        var calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        return calendar.getTime();
+        if (date == null) {
+            return null;
+        }
+        LocalDateTime ldt = legacyDatetoLocalDateTime(date);
+        LocalDateTime cleared = clearTime(ldt);
+        return localDateTimetoLegacyDate(cleared);
     }
 
     /**
-     * Clear time from LocalDateTime.
+     * Clears the time component of a {@link LocalDateTime} (sets to midnight).
      *
-     * @param dateTime the LocalDateTime
-     * @return the LocalDateTime with time set to 00:00:00
+     * @param dateTime the {@link LocalDateTime} (may be {@code null})
+     * @return the date-time with time set to 00:00:00.000000000, or {@code null} if input was {@code null}
      */
     static LocalDateTime clearTime(LocalDateTime dateTime) {
-        if (dateTime == null) return null;
+        if (dateTime == null) {
+            return null;
+        }
         return dateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
     /**
-     * Clear time from LocalDate (returns the same LocalDate since LocalDate has no time component).
+     * Clears the time component of a {@link LocalDate} (no-op, since {@link LocalDate} has no time).
      *
-     * @param date the LocalDate
-     * @return the same LocalDate
+     * @param date the {@link LocalDate} (may be {@code null})
+     * @return the same {@link LocalDate}, or {@code null} if input was {@code null}
      */
     static LocalDate clearTime(LocalDate date) {
-        if (date == null) return null;
-        return date; // LocalDate has no time component
+        return date;
     }
 
     /**
-     * @deprecated Use {@link #hasTime(LocalDateTime)} instead
+     * @deprecated Use {@link #hasTime(LocalDateTime)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static boolean hasTime(Date date) {
-        if (date == null) return false;
-
-        var calendar = Calendar.getInstance();
-        calendar.setTime(date);
-
-        return calendar.get(Calendar.HOUR_OF_DAY) > 0 || calendar.get(Calendar.MINUTE) > 0 ||
-                calendar.get(Calendar.SECOND) > 0 || calendar.get(Calendar.MILLISECOND) > 0;
+        if (date == null) {
+            return false;
+        }
+        LocalDateTime ldt = legacyDatetoLocalDateTime(date);
+        return hasTime(ldt);
     }
 
     /**
-     * Check if LocalDateTime has time component (not 00:00:00).
+     * Checks whether a {@link LocalDateTime} has a non-zero time component.
      *
-     * @param dateTime the LocalDateTime
-     * @return true if has time
+     * @param dateTime the {@link LocalDateTime} (may be {@code null})
+     * @return {@code true} if hour, minute, second, or nano is greater than zero
      */
     static boolean hasTime(LocalDateTime dateTime) {
-        if (dateTime == null) return false;
+        if (dateTime == null) {
+            return false;
+        }
 
         return dateTime.getHour() > 0 || dateTime.getMinute() > 0 ||
                 dateTime.getSecond() > 0 || dateTime.getNano() > 0;
     }
 
     /**
-     * Check if LocalDate has time component.
-     * LocalDate never has a time component, so this always returns false.
+     * Checks whether a {@link LocalDate} has a time component.
+     * Always returns {@code false} because {@link LocalDate} has no time.
      *
-     * @param date the LocalDate
-     * @return always false since LocalDate has no time
+     * @param date the {@link LocalDate} (ignored)
+     * @return always {@code false}
      */
     static boolean hasTime(LocalDate date) {
-        return false; // LocalDate has no time component
+        return false;
     }
 
     /**
-     * @deprecated Use {@link #max(LocalDate, LocalDate)} instead
+     * @deprecated Use {@link #max(LocalDate, LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date max(Date d1, Date d2) {
         if (d1 == null) return d2;
         if (d2 == null) return d1;
-        return d1.after(d2) ? d1 : d2;
+
+        LocalDateTime ld1 = legacyDatetoLocalDateTime(d1);
+        LocalDateTime ld2 = legacyDatetoLocalDateTime(d2);
+        LocalDateTime maxLd = max(ld1, ld2);
+        return localDateTimetoLegacyDate(maxLd);
     }
 
     /**
-     * @deprecated Use {@link #min(LocalDate, LocalDate)} instead
+     * @deprecated Use {@link #min(LocalDate, LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date min(Date d1, Date d2) {
         if (d1 == null) return d2;
         if (d2 == null) return d1;
-        return d1.before(d2) ? d1 : d2;
+
+        LocalDateTime ld1 = legacyDatetoLocalDateTime(d1);
+        LocalDateTime ld2 = legacyDatetoLocalDateTime(d2);
+        LocalDateTime minLd = min(ld1, ld2);
+        return localDateTimetoLegacyDate(minLd);
     }
 
     /**
-     * @deprecated Use {@link #secondsBetween(LocalDateTime, LocalDateTime)},
-     * {@link #daysBetween(LocalDate, LocalDate)},
-     * {@link #monthsBetween(LocalDate, LocalDate)}, or
-     * {@link #yearsBetween(LocalDate, LocalDate)} instead
+     * @deprecated Use {@link #secondsBetween(LocalDateTime, LocalDateTime)} instead
+     *             (or the more specific {@code *Between} methods).
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static long between(Date lowDate, Date highDate) {
-        return ChronoUnit.SECONDS.between(lowDate.toInstant(), highDate.toInstant());
+        LocalDateTime llow = legacyDatetoLocalDateTime(lowDate);
+        LocalDateTime lhigh = legacyDatetoLocalDateTime(highDate);
+        return secondsBetween(llow, lhigh);
     }
 
     /**
-     * @deprecated Use {@link #toLocalDateTime(Date)} instead
+     * @deprecated Use {@link #localDateTimetoLegacyDate(LocalDateTime)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date toLegacyDate(LocalDateTime localDateTime) {
-        if (localDateTime != null) {
-            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-        }
-        return null;
+        return localDateTimetoLegacyDate(localDateTime);
     }
 
     /**
-     * @deprecated Use {@link #toLocalDate(Date)} instead
+     * @deprecated Use {@link #localDatetoLegacyDate(LocalDate)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date toLegacyDate(LocalDate localDate) {
-        if (localDate != null) {
-            return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        }
-        return null;
+        return localDatetoLegacyDate(localDate);
     }
 
     /**
-     * @deprecated Use {@link #toLocalDateTime(Date)} instead
+     * @deprecated Use {@link #legacyDatetoLocalDateTime(Date)} instead.
      */
     @Deprecated(since = "2.0", forRemoval = true)
-    static java.time.LocalDateTime toLocalDateTime(Date date) {
-        if (date != null) {
-            return Instant.ofEpochMilli(date.getTime())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-        }
-        return null;
+    static LocalDateTime toLocalDateTime(Date date) {
+        return legacyDatetoLocalDateTime(date);
     }
 }
