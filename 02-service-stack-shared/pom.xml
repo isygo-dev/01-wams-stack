@@ -76,7 +76,6 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <!-- JSON Schema Validator -->
@@ -169,4 +168,15 @@
 
     </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack</artifactId>
+                <version>WS-1.0.260408-T1636</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

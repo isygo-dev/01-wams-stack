@@ -830,8 +830,8 @@ public interface DateHelper {
 
     /**
      * @deprecated Use {@link #parseLocalDateTime(String, LocalDateTime)} instead.
-     *             Retained for backward compatibility; parses using the same patterns
-     *             but returns a legacy {@link Date} (instant-based semantics).
+     * Retained for backward compatibility; parses using the same patterns
+     * but returns a legacy {@link Date} (instant-based semantics).
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static Date parseDateString(String dateString, Date defaultIfNull) {
@@ -1118,7 +1118,7 @@ public interface DateHelper {
 
     /**
      * @deprecated Use {@link #secondsBetween(LocalDateTime, LocalDateTime)} instead
-     *             (or the more specific {@code *Between} methods).
+     * (or the more specific {@code *Between} methods).
      */
     @Deprecated(since = "2.0", forRemoval = true)
     static long between(Date lowDate, Date highDate) {

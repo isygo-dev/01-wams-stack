@@ -38,8 +38,17 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Security Core — Boot manages 6.5.x
-             FIXED: was pinned at 6.0.3 (old, contains known CVEs)        -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+            <version>${spring-aspects.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
@@ -52,19 +61,23 @@
             <artifactId>commons-text</artifactId>
         </dependency>
 
-        <!-- NOTE: hibernate-core, hibernate-validator, spring-data-jpa come
-             transitively from service-stack-shared. They are NOT redeclared
-             here. FIXED: original re-declared them with old pinned versions
-             (hibernate 6.4.4, spring-data-jpa 3.0.5) that overrode Boot's
-             managed versions and caused classpath conflicts.               -->
-
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>eu.isygo-it.services</groupId>
+                <artifactId>service-stack</artifactId>
+                <version>WS-1.0.260408-T1636</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>
