@@ -1,10 +1,8 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
@@ -37,9 +34,9 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
 
     /**
      * Retrieves all objects with minimal data by page.
-     
-     * @param page           Page number for pagination (0-based)
-     * @param size           Number of items per page
+     *
+     * @param page Page number for pagination (0-based)
+     * @param size Number of items per page
      * @return List of minimal DTO objects
      */
     @Operation(summary = "Find all objects with pagination",
@@ -64,7 +61,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "")
     ResponseEntity<PaginatedResponseDto<M>> findAll(
-            
+
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
             @RequestParam(name = RestApiConstants.SIZE, required = false)
@@ -72,9 +69,9 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
 
     /**
      * Retrieves all objects with full data.
-     
-     * @param page           Page number for pagination (0-based)
-     * @param size           Number of items per page
+     *
+     * @param page Page number for pagination (0-based)
+     * @param size Number of items per page
      * @return List of full DTO objects
      */
     @Operation(summary = "Find all objects with full data",
@@ -99,7 +96,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/full")
     ResponseEntity<PaginatedResponseDto<F>> findAllFull(
-            
+
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
             @RequestParam(name = RestApiConstants.SIZE, required = false)
@@ -107,8 +104,8 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
 
     /**
      * Retrieves a single object by its identifier.
-     
-     * @param id             Object identifier
+     *
+     * @param id Object identifier
      * @return Single full DTO object
      */
     @Operation(summary = "Find object by ID",
@@ -133,13 +130,13 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(
-            
+
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
     /**
      * Retrieves the total count of objects.
-     
+     *
      * @return Total count of objects
      */
     @Operation(summary = "Get objects count",
@@ -161,14 +158,14 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/count")
     ResponseEntity<Long> getCount(
-            );
+    );
 
     /**
      * Retrieves objects filtered by criteria with pagination.
-     
-     * @param criteria       Filter criteria string
-     * @param page           Page number for pagination (0-based)
-     * @param size           Number of items per page
+     *
+     * @param criteria Filter criteria string
+     * @param page     Page number for pagination (0-based)
+     * @param size     Number of items per page
      * @return List of full DTO objects matching criteria
      */
     @Operation(summary = "Find objects by filter criteria",
@@ -193,7 +190,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/filter")
     ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(
-            
+
             @RequestParam(name = RestApiConstants.CRITERIA)
             @Parameter(description = "Filter criteria", example = "name=John,OR age>18") String criteria,
             @RequestParam(name = RestApiConstants.PAGE, required = false)

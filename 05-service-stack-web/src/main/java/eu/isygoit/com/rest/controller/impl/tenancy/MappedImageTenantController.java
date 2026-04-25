@@ -11,7 +11,6 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
@@ -55,11 +54,11 @@ public abstract class MappedImageTenantController<I extends Serializable,
     @Getter
     @Autowired
     private RequestContextService requestContextService;
-    
+
     @Override
     public ResponseEntity<F> uploadImage(
-                                         @PathVariable(name = RestApiConstants.ID) I id,
-                                         @RequestPart(name = RestApiConstants.FILE) MultipartFile file) {
+            @PathVariable(name = RestApiConstants.ID) I id,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file) {
         log.info("Upload image request received");
         try {
             return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadImage(requestContextService.getCurrentContext().getSenderTenant(), id, file)));
@@ -71,7 +70,7 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadImage(
-                                                  @PathVariable(name = RestApiConstants.ID) I id) throws IOException {
+            @PathVariable(name = RestApiConstants.ID) I id) throws IOException {
         log.info("Download image request received");
         try {
             ResourceDto resource = crudService().downloadImage(requestContextService.getCurrentContext().getSenderTenant(), id);
@@ -87,8 +86,8 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> createWithImage(
-                                             @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                             @Valid @RequestPart(name = "dto") F dto) {
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Valid @RequestPart(name = "dto") F dto) {
         log.info("Create with image request received");
         try {
             if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
@@ -106,9 +105,9 @@ public abstract class MappedImageTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> updateWithImage(
-                                             @PathVariable(name = RestApiConstants.ID) I id,
-                                             @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                             @Valid @RequestPart(name = "dto") F dto) {
+            @PathVariable(name = RestApiConstants.ID) I id,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Valid @RequestPart(name = "dto") F dto) {
         log.info("Update with image request received");
         try {
             dto = this.beforeUpdate(dto);

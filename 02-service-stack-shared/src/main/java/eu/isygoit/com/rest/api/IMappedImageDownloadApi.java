@@ -1,11 +1,9 @@
 package eu.isygoit.com.rest.api;
 
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +13,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestPart;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,8 +27,8 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
 
     /**
      * Download image response entity.
-     
-     * @param id             the id
+     *
+     * @param id the id
      * @return the response entity
      * @throws IOException the io exception
      */
@@ -57,5 +54,5 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
     })
     @GetMapping(path = "/image/download/{id}")
     ResponseEntity<Resource> downloadImage(
-                                           @PathVariable(name = RestApiConstants.ID) I id) throws IOException;
+            @PathVariable(name = RestApiConstants.ID) I id) throws IOException;
 }

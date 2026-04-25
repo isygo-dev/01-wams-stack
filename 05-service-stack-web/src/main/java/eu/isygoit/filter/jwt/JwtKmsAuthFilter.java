@@ -6,8 +6,8 @@ import eu.isygoit.jwt.IJwtService;
 import eu.isygoit.service.ITokenService;
 import eu.isygoit.service.RequestContextService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * through the ITokenService.
  */
 @Slf4j
+@NoArgsConstructor(force = true)
 public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
 
     /**

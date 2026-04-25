@@ -12,7 +12,6 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
@@ -55,10 +54,10 @@ public abstract class MappedFileTenantController<I extends Serializable,
     @Getter
     @Autowired
     private RequestContextService requestContextService;
-    
+
     @Override
     public ResponseEntity<F> uploadFile(
-                                        I id, MultipartFile file) {
+            I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
             return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(requestContextService.getCurrentContext().getSenderTenant(), id, file)));
@@ -70,8 +69,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> downloadFile(
-                                                 I id,
-                                                 Long version) {
+            I id,
+            Long version) {
         log.info("Download file request received");
         try {
             ResourceDto resource = crudService().downloadFile(requestContextService.getCurrentContext().getSenderTenant(), id, version);
@@ -87,8 +86,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> createWithFile(
-                                            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                            @Valid @RequestPart(name = "dto") F dto) {
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Valid @RequestPart(name = "dto") F dto) {
         log.info("Create with file request received");
         try {
             if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
@@ -105,9 +104,9 @@ public abstract class MappedFileTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<F> updateWithFile(
-                                            @PathVariable(name = RestApiConstants.ID) I id,
-                                            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                            @Valid @RequestPart(name = "dto") F dto) {
+            @PathVariable(name = RestApiConstants.ID) I id,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Valid @RequestPart(name = "dto") F dto) {
         log.info("Update with file request received");
         try {
             dto = this.beforeUpdate(dto);

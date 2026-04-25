@@ -1,8 +1,6 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,7 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -24,9 +21,9 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
 
     /**
      * Delete additional file response entity.
-     
-     * @param parentId       the parent id
-     * @param fileId         the file id
+     *
+     * @param parentId the parent id
+     * @param fileId   the file id
      * @return the response entity
      */
     @Operation(summary = "Delete additional file for an object",
@@ -51,6 +48,6 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
     })
     @DeleteMapping(path = "/multi-files")
     ResponseEntity<Boolean> deleteAdditionalFile(
-                                                 @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                 @RequestParam(name = RestApiConstants.FILE_ID) I fileId);
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestParam(name = RestApiConstants.FILE_ID) I fileId);
 }

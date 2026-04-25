@@ -1,8 +1,6 @@
 package eu.isygoit.service;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.enums.IEnumCharSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,7 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -20,9 +20,9 @@ public interface KeyServiceApi {
 
     /**
      * Generate random key response entity.
-     
-     * @param length         the length
-     * @param charSetType    the char set type
+     *
+     * @param length      the length
+     * @param charSetType the char set type
      * @return the response entity
      */
     @Operation(summary = "Generate random key Api",
@@ -35,16 +35,16 @@ public interface KeyServiceApi {
     })
     @PostMapping(path = "/random/new")
     ResponseEntity<String> newRandomKey(
-                                        @RequestParam(name = RestApiConstants.LENGTH) Integer length,
-                                        @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
+            @RequestParam(name = RestApiConstants.LENGTH) Integer length,
+            @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
     /**
      * Renew key by name response entity.
-     
-     * @param tenant         the tenant
-     * @param keyName        the key name
-     * @param length         the length
-     * @param charSetType    the char set type
+     *
+     * @param tenant      the tenant
+     * @param keyName     the key name
+     * @param length      the length
+     * @param charSetType the char set type
      * @return the response entity
      */
     @Operation(summary = "Renew key by name Api",
@@ -57,16 +57,16 @@ public interface KeyServiceApi {
     })
     @PostMapping(path = "/random/renew")
     ResponseEntity<String> renewRandomKey(
-                                          @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                          @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
-                                          @RequestParam(name = RestApiConstants.LENGTH) Integer length,
-                                          @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
+            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+            @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
+            @RequestParam(name = RestApiConstants.LENGTH) Integer length,
+            @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
     /**
      * Gets key by name.
-     
-     * @param tenant         the tenant
-     * @param keyName        the key name
+     *
+     * @param tenant  the tenant
+     * @param keyName the key name
      * @return the key by name
      */
     @Operation(summary = "Get key by name Api",
@@ -79,6 +79,6 @@ public interface KeyServiceApi {
     })
     @GetMapping(path = "/random")
     ResponseEntity<String> getRandomKey(
-                                        @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                        @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
+            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+            @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
 }

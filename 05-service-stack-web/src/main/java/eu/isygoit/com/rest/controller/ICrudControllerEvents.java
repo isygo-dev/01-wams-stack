@@ -93,16 +93,16 @@ interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<
 
     /**
      * After find all full list.
-     
-     * @param list           the list
+     *
+     * @param list the list
      * @return the list
      */
     List<F> afterFindAllFull(ContextRequestDto requestContext, List<F> list);
 
     /**
      * After find all list.
-     
-     * @param list           the list
+     *
+     * @param list the list
      * @return the list
      */
     List<M> afterFindAll(ContextRequestDto requestContext, List<M> list);

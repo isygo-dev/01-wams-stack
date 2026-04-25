@@ -1,9 +1,7 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,7 +13,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.Serializable;
 import java.util.List;
@@ -32,8 +33,8 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
 
     /**
      * Creates a new object.
-     
-     * @param object         The object to create
+     *
+     * @param object The object to create
      * @return ResponseEntity containing the created object with its assigned ID
      */
     @Operation(summary = "Create a new object",
@@ -66,8 +67,8 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
 
     /**
      * Creates multiple objects in a single request.
-     
-     * @param objects        List of objects to create
+     *
+     * @param objects List of objects to create
      * @return ResponseEntity containing the list of created objects with their assigned IDs
      */
     @Operation(summary = "Batch create objects",
@@ -95,15 +96,15 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     })
     @PostMapping(path = "/batch", consumes = "application/json", produces = "application/json")
     ResponseEntity<List<D>> createBatch(
-            
+
             @Valid @RequestBody
             @Parameter(description = "List of objects to create", required = true, example = "[{id: null, ...}, {id: null, ...}]") List<D> objects);
 
     /**
      * Updates an existing object.
-     
-     * @param id             Object identifier
-     * @param object         The updated object data
+     *
+     * @param id     Object identifier
+     * @param object The updated object data
      * @return ResponseEntity containing the updated object
      */
     @Operation(summary = "Update an existing object",
@@ -131,7 +132,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> update(
-            
+
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", required = true, example = "123") I id,
             @Valid @RequestBody

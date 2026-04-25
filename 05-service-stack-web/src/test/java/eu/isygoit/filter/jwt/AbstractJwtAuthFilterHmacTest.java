@@ -34,7 +34,6 @@ class AbstractJwtAuthFilterHmacTest {
         MockitoAnnotations.openMocks(this);
         filter = new TestJwtAuthFilter(jwtService, requestContextService);
         ReflectionTestUtils.setField(filter, "shouldNotFilterKey", testSecret);
-        filter.init(); // Initialize cache
     }
 
     @Test

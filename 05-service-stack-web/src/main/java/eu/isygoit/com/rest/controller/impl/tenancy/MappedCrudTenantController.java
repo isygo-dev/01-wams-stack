@@ -6,7 +6,6 @@ import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -44,30 +43,30 @@ public abstract class MappedCrudTenantController<I extends Serializable,
 
     @Override
     public final ResponseEntity<F> create(
-                                          F object) {
+            F object) {
         return performCreate(requestContextService.getCurrentContext(), object);
     }
 
-    public final ResponseEntity<List<F>> createBatch( List<F> objects) {
+    public final ResponseEntity<List<F>> createBatch(List<F> objects) {
         return performCreate(requestContextService.getCurrentContext(), objects);
     }
 
     @Override
-    public final ResponseEntity<?> delete( I id) {
+    public final ResponseEntity<?> delete(I id) {
         return performDelete(requestContextService.getCurrentContext(), id);
     }
 
     @Override
     public final ResponseEntity<?> deleteBatch(
-                                               List<I> ids) {
+            List<I> ids) {
 
         return performDelete(requestContextService.getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
     @Override
     public final ResponseEntity<PaginatedResponseDto<M>> findAll(
-                                                                 Integer page,
-                                                                 Integer size) {
+            Integer page,
+            Integer size) {
         return performFindAll(requestContextService.getCurrentContext(), page, size);
     }
 
@@ -79,14 +78,14 @@ public abstract class MappedCrudTenantController<I extends Serializable,
 
     @Override
     public final ResponseEntity<F> findById(
-                                            I id) {
+            I id) {
         return performFindById(requestContextService.getCurrentContext(), id);
     }
 
     @Override
     public final ResponseEntity<F> update(
-                                          I id,
-                                          F object) {
+            I id,
+            F object) {
         return performUpdate(requestContextService.getCurrentContext(), id, object);
     }
 
@@ -98,9 +97,9 @@ public abstract class MappedCrudTenantController<I extends Serializable,
 
     @Override
     public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(
-                                                                             String criteria,
-                                                                             Integer page,
-                                                                             Integer size) {
+            String criteria,
+            Integer page,
+            Integer size) {
         return performFindAllFilteredByCriteria(requestContextService.getCurrentContext(), criteria, page, size);
     }
 

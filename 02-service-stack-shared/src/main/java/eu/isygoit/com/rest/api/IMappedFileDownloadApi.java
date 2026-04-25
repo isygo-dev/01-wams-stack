@@ -1,9 +1,7 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IFileUploadDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,7 +11,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
@@ -29,9 +26,9 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
 
     /**
      * Download file response entity.
-     
-     * @param id             the id
-     * @param version        the version
+     *
+     * @param id      the id
+     * @param version the version
      * @return the response entity
      */
     @Operation(summary = "Download a file by object id and version",
@@ -56,7 +53,7 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
     })
     @GetMapping(path = "/file/download/{id}")
     ResponseEntity<Resource> downloadFile(
-            
+
             @PathVariable(name = RestApiConstants.ID) I id,
             @RequestParam(name = RestApiConstants.VERSION) Long version);
 }

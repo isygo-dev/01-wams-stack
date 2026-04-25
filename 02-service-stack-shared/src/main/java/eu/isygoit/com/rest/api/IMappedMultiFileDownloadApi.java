@@ -1,8 +1,6 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -25,10 +22,10 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
 
     /**
      * Download response entity.
-     
-     * @param parentId       the parent id
-     * @param fileId         the file id
-     * @param version        the version
+     *
+     * @param parentId the parent id
+     * @param fileId   the file id
+     * @param version  the version
      * @return the response entity
      */
     @Operation(summary = "Download a multi-file by object id and file id",
@@ -53,7 +50,7 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
     })
     @GetMapping(path = "/multi-files/download")
     ResponseEntity<Resource> download(
-                                      @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                      @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
-                                      @RequestParam(name = RestApiConstants.VERSION) Long version);
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
+            @RequestParam(name = RestApiConstants.VERSION) Long version);
 }

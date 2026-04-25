@@ -1,8 +1,6 @@
 package eu.isygoit.service;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.NextCodeDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,7 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * The interface Remote next code api.
@@ -20,10 +21,10 @@ public interface IRemoteNextCodeService {
 
     /**
      * Generate next code response entity.
-     
-     * @param tenant         the tenant
-     * @param entity         the entity
-     * @param attribute      the attribute
+     *
+     * @param tenant    the tenant
+     * @param entity    the entity
+     * @param attribute the attribute
      * @return the response entity
      */
     @Operation(summary = "Generate next incremental code",

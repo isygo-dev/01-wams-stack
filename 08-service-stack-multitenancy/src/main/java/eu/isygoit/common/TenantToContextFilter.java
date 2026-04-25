@@ -3,7 +3,6 @@ package eu.isygoit.common;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.audit.TenantContext;
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,7 +29,8 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     private static final String API_DOCS_PATTERN = "/v3/api-docs";
     private static final String TENANT_HEADER = "X-Tenant-ID";
     private final ITenantValidator tenantValidator;
-    private Cache<String, Boolean> uriFilterCache;
+    private Cache<String, Boolean> uriFilterCache = Caffeine.newBuilder()
+            .build();
 
     /**
      * Instantiates a new Tenant to context filter.
@@ -39,12 +39,6 @@ public class TenantToContextFilter extends OncePerRequestFilter {
      */
     public TenantToContextFilter(ITenantValidator tenantValidator) {
         this.tenantValidator = tenantValidator;
-    }
-
-    @jakarta.annotation.PostConstruct
-    public void init() {
-        uriFilterCache = Caffeine.newBuilder()
-                .build();
     }
 
     private boolean shouldSkipUri(String uri) {

@@ -1,11 +1,9 @@
 package eu.isygoit.com.rest.api;
 
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
@@ -30,9 +31,9 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
 
     /**
      * Create with image response entity.
-     
-     * @param file           the file
-     * @param dto            the dto
+     *
+     * @param file the file
+     * @param dto  the dto
      * @return the response entity
      */
     @Operation(summary = "Create a new object and upload linked image file",
@@ -57,15 +58,15 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> createWithImage(
-                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                      @Valid @RequestPart(name = "dto") D dto);
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Valid @RequestPart(name = "dto") D dto);
 
     /**
      * Update with image response entity.
-     
-     * @param id             the id
-     * @param file           the file
-     * @param dto            the dto
+     *
+     * @param id   the id
+     * @param file the file
+     * @param dto  the dto
      * @return the response entity
      */
     @Operation(summary = "Upload a new image file and update the linked object",
@@ -93,15 +94,15 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<?> updateWithImage(
-                                      @PathVariable(name = RestApiConstants.ID) I id,
-                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
-                                      @Valid @RequestPart(name = "dto") D dto);
+            @PathVariable(name = RestApiConstants.ID) I id,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
+            @Valid @RequestPart(name = "dto") D dto);
 
     /**
      * Upload image response entity.
-     
-     * @param id             the id
-     * @param file           the file
+     *
+     * @param id   the id
+     * @param file the file
      * @return the response entity
      */
     @Operation(summary = "Upload a new image file and link it to an object with object identifier",
@@ -129,6 +130,6 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<D> uploadImage(
-                                  @PathVariable(name = RestApiConstants.ID) I id,
-                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
+            @PathVariable(name = RestApiConstants.ID) I id,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

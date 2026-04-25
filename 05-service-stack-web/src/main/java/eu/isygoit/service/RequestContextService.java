@@ -20,7 +20,7 @@ public class RequestContextService {
      */
     private static final ThreadLocal<ContextRequestDto> CURRENT_CONTEXT = new ThreadLocal<>();
 
-    private final IJwtService jwtService;
+    private final ITokenService jwtService;
 
     /**
      * Populate context from DTO and store it:

@@ -1,8 +1,6 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,9 +26,9 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
 
     /**
      * Upload additional files response entity.
-     
-     * @param parentId       the parent id
-     * @param files          the files
+     *
+     * @param parentId the parent id
+     * @param files    the files
      * @return the response entity
      */
     @Operation(summary = "Upload additional files for an object",
@@ -59,15 +56,15 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<List<L>> uploadAdditionalFiles(
-                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                  @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files);
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files);
 
 
     /**
      * Upload additional file response entity.
-     
-     * @param parentId       the parent id
-     * @param file           the file
+     *
+     * @param parentId the parent id
+     * @param file     the file
      * @return the response entity
      */
     @Operation(summary = "Upload additional file for an object",
@@ -95,6 +92,6 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<List<L>> uploadAdditionalFile(
-                                                 @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
-                                                 @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

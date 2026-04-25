@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +36,9 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Deletes an entity by ID. This operation is not supported.
-      containing metadata
-     * @param id             the ID of the entity to delete
+     * containing metadata
+     *
+     * @param id the ID of the entity to delete
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -50,8 +50,9 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Deletes multiple entities by their IDs. This operation is not supported.
-      containing metadata
-     * @param ids            the list of entity IDs to delete
+     * containing metadata
+     *
+     * @param ids the list of entity IDs to delete
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -63,9 +64,10 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Retrieves all entities with pagination. This operation is not supported.
-      containing metadata
-     * @param page           the page number for pagination
-     * @param size           the page size for pagination
+     * containing metadata
+     *
+     * @param page the page number for pagination
+     * @param size the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -77,9 +79,10 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Retrieves all entities with full details and pagination. This operation is not supported.
-      containing metadata
-     * @param page           the page number for pagination
-     * @param size           the page size for pagination
+     * containing metadata
+     *
+     * @param page the page number for pagination
+     * @param size the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -91,8 +94,9 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Retrieves an entity by ID. This operation is not supported.
-      containing metadata
-     * @param id             the ID of the entity
+     * containing metadata
+     *
+     * @param id the ID of the entity
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -104,7 +108,8 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Retrieves the count of all entities. This operation is not supported.
-      containing metadata
+     * containing metadata
+     *
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -116,8 +121,9 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Creates a new entity. This operation is not supported.
-      containing metadata
-     * @param object         the DTO containing entity data
+     * containing metadata
+     *
+     * @param object the DTO containing entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -129,8 +135,9 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Creates multiple entities in a batch. This operation is not supported.
-      containing metadata
-     * @param objects        the list of DTOs containing entity data
+     * containing metadata
+     *
+     * @param objects the list of DTOs containing entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -142,9 +149,10 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Updates an entity by ID. This operation is not supported.
-      containing metadata
-     * @param id             the ID of the entity to update
-     * @param object         the DTO containing updated entity data
+     * containing metadata
+     *
+     * @param id     the ID of the entity to update
+     * @param object the DTO containing updated entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
@@ -156,10 +164,11 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Retrieves entities filtered by criteria with pagination. This operation is not supported.
-      containing metadata
-     * @param criteria       the filtering criteria
-     * @param page           the page number for pagination
-     * @param size           the page size for pagination
+     * containing metadata
+     *
+     * @param criteria the filtering criteria
+     * @param page     the page number for pagination
+     * @param size     the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */

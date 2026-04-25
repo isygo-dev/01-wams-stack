@@ -1,12 +1,10 @@
 package eu.isygoit.filter.jwt;
 
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
 import eu.isygoit.service.ITokenService;
 import eu.isygoit.service.RequestContextService;
-import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 

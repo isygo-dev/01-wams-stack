@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.annotation.InjectCodeGen;
 import eu.isygoit.annotation.InjectCodeGenKms;
 import eu.isygoit.app.ApplicationContextService;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.NextCodeDto;
 import eu.isygoit.exception.BadResponseException;
 import eu.isygoit.exception.NextCodeGenMethodNotDefinedException;

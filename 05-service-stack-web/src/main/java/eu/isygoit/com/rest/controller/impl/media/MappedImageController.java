@@ -11,7 +11,6 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.service.RequestContextService;
@@ -65,7 +64,7 @@ public abstract class MappedImageController<
     }
 
     @Override
-    public ResponseEntity<Resource> downloadImage( I id) {
+    public ResponseEntity<Resource> downloadImage(I id) {
         log.debug("Downloading image for entityId: {}", id);
         try {
             var resource = crudService().downloadImage(id);
@@ -87,7 +86,7 @@ public abstract class MappedImageController<
     }
 
     @Override
-    public ResponseEntity<F> createWithImage( MultipartFile file, @Valid F dto) {
+    public ResponseEntity<F> createWithImage(MultipartFile file, @Valid F dto) {
         log.debug("Creating entity with image for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
@@ -108,7 +107,7 @@ public abstract class MappedImageController<
     }
 
     @Override
-    public ResponseEntity<F> updateWithImage( I id, MultipartFile file, @Valid F dto) {
+    public ResponseEntity<F> updateWithImage(I id, MultipartFile file, @Valid F dto) {
         log.debug("Updating entity with image for entityId: {}", id);
         try {
             F processed = beforeUpdate(id, dto);               // ← now uses id (better)

@@ -9,7 +9,6 @@ import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.com.rest.service.tenancy.IMultiFileTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileMinDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.mapper.EntityMapper;
@@ -53,7 +52,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
     @Getter
     @Autowired
     private RequestContextService requestContextService;
-    
+
     /**
      * Linked file mapper entity mapper.
      *
@@ -63,8 +62,8 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
 
     @Override
     public ResponseEntity<List<L>> uploadAdditionalFiles(
-                                                         I parentId,
-                                                         MultipartFile[] files) {
+            I parentId,
+            MultipartFile[] files) {
         log.info("update additionl file");
         try {
             return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(requestContextService.getCurrentContext().getSenderTenant(), parentId, files)));
@@ -76,8 +75,8 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
 
     @Override
     public ResponseEntity<List<L>> uploadAdditionalFile(
-                                                        I parentId,
-                                                        MultipartFile file) {
+            I parentId,
+            MultipartFile file) {
         log.info("update additionl file");
         try {
             return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(requestContextService.getCurrentContext().getSenderTenant(), parentId, file)));
@@ -89,8 +88,8 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
 
     @Override
     public ResponseEntity<Boolean> deleteAdditionalFile(
-                                                        I parentId,
-                                                        I fileId) {
+            I parentId,
+            I fileId) {
         log.info("delete additional file");
         try {
             return ResponseFactory.responseOk(crudService().deleteAdditionalFile(requestContextService.getCurrentContext().getSenderTenant(), parentId, fileId));
@@ -102,9 +101,9 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
 
     @Override
     public ResponseEntity<Resource> download(
-                                             I parentId,
-                                             I fileId,
-                                             Long version
+            I parentId,
+            I fileId,
+            Long version
     ) {
         try {
             log.info("download file ");

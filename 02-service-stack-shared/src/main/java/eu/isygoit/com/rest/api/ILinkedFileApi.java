@@ -1,9 +1,7 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IFileUploadDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,8 +25,8 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
 
     /**
      * Upload response entity.
-     
-     * @param linkedFile     the linked file
+     *
+     * @param linkedFile the linked file
      * @return the response entity
      * @throws IOException the io exception
      */
@@ -45,8 +43,9 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
 
     /**
      * Download response entity.
-     * @param tenant         the tenant
-     * @param code           the code
+     *
+     * @param tenant the tenant
+     * @param code   the code
      * @return the response entity
      * @throws IOException the io exception
      */
@@ -60,14 +59,14 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     })
     @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<Resource> download(
-                                      @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                      @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
+            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+            @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
 
     /**
      * Delete file response entity.
-     
-     * @param tenant         the tenant
-     * @param code           the code
+     *
+     * @param tenant the tenant
+     * @param code   the code
      * @return the response entity
      */
     @Operation(summary = "Delete linked file Api",
@@ -80,7 +79,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     })
     @DeleteMapping(path = "/deleteFile")
     ResponseEntity<Boolean> deleteFile(
-                                       @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
-                                       @RequestParam(name = RestApiConstants.CODE) String code);
+            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+            @RequestParam(name = RestApiConstants.CODE) String code);
 
 }

@@ -11,7 +11,6 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.service.RequestContextService;
@@ -49,7 +48,7 @@ public abstract class MappedFileController<
     @Getter
     @Autowired
     private RequestContextService requestContextService;
-    
+
     @Override
     public ResponseEntity<F> uploadFile(I id, MultipartFile file) {
         log.debug("Uploading file for entityId: {}", id);

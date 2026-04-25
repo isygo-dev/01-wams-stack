@@ -6,7 +6,6 @@ import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.service.RequestContextService;
 import lombok.Getter;
@@ -37,7 +36,7 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
     @Getter
     @Autowired
     private RequestContextService requestContextService;
-    
+
     public final ResponseEntity<F> create(F object) {
         return performCreate(requestContextService.getCurrentContext(), object);
     }

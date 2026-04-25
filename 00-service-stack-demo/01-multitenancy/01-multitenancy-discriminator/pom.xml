@@ -12,7 +12,7 @@
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack-parent</artifactId>
         <version>WS-1.0.260408-T1636</version>
-        <relativePath/>
+        <relativePath>../../../01-service-stack-parent/pom.xml</relativePath>
     </parent>
 
     <groupId>eu.isygo-it.services</groupId>

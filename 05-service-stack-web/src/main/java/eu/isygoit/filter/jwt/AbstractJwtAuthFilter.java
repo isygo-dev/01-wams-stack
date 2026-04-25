@@ -2,7 +2,6 @@ package eu.isygoit.filter.jwt;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.exception.TokenInvalidException;
@@ -13,12 +12,11 @@ import eu.isygoit.security.CustomAuthentification;
 import eu.isygoit.security.CustomUserDetails;
 import eu.isygoit.service.RequestContextService;
 import io.jsonwebtoken.JwtException;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,21 +30,21 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract JWT Authentication Filter
- *
+ * <p>
  * Responsibilities:
- *  - Extract JWT from request
- *  - Validate token (delegated to subclass)
- *  - Populate Spring SecurityContext
- *  - Populate RequestContext (ThreadLocal + request attributes)
- *  - Ensure cleanup (ThreadLocal leak prevention)
- *
+ * - Extract JWT from request
+ * - Validate token (delegated to subclass)
+ * - Populate Spring SecurityContext
+ * - Populate RequestContext (ThreadLocal + request attributes)
+ * - Ensure cleanup (ThreadLocal leak prevention)
+ * <p>
  * SECURITY NOTES:
- *  - Never trust headers alone
- *  - Always validate JWT signature + claims
- *  - Always clear ThreadLocal in finally
+ * - Never trust headers alone
+ * - Always validate JWT signature + claims
+ * - Always clear ThreadLocal in finally
  */
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor(force = true)
 public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
     // =========================
@@ -82,14 +80,14 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
      * Cache to avoid recomputing URI filtering rules.
      * TTL added to prevent unbounded memory growth.
      */
-    private Cache<String, Boolean> uriFilterCache;
+    private Cache<String, Boolean> uriFilterCache = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
 
-    @PostConstruct
-    public void init() {
-        uriFilterCache = Caffeine.newBuilder()
-                .maximumSize(10_000)
-                .expireAfterWrite(10, TimeUnit.MINUTES)
-                .build();
+    public AbstractJwtAuthFilter(IJwtService jwtService, RequestContextService requestContextService) {
+        this.jwtService = jwtService;
+        this.requestContextService = requestContextService;
     }
 
     // =========================

@@ -6,7 +6,6 @@ import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.service.RequestContextService;
 import lombok.Getter;
@@ -37,15 +36,15 @@ public abstract class MappedCrudDeleteController<I extends Serializable, T exten
     @Getter
     @Autowired
     private RequestContextService requestContextService;
-    
+
     @Override
     public final ResponseEntity<?> delete(
-                                          I id) {
+            I id) {
         return performDelete(requestContextService.getCurrentContext(), id);
     }
 
     @Override
-    public final ResponseEntity<?> deleteBatch(          List<I> ids) {
+    public final ResponseEntity<?> deleteBatch(List<I> ids) {
         return performDelete(requestContextService.getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 }

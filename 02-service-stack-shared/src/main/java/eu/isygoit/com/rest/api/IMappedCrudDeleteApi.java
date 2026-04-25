@@ -27,8 +27,8 @@ public interface IMappedCrudDeleteApi<I> {
 
     /**
      * Deletes a single object by its identifier.
-     
-     * @param id             Object identifier
+     *
+     * @param id Object identifier
      * @return ResponseEntity with no content on success
      */
     @Operation(summary = "Delete object by ID",
@@ -55,14 +55,14 @@ public interface IMappedCrudDeleteApi<I> {
     })
     @DeleteMapping(path = "/{id}")
     ResponseEntity<?> delete(
-            
+
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
     /**
      * Deletes multiple objects by their identifiers.
-     
-     * @param ids            List of object identifiers to delete
+     *
+     * @param ids List of object identifiers to delete
      * @return ResponseEntity with no content on success
      */
     @Operation(summary = "Batch delete objects",

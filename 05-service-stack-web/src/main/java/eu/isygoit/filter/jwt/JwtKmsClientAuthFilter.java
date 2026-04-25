@@ -6,11 +6,9 @@ import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
 import eu.isygoit.service.ITokenService;
 import eu.isygoit.service.RequestContextService;
-import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
@@ -22,10 +20,8 @@ import java.util.concurrent.TimeUnit;
  * token validation through a Feign client.
  */
 @Slf4j
+@NoArgsConstructor(force = true)
 public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
-
-    // Constant empty context to avoid object creation on each validation
-    private static final ContextRequestDto EMPTY_CONTEXT = ContextRequestDto.builder().build();
 
     private final ITokenService tokenService;
 
