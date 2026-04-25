@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
  * - Always clear ThreadLocal in finally
  */
 @Slf4j
-@NoArgsConstructor(force = true)
 public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
     // =========================

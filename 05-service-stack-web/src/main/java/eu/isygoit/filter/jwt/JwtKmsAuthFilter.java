@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * through the ITokenService.
  */
 @Slf4j
-@NoArgsConstructor(force = true)
 public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
 
     /**

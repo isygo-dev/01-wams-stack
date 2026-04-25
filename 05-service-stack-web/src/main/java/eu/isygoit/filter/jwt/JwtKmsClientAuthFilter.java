@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
  * token validation through a Feign client.
  */
 @Slf4j
-@NoArgsConstructor(force = true)
 public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
     private final ITokenService tokenService;
