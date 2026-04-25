@@ -1,6 +1,5 @@
 package eu.isygoit.filter.jwt;
 
-import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
