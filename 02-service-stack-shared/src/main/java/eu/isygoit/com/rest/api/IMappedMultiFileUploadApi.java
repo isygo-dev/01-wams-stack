@@ -29,8 +29,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
 
     /**
      * Upload additional files response entity.
-     *
-     * @param requestContext the request context
+     
      * @param parentId       the parent id
      * @param files          the files
      * @return the response entity
@@ -59,15 +58,14 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFiles(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<List<L>> uploadAdditionalFiles(
                                                   @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                   @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files);
 
 
     /**
      * Upload additional file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param parentId       the parent id
      * @param file           the file
      * @return the response entity
@@ -96,7 +94,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<List<L>> uploadAdditionalFile(
                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

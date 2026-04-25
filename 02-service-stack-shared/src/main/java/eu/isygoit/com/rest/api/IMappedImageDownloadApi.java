@@ -30,8 +30,7 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
 
     /**
      * Download image response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @return the response entity
      * @throws IOException the io exception
@@ -57,6 +56,6 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
                     content = @Content)
     })
     @GetMapping(path = "/image/download/{id}")
-    ResponseEntity<Resource> downloadImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Resource> downloadImage(
                                            @PathVariable(name = RestApiConstants.ID) I id) throws IOException;
 }

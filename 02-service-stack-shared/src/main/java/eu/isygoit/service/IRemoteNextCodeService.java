@@ -20,8 +20,7 @@ public interface IRemoteNextCodeService {
 
     /**
      * Generate next code response entity.
-     *
-     * @param requestContext the request context
+     
      * @param tenant         the tenant
      * @param entity         the entity
      * @param attribute      the attribute
@@ -36,8 +35,7 @@ public interface IRemoteNextCodeService {
                             schema = @Schema(name = "Generated code", implementation = String.class))})
     })
     @GetMapping(path = "/incremental/next")
-    ResponseEntity<String> generateNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
-                                            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+    ResponseEntity<String> generateNextCode(@RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                             @RequestParam(name = RestApiConstants.ENTITY) String entity,
                                             @RequestParam(name = RestApiConstants.ATTRIBUTE) String attribute);
 
@@ -58,7 +56,6 @@ public interface IRemoteNextCodeService {
                             schema = @Schema(name = "Next code generator config", implementation = NextCodeDto.class))})
     })
     @PostMapping(path = "/incremental/config")
-    ResponseEntity<String> subscribeNextCode(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
-                                             @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+    ResponseEntity<String> subscribeNextCode(@RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                              @Valid @RequestBody NextCodeDto incrementalConfig);
 }

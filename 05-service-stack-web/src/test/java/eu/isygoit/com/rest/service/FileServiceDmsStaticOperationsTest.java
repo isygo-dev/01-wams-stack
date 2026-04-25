@@ -110,13 +110,13 @@ class FileServiceDmsStaticOperationsTest {
         ResponseEntity<LinkedFileResponseDto> responseEntity = new ResponseEntity<>(responseDto, HttpStatus.OK);
 
         // Use consistent matchers for all arguments
-        when(linkedFileService.upload(any(ContextRequestDto.class), any(LinkedFileRequestDto.class))).thenReturn(responseEntity);
+        when(linkedFileService.upload(any(LinkedFileRequestDto.class))).thenReturn(responseEntity);
         when(file.getOriginalFilename()).thenReturn("file.txt");
 
         LinkedFileResponseDto result = FileServiceDmsStaticOperations.upload(file, entity, linkedFileService);
 
         assertNotNull(result);
-        verify(linkedFileService, times(1)).upload(any(ContextRequestDto.class), any(LinkedFileRequestDto.class));
+        verify(linkedFileService, times(1)).upload(any(LinkedFileRequestDto.class));
     }
 
     /**
@@ -161,12 +161,12 @@ class FileServiceDmsStaticOperationsTest {
                 .resource(resource)
                 .build(), HttpStatus.OK);
 
-        when(linkedFileService.download(any(), anyString(), anyString())).thenReturn(responseEntity);
+        when(linkedFileService.download(anyString(), anyString())).thenReturn(responseEntity);
 
         ResourceDto result = FileServiceDmsStaticOperations.download(entity, 1L, linkedFileService);
 
         assertNotNull(result);
-        verify(linkedFileService, times(1)).download(any(), anyString(), anyString());
+        verify(linkedFileService, times(1)).download(anyString(), anyString());
     }
 
     /**
@@ -202,12 +202,12 @@ class FileServiceDmsStaticOperationsTest {
         ResumeLinkedFile entity = createLinkedFile("resumeLinkedFile", "code123", "file.txt");
         ResponseEntity<Boolean> responseEntity = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 
-        when(linkedFileService.deleteFile(any(), anyString(), anyString())).thenReturn(responseEntity);
+        when(linkedFileService.deleteFile(anyString(), anyString())).thenReturn(responseEntity);
 
         boolean result = FileServiceDmsStaticOperations.delete(entity, linkedFileService);
 
         assertTrue(result);
-        verify(linkedFileService, times(1)).deleteFile(any(), anyString(), anyString());
+        verify(linkedFileService, times(1)).deleteFile(anyString(), anyString());
     }
 
     /**
@@ -219,7 +219,7 @@ class FileServiceDmsStaticOperationsTest {
         ResumeLinkedFile entity = createLinkedFile("resumeLinkedFile", "code123", "file.txt");
         ResponseEntity<Boolean> responseEntity = new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK);
 
-        when(linkedFileService.deleteFile(any(), anyString(), anyString())).thenReturn(responseEntity);
+        when(linkedFileService.deleteFile(anyString(), anyString())).thenReturn(responseEntity);
 
         boolean result = FileServiceDmsStaticOperations.delete(entity, linkedFileService);
 

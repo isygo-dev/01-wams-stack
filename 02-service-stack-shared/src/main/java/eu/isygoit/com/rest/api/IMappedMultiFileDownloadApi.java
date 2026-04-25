@@ -25,8 +25,7 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
 
     /**
      * Download response entity.
-     *
-     * @param requestContext the request context
+     
      * @param parentId       the parent id
      * @param fileId         the file id
      * @param version        the version
@@ -53,7 +52,7 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @GetMapping(path = "/multi-files/download")
-    ResponseEntity<Resource> download(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<Resource> download(
                                       @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                       @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
                                       @RequestParam(name = RestApiConstants.VERSION) Long version);

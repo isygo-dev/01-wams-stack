@@ -32,8 +32,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
 
     /**
      * Creates a new object.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param object         The object to create
      * @return ResponseEntity containing the created object with its assigned ID
      */
@@ -62,15 +61,12 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     })
     @PostMapping(path = "", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> create(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @Valid @RequestBody
             @Parameter(description = "Object to create", required = true) D object);
 
     /**
      * Creates multiple objects in a single request.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param objects        List of objects to create
      * @return ResponseEntity containing the list of created objects with their assigned IDs
      */
@@ -99,15 +95,13 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     })
     @PostMapping(path = "/batch", consumes = "application/json", produces = "application/json")
     ResponseEntity<List<D>> createBatch(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @Valid @RequestBody
             @Parameter(description = "List of objects to create", required = true, example = "[{id: null, ...}, {id: null, ...}]") List<D> objects);
 
     /**
      * Updates an existing object.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param id             Object identifier
      * @param object         The updated object data
      * @return ResponseEntity containing the updated object
@@ -137,8 +131,7 @@ public interface IMappedCrudPersistApi<I extends Serializable, D extends IIdAssi
     })
     @PutMapping(path = "/{id}", consumes = "application/json", produces = "application/json")
     ResponseEntity<D> update(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", required = true, example = "123") I id,
             @Valid @RequestBody

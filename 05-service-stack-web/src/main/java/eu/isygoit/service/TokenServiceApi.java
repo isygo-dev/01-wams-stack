@@ -39,7 +39,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = TokenResponseDto.class))})
     })
     @PostMapping(path = "/builder")
-    ResponseEntity<TokenResponseDto> buildTokenByTenant(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<TokenResponseDto> buildTokenByTenant(
                                                         @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                                         @RequestParam(name = RestApiConstants.APPLICATION) String application,
                                                         @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
@@ -47,8 +47,7 @@ public interface TokenServiceApi {
 
     /**
      * Is token valid response entity.
-     *
-     * @param requestContext the request context
+     
      * @param tenant         the tenant
      * @param application    the application
      * @param tokenType      the token type
@@ -65,7 +64,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = Boolean.class))})
     })
     @GetMapping(path = "/validation")
-    ResponseEntity<Boolean> isTokenValid(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Boolean> isTokenValid(
                                          @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                          @RequestParam(name = RestApiConstants.APPLICATION) String application,
                                          @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,

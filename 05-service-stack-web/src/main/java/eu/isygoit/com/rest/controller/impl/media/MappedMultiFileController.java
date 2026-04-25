@@ -58,8 +58,7 @@ public abstract class MappedMultiFileController<
     public abstract EntityMapper linkedFileMapper();
 
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFiles(ContextRequestDto requestContext,
-                                                         I parentId,
+    public ResponseEntity<List<L>> uploadAdditionalFiles(I parentId,
                                                          MultipartFile[] files) {
         log.debug("Uploading {} additional files for parentId: {}", files.length, parentId);
         try {
@@ -75,8 +74,7 @@ public abstract class MappedMultiFileController<
     }
 
     @Override
-    public ResponseEntity<List<L>> uploadAdditionalFile(ContextRequestDto requestContext,
-                                                        I parentId,
+    public ResponseEntity<List<L>> uploadAdditionalFile(I parentId,
                                                         MultipartFile file) {
         log.debug("Uploading one additional file for parentId: {}", parentId);
         try {
@@ -92,8 +90,7 @@ public abstract class MappedMultiFileController<
     }
 
     @Override
-    public ResponseEntity<Boolean> deleteAdditionalFile(ContextRequestDto requestContext,
-                                                        I parentId,
+    public ResponseEntity<Boolean> deleteAdditionalFile(I parentId,
                                                         I fileId) {
         log.debug("Deleting additional fileId: {} for parentId: {}", fileId, parentId);
         try {
@@ -107,8 +104,7 @@ public abstract class MappedMultiFileController<
     }
 
     @Override
-    public ResponseEntity<Resource> download(ContextRequestDto requestContext,
-                                             I parentId,
+    public ResponseEntity<Resource> download(I parentId,
                                              I fileId,
                                              Long version) {
         log.debug("Downloading additional fileId: {}, parentId: {}, version: {}", fileId, parentId, version);

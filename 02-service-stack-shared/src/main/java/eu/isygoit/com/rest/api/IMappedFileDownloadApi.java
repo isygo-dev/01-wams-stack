@@ -29,8 +29,7 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
 
     /**
      * Download file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @param version        the version
      * @return the response entity
@@ -57,7 +56,7 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
     })
     @GetMapping(path = "/file/download/{id}")
     ResponseEntity<Resource> downloadFile(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+            
             @PathVariable(name = RestApiConstants.ID) I id,
             @RequestParam(name = RestApiConstants.VERSION) Long version);
 }

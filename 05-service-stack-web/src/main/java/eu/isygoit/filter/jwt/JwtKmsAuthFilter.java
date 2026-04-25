@@ -2,7 +2,9 @@ package eu.isygoit.filter.jwt;
 
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
+import eu.isygoit.jwt.IJwtService;
 import eu.isygoit.service.ITokenService;
+import eu.isygoit.service.RequestContextService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +28,12 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
      */
     private static final Map<String, String> shouldNotFilterHosts = new ConcurrentHashMap<>();
 
-    @Autowired
-    private ITokenService tokenService;
+    private final ITokenService tokenService;
+
+    public JwtKmsAuthFilter(IJwtService jwtService, RequestContextService requestContextService, ITokenService tokenService) {
+        super(jwtService, requestContextService);
+        this.tokenService = tokenService;
+    }
 
     /**
      * Adds a host to the list of hosts that should not be filtered.

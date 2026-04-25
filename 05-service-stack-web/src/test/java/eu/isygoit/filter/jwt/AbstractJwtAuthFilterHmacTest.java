@@ -2,6 +2,7 @@ package eu.isygoit.filter.jwt;
 
 import eu.isygoit.helper.HmacHelper;
 import eu.isygoit.jwt.IJwtService;
+import eu.isygoit.service.RequestContextService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,8 @@ class AbstractJwtAuthFilterHmacTest {
 
     @Mock
     private IJwtService jwtService;
+    @Mock
+    private RequestContextService requestContextService;
 
     @Mock
     private HttpServletRequest request;
@@ -29,7 +32,7 @@ class AbstractJwtAuthFilterHmacTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        filter = new TestJwtAuthFilter();
+        filter = new TestJwtAuthFilter(jwtService, requestContextService);
         ReflectionTestUtils.setField(filter, "shouldNotFilterKey", testSecret);
         filter.init(); // Initialize cache
     }
@@ -83,6 +86,10 @@ class AbstractJwtAuthFilterHmacTest {
 
     // A concrete subclass for testing purposes
     private static class TestJwtAuthFilter extends AbstractJwtAuthFilter {
+        public TestJwtAuthFilter(IJwtService jwtService, RequestContextService requestContextService) {
+            super(jwtService, requestContextService);
+        }
+
         @Override
         public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
             return true;

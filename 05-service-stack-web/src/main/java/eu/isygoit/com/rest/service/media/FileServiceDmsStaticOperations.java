@@ -67,7 +67,7 @@ public final class FileServiceDmsStaticOperations {
                 .build();
 
         // Call linked file api to upload
-        ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(ContextRequestDto.builder().build(), requestDto);
+        ResponseEntity<LinkedFileResponseDto> response = linkedFileService.upload(requestDto);
 
         // Return body if successful, else null
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
@@ -109,7 +109,7 @@ public final class FileServiceDmsStaticOperations {
                 : TenantConstants.DEFAULT_TENANT_NAME;
 
         // Perform the download request
-        ResponseEntity<ResourceDto> response = linkedFileService.download(ContextRequestDto.builder().build(), tenant, entity.getCode());
+        ResponseEntity<ResourceDto> response = linkedFileService.download(tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
             log.info("File downloaded successfully with tenant {} and code {}", tenant, entity.getCode());
@@ -146,7 +146,7 @@ public final class FileServiceDmsStaticOperations {
                 ? tenantAssignable.getTenant()
                 : TenantConstants.DEFAULT_TENANT_NAME;
 
-        var response = linkedFileService.deleteFile(ContextRequestDto.builder().build(), tenant, entity.getCode());
+        var response = linkedFileService.deleteFile(tenant, entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && Boolean.TRUE.equals(response.getBody())) {
             log.info("File deleted successfully with tenant {} and code {}", tenant, entity.getCode());

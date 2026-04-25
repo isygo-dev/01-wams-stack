@@ -37,136 +37,126 @@ public abstract class MappedFakeCrudController<
 
     /**
      * Deletes an entity by ID. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param id             the ID of the entity to delete
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<?> delete(ContextRequestDto requestContext, I id) {
+    public ResponseEntity<?> delete(I id) {
         log.warn("Attempted to call delete on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Deletes multiple entities by their IDs. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param ids            the list of entity IDs to delete
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<?> batchDelete(ContextRequestDto requestContext, List<I> ids) {
-        log.warn("Attempted to call batchDelete on fake controller for {} IDs", ids.size());
+    public ResponseEntity<?> deleteBatch(List<I> ids) {
+        log.warn("Attempted to call deleteBatch on fake controller for {} IDs", ids.size());
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Retrieves all entities with pagination. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param page           the page number for pagination
      * @param size           the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<PaginatedResponseDto<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<M>> findAll(Integer page, Integer size) {
         log.warn("Attempted to call findAll on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Retrieves all entities with full details and pagination. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param page           the page number for pagination
      * @param size           the page size for pagination
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<PaginatedResponseDto<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> findAllFull(Integer page, Integer size) {
         log.warn("Attempted to call findAllFull on fake controller with page: {}, size: {}", page, size);
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Retrieves an entity by ID. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param id             the ID of the entity
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<F> findById(ContextRequestDto requestContext, I id) {
+    public ResponseEntity<F> findById(I id) {
         log.warn("Attempted to call findById on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Retrieves the count of all entities. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<Long> getCount(ContextRequestDto requestContext) {
+    public ResponseEntity<Long> getCount() {
         log.warn("Attempted to call getCount on fake controller");
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Creates a new entity. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param object         the DTO containing entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<F> create(ContextRequestDto requestContext, F object) {
+    public ResponseEntity<F> create(F object) {
         log.warn("Attempted to call create on fake controller for DTO with ID: {}", object.getId());
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Creates multiple entities in a batch. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param objects        the list of DTOs containing entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
+    public ResponseEntity<List<F>> createBatch(List<F> objects) {
         log.warn("Attempted to call createBatch on fake controller for {} objects", objects.size());
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Updates an entity by ID. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param id             the ID of the entity to update
      * @param object         the DTO containing updated entity data
      * @return never returns; always throws {@link UnsupportedOperationException}
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<F> update(ContextRequestDto requestContext, I id, F object) {
+    public ResponseEntity<F> update(I id, F object) {
         log.warn("Attempted to call update on fake controller for ID: {}", id);
         throw UNSUPPORTED_OPERATION;
     }
 
     /**
      * Retrieves entities filtered by criteria with pagination. This operation is not supported.
-     *
-     * @param requestContext the request context containing metadata
+      containing metadata
      * @param criteria       the filtering criteria
      * @param page           the page number for pagination
      * @param size           the page size for pagination
@@ -174,7 +164,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(String criteria, Integer page, Integer size) {
         log.warn("Attempted to call findAllFilteredByCriteria on fake controller with criteria: {}, page: {}, size: {}", criteria, page, size);
         throw UNSUPPORTED_OPERATION;
     }

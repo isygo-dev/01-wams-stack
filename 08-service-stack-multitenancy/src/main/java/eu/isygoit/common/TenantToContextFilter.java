@@ -82,10 +82,7 @@ public class TenantToContextFilter extends OncePerRequestFilter {
 
         try {
             TenantContext.setTenantId(tenantId);
-
-            // Add context attributes to request
-            ContextRequestDto contextDto = buildRequestContext(tenantId, null, null, null);
-            addAttributes(request, Map.of(JwtConstants.JWT_USER_CONTEXT, contextDto));
+            setIfNotNull(request, ContextRequestDto.x_sender_tenant, tenantId);
 
             filterChain.doFilter(request, response);
         } finally {
@@ -116,6 +113,12 @@ public class TenantToContextFilter extends OncePerRequestFilter {
         if (!CollectionUtils.isEmpty(attributes)) {
             // Use direct method reference for better performance
             attributes.forEach(request::setAttribute);
+        }
+    }
+
+    private void setIfNotNull(HttpServletRequest request, String key, Object value) {
+        if (value != null) {
+            request.setAttribute(key, value);
         }
     }
 }

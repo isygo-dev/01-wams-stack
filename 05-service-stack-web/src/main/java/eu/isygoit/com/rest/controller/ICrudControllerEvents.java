@@ -93,8 +93,7 @@ interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<
 
     /**
      * After find all full list.
-     *
-     * @param requestContext the request context
+     
      * @param list           the list
      * @return the list
      */
@@ -102,8 +101,7 @@ interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<
 
     /**
      * After find all list.
-     *
-     * @param requestContext the request context
+     
      * @param list           the list
      * @return the list
      */

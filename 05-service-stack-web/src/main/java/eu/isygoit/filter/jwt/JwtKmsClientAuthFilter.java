@@ -3,6 +3,9 @@ package eu.isygoit.filter.jwt;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
+import eu.isygoit.jwt.IJwtService;
+import eu.isygoit.service.ITokenService;
+import eu.isygoit.service.RequestContextService;
 import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +27,12 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
     // Constant empty context to avoid object creation on each validation
     private static final ContextRequestDto EMPTY_CONTEXT = ContextRequestDto.builder().build();
 
-    // Optional: Consider adding circuit breaker pattern here
-    // private final CircuitBreaker circuitBreaker;
+    private final ITokenService tokenService;
 
-    @Autowired
-    private TokenServiceApi tokenService;
+    public JwtKmsClientAuthFilter(IJwtService jwtService, RequestContextService requestContextService, ITokenService tokenService) {
+        super(jwtService, requestContextService);
+        this.tokenService = tokenService;
+    }
 
     /**
      * Validates a JWT token using the remote token api API.
@@ -56,8 +60,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             long startTime = System.nanoTime();
 
             // Use the constant empty context to avoid object creation
-            ResponseEntity<Boolean> result = tokenService.isTokenValid(
-                    EMPTY_CONTEXT,
+            Boolean result = tokenService.isTokenValid(
                     tenant,
                     application,
                     IEnumToken.Types.ACCESS,
@@ -72,13 +75,9 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             }
 
             // Check for valid response and body
-            if (!result.getStatusCode().is2xxSuccessful() ||
-                    !result.hasBody() ||
-                    Boolean.FALSE.equals(result.getBody())) {
-
-                log.warn("Token validation failed for user: {}, application: {}, tenant: {}, status: {}",
-                        userName, application, tenant,
-                        result.getStatusCode());
+            if (Boolean.FALSE.equals(result)) {
+                log.warn("Token validation failed for user: {}, application: {}, tenant: {}",
+                        userName, application, tenant);
 
                 throw new TokenInvalidException("KMS::isTokenValid");
             }
@@ -125,7 +124,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
      *
      * @return the token api API
      */
-    protected TokenServiceApi getTokenService() {
+    protected ITokenService getTokenService() {
         return tokenService;
     }
 }

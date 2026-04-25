@@ -20,8 +20,7 @@ public interface KeyServiceApi {
 
     /**
      * Generate random key response entity.
-     *
-     * @param requestContext the request context
+     
      * @param length         the length
      * @param charSetType    the char set type
      * @return the response entity
@@ -35,14 +34,13 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @PostMapping(path = "/random/new")
-    ResponseEntity<String> newRandomKey(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<String> newRandomKey(
                                         @RequestParam(name = RestApiConstants.LENGTH) Integer length,
                                         @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
     /**
      * Renew key by name response entity.
-     *
-     * @param requestContext the request context
+     
      * @param tenant         the tenant
      * @param keyName        the key name
      * @param length         the length
@@ -58,7 +56,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @PostMapping(path = "/random/renew")
-    ResponseEntity<String> renewRandomKey(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<String> renewRandomKey(
                                           @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                           @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
                                           @RequestParam(name = RestApiConstants.LENGTH) Integer length,
@@ -66,8 +64,7 @@ public interface KeyServiceApi {
 
     /**
      * Gets key by name.
-     *
-     * @param requestContext the request context
+     
      * @param tenant         the tenant
      * @param keyName        the key name
      * @return the key by name
@@ -81,7 +78,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @GetMapping(path = "/random")
-    ResponseEntity<String> getRandomKey(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<String> getRandomKey(
                                         @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                         @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
 }

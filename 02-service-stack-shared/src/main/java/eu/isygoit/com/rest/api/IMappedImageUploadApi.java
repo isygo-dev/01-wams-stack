@@ -30,8 +30,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
 
     /**
      * Create with image response entity.
-     *
-     * @param requestContext the request context
+     
      * @param file           the file
      * @param dto            the dto
      * @return the response entity
@@ -57,14 +56,13 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = @Content)
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> createWithImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<?> createWithImage(
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @Valid @RequestPart(name = "dto") D dto);
 
     /**
      * Update with image response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @param file           the file
      * @param dto            the dto
@@ -94,15 +92,14 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = @Content)
     })
     @PutMapping(path = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> updateWithImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<?> updateWithImage(
                                       @PathVariable(name = RestApiConstants.ID) I id,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @Valid @RequestPart(name = "dto") D dto);
 
     /**
      * Upload image response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @param file           the file
      * @return the response entity
@@ -131,7 +128,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = @Content)
     })
     @PutMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> uploadImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<D> uploadImage(
                                   @PathVariable(name = RestApiConstants.ID) I id,
                                   @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

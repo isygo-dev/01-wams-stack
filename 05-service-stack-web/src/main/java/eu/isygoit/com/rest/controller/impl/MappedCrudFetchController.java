@@ -9,7 +9,10 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.service.RequestContextService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -32,31 +35,34 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudFetchApi<I, M, F> {
 
+    @Getter
+    @Autowired
+    private RequestContextService requestContextService;
 
     @Override
-    public final ResponseEntity<PaginatedResponseDto<M>> findAll(ContextRequestDto requestContext, Integer page, Integer size) {
-        return performFindAll(requestContext, page, size);
+    public final ResponseEntity<PaginatedResponseDto<M>> findAll(Integer page, Integer size) {
+        return performFindAll(requestContextService.getCurrentContext(), page, size);
     }
 
     @Override
-    public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(ContextRequestDto requestContext, Integer page, Integer size) {
-        return performFindAllFull(requestContext, page, size);
+    public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(Integer page, Integer size) {
+        return performFindAllFull(requestContextService.getCurrentContext(), page, size);
     }
 
     @Override
-    public final ResponseEntity<F> findById(ContextRequestDto requestContext, I id) {
-        return performFindById(requestContext, id);
+    public final ResponseEntity<F> findById(I id) {
+        return performFindById(requestContextService.getCurrentContext(), id);
     }
 
     @Override
-    public ResponseEntity<Long> getCount(ContextRequestDto requestContext) {
-        return performGetCount(requestContext);
+    public ResponseEntity<Long> getCount() {
+        return performGetCount(requestContextService.getCurrentContext());
     }
 
 
     @Override
-    public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size) {
-        return performFindAllFilteredByCriteria(requestContext, criteria, page, size);
+    public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(String criteria, Integer page, Integer size) {
+        return performFindAllFilteredByCriteria(requestContextService.getCurrentContext(), criteria, page, size);
     }
 
     @Override

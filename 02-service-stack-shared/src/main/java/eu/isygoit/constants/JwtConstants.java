@@ -6,10 +6,6 @@ package eu.isygoit.constants;
 public interface JwtConstants {
 
     /**
-     * The constant JWT_USER_CONTEXT.
-     */
-    String JWT_USER_CONTEXT = "user-context";
-    /**
      * The constant JWT_SENDER_TENANT.
      */
     String JWT_SENDER_TENANT = "sender-tenant";

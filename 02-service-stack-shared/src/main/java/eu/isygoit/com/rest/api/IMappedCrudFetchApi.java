@@ -37,8 +37,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
 
     /**
      * Retrieves all objects with minimal data by page.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param page           Page number for pagination (0-based)
      * @param size           Number of items per page
      * @return List of minimal DTO objects
@@ -65,8 +64,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "")
     ResponseEntity<PaginatedResponseDto<M>> findAll(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
             @RequestParam(name = RestApiConstants.SIZE, required = false)
@@ -74,8 +72,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
 
     /**
      * Retrieves all objects with full data.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param page           Page number for pagination (0-based)
      * @param size           Number of items per page
      * @return List of full DTO objects
@@ -102,8 +99,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/full")
     ResponseEntity<PaginatedResponseDto<F>> findAllFull(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
             @RequestParam(name = RestApiConstants.SIZE, required = false)
@@ -111,8 +107,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
 
     /**
      * Retrieves a single object by its identifier.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param id             Object identifier
      * @return Single full DTO object
      */
@@ -138,15 +133,13 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
     /**
      * Retrieves the total count of objects.
-     *
-     * @param requestContext User context from JWT token
+     
      * @return Total count of objects
      */
     @Operation(summary = "Get objects count",
@@ -168,13 +161,11 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/count")
     ResponseEntity<Long> getCount(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext);
+            );
 
     /**
      * Retrieves objects filtered by criteria with pagination.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param criteria       Filter criteria string
      * @param page           Page number for pagination (0-based)
      * @param size           Number of items per page
@@ -202,8 +193,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/filter")
     ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @RequestParam(name = RestApiConstants.CRITERIA)
             @Parameter(description = "Filter criteria", example = "name=John,OR age>18") String criteria,
             @RequestParam(name = RestApiConstants.PAGE, required = false)

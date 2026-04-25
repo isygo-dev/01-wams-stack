@@ -27,8 +27,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
 
     /**
      * Upload response entity.
-     *
-     * @param requestContext the request context
+     
      * @param linkedFile     the linked file
      * @return the response entity
      * @throws IOException the io exception
@@ -42,13 +41,10 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = LinkedFileResponseDto.class))})
     })
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<LinkedFileResponseDto> upload(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
-                                                 @ModelAttribute("linkedFile") D linkedFile) throws IOException;
+    ResponseEntity<LinkedFileResponseDto> upload(@ModelAttribute("linkedFile") D linkedFile) throws IOException;
 
     /**
      * Download response entity.
-     *
-     * @param requestContext the request context
      * @param tenant         the tenant
      * @param code           the code
      * @return the response entity
@@ -63,14 +59,13 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = Resource.class))})
     })
     @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<Resource> download(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Resource> download(
                                       @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                       @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
 
     /**
      * Delete file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param tenant         the tenant
      * @param code           the code
      * @return the response entity
@@ -84,7 +79,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = Boolean.class))})
     })
     @DeleteMapping(path = "/deleteFile")
-    ResponseEntity<Boolean> deleteFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Boolean> deleteFile(
                                        @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                        @RequestParam(name = RestApiConstants.CODE) String code);
 

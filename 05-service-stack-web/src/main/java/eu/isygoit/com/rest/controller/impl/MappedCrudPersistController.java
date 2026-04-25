@@ -8,7 +8,10 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.service.RequestContextService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -31,15 +34,19 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudPersistApi<I, F> {
 
-    public final ResponseEntity<F> create(ContextRequestDto requestContext, F object) {
-        return performCreate(requestContext, object);
+    @Getter
+    @Autowired
+    private RequestContextService requestContextService;
+    
+    public final ResponseEntity<F> create(F object) {
+        return performCreate(requestContextService.getCurrentContext(), object);
     }
 
-    public final ResponseEntity<List<F>> createBatch(ContextRequestDto requestContext, List<F> objects) {
-        return performCreate(requestContext, objects);
+    public final ResponseEntity<List<F>> createBatch(List<F> objects) {
+        return performCreate(requestContextService.getCurrentContext(), objects);
     }
 
-    public final ResponseEntity<F> update(ContextRequestDto requestContext, I id, F object) {
-        return performUpdate(requestContext, id, object);
+    public final ResponseEntity<F> update(I id, F object) {
+        return performUpdate(requestContextService.getCurrentContext(), id, object);
     }
 }

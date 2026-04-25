@@ -28,8 +28,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
 
     /**
      * Upload file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @param file           the file
      * @return the response entity
@@ -58,14 +57,13 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                     content = @Content)
     })
     @PutMapping(path = "/file/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> uploadFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<D> uploadFile(
                                  @PathVariable(name = RestApiConstants.ID) I id,
                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 
     /**
      * Create with file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param file           the file
      * @param dto            the dto
      * @return the response entity
@@ -91,15 +89,14 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                     content = @Content)
     })
     @PostMapping(path = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> createWithFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<D> createWithFile(
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                      @Valid @RequestPart(name = "dto") D dto);
 
 
     /**
      * Update with file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @param file           the file
      * @param dto            the dto
@@ -129,7 +126,7 @@ public interface IMappedFileUploadApi<I extends Serializable, D extends IFileUpl
                     content = @Content)
     })
     @PutMapping(path = "/file/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> updateWithFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<D> updateWithFile(
                                      @PathVariable(name = RestApiConstants.ID) I id,
                                      @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                      @Valid @RequestPart(name = "dto") D dto);

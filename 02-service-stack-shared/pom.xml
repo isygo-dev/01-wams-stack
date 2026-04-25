@@ -143,6 +143,24 @@
             <artifactId>camel-stream-starter</artifactId>
         </dependency>
 
+        <!-- Spring Cloud Feign Starter - provides core Feign support -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!-- Form encoding support for Feign - required for file uploads -->
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form</artifactId>
+        </dependency>
+
+        <!-- Spring integration for Feign form encoder -->
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form-spring</artifactId>
+        </dependency>
+
         <!-- SpringDoc WebMVC -->
         <dependency>
             <groupId>org.springdoc</groupId>

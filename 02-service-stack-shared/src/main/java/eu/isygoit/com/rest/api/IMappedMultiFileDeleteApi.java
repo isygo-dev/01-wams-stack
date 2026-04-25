@@ -24,8 +24,7 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
 
     /**
      * Delete additional file response entity.
-     *
-     * @param requestContext the request context
+     
      * @param parentId       the parent id
      * @param fileId         the file id
      * @return the response entity
@@ -51,7 +50,7 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @DeleteMapping(path = "/multi-files")
-    ResponseEntity<Boolean> deleteAdditionalFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<Boolean> deleteAdditionalFile(
                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                  @RequestParam(name = RestApiConstants.FILE_ID) I fileId);
 }

@@ -1,8 +1,6 @@
 package eu.isygoit.com.rest.api;
 
-import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +12,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -30,8 +27,7 @@ public interface IMappedCrudDeleteApi<I> {
 
     /**
      * Deletes a single object by its identifier.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param id             Object identifier
      * @return ResponseEntity with no content on success
      */
@@ -59,15 +55,13 @@ public interface IMappedCrudDeleteApi<I> {
     })
     @DeleteMapping(path = "/{id}")
     ResponseEntity<?> delete(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
+            
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
     /**
      * Deletes multiple objects by their identifiers.
-     *
-     * @param requestContext User context from JWT token
+     
      * @param ids            List of object identifiers to delete
      * @return ResponseEntity with no content on success
      */
@@ -94,8 +88,5 @@ public interface IMappedCrudDeleteApi<I> {
                     content = @Content)
     })
     @DeleteMapping(path = "/batch")
-    ResponseEntity<?> batchDelete(
-            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
-            @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
-            @Valid @RequestBody @Parameter(description = "List of object identifiers", example = "[123, 124, 125]") List<I> ids);
+    ResponseEntity<?> deleteBatch(@Valid @RequestBody @Parameter(description = "List of object identifiers", example = "[123, 124, 125]") List<I> ids);
 }

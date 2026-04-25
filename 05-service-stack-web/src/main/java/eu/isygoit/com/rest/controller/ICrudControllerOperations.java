@@ -31,8 +31,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub create response entity.
-     *
-     * @param requestContext the request context
+     
      * @param object         the object
      * @return the response entity
      */
@@ -40,8 +39,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub create response entity.
-     *
-     * @param requestContext the request context
+     
      * @param objects        the objects
      * @return the response entity
      */
@@ -49,8 +47,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub update response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @param object         the object
      * @return the response entity
@@ -59,8 +56,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub update response entity.
-     *
-     * @param requestContext the request context
+     
      * @param objects        the objects
      * @return the response entity
      */
@@ -68,8 +64,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub delete response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @return the response entity
      */
@@ -77,8 +72,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub delete response entity.
-     *
-     * @param requestContext the request context
+     
      * @param objects        the objects
      * @return the response entity
      */
@@ -86,8 +80,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub find all full response entity.
-     *
-     * @param requestContext the request context
+     
      * @param page           the page
      * @param size           the size
      * @return the response entity
@@ -96,8 +89,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub find all response entity.
-     *
-     * @param requestContext the request context
+     
      * @param page           the page
      * @param size           the size
      * @return the response entity
@@ -106,8 +98,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub find by id response entity.
-     *
-     * @param requestContext the request context
+     
      * @param id             the id
      * @return the response entity
      */
@@ -116,8 +107,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub get count response entity.
-     *
-     * @param requestContext the request context
+     
      * @return the response entity
      */
     ResponseEntity<Long> performGetCount(ContextRequestDto requestContext);
@@ -131,8 +121,7 @@ public interface ICrudControllerOperations<I extends Serializable,
 
     /**
      * Sub find all filtered by criteria response entity.
-     *
-     * @param requestContext the request context
+     
      * @param criteria       the criteria
      * @param page           the page
      * @param size           the size

@@ -14,9 +14,12 @@ import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.ContextRequestDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.service.RequestContextService;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +46,12 @@ public abstract class MappedFileController<
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 
+    @Getter
+    @Autowired
+    private RequestContextService requestContextService;
+    
     @Override
-    public ResponseEntity<F> uploadFile(ContextRequestDto requestContext, I id, MultipartFile file) {
+    public ResponseEntity<F> uploadFile(I id, MultipartFile file) {
         log.debug("Uploading file for entityId: {}", id);
         try {
             T entity = crudService().uploadFile(id, file);
@@ -58,7 +65,7 @@ public abstract class MappedFileController<
     }
 
     @Override
-    public ResponseEntity<Resource> downloadFile(ContextRequestDto requestContext, I id, Long version) {
+    public ResponseEntity<Resource> downloadFile(I id, Long version) {
         log.debug("Downloading file for entityId: {}, version: {}", id, version);
         try {
             var resource = crudService().downloadFile(id, version);
@@ -81,28 +88,28 @@ public abstract class MappedFileController<
     }
 
     @Override
-    public ResponseEntity<F> createWithFile(ContextRequestDto requestContext, MultipartFile file, @Valid F dto) {
-        log.debug("Creating entity with file for tenant: {}", requestContext.getSenderTenant());
+    public ResponseEntity<F> createWithFile(MultipartFile file, @Valid F dto) {
+        log.debug("Creating entity with file for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
-                tenantAssignableDto.setTenant(requestContext.getSenderTenant());
-                log.debug("Assigned tenant {} to DTO", requestContext.getSenderTenant());
+                tenantAssignableDto.setTenant(requestContextService.getCurrentContext().getSenderTenant());
+                log.debug("Assigned tenant {} to DTO", requestContextService.getCurrentContext().getSenderTenant());
             }
 
             F processed = beforeCreate(dto);
             T entity = crudService().createWithFile(mapper().dtoToEntity(processed), file);
             T result = afterCreate(entity);
 
-            log.info("Successfully created entity with file for tenant: {}", requestContext.getSenderTenant());
+            log.info("Successfully created entity with file for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
             return ResponseFactory.responseCreated(mapper().entityToDto(result));
         } catch (IOException e) {
-            log.error("Failed to create entity with file for tenant: {}", requestContext.getSenderTenant(), e);
+            log.error("Failed to create entity with file for tenant: {}", requestContextService.getCurrentContext().getSenderTenant(), e);
             return getBackExceptionResponse(e);
         }
     }
 
     @Override
-    public ResponseEntity<F> updateWithFile(ContextRequestDto requestContext, I id, MultipartFile file, @Valid F dto) {
+    public ResponseEntity<F> updateWithFile(I id, MultipartFile file, @Valid F dto) {
         log.debug("Updating entity with file for entityId: {}", id);
         try {
             F processed = beforeUpdate(id, dto);               // ← now uses id

@@ -16,6 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 @SuperBuilder
 public class ContextRequestDto {
 
+    public static final String x_sender_tenant = "X-SENTER-TENANT";
+    public static final String x_sender_user = "X-SENTER-USER";
+    public static final String x_log_app = "X-LOG-APP";
+    public static final String x_is_admin = "X-IS-ADMIN";
+
     private String senderTenant;
     private String senderUser;
     private Boolean isAdmin;
