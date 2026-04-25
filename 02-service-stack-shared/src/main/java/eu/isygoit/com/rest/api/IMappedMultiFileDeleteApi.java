@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -51,7 +51,7 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @DeleteMapping(path = "/multi-files")
-    ResponseEntity<Boolean> deleteAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<Boolean> deleteAdditionalFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                  @RequestParam(name = RestApiConstants.FILE_ID) I fileId);
 }

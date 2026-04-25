@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,7 +59,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @PutMapping(path = "/multi-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFiles(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<List<L>> uploadAdditionalFiles(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                                   @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                   @RequestPart(name = RestApiConstants.FILES) MultipartFile[] files);
 
@@ -96,7 +96,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @PutMapping(path = "/multi-files/upload/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<List<L>> uploadAdditionalFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<List<L>> uploadAdditionalFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                                  @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                                  @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

@@ -14,7 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -59,7 +59,7 @@ public interface IMappedCrudDeleteApi<I> {
     })
     @DeleteMapping(path = "/{id}")
     ResponseEntity<?> delete(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
@@ -95,7 +95,7 @@ public interface IMappedCrudDeleteApi<I> {
     })
     @DeleteMapping(path = "/batch")
     ResponseEntity<?> batchDelete(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @Valid @RequestBody @Parameter(description = "List of object identifiers", example = "[123, 124, 125]") List<I> ids);
 }

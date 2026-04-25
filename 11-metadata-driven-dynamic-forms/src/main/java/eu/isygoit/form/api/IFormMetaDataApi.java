@@ -28,7 +28,6 @@ import java.util.List;
  * @see eu.isygoit.form.controller.AbstractFormMetaDataController
  */
 @Tag(name = "Form Metadata", description = "Dynamic form metadata and submission API")
-@RequestMapping(value = "/api/v1/forms", produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IFormMetaDataApi {
 
     /**

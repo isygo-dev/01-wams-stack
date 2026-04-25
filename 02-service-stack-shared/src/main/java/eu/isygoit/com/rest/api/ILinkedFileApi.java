@@ -42,7 +42,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = LinkedFileResponseDto.class))})
     })
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<LinkedFileResponseDto> upload(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<LinkedFileResponseDto> upload(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                                  @ModelAttribute("linkedFile") D linkedFile) throws IOException;
 
     /**
@@ -63,7 +63,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = Resource.class))})
     })
     @GetMapping(path = "/download", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Resource> download(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                       @RequestParam(name = RestApiConstants.CODE) String code) throws IOException;
 
@@ -84,7 +84,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
                             schema = @Schema(implementation = Boolean.class))})
     })
     @DeleteMapping(path = "/deleteFile")
-    ResponseEntity<Boolean> deleteFile(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Boolean> deleteFile(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                        @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                        @RequestParam(name = RestApiConstants.CODE) String code);
 

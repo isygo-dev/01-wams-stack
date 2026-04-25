@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -53,7 +53,7 @@ public interface IMappedMultiFileDownloadApi<L extends LinkedFileMinDto, I> {
                     content = @Content)
     })
     @GetMapping(path = "/multi-files/download")
-    ResponseEntity<Resource> download(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
+    ResponseEntity<Resource> download(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT) ContextRequestDto requestContext,
                                       @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
                                       @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
                                       @RequestParam(name = RestApiConstants.VERSION) Long version);

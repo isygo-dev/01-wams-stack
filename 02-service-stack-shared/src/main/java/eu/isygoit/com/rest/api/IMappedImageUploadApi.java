@@ -57,7 +57,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = @Content)
     })
     @PostMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> createWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<?> createWithImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @Valid @RequestPart(name = "dto") D dto);
 
@@ -94,7 +94,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = @Content)
     })
     @PutMapping(path = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<?> updateWithImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<?> updateWithImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                       @PathVariable(name = RestApiConstants.ID) I id,
                                       @RequestPart(name = RestApiConstants.FILE) MultipartFile file,
                                       @Valid @RequestPart(name = "dto") D dto);
@@ -131,7 +131,7 @@ public interface IMappedImageUploadApi<I extends Serializable, D extends IIdAssi
                     content = @Content)
     })
     @PutMapping(path = "/image/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<D> uploadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<D> uploadImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                   @PathVariable(name = RestApiConstants.ID) I id,
                                   @RequestPart(name = RestApiConstants.FILE) MultipartFile file);
 }

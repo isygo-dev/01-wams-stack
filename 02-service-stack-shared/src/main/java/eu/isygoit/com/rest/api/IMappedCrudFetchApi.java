@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
@@ -65,7 +65,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "")
     ResponseEntity<PaginatedResponseDto<M>> findAll(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
@@ -102,7 +102,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/full")
     ResponseEntity<PaginatedResponseDto<F>> findAllFull(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.PAGE, required = false)
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
@@ -138,7 +138,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
@@ -168,7 +168,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/count")
     ResponseEntity<Long> getCount(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext);
 
     /**
@@ -202,7 +202,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/filter")
     ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(
-            @RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false)
+            @RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false)
             @Parameter(description = "JWT user context", hidden = true) ContextRequestDto requestContext,
             @RequestParam(name = RestApiConstants.CRITERIA)
             @Parameter(description = "Filter criteria", example = "name=John,OR age>18") String criteria,

@@ -60,7 +60,6 @@
         <!-- Web / API -->
         <springdoc.version>2.8.15</springdoc.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <feign.version>13.5</feign.version>
         <networknt-validator.version>1.5.8</networknt-validator.version>
 
         <!-- Messaging -->
@@ -89,7 +88,7 @@
         <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
-        <spring-cloud-starter-openfeign.version>4.3.1</spring-cloud-starter-openfeign.version>
+        <spring-cloud-starter-openfeign.version>4.3.2</spring-cloud-starter-openfeign.version>
     </properties>
 
     <!-- ================================================================
@@ -206,20 +205,26 @@
                 <version>${jjwt.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-core</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-hc5</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
+
+            <!-- Spring Cloud Feign Starter - provides core Feign support -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-openfeign</artifactId>
                 <version>${spring-cloud-starter-openfeign.version}</version>
+            </dependency>
+
+            <!-- Form encoding support for Feign - required for file uploads -->
+            <dependency>
+                <groupId>io.github.openfeign.form</groupId>
+                <artifactId>feign-form</artifactId>
+                <version>3.8.0</version>
+            </dependency>
+
+            <!-- Spring integration for Feign form encoder -->
+            <dependency>
+                <groupId>io.github.openfeign.form</groupId>
+                <artifactId>feign-form-spring</artifactId>
+                <version>3.8.0</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>

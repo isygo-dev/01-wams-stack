@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 /**
  * The interface Key api api.
  */
-@RequestMapping("/api/v1")
 public interface KeyServiceApi {
 
     /**
@@ -36,7 +35,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @PostMapping(path = "/random/new")
-    ResponseEntity<String> newRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<String> newRandomKey(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                         @RequestParam(name = RestApiConstants.LENGTH) Integer length,
                                         @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
 
@@ -59,7 +58,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @PostMapping(path = "/random/renew")
-    ResponseEntity<String> renewRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<String> renewRandomKey(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                           @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                           @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
                                           @RequestParam(name = RestApiConstants.LENGTH) Integer length,
@@ -82,7 +81,7 @@ public interface KeyServiceApi {
                             schema = @Schema(implementation = String.class))})
     })
     @GetMapping(path = "/random")
-    ResponseEntity<String> getRandomKey(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<String> getRandomKey(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                         @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                         @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
 }

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 /**
  * The interface Token api api.
  */
-@RequestMapping("/api/v1")
 public interface TokenServiceApi {
 
     /**
@@ -40,7 +39,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = TokenResponseDto.class))})
     })
     @PostMapping(path = "/builder")
-    ResponseEntity<TokenResponseDto> buildTokenByTenant(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<TokenResponseDto> buildTokenByTenant(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                                         @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                                         @RequestParam(name = RestApiConstants.APPLICATION) String application,
                                                         @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
@@ -66,7 +65,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = Boolean.class))})
     })
     @GetMapping(path = "/validation")
-    ResponseEntity<Boolean> isTokenValid(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Boolean> isTokenValid(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                          @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
                                          @RequestParam(name = RestApiConstants.APPLICATION) String application,
                                          @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,

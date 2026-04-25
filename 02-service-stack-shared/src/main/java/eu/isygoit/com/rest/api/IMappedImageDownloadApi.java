@@ -15,7 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestPart;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -57,6 +57,6 @@ public interface IMappedImageDownloadApi<I extends Serializable, D extends IIdAs
                     content = @Content)
     })
     @GetMapping(path = "/image/download/{id}")
-    ResponseEntity<Resource> downloadImage(@RequestAttribute(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
+    ResponseEntity<Resource> downloadImage(@RequestPart(value = JwtConstants.JWT_USER_CONTEXT, required = false) ContextRequestDto requestContext,
                                            @PathVariable(name = RestApiConstants.ID) I id) throws IOException;
 }
