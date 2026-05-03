@@ -1,10 +1,11 @@
 package eu.isygoit.filter.jwt;
 
+import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
-import eu.isygoit.service.ITokenService;
 import eu.isygoit.service.RequestContextService;
+import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class JwtKmsClientAuthFilterTest {
     @Mock
     private RequestContextService requestContextService;
     @Mock
-    private ITokenService tokenService;
+    private TokenServiceApi tokenService;
     @InjectMocks
     private TestJwtKmsClientAuthFilter filter;
 
@@ -42,7 +43,7 @@ class JwtKmsClientAuthFilterTest {
         String userIdentifier = "user1@tenant1";
 
         when(tokenService.isTokenValid(eq(tenant), eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
-                .thenReturn(true);
+                .thenReturn(ResponseFactory.responseOk(true));
 
         assertTrue(filter.isTokenValid(jwt, tenant, application, userName));
     }
@@ -57,7 +58,7 @@ class JwtKmsClientAuthFilterTest {
         String userIdentifier = "user1@tenant1";
 
         when(tokenService.isTokenValid(eq(tenant), eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
-                .thenReturn(false);
+                .thenReturn(ResponseFactory.responseOk(false));
 
         assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, application, userName));
     }
@@ -71,7 +72,7 @@ class JwtKmsClientAuthFilterTest {
         String userName = "user";
 
         when(tokenService.isTokenValid(any(), any(), any(), any(), any()))
-                .thenReturn(false);
+                .thenReturn(ResponseFactory.responseOk(false));
 
         assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, application, userName));
     }
@@ -111,7 +112,7 @@ class JwtKmsClientAuthFilterTest {
 
     // Concrete implementation for testing abstract class
     static class TestJwtKmsClientAuthFilter extends JwtKmsClientAuthFilter {
-        public TestJwtKmsClientAuthFilter(IJwtService jwtService, RequestContextService requestContextService, ITokenService tokenService) {
+        public TestJwtKmsClientAuthFilter(IJwtService jwtService, RequestContextService requestContextService, TokenServiceApi tokenService) {
             super(jwtService, requestContextService, tokenService);
         }
     }

@@ -3,7 +3,6 @@ package eu.isygoit.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumToken;
-import eu.isygoit.jwt.IJwtService;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,7 @@ import java.util.Map;
 /**
  * The interface Token api.
  */
-public interface ITokenService extends IJwtService {
+public interface ITokenBuilderService extends ITokenValidationService {
 
     /**
      * Build token and save token dto.
@@ -38,19 +37,6 @@ public interface ITokenService extends IJwtService {
     TokenResponseDto buildToken(String tenant, String application, IEnumToken.Types tokenType, String subject, Map<String, Object> claims);
 
     /**
-     * Is token valid boolean.
-     *
-     * @param tenant      the tenant
-     * @param application the application
-     * @param tokenType   the token type
-     * @param token       the token
-     * @param subject     the subject
-     * @return the boolean
-     */
-    boolean isTokenValid(String tenant, String application, IEnumToken.Types tokenType, String token, String subject);
-
-
-    /**
      * Create access token token dto.
      *
      * @param tenant      the tenant
@@ -59,7 +45,7 @@ public interface ITokenService extends IJwtService {
      * @param isAdmin     the is admin
      * @return the token dto
      */
-    TokenResponseDto createAccessToken(String tenant, String application, String userName, Boolean isAdmin);
+    TokenResponseDto buildAccessToken(String tenant, String application, String userName, Boolean isAdmin);
 
     /**
      * Create refresh token token dto.
@@ -69,7 +55,7 @@ public interface ITokenService extends IJwtService {
      * @param userName    the user name
      * @return the token dto
      */
-    TokenResponseDto createRefreshToken(String tenant, String application, String userName);
+    TokenResponseDto buildRefreshToken(String tenant, String application, String userName);
 
     /**
      * Create authority token token dto.
@@ -80,7 +66,7 @@ public interface ITokenService extends IJwtService {
      * @param authorities the authorities
      * @return the token dto
      */
-    TokenResponseDto createAuthorityToken(String tenant, String application, String userName, List<String> authorities);
+    TokenResponseDto buildAuthorityToken(String tenant, String application, String userName, List<String> authorities);
 
 
     /**
@@ -91,5 +77,5 @@ public interface ITokenService extends IJwtService {
      * @param accountCode the account code
      * @throws JsonProcessingException the json processing exception
      */
-    void createForgotPasswordAccessToken(String tenant, String application, String accountCode) throws JsonProcessingException;
+    void buildForgotPasswordAccessToken(String tenant, String application, String accountCode) throws JsonProcessingException;
 }

@@ -24,7 +24,6 @@ public interface TokenServiceApi {
     /**
      * Create token by tenant response entity.
      *
-     * @param requestContext  the request context
      * @param tenant          the tenant
      * @param application     the application
      * @param tokenType       the token type

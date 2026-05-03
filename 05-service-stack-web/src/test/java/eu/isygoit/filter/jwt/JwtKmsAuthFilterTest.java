@@ -2,7 +2,8 @@ package eu.isygoit.filter.jwt;
 
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
-import eu.isygoit.service.ITokenService;
+import eu.isygoit.jwt.IJwtService;
+import eu.isygoit.service.ITokenValidationService;
 import eu.isygoit.service.RequestContextService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,10 @@ import static org.mockito.Mockito.*;
 class JwtKmsAuthFilterTest {
 
     @Mock
-    private ITokenService tokenService;
+    private ITokenValidationService tokenService;
+
+    @Mock
+    private IJwtService jwtService;
 
     @Mock
     private RequestContextService requestContextService;
@@ -68,7 +72,7 @@ class JwtKmsAuthFilterTest {
     @Test
     @DisplayName("isTokenValid should throw TokenInvalidException when tokenService is null")
     void testIsTokenValid_TokenServiceNull() {
-        JwtKmsAuthFilter filterWithoutService = new JwtKmsAuthFilter(tokenService, requestContextService, tokenService);
+        JwtKmsAuthFilter filterWithoutService = new JwtKmsAuthFilter(jwtService, requestContextService, tokenService);
         assertThrows(TokenInvalidException.class, () -> filterWithoutService.isTokenValid("jwt", "tenant", "app", "user"));
     }
 

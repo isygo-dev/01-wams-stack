@@ -3,7 +3,7 @@ package eu.isygoit.jwt.filter;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.filter.jwt.JwtKmsAuthFilter;
-import eu.isygoit.service.ITokenService;
+import eu.isygoit.service.ITokenValidationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class JwtKmsAuthFilterTest {
     private JwtKmsAuthFilter jwtKmsAuthFilter;
 
     @Mock
-    private ITokenService tokenService;
+    private ITokenValidationService tokenService;
 
     @Mock
     private HttpServletRequest httpServletRequest;

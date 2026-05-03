@@ -3,11 +3,11 @@ package eu.isygoit.filter.jwt;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
-import eu.isygoit.service.ITokenService;
 import eu.isygoit.service.RequestContextService;
+import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
@@ -21,9 +21,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
-    private final ITokenService tokenService;
+    private final TokenServiceApi tokenService;
 
-    public JwtKmsClientAuthFilter(IJwtService jwtService, RequestContextService requestContextService, ITokenService tokenService) {
+    public JwtKmsClientAuthFilter(IJwtService jwtService, RequestContextService requestContextService, TokenServiceApi tokenService) {
         super(jwtService, requestContextService);
         this.tokenService = tokenService;
     }
@@ -54,7 +54,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             long startTime = System.nanoTime();
 
             // Use the constant empty context to avoid object creation
-            Boolean result = tokenService.isTokenValid(
+            ResponseEntity<Boolean> result = tokenService.isTokenValid(
                     tenant,
                     application,
                     IEnumToken.Types.ACCESS,
@@ -69,7 +69,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             }
 
             // Check for valid response and body
-            if (Boolean.FALSE.equals(result)) {
+            if (Boolean.FALSE.equals(result.getBody())) {
                 log.warn("Token validation failed for user: {}, application: {}, tenant: {}",
                         userName, application, tenant);
 
@@ -118,7 +118,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
      *
      * @return the token api API
      */
-    protected ITokenService getTokenService() {
+    protected TokenServiceApi getTokenService() {
         return tokenService;
     }
 }

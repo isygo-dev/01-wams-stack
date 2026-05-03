@@ -3,10 +3,9 @@ package eu.isygoit.filter.jwt;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
-import eu.isygoit.service.ITokenService;
+import eu.isygoit.service.ITokenValidationService;
 import eu.isygoit.service.RequestContextService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
@@ -28,9 +27,9 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
      */
     private static final Map<String, String> shouldNotFilterHosts = new ConcurrentHashMap<>();
 
-    private final ITokenService tokenService;
+    private final ITokenValidationService tokenService;
 
-    public JwtKmsAuthFilter(IJwtService jwtService, RequestContextService requestContextService, ITokenService tokenService) {
+    public JwtKmsAuthFilter(IJwtService jwtService, RequestContextService requestContextService, ITokenValidationService tokenService) {
         super(jwtService, requestContextService);
         this.tokenService = tokenService;
     }

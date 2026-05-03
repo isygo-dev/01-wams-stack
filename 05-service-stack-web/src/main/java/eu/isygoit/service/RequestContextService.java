@@ -1,6 +1,7 @@
 package eu.isygoit.service;
 
 import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.jwt.IJwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ public class RequestContextService {
      */
     private static final ThreadLocal<ContextRequestDto> CURRENT_CONTEXT = new ThreadLocal<>();
 
-    private final ITokenService jwtService;
+    private final IJwtService jwtService;
 
     /**
      * Populate context from DTO and store it:
