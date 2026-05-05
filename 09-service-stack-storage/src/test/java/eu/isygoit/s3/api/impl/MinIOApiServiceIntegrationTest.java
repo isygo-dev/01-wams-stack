@@ -2,6 +2,7 @@ package eu.isygoit.s3.api.impl;
 
 import eu.isygoit.enums.IEnumStorage;
 import eu.isygoit.s3.config.S3Config;
+import eu.isygoit.s3.object.MetaData;
 import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,8 +66,14 @@ class MinIOApiServiceIntegrationTest {
 
         minIOApiService.makeBucket(s3Config, bucketName);
 
+        MetaData metaData = MetaData.builder()
+                .objectName(objectName)
+                .bucketName(bucketName)
+                .contentType("text/plain")
+                .tagsMap(Map.of("test-tag", "test-value"))
+                .build();
         // Upload
-        minIOApiService.uploadFile(s3Config, bucketName, "", objectName, file, Map.of("test-tag", "test-value"));
+        metaData = minIOApiService.uploadFile(s3Config, metaData, file);
 
         // Get
         byte[] retrievedContent = minIOApiService.getObject(s3Config, bucketName, objectName, null);
