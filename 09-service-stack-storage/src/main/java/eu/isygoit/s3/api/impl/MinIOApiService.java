@@ -5,6 +5,7 @@ import eu.isygoit.exception.MinIoS3BucketException;
 import eu.isygoit.s3.api.IMinIOApiService;
 import eu.isygoit.s3.config.S3Config;
 import eu.isygoit.s3.object.FileStorage;
+import eu.isygoit.s3.object.MetaData;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.*;
@@ -122,27 +123,42 @@ public class MinIOApiService implements IMinIOApiService {
         });
     }
 
-    @Override
-    public void uploadFile(S3Config config, String bucketName, String path, String objectName,
-                           MultipartFile file, Map<String, String> tags) {
-        validateUploadParams(bucketName, path, objectName, file);
-        executeWithRetry(() -> {
+    /**
+     * Upload un fichier et retourne ses métadonnées réelles après upload (statObject).
+     */
+    public MetaData uploadFile(S3Config config, MetaData metaData, MultipartFile file) {
+        validateUploadParams(metaData.getBucketName(), metaData.getPath(), metaData.getObjectName(), file);
+        return executeWithRetry(() -> {
             try {
-                makeBucket(config, bucketName);
+                makeBucket(config, metaData.getBucketName());
                 MinioClient client = getConnection(config);
-                String fullPath = StringUtils.hasText(path) ? path + "/" + objectName : objectName;
+                String fullPath = metaData.getPath() != null && !metaData.getPath().isEmpty() ? metaData.getPath() + "/" + metaData.getObjectName() : metaData.getObjectName();
                 client.putObject(PutObjectArgs.builder()
-                        .bucket(bucketName)
+                        .bucket(metaData.getBucketName())
                         .object(fullPath)
-                        .tags(tags)
-                        .contentType(file.getContentType())
+                        .tags(metaData.getTagsMap())
+                        .contentType(metaData.getContentType() != null ? metaData.getContentType() : file.getContentType())
                         .stream(file.getInputStream(), file.getSize(), -1)
                         .build());
-                log.info("Uploaded file: {} to bucket: {}", fullPath, bucketName);
+                log.info("Uploaded file: {} to bucket: {}", fullPath, metaData.getBucketName());
+                // Get all real meta-data upload
+                StatObjectResponse stat = client.statObject(StatObjectArgs.builder().bucket(metaData.getBucketName()).object(fullPath).build());
+                Tags tags = client.getObjectTags(GetObjectTagsArgs.builder().bucket(metaData.getBucketName()).object(fullPath).build());
+                return MetaData.builder()
+                        .objectName(metaData.getObjectName())
+                        .bucketName(metaData.getBucketName())
+                        .path(metaData.getPath())
+                        .size(stat.size())
+                        .contentType(stat.contentType())
+                        .etag(stat.etag())
+                        .versionID(stat.versionId())
+                        .lastModified(stat.lastModified() != null ? stat.lastModified().toString() : null)
+                        .tagsMap(tags.get())
+                        .tags(tags.get().values().stream().distinct().toList())
+                        .build();
             } catch (Exception e) {
-                throw new MinIoS3BucketException("Error uploading file: " + objectName, e);
+                throw new MinIoS3BucketException("Error uploading file: " + metaData.getObjectName(), e);
             }
-            return null;
         });
     }
 
@@ -348,6 +364,36 @@ public class MinIOApiService implements IMinIOApiService {
                 return buckets;
             } catch (Exception e) {
                 throw new MinIoS3BucketException("Error listing buckets", e);
+            }
+        });
+    }
+
+    public MetaData getMetaData(S3Config config, String bucketName, String objectName, String versionID) {
+        validateObjectParams(bucketName, objectName);
+        return executeWithRetry(() -> {
+            try {
+                MinioClient client = getConnection(config);
+                StatObjectArgs.Builder args = StatObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(objectName);
+                if (StringUtils.hasText(versionID)) {
+                    args.versionId(versionID);
+                }
+                StatObjectResponse stat = client.statObject(args.build());
+                Tags tags = client.getObjectTags(GetObjectTagsArgs.builder().bucket(bucketName).object(objectName).build());
+                return MetaData.builder()
+                        .objectName(objectName)
+                        .bucketName(bucketName)
+                        .size(stat.size())
+                        .contentType(stat.contentType())
+                        .etag(stat.etag())
+                        .versionID(stat.versionId())
+                        .lastModified(stat.lastModified() != null ? stat.lastModified().toString() : null)
+                        .tagsMap(tags.get())
+                        .tags(tags.get().values().stream().distinct().toList())
+                        .build();
+            } catch (Exception e) {
+                throw new MinIoS3BucketException("Error retrieving metadata for object: " + objectName, e);
             }
         });
     }
