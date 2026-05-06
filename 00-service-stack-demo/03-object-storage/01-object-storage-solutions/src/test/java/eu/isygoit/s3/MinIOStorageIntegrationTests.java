@@ -4,6 +4,7 @@ import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.exception.MinIoS3BucketException;
 import eu.isygoit.s3.config.S3Config;
 import eu.isygoit.s3.object.FileStorage;
+import eu.isygoit.s3.object.MetaData;
 import eu.isygoit.s3.service.MinIOService;
 import io.minio.GetBucketVersioningArgs;
 import io.minio.MinioClient;
@@ -120,7 +121,16 @@ class MinIOStorageIntegrationTests {
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Test content".getBytes(StandardCharsets.UTF_8));
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
         byte[] data = minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
@@ -133,7 +143,16 @@ class MinIOStorageIntegrationTests {
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content for presigned".getBytes(StandardCharsets.UTF_8));
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
         String url = minIOService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertNotNull(url);
         assertTrue(url.contains(OBJECT_NAME));
@@ -148,7 +167,16 @@ class MinIOStorageIntegrationTests {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Tagged content".getBytes(StandardCharsets.UTF_8));
         Map<String, String> tags = Map.of("type", "document", "env", "test");
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(tags.values().stream().toList())
+                .tagsMap(tags)
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
 
         Map<String, String> searchTags = Map.of("type", "document");
         List<FileStorage> results = minIOService.getObjectByTags(
@@ -165,7 +193,16 @@ class MinIOStorageIntegrationTests {
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to tag".getBytes(StandardCharsets.UTF_8));
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
 
         minIOService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
 
@@ -183,7 +220,16 @@ class MinIOStorageIntegrationTests {
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
         minIOService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertThrows(MinIoS3BucketException.class, () ->
                 minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
@@ -198,11 +244,31 @@ class MinIOStorageIntegrationTests {
         MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
         MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2".getBytes());
 
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
+        MetaData metaData1 = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(f1.getContentType() != null ? f1.getContentType() : "text/plain")
+                .size(f1.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData1, f1);
+
+        MetaData metaData2 = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(f2.getContentType() != null ? f2.getContentType() : "text/plain")
+                .size(f2.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData2, f2);
 
         minIOService.deleteObjects(s3Config, BUCKET_NAME,
-                List.of(new DeleteObject("file1.txt"), new DeleteObject("file2.txt")));
+                List.of(new DeleteObject("file1.txt"),
+                        new DeleteObject("file2.txt")));
 
         assertThrows(MinIoS3BucketException.class, () ->
                 minIOService.getObject(s3Config, BUCKET_NAME, "file1.txt", null));
@@ -267,8 +333,15 @@ class MinIOStorageIntegrationTests {
     @Test
     @Order(14)
     void testInvalidUploadParams() {
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
         assertThrows(IllegalArgumentException.class,
-                () -> minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
+                () -> minIOService.uploadFile(s3Config, metaData, null));
     }
 
     /**
@@ -290,7 +363,17 @@ class MinIOStorageIntegrationTests {
         String objectName = "path-object.txt";
         MockMultipartFile file = new MockMultipartFile("file", objectPath, "text/plain",
                 "Path content".getBytes(StandardCharsets.UTF_8));
-        minIOService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(objectName)
+                .path(objectPath)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
         byte[] retrieved = minIOService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
         assertEquals("Path content", new String(retrieved));
     }
@@ -302,7 +385,16 @@ class MinIOStorageIntegrationTests {
     @Order(17)
     void testListObjectsInBucket() {
         MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName("list.txt")
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
         List<FileStorage> files = minIOService.getObjects(s3Config, BUCKET_NAME);
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
@@ -315,7 +407,16 @@ class MinIOStorageIntegrationTests {
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "With empty version".getBytes());
-        minIOService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        minIOService.uploadFile(s3Config, metaData, file);
         assertDoesNotThrow(() ->
                 minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));
     }

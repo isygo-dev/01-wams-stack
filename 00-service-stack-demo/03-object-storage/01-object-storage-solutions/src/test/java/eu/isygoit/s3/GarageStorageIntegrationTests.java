@@ -4,6 +4,7 @@ import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.exception.S3BuketException;
 import eu.isygoit.s3.config.S3Config;
 import eu.isygoit.s3.object.FileStorage;
+import eu.isygoit.s3.object.MetaData;
 import eu.isygoit.s3.service.GarageService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +118,16 @@ class GarageStorageIntegrationTests {
     void testUploadAndGetObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Test content".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
         byte[] data = garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
         assertEquals("Test content", new String(data, StandardCharsets.UTF_8));
     }
@@ -130,7 +140,16 @@ class GarageStorageIntegrationTests {
     void testGetPresignedUrl() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content for presigned".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
         String url = garageService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertNotNull(url);
         assertTrue(url.contains(OBJECT_NAME));
@@ -145,7 +164,16 @@ class GarageStorageIntegrationTests {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Tagged content".getBytes(StandardCharsets.UTF_8));
         Map<String, String> tags = Map.of("type", "document", "env", "test");
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, tags);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(tags.values().stream().toList())
+                .tagsMap(tags)
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
 
         Map<String, String> searchTags = Map.of("type", "document");
         List<FileStorage> results = garageService.getObjectByTags(
@@ -162,7 +190,16 @@ class GarageStorageIntegrationTests {
     void testUpdateTags() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to tag".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, Map.of("old", "value"));
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
 
         garageService.updateTags(s3Config, BUCKET_NAME, OBJECT_NAME, Map.of("updated", "yes"));
 
@@ -180,7 +217,16 @@ class GarageStorageIntegrationTests {
     void testDeleteObject() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "Content to delete".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
         garageService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
         assertThrows(S3BuketException.class, () ->
                 garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null));
@@ -195,8 +241,27 @@ class GarageStorageIntegrationTests {
         MockMultipartFile f1 = new MockMultipartFile("f1", "file1.txt", "text/plain", "1".getBytes());
         MockMultipartFile f2 = new MockMultipartFile("f2", "file2.txt", "text/plain", "2".getBytes());
 
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", "file1.txt", f1, null);
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", "file2.txt", f2, null);
+        MetaData metaData1 = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(f1.getContentType() != null ? f1.getContentType() : "text/plain")
+                .size(f1.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData1, f1);
+
+        MetaData metaData2 = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(f2.getContentType() != null ? f2.getContentType() : "text/plain")
+                .size(f2.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData2, f2);
 
         garageService.deleteObjects(s3Config, BUCKET_NAME,
                 List.of(DeleteObjectRequest.builder().key("file1.txt").build(),
@@ -265,8 +330,15 @@ class GarageStorageIntegrationTests {
     @Test
     @Order(14)
     void testInvalidUploadParams() {
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
         assertThrows(IllegalArgumentException.class,
-                () -> garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, null, null));
+                () -> garageService.uploadFile(s3Config, metaData, null));
     }
 
     /**
@@ -288,7 +360,17 @@ class GarageStorageIntegrationTests {
         String objectName = "path-object.txt";
         MockMultipartFile file = new MockMultipartFile("file", objectPath, "text/plain",
                 "Path content".getBytes(StandardCharsets.UTF_8));
-        garageService.uploadFile(s3Config, BUCKET_NAME, objectPath, objectName, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(objectName)
+                .path(objectPath)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
         byte[] retrieved = garageService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
         assertEquals("Path content", new String(retrieved));
     }
@@ -300,7 +382,16 @@ class GarageStorageIntegrationTests {
     @Order(17)
     void testListObjectsInBucket() {
         MockMultipartFile file = new MockMultipartFile("file", "list.txt", "text/plain", "list".getBytes());
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", "list.txt", file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName("list.txt")
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
         List<FileStorage> files = garageService.getObjects(s3Config, BUCKET_NAME);
         assertTrue(files.stream().anyMatch(f -> f.getObjectName().equals("list.txt")));
     }
@@ -313,7 +404,16 @@ class GarageStorageIntegrationTests {
     void testGetObjectWithEmptyVersionId() {
         MockMultipartFile file = new MockMultipartFile("file", OBJECT_NAME, "text/plain",
                 "With empty version".getBytes());
-        garageService.uploadFile(s3Config, BUCKET_NAME, "", OBJECT_NAME, file, null);
+        MetaData metaData = MetaData.builder()
+                .bucketName(BUCKET_NAME)
+                .objectName(OBJECT_NAME)
+                .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
+                .size(file.getSize())
+                .etag("etag123")
+                .tags(List.of("value1", "value2"))
+                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .build();
+        garageService.uploadFile(s3Config, metaData, file);
         assertDoesNotThrow(() ->
                 garageService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, ""));
     }
