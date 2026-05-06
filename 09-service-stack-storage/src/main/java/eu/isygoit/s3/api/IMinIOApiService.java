@@ -60,11 +60,13 @@ public interface IMinIOApiService {
     /**
      * Upload file.
      *
-     * @param config     the config
-     * @param metaData   the metaData
-     * @param file       the multipart file
+     * @param config   the config
+     * @param metaData the metaData
+     * @param file     the multipart file
      */
     MetaData uploadFile(S3Config config, MetaData metaData, MultipartFile file);
+
+    MetaData getMetaData(S3Config config, String bucketName, String objectName, String versionID);
 
     /**
      * Get object byte [ ].

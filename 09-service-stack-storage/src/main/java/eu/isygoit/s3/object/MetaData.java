@@ -1,10 +1,10 @@
 package eu.isygoit.s3.object;
 
-import java.util.List;
-import java.util.Map;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Représente les métadonnées d'un fichier MinIO.

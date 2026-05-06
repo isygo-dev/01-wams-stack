@@ -3,6 +3,7 @@ package eu.isygoit.s3.api;
 import eu.isygoit.enums.IEnumLogicalOperator;
 import eu.isygoit.s3.config.S3Config;
 import eu.isygoit.s3.object.FileStorage;
+import eu.isygoit.s3.object.MetaData;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
@@ -60,15 +61,13 @@ public interface IAWSS3ApiService {
     /**
      * Upload file.
      *
-     * @param config     the config
-     * @param bucketName the bucket name
-     * @param path       the path
-     * @param objectName the object name
-     * @param file       the multipart file
-     * @param tags       the tags
+     * @param config   the config
+     * @param metaData the metaData
+     * @param file     the multipart file
      */
-    void uploadFile(S3Config config, String bucketName, String path, String objectName,
-                    MultipartFile file, Map<String, String> tags);
+    MetaData uploadFile(S3Config config, MetaData metaData, MultipartFile file);
+
+    MetaData getMetaData(S3Config config, String bucketName, String objectName, String versionID);
 
     /**
      * Get object byte [ ].

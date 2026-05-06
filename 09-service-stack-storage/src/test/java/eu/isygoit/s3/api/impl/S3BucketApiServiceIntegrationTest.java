@@ -2,6 +2,7 @@ package eu.isygoit.s3.api.impl;
 
 import eu.isygoit.enums.IEnumStorage;
 import eu.isygoit.s3.config.S3Config;
+import eu.isygoit.s3.object.MetaData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -67,8 +68,14 @@ class S3BucketApiServiceIntegrationTest {
 
         s3BucketApiService.makeBucket(s3Config, bucketName);
 
+        MetaData metaData = MetaData.builder()
+                .objectName(objectName)
+                .bucketName(bucketName)
+                .contentType("text/plain")
+                .tagsMap(Map.of("test-tag", "test-value"))
+                .build();
         // Upload
-        s3BucketApiService.uploadFile(s3Config, bucketName, "", objectName, file, Map.of("test-tag", "test-value"));
+        s3BucketApiService.uploadFile(s3Config, metaData, file);
 
         // Get
         byte[] retrievedContent = s3BucketApiService.getObject(s3Config, bucketName, objectName, null);

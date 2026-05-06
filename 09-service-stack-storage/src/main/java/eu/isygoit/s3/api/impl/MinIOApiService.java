@@ -126,6 +126,7 @@ public class MinIOApiService implements IMinIOApiService {
     /**
      * Upload un fichier et retourne ses métadonnées réelles après upload (statObject).
      */
+    @Override
     public MetaData uploadFile(S3Config config, MetaData metaData, MultipartFile file) {
         validateUploadParams(metaData.getBucketName(), metaData.getPath(), metaData.getObjectName(), file);
         return executeWithRetry(() -> {
@@ -368,6 +369,7 @@ public class MinIOApiService implements IMinIOApiService {
         });
     }
 
+    @Override
     public MetaData getMetaData(S3Config config, String bucketName, String objectName, String versionID) {
         validateObjectParams(bucketName, objectName);
         return executeWithRetry(() -> {

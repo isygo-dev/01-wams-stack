@@ -5,6 +5,7 @@ import eu.isygoit.exception.S3BuketException;
 import eu.isygoit.s3.api.IAWSS3ApiService;
 import eu.isygoit.s3.config.S3Config;
 import eu.isygoit.s3.object.FileStorage;
+import eu.isygoit.s3.object.MetaData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.StringUtils;
@@ -145,32 +146,6 @@ public class S3BucketApiService implements IAWSS3ApiService {
                 }
             } catch (Exception e) {
                 throw new S3BuketException("Error creating bucket: " + bucketName, e);
-            }
-            return null;
-        });
-    }
-
-    @Override
-    public void uploadFile(S3Config config, String bucketName, String path, String objectName,
-                           MultipartFile file, Map<String, String> tags) {
-        validateUploadParams(bucketName, path, objectName, file);
-        executeWithRetry(() -> {
-            try {
-                makeBucket(config, bucketName);
-                S3Client client = getConnection(config);
-                String fullPath = StringUtils.hasText(path) ? path + "/" + objectName : objectName;
-                List<Tag> s3Tags = tags != null ? tags.entrySet().stream()
-                        .map(entry -> Tag.builder().key(entry.getKey()).value(entry.getValue()).build())
-                        .collect(Collectors.toList()) : null;
-                client.putObject(PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(fullPath)
-                        .contentType(file.getContentType())
-                        .tagging(s3Tags != null ? Tagging.builder().tagSet(s3Tags).build() : null)
-                        .build(), RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-                log.info("Uploaded file: {} to bucket: {}", fullPath, bucketName);
-            } catch (Exception e) {
-                throw new S3BuketException("Error uploading file: " + objectName, e);
             }
             return null;
         });
@@ -393,6 +368,117 @@ public class S3BucketApiService implements IAWSS3ApiService {
                 return response.buckets();
             } catch (Exception e) {
                 throw new S3BuketException("Error listing buckets", e);
+            }
+        });
+    }
+
+    /**
+     * Upload a file using MetaData object and return its metadata.
+     *
+     * @param config   the S3 configuration
+     * @param metaData the metadata object containing upload details
+     * @param file     the multipart file to upload
+     * @return the updated metadata with actual values from the S3 response
+     */
+    @Override
+    public MetaData uploadFile(S3Config config, MetaData metaData, MultipartFile file) {
+        validateUploadParams(metaData.getBucketName(), metaData.getPath(), metaData.getObjectName(), file);
+        return executeWithRetry(() -> {
+            try {
+                makeBucket(config, metaData.getBucketName());
+                S3Client client = getConnection(config);
+                String fullPath = metaData.getPath() != null && !metaData.getPath().isEmpty()
+                        ? metaData.getPath() + "/" + metaData.getObjectName()
+                        : metaData.getObjectName();
+
+                List<Tag> s3Tags = metaData.getTagsMap() != null ? metaData.getTagsMap().entrySet().stream()
+                        .map(entry -> Tag.builder().key(entry.getKey()).value(entry.getValue()).build())
+                        .collect(Collectors.toList()) : null;
+
+                PutObjectResponse putResponse = client.putObject(PutObjectRequest.builder()
+                        .bucket(metaData.getBucketName())
+                        .key(fullPath)
+                        .contentType(metaData.getContentType() != null ? metaData.getContentType() : file.getContentType())
+                        .tagging(s3Tags != null ? Tagging.builder().tagSet(s3Tags).build() : null)
+                        .build(), RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+                log.info("Uploaded file: {} to bucket: {}", fullPath, metaData.getBucketName());
+
+                // Get object metadata to return complete information
+                HeadObjectResponse headResponse = client.headObject(HeadObjectRequest.builder()
+                        .bucket(metaData.getBucketName())
+                        .key(fullPath)
+                        .build());
+
+                return MetaData.builder()
+                        .objectName(metaData.getObjectName())
+                        .bucketName(metaData.getBucketName())
+                        .path(metaData.getPath())
+                        .size(headResponse.contentLength())
+                        .contentType(headResponse.contentType())
+                        .etag(headResponse.eTag())
+                        .versionID(headResponse.versionId())
+                        .lastModified(headResponse.lastModified() != null ? headResponse.lastModified().toString() : null)
+                        .tagsMap(metaData.getTagsMap())
+                        .tags(metaData.getTagsMap() != null ? new ArrayList<>(metaData.getTagsMap().values().stream().distinct().toList()) : Collections.emptyList())
+                        .build();
+            } catch (Exception e) {
+                throw new S3BuketException("Error uploading file: " + metaData.getObjectName(), e);
+            }
+        });
+    }
+
+    /**
+     * Get metadata for an object in S3.
+     *
+     * @param config     the S3 configuration
+     * @param bucketName the bucket name
+     * @param objectName the object name
+     * @param versionID  the version ID (optional)
+     * @return the metadata object with complete information
+     */
+    @Override
+    public MetaData getMetaData(S3Config config, String bucketName, String objectName, String versionID) {
+        validateObjectParams(bucketName, objectName);
+        return executeWithRetry(() -> {
+            try {
+                S3Client client = getConnection(config);
+                HeadObjectRequest.Builder requestBuilder = HeadObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(objectName);
+
+                if (StringUtils.hasText(versionID)) {
+                    requestBuilder.versionId(versionID);
+                }
+
+                HeadObjectResponse headResponse = client.headObject(requestBuilder.build());
+
+                // Try to get tags if available
+                Map<String, String> tagsMap = Collections.emptyMap();
+                try {
+                    GetObjectTaggingResponse taggingResponse = client.getObjectTagging(GetObjectTaggingRequest.builder()
+                            .bucket(bucketName)
+                            .key(objectName)
+                            .build());
+                    tagsMap = taggingResponse.tagSet().stream()
+                            .collect(Collectors.toMap(Tag::key, Tag::value));
+                } catch (Exception e) {
+                    log.debug("No tags found for object: {}", objectName);
+                }
+
+                return MetaData.builder()
+                        .objectName(objectName)
+                        .bucketName(bucketName)
+                        .size(headResponse.contentLength())
+                        .contentType(headResponse.contentType())
+                        .etag(headResponse.eTag())
+                        .versionID(headResponse.versionId())
+                        .lastModified(headResponse.lastModified() != null ? headResponse.lastModified().toString() : null)
+                        .tagsMap(tagsMap)
+                        .tags(tagsMap.values().stream().distinct().toList())
+                        .build();
+            } catch (Exception e) {
+                throw new S3BuketException("Error retrieving metadata for object: " + objectName, e);
             }
         });
     }
