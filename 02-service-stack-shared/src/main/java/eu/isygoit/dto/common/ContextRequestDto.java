@@ -25,6 +25,7 @@ public class ContextRequestDto {
     private String senderUser;
     private Boolean isAdmin;
     private String logApp;
+    private String clientIp;
 
     /**
      * Gets created by string.
