@@ -87,12 +87,13 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     /**
      * Builds a RequestContextDto from token claims.
      */
-    private ContextRequestDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application) {
+    private ContextRequestDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application, String clientIp) {
         return ContextRequestDto.builder()
                 .senderTenant(tenant)
                 .senderUser(userName)
                 .isAdmin(isAdmin)
                 .logApp(application)
+                .clientIp(clientIp)
                 .build();
     }
 

@@ -62,6 +62,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
             .senderUser("root")
             .isAdmin(true)
             .logApp("application")
+            .clientIp("127.0.0.1")
             .build();
 
     // =========================

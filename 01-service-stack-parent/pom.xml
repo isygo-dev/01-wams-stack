@@ -52,6 +52,12 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Form encoding support for Feign - required for file uploads -->
         <dependency>
             <groupId>io.github.openfeign.form</groupId>

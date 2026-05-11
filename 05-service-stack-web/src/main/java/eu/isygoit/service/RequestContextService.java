@@ -60,6 +60,7 @@ public class RequestContextService {
                 .senderTenant(jwtService.extractTenant(jwt)
                         .orElseThrow(() -> new IllegalArgumentException("Invalid JWT: missing tenant")))
                 .isAdmin(jwtService.extractIsAdmin(jwt))
+                .clientIp(request.getRemoteAddr())
                 .build();
 
         setContext(context, request);
@@ -85,7 +86,8 @@ public class RequestContextService {
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
         if (attrs == null) {
-            return ContextRequestDto.builder().build();
+            return ContextRequestDto.builder()
+                    .build();
         }
 
         HttpServletRequest request = attrs.getRequest();
@@ -101,6 +103,7 @@ public class RequestContextService {
                 .senderUser(user)
                 .logApp(app)
                 .isAdmin(isAdmin)
+                .clientIp(request.getRemoteAddr())
                 .build();
     }
 
