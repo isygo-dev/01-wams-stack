@@ -1,5 +1,6 @@
 package eu.isygoit.model.extendable;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -35,20 +36,28 @@ public abstract class NextCodeModel<I extends Serializable>
     @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
     @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
     private String tenant;
+
+    @Criteria
     @Column(name = ComSchemaColumnConstantName.C_ENTITY, nullable = false)
     private String entity;
     @Column(name = ComSchemaColumnConstantName.C_ATTRIBUTE, nullable = false)
+
+    @Criteria
     private String attribute;
     @Column(name = ComSchemaColumnConstantName.C_PREFIX, length = ComSchemaConstantSize.CODE)
+
     private String prefix;
     @Column(name = ComSchemaColumnConstantName.C_SUFFIX, length = ComSchemaConstantSize.CODE)
     private String suffix;
+
     @Builder.Default
     @Column(name = ComSchemaColumnConstantName.C_CODE_VALUE, nullable = false)
     private Long codeValue = 0L;
+
     @Builder.Default
     @Column(name = ComSchemaColumnConstantName.C_VALUE_LENGTH, nullable = false)
     private Long valueLength = 6L;
+
     @Builder.Default
     @Column(name = ComSchemaColumnConstantName.C_INCREMENT, nullable = false)
     private Integer increment = 1;

@@ -303,14 +303,25 @@ public final class CriteriaHelper {
             String tenant, List<QueryCriteria> criteria, Class<?> classType) {
 
         Map<String, FieldInfo> criteriaFields = getCriteriaFieldInfo(classType);
-        Specification<T> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+
+        Specification<T> specification = null; // ← no longer starts as TRUE
 
         if (criteria != null) {
             for (QueryCriteria criterion : criteria) {
                 validateCriterion(criterion, criteriaFields);
                 Specification<T> criteriaSpec = buildCriteriaSpecification(criterion, criteriaFields);
-                specification = combineCriteria(specification, criteriaSpec, criterion.getCombiner());
+
+                if (specification == null) {
+                    specification = criteriaSpec; // ← first criterion becomes the base
+                } else {
+                    specification = combineCriteria(specification, criteriaSpec, criterion.getCombiner());
+                }
             }
+        }
+
+        // If no criteria at all, fall back to TRUE so addTenantFilter still works
+        if (specification == null) {
+            specification = (root, query, cb) -> cb.conjunction();
         }
 
         return addTenantFilter(specification, tenant);
