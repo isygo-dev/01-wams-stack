@@ -60,7 +60,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
             I id, MultipartFile file) {
         log.info("Upload file request received");
         try {
-            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(requestContextService.getCurrentContext().getSenderTenant(), id, file)));
+            return ResponseFactory.responseOk(mapper().entityToDto(crudService().uploadFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), id, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -73,7 +73,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
             Long version) {
         log.info("Download file request received");
         try {
-            ResourceDto resource = crudService().downloadFile(requestContextService.getCurrentContext().getSenderTenant(), id, version);
+            ResourceDto resource = crudService().downloadFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), id, version);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
@@ -91,11 +91,11 @@ public abstract class MappedFileTenantController<I extends Serializable,
         log.info("Create with file request received");
         try {
             if (dto instanceof ITenantAssignableDto ITenantAssignableDto && StringUtils.isEmpty(ITenantAssignableDto.getTenant())) {
-                ITenantAssignableDto.setTenant(requestContextService.getCurrentContext().getSenderTenant());
+                ITenantAssignableDto.setTenant(this.getRequestContextService().getCurrentContext().getSenderTenant());
             }
             dto = this.beforeCreate(dto);
             F savedResume = mapper().entityToDto(this.afterCreate(
-                    crudService().createWithFile(requestContextService.getCurrentContext().getSenderTenant(), mapper().dtoToEntity(dto), file)));
+                    crudService().createWithFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), mapper().dtoToEntity(dto), file)));
             return ResponseFactory.responseCreated(savedResume);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);
@@ -111,7 +111,7 @@ public abstract class MappedFileTenantController<I extends Serializable,
         try {
             dto = this.beforeUpdate(dto);
             F saved = mapper().entityToDto(
-                    this.afterUpdate(crudService().updateWithFile(requestContextService.getCurrentContext().getSenderTenant(), id, mapper().dtoToEntity(dto), file)));
+                    this.afterUpdate(crudService().updateWithFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), id, mapper().dtoToEntity(dto), file)));
             return ResponseFactory.responseOk(saved);
         } catch (Exception ex) {
             return getBackExceptionResponse(ex);

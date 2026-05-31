@@ -17,6 +17,7 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
 import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -67,7 +68,9 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
         ICrudServiceEvents<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 
+    @Getter
     private final Class<T> jsonElementClass;
+    @Getter
     private final Class<E> jsonEntityClass;
 
     /**

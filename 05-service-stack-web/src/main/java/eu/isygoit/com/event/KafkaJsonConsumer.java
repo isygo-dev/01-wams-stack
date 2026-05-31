@@ -26,6 +26,7 @@ import java.util.Map;
 @Slf4j
 public abstract class KafkaJsonConsumer<T> extends AbstractKafkaConsumer<T> {
 
+    @Getter
     private final Class<T> producerClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
     private final ObjectMapper objectMapper = new ObjectMapper();

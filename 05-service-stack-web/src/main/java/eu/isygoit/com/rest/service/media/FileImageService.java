@@ -10,6 +10,7 @@ import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.helper.FileHelper;
 import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
@@ -39,6 +40,7 @@ public abstract class FileImageService<I extends Serializable,
         extends FileService<I, T, R>
         implements IFileServiceOperations<I, T>, IImageServiceOperations<I, T> {
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
@@ -135,7 +137,7 @@ public abstract class FileImageService<I extends Serializable,
 
     private T findEntityByIdOrThrow(I id) {
         return findById(id).orElseThrow(() ->
-                new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+                new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
     }
 
     private void assignTenantIfApplicable(String tenant, T entity) {

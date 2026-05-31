@@ -13,6 +13,7 @@ import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityManager;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,6 +45,7 @@ public abstract class CrudTenantService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudTenantServiceOperations<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Autowired
@@ -69,8 +71,8 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     private JpaPagingAndSortingTenantAssignableRepository getTenantAssignableRepository() {
         if (!(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
-            log.error("Entity {} is not tenant assignable", persistentClass.getSimpleName());
-            throw new OperationNotSupportedException("Entity is not tenant assignable: " + persistentClass.getSimpleName());
+            log.error("Entity {} is not tenant assignable", this.getPersistentClass().getSimpleName());
+            throw new OperationNotSupportedException("Entity is not tenant assignable: " + this.getPersistentClass().getSimpleName());
         }
         return (JpaPagingAndSortingTenantAssignableRepository) repository();
     }
@@ -87,7 +89,7 @@ public abstract class CrudTenantService<I extends Serializable,
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
 
-        log.info("Counting {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
+        log.info("Counting {} entities for tenant: {}", this.getPersistentClass().getSimpleName(), tenant);
         var count = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.count()
                 : jpaRepo.countByTenantIgnoreCase(tenant);
@@ -110,7 +112,7 @@ public abstract class CrudTenantService<I extends Serializable,
         validateTenantNotNull(tenant);
         validateIdNotNull(id);
 
-        log.info("Checking existence of {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
+        log.info("Checking existence of {} with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id, tenant);
         var exists = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.existsById(id)
                 : jpaRepo.existsByIdAndTenantIgnoreCase(id, tenant);
@@ -135,7 +137,7 @@ public abstract class CrudTenantService<I extends Serializable,
             validateObjectNotNull(object);
 
 
-            log.info("Creating {} entity for tenant: {}", persistentClass.getSimpleName(), tenant);
+            log.info("Creating {} entity for tenant: {}", this.getPersistentClass().getSimpleName(), tenant);
             log.debug("Input entity: {}", object);
 
             // Set tenant and prepare entity
@@ -152,7 +154,7 @@ public abstract class CrudTenantService<I extends Serializable,
             // Post-create processing
             var result = afterCreate(tenant, (T) savedObject);
             log.info("Successfully created {} entity with ID: {} for tenant: {}",
-                    persistentClass.getSimpleName(), result.getId(), tenant);
+                    this.getPersistentClass().getSimpleName(), result.getId(), tenant);
             return result;
         } catch (DataIntegrityViolationException e) {
             throw new CreateConstraintsViolationException(e.getMessage());
@@ -173,7 +175,7 @@ public abstract class CrudTenantService<I extends Serializable,
         validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
 
-        log.info("Creating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
+        log.info("Creating {} {} entities for tenant: {}", objects.size(), this.getPersistentClass().getSimpleName(), tenant);
 
         // Process bulk creation in batch
         var result = jpaRepo.saveAll(objects.stream()
@@ -189,7 +191,7 @@ public abstract class CrudTenantService<I extends Serializable,
                 .map(o -> afterCreate(tenant, (T) o))
                 .toList();
         log.info("Successfully created {} {} entities for tenant: {}",
-                finalResult.size(), persistentClass.getSimpleName(), tenant);
+                finalResult.size(), this.getPersistentClass().getSimpleName(), tenant);
         return finalResult;
     }
 
@@ -212,7 +214,7 @@ public abstract class CrudTenantService<I extends Serializable,
             T original = validateTenantAccess(tenant, object.getId())
                     .orElseThrow(() -> {
                         log.error("Entity {} with id {} not found or access denied for tenant {}",
-                                persistentClass.getSimpleName(), object.getId(), tenant);
+                                this.getPersistentClass().getSimpleName(), object.getId(), tenant);
                         return new ObjectNotFoundException("with id: " + object.getId());
                     });
 
@@ -220,7 +222,7 @@ public abstract class CrudTenantService<I extends Serializable,
                 validateObjectUpdatable(object, original);
             }
 
-            log.info("Updating {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), object.getId(), tenant);
+            log.info("Updating {} entity with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), object.getId(), tenant);
 
             // Preserve attributes and prepare update
             keepOriginalAttributes(object, original);
@@ -232,7 +234,7 @@ public abstract class CrudTenantService<I extends Serializable,
             var updatedObject = jpaRepo.saveAndFlush(preparedObject);
             var result = afterUpdate(tenant, (T) updatedObject);
             log.info("Successfully updated {} entity with ID: {} for tenant: {}",
-                    persistentClass.getSimpleName(), result.getId(), tenant);
+                    this.getPersistentClass().getSimpleName(), result.getId(), tenant);
             return result;
         } catch (DataIntegrityViolationException e) {
             throw new UpdateConstraintsViolationException(e.getMessage());
@@ -252,7 +254,7 @@ public abstract class CrudTenantService<I extends Serializable,
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
-        log.info("Updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
+        log.info("Updating {} {} entities for tenant: {}", objects.size(), this.getPersistentClass().getSimpleName(), tenant);
 
         // Fetch all original entities in one batch
         List<I> ids = objects.stream().map(IIdAssignable::getId).toList();
@@ -267,7 +269,7 @@ public abstract class CrudTenantService<I extends Serializable,
                     T original = originalsMap.get(obj.getId());
                     if (original == null) {
                         log.error("Entity {} with id {} not found for update",
-                                persistentClass.getSimpleName(), obj.getId());
+                                this.getPersistentClass().getSimpleName(), obj.getId());
                         throw new ObjectNotFoundException("with id: " + obj.getId());
                     }
 
@@ -291,7 +293,7 @@ public abstract class CrudTenantService<I extends Serializable,
                 .map(o -> afterUpdate(tenant, (T) o))
                 .toList();
         log.info("Successfully updated {} {} entities for tenant: {}",
-                finalResult.size(), persistentClass.getSimpleName(), tenant);
+                finalResult.size(), this.getPersistentClass().getSimpleName(), tenant);
         return finalResult;
     }
 
@@ -306,7 +308,7 @@ public abstract class CrudTenantService<I extends Serializable,
     public void delete(String tenant, I id) {
         validateTenantNotNull(tenant);
         validateIdNotNull(id);
-        log.info("Deleting {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
+        log.info("Deleting {} entity with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id, tenant);
 
         // Process deletion
         validateTenantAccess(tenant, id).ifPresentOrElse(object -> {
@@ -314,7 +316,7 @@ public abstract class CrudTenantService<I extends Serializable,
             handleEntityDeletion((T) object);
             afterDelete(tenant, id);
             log.info("Successfully deleted {} entity with ID: {} for tenant: {}",
-                    persistentClass.getSimpleName(), id, tenant);
+                    this.getPersistentClass().getSimpleName(), id, tenant);
         }, () -> {
             log.error("Entity with ID: {} not found for tenant: {}", id, tenant);
             throw new ObjectNotFoundException(" with id: " + id);
@@ -333,7 +335,7 @@ public abstract class CrudTenantService<I extends Serializable,
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
-        log.info("Deleting {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
+        log.info("Deleting {} {} entities for tenant: {}", objects.size(), this.getPersistentClass().getSimpleName(), tenant);
 
         // Validate tenant access and process deletion in batch
         beforeDelete(tenant, objects);
@@ -342,7 +344,7 @@ public abstract class CrudTenantService<I extends Serializable,
         jpaRepo.deleteAllInBatch(objects);
         afterDelete(tenant, objects);
         log.info("Successfully deleted {} {} entities for tenant: {}",
-                objects.size(), persistentClass.getSimpleName(), tenant);
+                objects.size(), this.getPersistentClass().getSimpleName(), tenant);
     }
 
     /**
@@ -356,12 +358,12 @@ public abstract class CrudTenantService<I extends Serializable,
     public List<T> findAll(String tenant) {
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
-        log.info("Retrieving all {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
+        log.info("Retrieving all {} entities for tenant: {}", this.getPersistentClass().getSimpleName(), tenant);
         var list = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findAll()
                 : jpaRepo.findByTenantIgnoreCase(tenant);
         var result = CollectionUtils.isEmpty(list) ? List.<T>of() : afterFindAll(tenant, list);
-        log.debug("Retrieved {} {} entities for tenant: {}", result.size(), persistentClass.getSimpleName(), tenant);
+        log.debug("Retrieved {} {} entities for tenant: {}", result.size(), this.getPersistentClass().getSimpleName(), tenant);
         return result;
     }
 
@@ -377,7 +379,7 @@ public abstract class CrudTenantService<I extends Serializable,
     public Page<T> findAll(String tenant, Pageable pageable) {
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
-        log.info("Retrieving paginated {} entities for tenant: {}", persistentClass.getSimpleName(), tenant);
+        log.info("Retrieving paginated {} entities for tenant: {}", this.getPersistentClass().getSimpleName(), tenant);
         log.debug("Pageable: {}", pageable);
         Page<T> page = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? (Page<T>) jpaRepo.findAll(pageable)
@@ -404,7 +406,7 @@ public abstract class CrudTenantService<I extends Serializable,
         var jpaRepo = getTenantAssignableRepository();
         validateTenantNotNull(tenant);
         validateIdNotNull(id);
-        log.info("Retrieving {} entity with ID: {} for tenant: {}", persistentClass.getSimpleName(), id, tenant);
+        log.info("Retrieving {} entity with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id, tenant);
         var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findById(id)
                 .map(o -> afterFindById(tenant, (T) o))
@@ -430,11 +432,11 @@ public abstract class CrudTenantService<I extends Serializable,
         validateTenantNotNull(tenant);
         validateObjectNotNull(object);
         log.info("Saving or updating {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), object.getId(), tenant);
+                this.getPersistentClass().getSimpleName(), object.getId(), tenant);
         object.setTenant(tenant);
         var result = object.getId() == null ? create(tenant, object) : update(tenant, object);
         log.info("Successfully saved or updated {} entity with ID: {} for tenant: {}",
-                persistentClass.getSimpleName(), result.getId(), tenant);
+                this.getPersistentClass().getSimpleName(), result.getId(), tenant);
         return result;
     }
 
@@ -450,7 +452,7 @@ public abstract class CrudTenantService<I extends Serializable,
     public List<T> saveOrUpdate(String tenant, List<T> objects) {
         validateTenantNotNull(tenant);
         validateListNotEmpty(objects);
-        log.info("Saving or updating {} {} entities for tenant: {}", objects.size(), persistentClass.getSimpleName(), tenant);
+        log.info("Saving or updating {} {} entities for tenant: {}", objects.size(), this.getPersistentClass().getSimpleName(), tenant);
 
         // Separate entities into new (to create) and existing (to update)
         List<T> toCreate = objects.stream()
@@ -469,7 +471,7 @@ public abstract class CrudTenantService<I extends Serializable,
         }
 
         log.info("Successfully saved or updated {} {} entities for tenant: {}",
-                result.size(), persistentClass.getSimpleName(), tenant);
+                result.size(), this.getPersistentClass().getSimpleName(), tenant);
         return result;
     }
 
@@ -490,14 +492,14 @@ public abstract class CrudTenantService<I extends Serializable,
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
             throw new EmptyCriteriaFilterException("Criteria filter list is null or empty");
         }
-        log.info("Retrieving {} entities by criteria for tenant: {}", persistentClass.getSimpleName(), tenant);
+        log.info("Retrieving {} entities by criteria for tenant: {}", this.getPersistentClass().getSimpleName(), tenant);
         log.debug("Criteria: {}", criteria);
         var specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
         var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
                 ? jpaRepo.findAll(specification)
                 : jpaRepo.findAll(specification);
 
-        log.debug("Retrieved {} filtered {} entities for tenant: {}", result.size(), persistentClass.getSimpleName(), tenant);
+        log.debug("Retrieved {} filtered {} entities for tenant: {}", result.size(), this.getPersistentClass().getSimpleName(), tenant);
         return result;
     }
 
@@ -515,7 +517,7 @@ public abstract class CrudTenantService<I extends Serializable,
         validateTenantNotNull(tenant);
         validateListNotEmpty(criteria);
         var jpaRepo = getTenantAssignableRepository();
-        log.info("Retrieving paginated {} entities by criteria for tenant: {}", persistentClass.getSimpleName(), tenant);
+        log.info("Retrieving paginated {} entities by criteria for tenant: {}", this.getPersistentClass().getSimpleName(), tenant);
         log.debug("Criteria: {}, PageRequest: {}", criteria, pageRequest);
         var specification = CriteriaHelper.buildSpecification(tenant, criteria, persistentClass);
         Page<T> page = jpaRepo.findAll(specification, pageRequest);
@@ -531,7 +533,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public T beforeCreate(String tenant, T object) {
-        log.debug("Pre-create hook called for {} entity", persistentClass.getSimpleName());
+        log.debug("Pre-create hook called for {} entity", this.getPersistentClass().getSimpleName());
         return object;
     }
 
@@ -543,7 +545,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public T afterCreate(String tenant, T object) {
-        log.debug("Post-create hook called for {} entity", persistentClass.getSimpleName());
+        log.debug("Post-create hook called for {} entity", this.getPersistentClass().getSimpleName());
         return object;
     }
 
@@ -554,7 +556,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public void beforeDelete(String tenant, I id) {
-        log.debug("Pre-delete hook called for {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Pre-delete hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
     }
 
     /**
@@ -564,7 +566,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public void afterDelete(String tenant, I id) {
-        log.debug("Post-delete hook called for {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Post-delete hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
     }
 
     /**
@@ -574,7 +576,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public void beforeDelete(String tenant, List<T> objects) {
-        log.debug("Pre-delete hook called for {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.debug("Pre-delete hook called for {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
     }
 
     /**
@@ -584,7 +586,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public void afterDelete(String tenant, List<T> objects) {
-        log.debug("Post-delete hook called for {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.debug("Post-delete hook called for {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
     }
 
     /**
@@ -595,7 +597,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public T beforeUpdate(String tenant, T object) {
-        log.debug("Pre-update hook called for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Pre-update hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         return object;
     }
 
@@ -607,7 +609,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public T afterUpdate(String tenant, T object) {
-        log.debug("Post-update hook called for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Post-update hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         return object;
     }
 
@@ -619,7 +621,7 @@ public abstract class CrudTenantService<I extends Serializable,
      */
     @Override
     public List<T> afterFindAll(String tenant, List<T> list) {
-        log.debug("Post-find-all hook called for {} {} entities", list.size(), persistentClass.getSimpleName());
+        log.debug("Post-find-all hook called for {} {} entities", list.size(), this.getPersistentClass().getSimpleName());
         return list;
     }
 
@@ -632,7 +634,7 @@ public abstract class CrudTenantService<I extends Serializable,
     @Override
     public T afterFindById(String tenant, T object) {
         log.debug("Post-find-by-id hook called for {} entity with ID: {}",
-                persistentClass.getSimpleName(), object.getId());
+                this.getPersistentClass().getSimpleName(), object.getId());
         return object;
     }
 
@@ -669,7 +671,7 @@ public abstract class CrudTenantService<I extends Serializable,
         T original = repository().findById(object.getId())
                 .orElseThrow(() -> {
                     log.error("Entity {} with id {} not found during dirty check",
-                            persistentClass.getSimpleName(), object.getId());
+                            this.getPersistentClass().getSimpleName(), object.getId());
                     return new ObjectNotFoundException("with id: " + object.getId());
                 });
 
@@ -702,7 +704,7 @@ public abstract class CrudTenantService<I extends Serializable,
      * @param object the entity to delete
      */
     private void handleEntityDeletion(T object) {
-        log.debug("Handling deletion for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Handling deletion for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
             cancelable.setCheckCancel(true);
             cancelable.setCancelDate(LocalDateTime.now());

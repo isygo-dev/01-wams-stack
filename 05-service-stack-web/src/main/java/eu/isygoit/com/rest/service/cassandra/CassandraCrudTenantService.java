@@ -15,6 +15,7 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
         implements ICrudTenantServiceOperations<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
@@ -74,7 +76,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
         if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
             objects.forEach(object -> {
                 if (!tenant.equals((object).getTenant())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + object.getId());
+                    throw new OperationNotAllowedException("Delete " + this.getPersistentClass().getSimpleName() + " with id: " + object.getId());
                 }
             });
         }
@@ -96,7 +98,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
             T object = optional.get();
             if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
                 if (!tenant.equals(object.getTenant())) {
-                    throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " with id: " + id);
+                    throw new OperationNotAllowedException("Delete " + this.getPersistentClass().getSimpleName() + " with id: " + id);
                 }
             }
 
@@ -200,7 +202,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
             }
             return this.afterFindAll(tenant, list);
         } else {
-            throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
+            throw new OperationNotSupportedException("find all by tenant for :" + this.getPersistentClass().getSimpleName());
         }
     }
 
@@ -218,7 +220,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
             // Reconstruct Page with processed content while preserving pagination metadata
             return new PageImpl<>(processedContent, pageable, page.getTotalElements());
         } else {
-            throw new OperationNotSupportedException("find all by tenant for :" + persistentClass.getSimpleName());
+            throw new OperationNotSupportedException("find all by tenant for :" + this.getPersistentClass().getSimpleName());
         }
     }
 
@@ -263,7 +265,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
      * @param object the entity to delete
      */
     private void handleEntityDeletion(T object) {
-        log.debug("Handling deletion for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Handling deletion for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
             cancelable.setCheckCancel(true);
             cancelable.setCancelDate(LocalDateTime.now());

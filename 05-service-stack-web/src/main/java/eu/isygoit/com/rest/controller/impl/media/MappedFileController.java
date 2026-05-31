@@ -88,21 +88,21 @@ public abstract class MappedFileController<
 
     @Override
     public ResponseEntity<F> createWithFile(MultipartFile file, @Valid F dto) {
-        log.debug("Creating entity with file for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
+        log.debug("Creating entity with file for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
-                tenantAssignableDto.setTenant(requestContextService.getCurrentContext().getSenderTenant());
-                log.debug("Assigned tenant {} to DTO", requestContextService.getCurrentContext().getSenderTenant());
+                tenantAssignableDto.setTenant(this.getRequestContextService().getCurrentContext().getSenderTenant());
+                log.debug("Assigned tenant {} to DTO", this.getRequestContextService().getCurrentContext().getSenderTenant());
             }
 
             F processed = beforeCreate(dto);
             T entity = crudService().createWithFile(mapper().dtoToEntity(processed), file);
             T result = afterCreate(entity);
 
-            log.info("Successfully created entity with file for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
+            log.info("Successfully created entity with file for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
             return ResponseFactory.responseCreated(mapper().entityToDto(result));
         } catch (IOException e) {
-            log.error("Failed to create entity with file for tenant: {}", requestContextService.getCurrentContext().getSenderTenant(), e);
+            log.error("Failed to create entity with file for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant(), e);
             return getBackExceptionResponse(e);
         }
     }

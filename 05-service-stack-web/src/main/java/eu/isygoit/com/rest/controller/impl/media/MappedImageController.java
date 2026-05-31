@@ -87,21 +87,21 @@ public abstract class MappedImageController<
 
     @Override
     public ResponseEntity<F> createWithImage(MultipartFile file, @Valid F dto) {
-        log.debug("Creating entity with image for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
+        log.debug("Creating entity with image for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
-                tenantAssignableDto.setTenant(requestContextService.getCurrentContext().getSenderTenant());
-                log.debug("Assigned tenant {} to DTO", requestContextService.getCurrentContext().getSenderTenant());
+                tenantAssignableDto.setTenant(this.getRequestContextService().getCurrentContext().getSenderTenant());
+                log.debug("Assigned tenant {} to DTO", this.getRequestContextService().getCurrentContext().getSenderTenant());
             }
 
             F processed = beforeCreate(dto);                    // ← reused from base
             T entity = crudService().createWithImage(mapper().dtoToEntity(processed), file);
             T result = afterCreate(entity);                     // ← reused from base
 
-            log.info("Successfully created entity with image for tenant: {}", requestContextService.getCurrentContext().getSenderTenant());
+            log.info("Successfully created entity with image for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
             return ResponseFactory.responseCreated(mapper().entityToDto(result));
         } catch (IOException e) {
-            log.error("Failed to create entity with image for tenant: {}", requestContextService.getCurrentContext().getSenderTenant(), e);
+            log.error("Failed to create entity with image for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant(), e);
             return getBackExceptionResponse(e);
         }
     }

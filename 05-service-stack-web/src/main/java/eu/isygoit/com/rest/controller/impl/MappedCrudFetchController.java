@@ -40,28 +40,28 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
 
     @Override
     public final ResponseEntity<PaginatedResponseDto<M>> findAll(Integer page, Integer size) {
-        return performFindAll(requestContextService.getCurrentContext(), page, size);
+        return performFindAll(this.getRequestContextService().getCurrentContext(), page, size);
     }
 
     @Override
     public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(Integer page, Integer size) {
-        return performFindAllFull(requestContextService.getCurrentContext(), page, size);
+        return performFindAllFull(this.getRequestContextService().getCurrentContext(), page, size);
     }
 
     @Override
     public final ResponseEntity<F> findById(I id) {
-        return performFindById(requestContextService.getCurrentContext(), id);
+        return performFindById(this.getRequestContextService().getCurrentContext(), id);
     }
 
     @Override
     public ResponseEntity<Long> getCount() {
-        return performGetCount(requestContextService.getCurrentContext());
+        return performGetCount(this.getRequestContextService().getCurrentContext());
     }
 
 
     @Override
     public ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(String criteria, Integer page, Integer size) {
-        return performFindAllFilteredByCriteria(requestContextService.getCurrentContext(), criteria, page, size);
+        return performFindAllFilteredByCriteria(this.getRequestContextService().getCurrentContext(), criteria, page, size);
     }
 
     @Override

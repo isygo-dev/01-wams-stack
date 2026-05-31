@@ -16,6 +16,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,7 +70,10 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     // Dependencies
     // =========================
 
+    @Getter
     private final IJwtService jwtService;
+
+    @Getter
     private final RequestContextService requestContextService;
 
     @Value("${app.feign.shouldNotFilterKey}")
@@ -159,7 +163,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
              * Prevent ThreadLocal memory leak
              * (Tomcat reuses threads between requests)
              */
-            requestContextService.clear();
+            this.getRequestContextService().clear();
 
             /**
              * Also clear Spring Security context
@@ -204,7 +208,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
             setSecurityContext(subject, isAdmin);
 
             // Set request context (ThreadLocal + request attributes)
-            requestContextService.setContextFromJwt(jwt, request);
+            this.getRequestContextService().setContextFromJwt(jwt, request);
 
             filterChain.doFilter(request, response);
 
@@ -263,7 +267,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         }
 
         // Set minimal safe context
-        requestContextService.setContext(DEFAULT_CONTEXT, request);
+        this.getRequestContextService().setContext(DEFAULT_CONTEXT, request);
 
         filterChain.doFilter(request, response);
     }

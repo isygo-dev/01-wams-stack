@@ -15,6 +15,9 @@ import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.helper.CriteriaHelper;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.jakarta.AuditableCancelableEntity;
+import eu.isygoit.model.jakarta.AuditableEntity;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +53,7 @@ public abstract class CrudControllerOperations<
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerOperations<I, T, M, F, S> {
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
 
@@ -64,7 +68,7 @@ public abstract class CrudControllerOperations<
     @Override
     public ResponseEntity<F> performCreate(ContextRequestDto context, F dto) {
         return executeWithMonitoring("performCreate", () -> {
-            log.info("Creating {} for tenant: {}", persistentClass.getSimpleName(),
+            log.info("Creating {} for tenant: {}", this.getPersistentClass().getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateCreateRequest(dto);
 
@@ -148,7 +152,7 @@ public abstract class CrudControllerOperations<
     @Override
     public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
         return executeWithMonitoring("performUpdateById", () -> {
-            log.info("Updating {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id,
+            log.info("Updating {} with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
             validateNotNull(dto, "DTO cannot be null");
@@ -175,7 +179,7 @@ public abstract class CrudControllerOperations<
     @Override
     public ResponseEntity<Void> performDelete(ContextRequestDto context, I id) {
         return executeWithMonitoring("performDelete", () -> {
-            log.info("Deleting {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id,
+            log.info("Deleting {} with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
 
@@ -233,7 +237,7 @@ public abstract class CrudControllerOperations<
         return executeWithMonitoring("performFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    persistentClass.getSimpleName(), page, size,
+                    this.getPersistentClass().getSimpleName(), page, size,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
 
             if (isPaginationRequested(page, size)) {
@@ -280,7 +284,7 @@ public abstract class CrudControllerOperations<
         return executeWithMonitoring("performFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    persistentClass.getSimpleName(), page, size,
+                    this.getPersistentClass().getSimpleName(), page, size,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
 
             if (isPaginationRequested(page, size)) {
@@ -328,7 +332,7 @@ public abstract class CrudControllerOperations<
         return executeWithMonitoring("performFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    persistentClass.getSimpleName(), page, size,
+                    this.getPersistentClass().getSimpleName(), page, size,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             log.debug("Filter criteria: {}", criteria);
 
@@ -375,7 +379,7 @@ public abstract class CrudControllerOperations<
     @Override
     public ResponseEntity<F> performFindById(ContextRequestDto context, I id) {
         return executeWithMonitoring("performFindById", () -> {
-            log.info("Finding {} by ID: {} for tenant: {}", persistentClass.getSimpleName(), id,
+            log.info("Finding {} by ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
 
@@ -399,7 +403,7 @@ public abstract class CrudControllerOperations<
     @Override
     public ResponseEntity<Long> performGetCount(ContextRequestDto context) {
         return executeWithMonitoring("performGetCount", () -> {
-            log.info("Counting {}s for tenant: {}", persistentClass.getSimpleName(),
+            log.info("Counting {}s for tenant: {}", this.getPersistentClass().getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             Long count = crudService().count();
             return ResponseFactory.responseOk(count);
@@ -414,7 +418,7 @@ public abstract class CrudControllerOperations<
     @Override
     public ResponseEntity<Map<String, String>> performGetAnnotatedCriteria() {
         return executeWithMonitoring("performGetAnnotatedCriteria", () -> {
-            log.info("Retrieving filter criteria for {}", persistentClass.getSimpleName());
+            log.info("Retrieving filter criteria for {}", this.getPersistentClass().getSimpleName());
             Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
             return createMapResponse(criteriaMap);
         });
@@ -428,7 +432,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public T afterCreate(T entity) {
-        log.debug("Post-create hook for {}", persistentClass.getSimpleName());
+        log.debug("Post-create hook for {}", this.getPersistentClass().getSimpleName());
         return entity;
     }
 
@@ -441,7 +445,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public F beforeUpdate(I id, F dto) {
-        log.debug("Pre-update hook for {} with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Pre-update hook for {} with ID: {}", this.getPersistentClass().getSimpleName(), id);
         return dto;
     }
 
@@ -453,7 +457,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public F beforeCreate(F dto) {
-        log.debug("Pre-create hook for {}", persistentClass.getSimpleName());
+        log.debug("Pre-create hook for {}", this.getPersistentClass().getSimpleName());
         return dto;
     }
 
@@ -465,7 +469,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public T afterUpdate(T entity) {
-        log.debug("Post-update hook for {}", persistentClass.getSimpleName());
+        log.debug("Post-update hook for {}", this.getPersistentClass().getSimpleName());
         return entity;
     }
 
@@ -477,7 +481,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public boolean beforeDelete(I id) {
-        log.debug("Pre-delete hook for {} with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Pre-delete hook for {} with ID: {}", this.getPersistentClass().getSimpleName(), id);
         return true;
     }
 
@@ -489,7 +493,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public boolean afterDelete(I id) {
-        log.debug("Post-delete hook for {} with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Post-delete hook for {} with ID: {}", this.getPersistentClass().getSimpleName(), id);
         return true;
     }
 
@@ -525,7 +529,7 @@ public abstract class CrudControllerOperations<
      */
     @Override
     public F afterFindById(F dto) {
-        log.debug("Post-find-by-id hook for {}", persistentClass.getSimpleName());
+        log.debug("Post-find-by-id hook for {}", this.getPersistentClass().getSimpleName());
         return dto;
     }
 
@@ -631,11 +635,20 @@ public abstract class CrudControllerOperations<
     private Page<T> findPaginatedEntities(Integer page, Integer size) {
         int validatedPage = validatePage(page);
         int validatedSize = validatePageSize(size);
-        PageRequest pageRequest = PageRequest.of(
-                validatedPage,
-                validatedSize,
-                Sort.by(Sort.Direction.DESC, CtrlConstants.CREATE_DATE_FIELD)
-        );
+        PageRequest pageRequest = null;
+        if (AuditableEntity.class.isAssignableFrom(persistentClass)
+                || AuditableCancelableEntity.class.isAssignableFrom(persistentClass)) {
+            pageRequest = PageRequest.of(
+                    validatedPage,
+                    validatedSize,
+                    Sort.by(Sort.Direction.DESC, CtrlConstants.CREATE_DATE_FIELD)
+            );
+        } else {
+            pageRequest = PageRequest.of(
+                    validatedPage,
+                    validatedSize
+            );
+        }
         return crudService().findAll(pageRequest);
     }
 
@@ -650,11 +663,20 @@ public abstract class CrudControllerOperations<
     private Page<T> findPaginatedFilteredEntities(List<QueryCriteria> criteriaList, Integer page, Integer size) {
         int validatedPage = validatePage(page);
         int validatedSize = validatePageSize(size);
-        PageRequest pageRequest = PageRequest.of(
-                validatedPage,
-                validatedSize,
-                Sort.by(Sort.Direction.DESC, CtrlConstants.CREATE_DATE_FIELD)
-        );
+        PageRequest pageRequest = null;
+        if (AuditableEntity.class.isAssignableFrom(persistentClass)
+                || AuditableCancelableEntity.class.isAssignableFrom(persistentClass)) {
+            pageRequest = PageRequest.of(
+                    validatedPage,
+                    validatedSize,
+                    Sort.by(Sort.Direction.DESC, CtrlConstants.CREATE_DATE_FIELD)
+            );
+        } else {
+            pageRequest = PageRequest.of(
+                    validatedPage,
+                    validatedSize
+            );
+        }
         return crudService().findAllByCriteriaFilter(criteriaList, pageRequest);
     }
 

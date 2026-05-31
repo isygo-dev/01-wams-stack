@@ -1,5 +1,6 @@
 package eu.isygoit.enums;
 
+import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -61,7 +62,9 @@ public interface IEnumRequest {
         PATCH(IEnumRequest.PATCH, PatchMapping.class, "WRITE");
 
         private final String meaning;
+
         private final Class<?> request;
+
         private final String action;
 
         Types(String meaning, Class<?> request, String action) {

@@ -38,14 +38,14 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
     private RequestContextService requestContextService;
 
     public final ResponseEntity<F> create(F object) {
-        return performCreate(requestContextService.getCurrentContext(), object);
+        return performCreate(this.getRequestContextService().getCurrentContext(), object);
     }
 
     public final ResponseEntity<List<F>> createBatch(List<F> objects) {
-        return performCreate(requestContextService.getCurrentContext(), objects);
+        return performCreate(this.getRequestContextService().getCurrentContext(), objects);
     }
 
     public final ResponseEntity<F> update(I id, F object) {
-        return performUpdate(requestContextService.getCurrentContext(), id, object);
+        return performUpdate(this.getRequestContextService().getCurrentContext(), id, object);
     }
 }

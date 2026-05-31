@@ -15,6 +15,7 @@ import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.domain.*;
@@ -41,6 +42,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         implements ICrudServiceOperations<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
@@ -124,7 +126,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Transactional
     public void deleteBatch(List<T> objects) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
-            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
+            throw new OperationNotAllowedException("Delete " + this.getPersistentClass().getSimpleName() + " should use SAAS delete");
         }
 
         validateListNotEmpty(objects);
@@ -137,7 +139,7 @@ public abstract class CassandraCrudService<I extends Serializable,
     @Transactional
     public void delete(I id) {
         if (ITenantAssignable.class.isAssignableFrom(persistentClass)) {
-            throw new OperationNotAllowedException("Delete " + persistentClass.getSimpleName() + " should use SAAS delete");
+            throw new OperationNotAllowedException("Delete " + this.getPersistentClass().getSimpleName() + " should use SAAS delete");
         }
 
         if (Objects.isNull(id)) {
@@ -297,7 +299,7 @@ public abstract class CassandraCrudService<I extends Serializable,
      * @param object the entity to delete
      */
     private void handleEntityDeletion(T object) {
-        log.debug("Handling deletion for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Handling deletion for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         if (object instanceof CancelableEntity cancelable && !cancelable.getCheckCancel()) {
             cancelable.setCheckCancel(true);
             cancelable.setCancelDate(LocalDateTime.now());

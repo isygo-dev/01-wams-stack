@@ -9,6 +9,7 @@ import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         extends FileServiceOperations<I, T, R>
         implements IFileServiceOperations<I, T> {
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     /**
@@ -92,7 +94,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
             assignCodeIfEmpty(entity);
             setFileAttributes(entity, file);
         } else {
-            log.warn("CreateWithFile ({}): File is null or empty", persistentClass.getSimpleName());
+            log.warn("CreateWithFile ({}): File is null or empty", this.getPersistentClass().getSimpleName());
         }
 
         entity = beforeCreate(entity);
@@ -110,14 +112,14 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     @Override
     public T updateWithFile(I id, T entity, MultipartFile file) throws IOException {
         T existing = repository().findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+                .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
         entity.setId(id);
 
         if (file != null && !file.isEmpty()) {
             assignOrPreserveCode(entity, existing);
             setFileAttributes(entity, file);
         } else {
-            log.warn("UpdateWithFile ({}): File is null or empty", persistentClass.getSimpleName());
+            log.warn("UpdateWithFile ({}): File is null or empty", this.getPersistentClass().getSimpleName());
         }
 
         entity = beforeUpdate(entity);
@@ -135,7 +137,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     @Override
     public T uploadFile(I id, MultipartFile file) throws IOException {
         T entity = findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+                .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
@@ -144,7 +146,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
             return handleFileUpload(entity, file);
         } else {
-            log.warn("UploadFile ({}): File is null or empty", persistentClass.getSimpleName());
+            log.warn("UploadFile ({}): File is null or empty", this.getPersistentClass().getSimpleName());
         }
 
         return entity;
@@ -160,7 +162,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                         throw new RuntimeException(e);
                     }
                 })
-                .orElseThrow(() -> new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+                .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
     }
 
     private void assignOrPreserveCode(T entity, T existing) {
@@ -174,7 +176,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     private void setFileAttributes(T entity, MultipartFile file) {
         Path path = Path.of(getUploadDirectory())
                 .resolve(getEntityTenantOrDefault(entity))
-                .resolve(persistentClass.getSimpleName().toLowerCase());
+                .resolve(this.getPersistentClass().getSimpleName().toLowerCase());
 
         entity.setPath(path.toString());
         entity.setFileName(entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));

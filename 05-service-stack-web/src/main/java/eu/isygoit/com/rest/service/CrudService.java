@@ -11,6 +11,7 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import jakarta.persistence.EntityManager;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -41,6 +42,7 @@ public abstract class CrudService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudServiceOperations<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     private final boolean isTenantAssignable = ITenantAssignable.class.isAssignableFrom(persistentClass);
@@ -56,8 +58,8 @@ public abstract class CrudService<I extends Serializable,
      */
     private void validateNotTenantSpecific(String operationName) {
         /*if (isTenantAssignable) {
-            log.error("{} operation on {} requires tenant-specific method", operationName, persistentClass.getSimpleName());
-            throw new OperationNotAllowedException(operationName + persistentClass.getSimpleName() + " " + CtrlConstants.SHOULD_USE_SAAS_SPECIFIC_METHOD);
+            log.error("{} operation on {} requires tenant-specific method", operationName, this.getPersistentClass().getSimpleName());
+            throw new OperationNotAllowedException(operationName + this.getPersistentClass().getSimpleName() + " " + CtrlConstants.SHOULD_USE_SAAS_SPECIFIC_METHOD);
         }*/
     }
 
@@ -71,7 +73,7 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public Long count() {
         validateNotTenantSpecific("count ");
-        log.info("Counting all {} entities", persistentClass.getSimpleName());
+        log.info("Counting all {} entities", this.getPersistentClass().getSimpleName());
         var count = repository().count();
         log.debug("Count result: {}", count);
         return count;
@@ -88,7 +90,7 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public boolean existsById(I id) {
         validateNotTenantSpecific("existsById ");
-        log.info("Checking existence of {} with ID: {}", persistentClass.getSimpleName(), id);
+        log.info("Checking existence of {} with ID: {}", this.getPersistentClass().getSimpleName(), id);
         var exists = repository().existsById(id);
         log.debug("Existence check result for ID {}: {}", id, exists);
         return exists;
@@ -106,7 +108,7 @@ public abstract class CrudService<I extends Serializable,
         try {
             validateNotTenantSpecific("create ");
             validateObjectNotNull(object);
-            log.info("Creating {} entity", persistentClass.getSimpleName());
+            log.info("Creating {} entity", this.getPersistentClass().getSimpleName());
             log.debug("Input entity: {}", object);
 
             // Prepare entity
@@ -120,7 +122,7 @@ public abstract class CrudService<I extends Serializable,
 
             // Post-create processing
             var result = afterCreate(savedObject);
-            log.info("Successfully created {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+            log.info("Successfully created {} entity with ID: {}", this.getPersistentClass().getSimpleName(), result.getId());
             return result;
         } catch (DataIntegrityViolationException e) {
             throw new CreateConstraintsViolationException(e.getMessage());
@@ -138,7 +140,7 @@ public abstract class CrudService<I extends Serializable,
     public List<T> createBatch(List<T> objects) {
         validateNotTenantSpecific("create ");
         validateListNotEmpty(objects);
-        log.info("Creating {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Creating {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
 
         // Process bulk creation in batch
         var result = repository().saveAll(objects.stream()
@@ -150,7 +152,7 @@ public abstract class CrudService<I extends Serializable,
         var finalResult = result.stream()
                 .map(this::afterCreate)
                 .toList();
-        log.info("Successfully created {} {} entities", finalResult.size(), persistentClass.getSimpleName());
+        log.info("Successfully created {} {} entities", finalResult.size(), this.getPersistentClass().getSimpleName());
         return finalResult;
     }
 
@@ -171,7 +173,7 @@ public abstract class CrudService<I extends Serializable,
             T original = repository().findById(object.getId())
                     .orElseThrow(() -> {
                         log.error("Entity {} with id {} not found during update",
-                                persistentClass.getSimpleName(), object.getId());
+                                this.getPersistentClass().getSimpleName(), object.getId());
                         return new ObjectNotFoundException("with id: " + object.getId());
                     });
 
@@ -179,7 +181,7 @@ public abstract class CrudService<I extends Serializable,
                 validateObjectUpdatable(object, original);
             }
 
-            log.info("Updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+            log.info("Updating {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
 
             // Preserve existing attributes and prepare update
             keepOriginalAttributes(object, original);
@@ -190,7 +192,7 @@ public abstract class CrudService<I extends Serializable,
             // Save updated entity
             var updatedObject = repository().saveAndFlush(preparedObject);
             var result = afterUpdate(updatedObject);
-            log.info("Successfully updated {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+            log.info("Successfully updated {} entity with ID: {}", this.getPersistentClass().getSimpleName(), result.getId());
             return result;
         } catch (DataIntegrityViolationException e) {
             throw new UpdateConstraintsViolationException(e.getMessage());
@@ -218,7 +220,7 @@ public abstract class CrudService<I extends Serializable,
         T original = repository().findById(object.getId())
                 .orElseThrow(() -> {
                     log.error("Entity {} with id {} not found during dirty check",
-                            persistentClass.getSimpleName(), object.getId());
+                            this.getPersistentClass().getSimpleName(), object.getId());
                     return new ObjectNotFoundException("with id: " + object.getId());
                 });
 
@@ -236,7 +238,7 @@ public abstract class CrudService<I extends Serializable,
     public List<T> updateBatch(List<T> objects) {
         validateNotTenantSpecific("update ");
         validateListNotEmpty(objects);
-        log.info("Updating {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Updating {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
 
         // Process bulk update in batch
         var result = repository().saveAll(objects.stream()
@@ -249,7 +251,7 @@ public abstract class CrudService<I extends Serializable,
         var finalResult = result.stream()
                 .map(this::afterUpdate)
                 .toList();
-        log.info("Successfully updated {} {} entities", finalResult.size(), persistentClass.getSimpleName());
+        log.info("Successfully updated {} {} entities", finalResult.size(), this.getPersistentClass().getSimpleName());
         return finalResult;
     }
 
@@ -263,7 +265,7 @@ public abstract class CrudService<I extends Serializable,
     public void deleteBatch(List<T> objects) {
         validateNotTenantSpecific("delete ");
         validateListNotEmpty(objects);
-        log.info("Deleting {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Deleting {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
 
         // Process deletion in batch
         beforeDelete(objects);
@@ -273,7 +275,7 @@ public abstract class CrudService<I extends Serializable,
             repository().deleteAllInBatch(objects);
         }
         afterDelete(objects);
-        log.info("Successfully deleted {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Successfully deleted {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
     }
 
     /**
@@ -289,7 +291,7 @@ public abstract class CrudService<I extends Serializable,
             log.error("Null ID provided for delete operation");
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
-        log.info("Deleting {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.info("Deleting {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
 
         // Process deletion
         repository().findById(id).ifPresentOrElse(object -> {
@@ -300,7 +302,7 @@ public abstract class CrudService<I extends Serializable,
                 repository().delete(object);
             }
             afterDelete(id);
-            log.info("Successfully deleted {} entity with ID: {}", persistentClass.getSimpleName(), id);
+            log.info("Successfully deleted {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
         }, () -> {
             log.error("Entity with ID: {} not found", id);
             throw new ObjectNotFoundException(" with id: " + id);
@@ -317,10 +319,10 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public List<T> findAll() {
         validateNotTenantSpecific("findAll ");
-        log.info("Retrieving all {} entities", persistentClass.getSimpleName());
+        log.info("Retrieving all {} entities", this.getPersistentClass().getSimpleName());
         var list = repository().findAll();
         var result = CollectionUtils.isEmpty(list) ? List.<T>of() : afterFindAll(list);
-        log.debug("Retrieved {} {} entities", result.size(), persistentClass.getSimpleName());
+        log.debug("Retrieved {} {} entities", result.size(), this.getPersistentClass().getSimpleName());
         return result;
     }
 
@@ -335,7 +337,7 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public Page<T> findAll(Pageable pageable) {
         validateNotTenantSpecific("findAll ");
-        log.info("Retrieving paginated {} entities", persistentClass.getSimpleName());
+        log.info("Retrieving paginated {} entities", this.getPersistentClass().getSimpleName());
         log.debug("Pageable: {}", pageable);
         return repository().findAll(pageable).map(this::afterFindAllItem);
     }
@@ -360,7 +362,7 @@ public abstract class CrudService<I extends Serializable,
             log.error("Null ID provided for findById operation");
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
         }
-        log.info("Retrieving {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.info("Retrieving {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
         var result = repository().findById(id)
                 .map(this::afterFindById);
         log.debug("Find by ID result for ID {}: {}", id, result.isPresent() ? "found" : "not found");
@@ -378,9 +380,9 @@ public abstract class CrudService<I extends Serializable,
     public T saveOrUpdate(T object) {
         validateNotTenantSpecific("saveOrUpdate ");
         validateObjectNotNull(object);
-        log.info("Saving or updating {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.info("Saving or updating {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         var result = object.getId() == null ? create(object) : update(object);
-        log.info("Successfully saved or updated {} entity with ID: {}", persistentClass.getSimpleName(), result.getId());
+        log.info("Successfully saved or updated {} entity with ID: {}", this.getPersistentClass().getSimpleName(), result.getId());
         return result;
     }
 
@@ -395,7 +397,7 @@ public abstract class CrudService<I extends Serializable,
     public List<T> saveOrUpdate(List<T> objects) {
         validateNotTenantSpecific("saveOrUpdate ");
         validateListNotEmpty(objects);
-        log.info("Saving or updating {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.info("Saving or updating {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
 
         // Separate entities into new (to create) and existing (to update)
         List<T> toCreate = objects.stream()
@@ -413,7 +415,7 @@ public abstract class CrudService<I extends Serializable,
             result.addAll(updateBatch(toUpdate));
         }
 
-        log.info("Successfully saved or updated {} {} entities", result.size(), persistentClass.getSimpleName());
+        log.info("Successfully saved or updated {} {} entities", result.size(), this.getPersistentClass().getSimpleName());
         return result;
     }
 
@@ -432,11 +434,11 @@ public abstract class CrudService<I extends Serializable,
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
             throw new EmptyCriteriaFilterException("Criteria filter list is null or empty");
         }
-        log.info("Retrieving {} entities by criteria", persistentClass.getSimpleName());
+        log.info("Retrieving {} entities by criteria", this.getPersistentClass().getSimpleName());
         log.debug("Criteria: {}", criteria);
         var specification = CriteriaHelper.buildSpecification(null, criteria, persistentClass);
         var result = (List<T>) repository().findAll((Specification) specification);
-        log.debug("Retrieved {} filtered {} entities", result.size(), persistentClass.getSimpleName());
+        log.debug("Retrieved {} filtered {} entities", result.size(), this.getPersistentClass().getSimpleName());
         return result;
     }
 
@@ -456,7 +458,7 @@ public abstract class CrudService<I extends Serializable,
             log.error("Null or empty criteria provided for findAllByCriteriaFilter");
             throw new EmptyCriteriaFilterException("Criteria filter list is null or empty");
         }
-        log.info("Retrieving paginated {} entities by criteria", persistentClass.getSimpleName());
+        log.info("Retrieving paginated {} entities by criteria", this.getPersistentClass().getSimpleName());
         log.debug("Criteria: {}, PageRequest: {}", criteria, pageRequest);
         Specification<T> specification = CriteriaHelper.buildSpecification(null, criteria, persistentClass);
         return repository().findAll(specification, pageRequest).map(this::afterFindAllItem);
@@ -477,7 +479,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public T beforeCreate(T object) {
-        log.debug("Pre-create hook called for {} entity", persistentClass.getSimpleName());
+        log.debug("Pre-create hook called for {} entity", this.getPersistentClass().getSimpleName());
         return object;
     }
 
@@ -489,7 +491,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public T afterCreate(T object) {
-        log.debug("Post-create hook called for {} entity", persistentClass.getSimpleName());
+        log.debug("Post-create hook called for {} entity", this.getPersistentClass().getSimpleName());
         return object;
     }
 
@@ -500,7 +502,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public void beforeDelete(I id) {
-        log.debug("Pre-delete hook called for {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Pre-delete hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
     }
 
     /**
@@ -510,7 +512,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public void afterDelete(I id) {
-        log.debug("Post-delete hook called for {} entity with ID: {}", persistentClass.getSimpleName(), id);
+        log.debug("Post-delete hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), id);
     }
 
     /**
@@ -520,7 +522,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public void beforeDelete(List<T> objects) {
-        log.debug("Pre-delete hook called for {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.debug("Pre-delete hook called for {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
     }
 
     /**
@@ -530,7 +532,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public void afterDelete(List<T> objects) {
-        log.debug("Post-delete hook called for {} {} entities", objects.size(), persistentClass.getSimpleName());
+        log.debug("Post-delete hook called for {} {} entities", objects.size(), this.getPersistentClass().getSimpleName());
     }
 
     /**
@@ -541,7 +543,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public T beforeUpdate(T object) {
-        log.debug("Pre-update hook called for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Pre-update hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         return object;
     }
 
@@ -553,7 +555,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public T afterUpdate(T object) {
-        log.debug("Post-update hook called for {} entity with ID: {}", persistentClass.getSimpleName(), object.getId());
+        log.debug("Post-update hook called for {} entity with ID: {}", this.getPersistentClass().getSimpleName(), object.getId());
         return object;
     }
 
@@ -565,7 +567,7 @@ public abstract class CrudService<I extends Serializable,
      */
     @Override
     public List<T> afterFindAll(List<T> list) {
-        log.debug("Post-find-all hook called for {} {} entities", list.size(), persistentClass.getSimpleName());
+        log.debug("Post-find-all hook called for {} {} entities", list.size(), this.getPersistentClass().getSimpleName());
         return list;
     }
 
@@ -578,7 +580,7 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public T afterFindById(T object) {
         log.debug("Post-find-by-id hook called for {} entity with ID: {}",
-                persistentClass.getSimpleName(), object.getId());
+                this.getPersistentClass().getSimpleName(), object.getId());
         return object;
     }
 

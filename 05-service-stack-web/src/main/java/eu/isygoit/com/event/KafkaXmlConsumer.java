@@ -27,6 +27,7 @@ import java.util.Map;
 @Slf4j
 public abstract class KafkaXmlConsumer<T> extends AbstractKafkaConsumer<T> {
 
+    @Getter
     private final Class<T> consumerClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
     private final XmlMapper xmlMapper;

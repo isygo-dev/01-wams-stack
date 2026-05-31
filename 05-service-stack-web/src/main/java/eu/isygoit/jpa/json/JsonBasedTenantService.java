@@ -15,6 +15,7 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.json.JsonBasedEntity;
 import eu.isygoit.model.json.JsonElement;
 import eu.isygoit.repository.json.JsonBasedTenantAssignableRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -66,7 +67,9 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         ICrudTenantServiceEvents<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 
+    @Getter
     private final Class<T> jsonElementClass;
+    @Getter
     private final Class<E> jsonEntityClass;
 
     /**

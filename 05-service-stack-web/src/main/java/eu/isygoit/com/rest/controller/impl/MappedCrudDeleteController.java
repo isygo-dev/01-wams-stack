@@ -40,11 +40,11 @@ public abstract class MappedCrudDeleteController<I extends Serializable, T exten
     @Override
     public final ResponseEntity<?> delete(
             I id) {
-        return performDelete(requestContextService.getCurrentContext(), id);
+        return performDelete(this.getRequestContextService().getCurrentContext(), id);
     }
 
     @Override
     public final ResponseEntity<?> deleteBatch(List<I> ids) {
-        return performDelete(requestContextService.getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
+        return performDelete(this.getRequestContextService().getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 }

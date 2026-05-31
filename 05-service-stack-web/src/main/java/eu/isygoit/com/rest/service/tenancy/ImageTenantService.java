@@ -14,6 +14,7 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
@@ -43,6 +44,7 @@ public abstract class ImageTenantService<I extends Serializable,
         implements IImageTenantServiceOperations<I, T> {
 
     // Persistent class derived via reflection for exception messages etc.
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     private String saveImageFile(T entity, MultipartFile file) throws IOException {
@@ -74,7 +76,7 @@ public abstract class ImageTenantService<I extends Serializable,
 
         // Retrieve entity by id or throw exception
         T entity = findById(tenant, id).orElseThrow(() ->
-                new ObjectNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+                new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
 
         // Save image and update entity path
         entity.setImagePath(saveImageFile(entity, file));
@@ -85,11 +87,11 @@ public abstract class ImageTenantService<I extends Serializable,
     public ResourceDto downloadImage(String tenant, I id) throws IOException {
         // Retrieve entity or throw exception if not found
         T entity = findById(tenant, id).orElseThrow(() ->
-                new ResourceNotFoundException(persistentClass.getSimpleName() + " with id " + id));
+                new ResourceNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
 
         // Validate image path
         if (!StringUtils.hasText(entity.getImagePath())) {
-            throw new EmptyPathException(persistentClass.getSimpleName() + " with id " + id);
+            throw new EmptyPathException(this.getPersistentClass().getSimpleName() + " with id " + id);
         }
 
         Resource resource = new UrlResource(Path.of(entity.getImagePath()).toUri());

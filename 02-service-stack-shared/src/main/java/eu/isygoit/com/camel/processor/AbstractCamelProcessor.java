@@ -1,6 +1,7 @@
 package eu.isygoit.com.camel.processor;
 
 import eu.isygoit.dto.IExchangeObjectDto;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -29,6 +30,7 @@ public abstract class AbstractCamelProcessor<T extends IExchangeObjectDto> imple
      */
     public static final String ORIGIN = "origin";
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
     /**
@@ -43,7 +45,7 @@ public abstract class AbstractCamelProcessor<T extends IExchangeObjectDto> imple
     @Transactional
     @Override
     public void process(Exchange exchange) throws Exception {
-        log.info("START EXECUTING PROCESSOR: {} on object {}", this.getClass().getSimpleName(), persistentClass.getSimpleName());
+        log.info("START EXECUTING PROCESSOR: {} on object {}", this.getClass().getSimpleName(), this.getPersistentClass().getSimpleName());
         try {
             exchange.getIn().setHeader(RETURN_HEADER, false);
             T object = (T) exchange.getIn().getBody();

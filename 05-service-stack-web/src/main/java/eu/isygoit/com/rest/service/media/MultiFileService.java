@@ -13,6 +13,7 @@ import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.util.CollectionUtils;
@@ -46,7 +47,9 @@ public abstract class MultiFileService<
         RL extends JpaPagingAndSortingRepository<L, I>
         > extends MultiFileServiceOperations<I, T, L, R, RL> implements IMultiFileServiceOperations<I, T> {
 
+    @Getter
     private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    @Getter
     private final Class<L> linkedFileClass = (Class<L>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
 
     /**
@@ -123,7 +126,7 @@ public abstract class MultiFileService<
         linkedFile.setOriginalFileName(originalFilename);
         linkedFile.setExtension(FilenameUtils.getExtension(originalFilename));
         linkedFile.setPath(Path.of(getUploadDirectory())
-                .resolve(persistentClass.getSimpleName().toLowerCase())
+                .resolve(this.getPersistentClass().getSimpleName().toLowerCase())
                 .resolve("additional")
                 .toString());
         linkedFile.setMimetype(file.getContentType());
@@ -191,7 +194,7 @@ public abstract class MultiFileService<
     protected T getEntityOrThrow(I id) {
         return findById(id).orElseThrow(() -> {
             log.error("Entity not found for ID: {}", id);
-            return new ObjectNotFoundException(persistentClass.getSimpleName() + " with ID: " + id);
+            return new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with ID: " + id);
         });
     }
 
