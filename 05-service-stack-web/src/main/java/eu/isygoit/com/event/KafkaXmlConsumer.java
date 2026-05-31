@@ -27,7 +27,7 @@ import java.util.Map;
 @Slf4j
 public abstract class KafkaXmlConsumer<T> extends AbstractKafkaConsumer<T> {
 
-    private final Class<T> consumerClassType = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    private final Class<T> consumerClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
     private final XmlMapper xmlMapper;
 
@@ -57,7 +57,7 @@ public abstract class KafkaXmlConsumer<T> extends AbstractKafkaConsumer<T> {
         if (enableXmlValidation && xsdSchemaPath != null && !xsdSchemaPath.isEmpty()) {
             validateXmlSchema(xml);
         }
-        return xmlMapper.readValue(xml, consumerClassType);
+        return xmlMapper.readValue(xml, consumerClass);
     }
 
     private void validateXmlSchema(String xml) throws Exception {

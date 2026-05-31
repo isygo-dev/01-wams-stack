@@ -26,7 +26,7 @@ import java.util.Map;
 @Slf4j
 public abstract class KafkaJsonConsumer<T> extends AbstractKafkaConsumer<T> {
 
-    private final Class<T> producerClassType = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    private final Class<T> producerClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,7 +46,7 @@ public abstract class KafkaJsonConsumer<T> extends AbstractKafkaConsumer<T> {
         if (enableJsonValidation && jsonSchemaPath != null && !jsonSchemaPath.isEmpty()) {
             validateJsonSchema(json);
         }
-        return JsonHelper.fromJson(json, producerClassType);
+        return JsonHelper.fromJson(json, producerClass);
     }
 
     private void validateJsonSchema(String json) throws Exception {

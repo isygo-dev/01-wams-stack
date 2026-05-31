@@ -43,8 +43,7 @@ public abstract class ImageTenantService<I extends Serializable,
         implements IImageTenantServiceOperations<I, T> {
 
     // Persistent class derived via reflection for exception messages etc.
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     private String saveImageFile(T entity, MultipartFile file) throws IOException {
         // Determine target directory based on entity tenant and class name

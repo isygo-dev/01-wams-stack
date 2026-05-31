@@ -52,16 +52,7 @@ public abstract class CrudTenantControllerOperations<
         implements ICrudControllerOperations<I, T, M, F, S> {
 
 
-    private final Class<T> entityClass;
-
-    /**
-     * Instantiates a new Crud tenant controller sub methods.
-     */
-    @SuppressWarnings("unchecked")
-    protected CrudTenantControllerOperations() {
-        this.entityClass = (Class<T>) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[1];
-    }
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     // region CRUD Operations
 
@@ -76,7 +67,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<F> performCreate(ContextRequestDto context, F dto) {
         return executeWithMonitoring("performCreate", () -> {
-            log.info("Creating {} for tenant: {}", entityClass.getSimpleName(),
+            log.info("Creating {} for tenant: {}", persistentClass.getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateCreateRequest(dto);
 
@@ -101,7 +92,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<List<F>> performCreate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("performCreateBulk", () -> {
-            log.info("Bulk creating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(),
+            log.info("Bulk creating {} entities for tenant: {}", dtos.size(), persistentClass.getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateBulkOperation(dtos);
 
@@ -130,7 +121,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("performUpdateBulk", () -> {
-            log.info("Bulk updating {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(),
+            log.info("Bulk updating {} entities for tenant: {}", dtos.size(), persistentClass.getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateBulkOperation(dtos);
 
@@ -160,7 +151,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
         return executeWithMonitoring("performUpdateById", () -> {
-            log.info("Updating {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id,
+            log.info("Updating {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
             validateNotNull(dto, "DTO cannot be null");
@@ -187,7 +178,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Void> performDelete(ContextRequestDto context, I id) {
         return executeWithMonitoring("performDelete", () -> {
-            log.info("Deleting {} with ID: {} for tenant: {}", entityClass.getSimpleName(), id,
+            log.info("Deleting {} with ID: {} for tenant: {}", persistentClass.getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
 
@@ -213,7 +204,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Void> performDelete(ContextRequestDto context, List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
-            log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), entityClass.getSimpleName(),
+            log.info("Bulk deleting {} entities for tenant: {}", dtos.size(), persistentClass.getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateBulkOperation(dtos);
 
@@ -247,7 +238,7 @@ public abstract class CrudTenantControllerOperations<
         return executeWithMonitoring("performFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    entityClass.getSimpleName(), page, size,
+                    persistentClass.getSimpleName(), page, size,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
 
             if (isPaginationRequested(page, size)) {
@@ -292,7 +283,7 @@ public abstract class CrudTenantControllerOperations<
         return executeWithMonitoring("performFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    entityClass.getSimpleName(), page, size,
+                    persistentClass.getSimpleName(), page, size,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
 
             if (isPaginationRequested(page, size)) {
@@ -338,7 +329,7 @@ public abstract class CrudTenantControllerOperations<
         return executeWithMonitoring("performFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
-                    entityClass.getSimpleName(), page, size,
+                    persistentClass.getSimpleName(), page, size,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             log.debug("Filter criteria: {}", criteria);
 
@@ -383,7 +374,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<F> performFindById(ContextRequestDto context, I id) {
         return executeWithMonitoring("performFindById", () -> {
-            log.info("Finding {} by ID: {} for tenant: {}", entityClass.getSimpleName(), id,
+            log.info("Finding {} by ID: {} for tenant: {}", persistentClass.getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             validateNotNull(id, "ID cannot be null");
 
@@ -405,7 +396,7 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Long> performGetCount(ContextRequestDto context) {
         return executeWithMonitoring("performGetCount", () -> {
-            log.info("Counting {}s for tenant: {}", entityClass.getSimpleName(),
+            log.info("Counting {}s for tenant: {}", persistentClass.getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
             Long count = crudService().count(context.getSenderTenant());
             return ResponseFactory.responseOk(count);
@@ -420,8 +411,8 @@ public abstract class CrudTenantControllerOperations<
     @Override
     public ResponseEntity<Map<String, String>> performGetAnnotatedCriteria() {
         return executeWithMonitoring("performGetAnnotatedCriteria", () -> {
-            log.info("Retrieving filter criteria for {}", entityClass.getSimpleName());
-            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(entityClass);
+            log.info("Retrieving filter criteria for {}", persistentClass.getSimpleName());
+            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
             return createMapResponse(criteriaMap);
         });
     }
@@ -438,7 +429,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public T afterCreate(T entity) {
-        log.debug("Post-create hook for {}", entityClass.getSimpleName());
+        log.debug("Post-create hook for {}", persistentClass.getSimpleName());
         return entity;
     }
 
@@ -451,7 +442,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public F beforeUpdate(I id, F dto) {
-        log.debug("Pre-update hook for {} with ID: {}", entityClass.getSimpleName(), id);
+        log.debug("Pre-update hook for {} with ID: {}", persistentClass.getSimpleName(), id);
         return dto;
     }
 
@@ -463,7 +454,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public F beforeCreate(F dto) {
-        log.debug("Pre-create hook for {}", entityClass.getSimpleName());
+        log.debug("Pre-create hook for {}", persistentClass.getSimpleName());
         return dto;
     }
 
@@ -475,7 +466,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public T afterUpdate(T entity) {
-        log.debug("Post-update hook for {}", entityClass.getSimpleName());
+        log.debug("Post-update hook for {}", persistentClass.getSimpleName());
         return entity;
     }
 
@@ -487,7 +478,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public boolean beforeDelete(I id) {
-        log.debug("Pre-delete hook for {} with ID: {}", entityClass.getSimpleName(), id);
+        log.debug("Pre-delete hook for {} with ID: {}", persistentClass.getSimpleName(), id);
         return true;
     }
 
@@ -499,7 +490,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public boolean afterDelete(I id) {
-        log.debug("Post-delete hook for {} with ID: {}", entityClass.getSimpleName(), id);
+        log.debug("Post-delete hook for {} with ID: {}", persistentClass.getSimpleName(), id);
         return true;
     }
 
@@ -535,7 +526,7 @@ public abstract class CrudTenantControllerOperations<
      */
     @Override
     public F afterFindById(F dto) {
-        log.debug("Post-find-by-id hook for {}", entityClass.getSimpleName());
+        log.debug("Post-find-by-id hook for {}", persistentClass.getSimpleName());
         return dto;
     }
 

@@ -41,8 +41,8 @@ public abstract class CrudService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudServiceOperations<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+
     private final boolean isTenantAssignable = ITenantAssignable.class.isAssignableFrom(persistentClass);
 
     @Autowired

@@ -44,8 +44,7 @@ public abstract class CrudTenantService<I extends Serializable,
         extends CrudServiceUtils<I, T, R>
         implements ICrudTenantServiceOperations<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
 
-    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Autowired
     private EntityManager entityManager;

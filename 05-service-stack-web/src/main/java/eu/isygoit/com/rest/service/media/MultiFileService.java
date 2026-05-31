@@ -46,20 +46,8 @@ public abstract class MultiFileService<
         RL extends JpaPagingAndSortingRepository<L, I>
         > extends MultiFileServiceOperations<I, T, L, R, RL> implements IMultiFileServiceOperations<I, T> {
 
-    private final Class<T> persistentClass;
-    private final Class<L> linkedFileClass;
-
-    /**
-     * Constructor that initializes the persistent and linked file classes using reflection.
-     */
-    @SuppressWarnings("unchecked")
-    protected MultiFileService() {
-        var parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        this.persistentClass = (Class<T>) parameterizedType.getActualTypeArguments()[1];
-        this.linkedFileClass = (Class<L>) parameterizedType.getActualTypeArguments()[2];
-        log.debug("Initialized MultiFileService with persistentClass: {}, linkedFileClass: {}",
-                persistentClass.getSimpleName(), linkedFileClass.getSimpleName());
-    }
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<L> linkedFileClass = (Class<L>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
 
     /**
      * Uploads multiple additional files for the specified parent entity.

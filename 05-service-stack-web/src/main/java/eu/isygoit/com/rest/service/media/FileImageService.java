@@ -39,8 +39,7 @@ public abstract class FileImageService<I extends Serializable,
         extends FileService<I, T, R>
         implements IFileServiceOperations<I, T>, IImageServiceOperations<I, T> {
 
-    private final Class<T> persistentClass =
-            (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 
     @Override
     @Transactional

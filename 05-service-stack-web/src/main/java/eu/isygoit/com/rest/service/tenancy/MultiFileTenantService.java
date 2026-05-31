@@ -43,20 +43,8 @@ public abstract class MultiFileTenantService<
         RL extends JpaPagingAndSortingTenantAssignableRepository<L, I>
         > extends MultiFileTenantServiceSubOperations<I, T, L, R, RL> implements IMultiFileTenantServiceOperations<I, T> {
 
-    private final Class<T> persistentClass;
-    private final Class<L> linkedFileClass;
-
-    /**
-     * Constructor that initializes the persistent and linked file classes using reflection.
-     */
-    @SuppressWarnings("unchecked")
-    protected MultiFileTenantService() {
-        var parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        this.persistentClass = (Class<T>) parameterizedType.getActualTypeArguments()[1];
-        this.linkedFileClass = (Class<L>) parameterizedType.getActualTypeArguments()[2];
-        log.debug("Initialized MultiFileTenantService with persistentClass: {}, linkedFileClass: {}",
-                persistentClass.getSimpleName(), linkedFileClass.getSimpleName());
-    }
+    private final Class<T> persistentClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    private final Class<L> linkedFileClass = (Class<L>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[2];
 
     /**
      * Uploads multiple additional files for the specified tenant and parent entity.
