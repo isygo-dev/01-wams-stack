@@ -21,6 +21,7 @@ public interface IRemoteNextCodeService {
 
     /**
      * Generate next code response entity.
+     *
      * @param entity    the entity
      * @param attribute the attribute
      * @return the response entity
@@ -39,6 +40,7 @@ public interface IRemoteNextCodeService {
 
     /**
      * Subscribe next code response entity.
+     *
      * @param incrementalConfig the incremental config
      * @return the response entity
      */

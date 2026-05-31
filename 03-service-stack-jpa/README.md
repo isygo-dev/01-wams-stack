@@ -141,6 +141,7 @@ Automatic auditing configuration is provided:
 Add the following dependency to your `pom.xml`:
 
 ```xml
+
 <dependency>
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-jpa</artifactId>
@@ -153,6 +154,7 @@ Add the following dependency to your `pom.xml`:
 #### 1. Define an Entity
 
 ```java
+
 @Getter
 @Setter
 @SuperBuilder
@@ -181,6 +183,7 @@ public interface MyEntityRepository extends JpaPagingAndSortingRepository<MyEnti
 #### 3. Use in Service
 
 ```java
+
 @Service
 public class MyService {
     @Autowired

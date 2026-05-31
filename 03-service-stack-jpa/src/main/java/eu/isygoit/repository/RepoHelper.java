@@ -10,7 +10,7 @@ public class RepoHelper {
     private static final int DEFAULT_PAGE_SIZE = 100;
 
     public static Pageable resolvePageable(Integer limit, Integer nextToken, String sortCol) {
-        if(!StringUtils.hasText(sortCol)){
+        if (!StringUtils.hasText(sortCol)) {
             sortCol = "creationDate";
         }
         int pageSize = (limit != null && limit > 0)
