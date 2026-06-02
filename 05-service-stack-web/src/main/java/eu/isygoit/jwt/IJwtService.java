@@ -2,14 +2,9 @@ package eu.isygoit.jwt;
 
 import eu.isygoit.dto.common.TokenResponseDto;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.security.MacAlgorithm;
 import io.jsonwebtoken.security.SecureDigestAlgorithm;
 
-import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -34,6 +29,10 @@ public interface IJwtService {
 
     Optional<String> extractSubject(String token);
 
+    Optional<String> extractIssuer(String token);
+
+    Optional<Set<String>> extractAudience(String token);
+
     // ─────────────────────────────────────────────────────────────────────────
     // Secured (with key) — signature verified
     // ─────────────────────────────────────────────────────────────────────────
@@ -46,6 +45,10 @@ public interface IJwtService {
     Boolean extractIsAdmin(String token, String key);
 
     Optional<String> extractSubject(String token, String key);
+
+    Optional<Set<String>> extractAudience(String token, String key);
+
+    Optional<String> extractIssuer(String token, String key);
 
     // ─────────────────────────────────────────────────────────────────────────
     // Other signed-only methods
@@ -65,7 +68,7 @@ public interface IJwtService {
     // ─────────────────────────────────────────────────────────────────────────
     Boolean isTokenExpired(String token, String key);
 
-    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, List<String> audience,
+    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
                                  SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs);
 
     /**

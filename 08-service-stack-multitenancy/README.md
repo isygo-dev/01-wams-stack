@@ -360,7 +360,7 @@ The `TenantToContextFilter` can be extended to include additional context inform
 
 ```java
 private RequestContextDto buildRequestContext(String tenant, String userName, 
-                                            Boolean isAdmin, String application) {
+                                            Boolean isAdmin, String audience) {
     return RequestContextDto.builder()
             .senderTenant(tenant)
             .senderUser(userName)

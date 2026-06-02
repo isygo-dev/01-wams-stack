@@ -100,7 +100,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     /**
      * Custom token validation logic (signature, expiration, etc.)
      */
-    public abstract boolean isTokenValid(String jwt, String tenant, String application, String userName);
+    public abstract boolean isTokenValid(String jwt, String tenant, String audience, String userName);
 
     /**
      * Hook for adding request attributes (used for anonymous flow)

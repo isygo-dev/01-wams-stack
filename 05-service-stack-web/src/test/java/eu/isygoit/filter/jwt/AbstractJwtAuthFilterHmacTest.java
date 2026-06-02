@@ -90,7 +90,7 @@ class AbstractJwtAuthFilterHmacTest {
         }
 
         @Override
-        public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
+        public boolean isTokenValid(String jwt, String tenant, String audience, String userName) {
             return true;
         }
 

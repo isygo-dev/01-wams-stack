@@ -11,7 +11,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.MacAlgorithm;
 import io.jsonwebtoken.security.SecureDigestAlgorithm;
-import io.jsonwebtoken.security.SecurityException;
 import io.jsonwebtoken.security.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -107,6 +106,26 @@ public class JwtService implements IJwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    @Override
+    public Optional<String> extractIssuer(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
+        log.debug("Extracting subject from unsigned token");
+        return extractClaim(token, Claims::getIssuer);
+    }
+
+    @Override
+    public Optional<Set<String>> extractAudience(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
+        log.debug("Extracting subject from unsigned token");
+        return extractClaim(token, Claims::getAudience);
+    }
+
     // ========================================================================
     // SECURED convenience extractors (with key)
     // ========================================================================
@@ -161,6 +180,26 @@ public class JwtService implements IJwtService {
 
         log.debug("Extracting subject from signed token");
         return extractClaim(token, Claims::getSubject, key);
+    }
+
+    @Override
+    public Optional<Set<String>> extractAudience(String token, String key) {
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
+        log.debug("Extracting subject from signed token");
+        return extractClaim(token, Claims::getAudience, key);
+    }
+
+    @Override
+    public Optional<String> extractIssuer(String token, String key) {
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
+        log.debug("Extracting subject from signed token");
+        return extractClaim(token, Claims::getIssuer, key);
     }
 
     // ========================================================================
@@ -244,7 +283,7 @@ public class JwtService implements IJwtService {
     // ========================================================================
 
     @Override
-    public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, List<String> audience,
+    public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
                                         SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs) {
         return createToken(JwtTokenRequest.builder()
                 .subject(subject)

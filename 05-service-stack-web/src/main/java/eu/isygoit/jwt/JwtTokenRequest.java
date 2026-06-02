@@ -16,7 +16,7 @@ public record JwtTokenRequest(
         String subject,
         Map<String, Object> claims,
         String issuer,
-        List<String> audience,
+        String audience,
         SecureDigestAlgorithm<?, ?> algorithm,
         String key,
         Integer lifeTimeInMs
