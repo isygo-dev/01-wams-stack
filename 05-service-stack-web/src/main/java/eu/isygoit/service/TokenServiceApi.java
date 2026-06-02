@@ -24,7 +24,7 @@ public interface TokenServiceApi {
     /**
      * Create token by tenant response entity.
      *
-     * @param application     the application
+     * @param audience     the audience
      * @param tokenType       the token type
      * @param tokenRequestDto the token request dto
      * @return the response entity
@@ -39,14 +39,14 @@ public interface TokenServiceApi {
     })
     @PostMapping(path = "/builder")
     ResponseEntity<TokenResponseDto> buildToken(
-            @RequestParam(name = RestApiConstants.APPLICATION) String application,
+            @RequestParam(name = RestApiConstants.AUDIENCE) String audience,
             @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
             @Valid @RequestBody TokenRequestDto tokenRequestDto);
 
     /**
      * Is token valid response entity.
      *
-     * @param application the application
+     * @param audience the audience
      * @param tokenType   the token type
      * @param token       the token
      * @param subject     the subject
@@ -62,7 +62,7 @@ public interface TokenServiceApi {
     })
     @GetMapping(path = "/validation")
     ResponseEntity<Boolean> isTokenValid(
-            @RequestParam(name = RestApiConstants.APPLICATION) String application,
+            @RequestParam(name = RestApiConstants.AUDIENCE) String audience,
             @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
             @RequestParam(name = RestApiConstants.TOKEN) String token,
             @RequestParam(name = RestApiConstants.SUBJECT) String subject);

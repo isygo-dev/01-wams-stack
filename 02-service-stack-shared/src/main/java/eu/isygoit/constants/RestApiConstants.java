@@ -152,7 +152,7 @@ public interface RestApiConstants {
     /**
      * The constant APPLICATION.
      */
-    String APPLICATION = "application";
+    String AUDIENCE = "audience";
     /**
      * The constant TOKEN_TYPE.
      */
