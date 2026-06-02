@@ -42,7 +42,7 @@ class JwtKmsClientAuthFilterTest {
         String userName = "user1";
         String userIdentifier = "user1@tenant1";
 
-        when(tokenService.isTokenValid(eq(tenant), eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
+        when(tokenService.isTokenValid(eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
                 .thenReturn(ResponseFactory.responseOk(true));
 
         assertTrue(filter.isTokenValid(jwt, tenant, application, userName));
@@ -57,7 +57,7 @@ class JwtKmsClientAuthFilterTest {
         String userName = "user1";
         String userIdentifier = "user1@tenant1";
 
-        when(tokenService.isTokenValid(eq(tenant), eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
+        when(tokenService.isTokenValid(eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
                 .thenReturn(ResponseFactory.responseOk(false));
 
         assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, application, userName));
@@ -71,7 +71,7 @@ class JwtKmsClientAuthFilterTest {
         String application = "app";
         String userName = "user";
 
-        when(tokenService.isTokenValid(any(), any(), any(), any(), any()))
+        when(tokenService.isTokenValid(any(), any(), any(), any()))
                 .thenReturn(ResponseFactory.responseOk(false));
 
         assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, application, userName));
@@ -85,7 +85,7 @@ class JwtKmsClientAuthFilterTest {
         String application = "app";
         String userName = "user";
 
-        when(tokenService.isTokenValid(any(), any(), any(), any(), any()))
+        when(tokenService.isTokenValid(any(), any(), any(), any()))
                 .thenThrow(new RuntimeException("Remote call failed"));
 
         // The current implementation logs the error but returns true

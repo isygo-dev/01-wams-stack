@@ -55,7 +55,6 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
             // Use the constant empty context to avoid object creation
             ResponseEntity<Boolean> result = tokenService.isTokenValid(
-                    tenant,
                     application,
                     IEnumToken.Types.ACCESS,
                     jwt,

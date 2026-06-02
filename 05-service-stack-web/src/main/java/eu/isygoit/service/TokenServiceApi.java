@@ -24,14 +24,13 @@ public interface TokenServiceApi {
     /**
      * Create token by tenant response entity.
      *
-     * @param tenant          the tenant
      * @param application     the application
      * @param tokenType       the token type
      * @param tokenRequestDto the token request dto
      * @return the response entity
      */
-    @Operation(summary = "buildTokenByTenant Api",
-            description = "buildTokenByTenant")
+    @Operation(summary = "buildToken Api",
+            description = "buildToken")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Api executed successfully",
@@ -39,8 +38,7 @@ public interface TokenServiceApi {
                             schema = @Schema(implementation = TokenResponseDto.class))})
     })
     @PostMapping(path = "/builder")
-    ResponseEntity<TokenResponseDto> buildTokenByTenant(
-            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
+    ResponseEntity<TokenResponseDto> buildToken(
             @RequestParam(name = RestApiConstants.APPLICATION) String application,
             @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
             @Valid @RequestBody TokenRequestDto tokenRequestDto);
@@ -48,7 +46,6 @@ public interface TokenServiceApi {
     /**
      * Is token valid response entity.
      *
-     * @param tenant      the tenant
      * @param application the application
      * @param tokenType   the token type
      * @param token       the token
@@ -65,7 +62,6 @@ public interface TokenServiceApi {
     })
     @GetMapping(path = "/validation")
     ResponseEntity<Boolean> isTokenValid(
-            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
             @RequestParam(name = RestApiConstants.APPLICATION) String application,
             @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
             @RequestParam(name = RestApiConstants.TOKEN) String token,
