@@ -1,11 +1,12 @@
 package eu.isygoit.jwt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumWebToken;
-import eu.isygoit.exception.TokenInvalidException;
+import eu.isygoit.exception.*;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.MacAlgorithm;
@@ -46,14 +47,20 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractTenant(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting tenant from unsigned token");
         return extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class);
     }
 
     @Override
     public Boolean extractIsAdmin(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting isAdmin flag from unsigned token");
         return extractClaim(token, JwtConstants.JWT_IS_ADMIN, Boolean.class)
                 .map(Boolean.class::cast)
@@ -62,28 +69,40 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractApplication(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting application from unsigned token");
         return extractClaim(token, JwtConstants.JWT_LOG_APP, String.class);
     }
 
     @Override
     public Optional<String> extractAccountType(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting account type from unsigned token");
         return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class);
     }
 
     @Override
     public Optional<String> extractUserName(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting username from unsigned token");
         return extractClaim(token, JwtConstants.JWT_SENDER_USER, String.class);
     }
 
     @Override
     public Optional<String> extractSubject(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting subject from unsigned token");
         return extractClaim(token, Claims::getSubject);
     }
@@ -94,14 +113,20 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractTenant(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting tenant from signed token");
         return extractClaim(token, JwtConstants.JWT_SENDER_TENANT, String.class, key);
     }
 
     @Override
     public Boolean extractIsAdmin(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting isAdmin flag from signed token");
         return extractClaim(token, JwtConstants.JWT_IS_ADMIN, Boolean.class, key)
                 .map(Boolean.class::cast)
@@ -110,21 +135,30 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<String> extractAccountType(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        
         log.debug("Extracting account type from signed token");
         return extractClaim(token, JwtConstants.JWT_SENDER_ACCOUNT_TYPE, String.class, key);
     }
 
     @Override
     public Optional<String> extractUserName(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
         log.debug("Extracting username from signed token");
         return extractClaim(token, JwtConstants.JWT_SENDER_USER, String.class, key);
     }
 
     @Override
     public Optional<String> extractSubject(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
         log.debug("Extracting subject from signed token");
         return extractClaim(token, Claims::getSubject, key);
     }
@@ -159,11 +193,14 @@ public class JwtService implements IJwtService {
 
     @Override
     public Claims extractAllClaims(String token) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
         log.debug("Extracting all claims (unsigned) from token");
         try {
             String[] parts = token.split("\\.", 3);
-            if (parts.length < 2) throw new IllegalArgumentException("Invalid JWT format");
+            if (parts.length < 2) throw new TokenInvalidException("Invalid JWT format");
 
             String unsecuredHeader = "eyJhbGciOiJub25lIn0"; // {"alg":"none"}
             String payload = parts[1];
@@ -182,7 +219,10 @@ public class JwtService implements IJwtService {
 
     @Override
     public Claims extractAllClaims(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
         log.debug("Extracting all claims from signed token");
         try {
             return Jwts.parser()
@@ -239,7 +279,7 @@ public class JwtService implements IJwtService {
             PrivateKey privateKey = loadPrivateKeyFromPem(request.key()); // expects PEM
             jwtBuilder.signWith(privateKey, (SecureDigestAlgorithm<PrivateKey, ?>)request.algorithm());
         } else {
-            throw new IllegalArgumentException("Unsupported algorithm type: " + request.algorithm());
+            throw new SignaturAlgorithmNotSupportedException("Unsupported algorithm type: " + request.algorithm());
         }
 
         // Add claims if any
@@ -270,7 +310,7 @@ public class JwtService implements IJwtService {
                 return kf.generatePrivate(spec);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load private key from PEM", e);
+            throw new PrivateKeyFromPEMException("Failed to load private key from PEM", e);
         }
     }
 
@@ -278,13 +318,13 @@ public class JwtService implements IJwtService {
     public void validateToken(String token, String subject, String issuer, String audience, String secretKey, String publicKeyPem) {
         log.info("Validating JWT token for subject: {}", subject);
         if (!StringUtils.hasText(token)) {
-            throw new IllegalArgumentException("token cannot be null or empty");
+            throw new TokenInvalidException("token cannot be null or empty");
         }
         try {
             // 1. Manually decode the JWT header to get the algorithm (no verification)
             String[] parts = token.split("\\.");
             if (parts.length < 2) {
-                throw new MalformedJwtException("Invalid JWT format");
+                throw new TokenInvalidException("Invalid JWT format");
             }
             String headerJson = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
             // Use a simple JSON parser; if Jackson is not available, you can use a regex.
@@ -296,7 +336,7 @@ public class JwtService implements IJwtService {
             // 2. Look up the algorithm in JJWT's registry
             SecureDigestAlgorithm<?, ?> algorithm = Jwts.SIG.get().get(algName);
             if (algorithm == null) {
-                throw new TokenInvalidException("Unsupported algorithm: " + algName);
+                throw new SignaturAlgorithmNotSupportedException("Unsupported algorithm: " + algName);
             }
 
             // 3. Build the parser with the correct key
@@ -309,12 +349,12 @@ public class JwtService implements IJwtService {
             } else if (algorithm instanceof SignatureAlgorithm) {
                 // Asymmetric: use the public key (PEM)
                 if (publicKeyPem == null || publicKeyPem.isBlank()) {
-                    throw new TokenInvalidException("Public key missing for asymmetric algorithm: " + algName);
+                    throw new PublicKeyFromPEMException("Public key missing for asymmetric algorithm: " + algName);
                 }
                 PublicKey publicKey = loadPublicKeyFromPem(publicKeyPem);
                 parserBuilder.verifyWith(publicKey);
             } else {
-                throw new TokenInvalidException("Unsupported algorithm type: " + algName);
+                throw new SignaturAlgorithmNotSupportedException("Unsupported algorithm type: " + algName);
             }
 
             // 4. Now parse and verify the token
@@ -325,28 +365,25 @@ public class JwtService implements IJwtService {
             // 5. Validate subject claim
             String tokenSubject = claims.getSubject();
             if (!StringUtils.hasText(tokenSubject) || !tokenSubject.equalsIgnoreCase(subject)) {
-                throw new TokenInvalidException("Invalid JWT: subject does not match");
+                throw new TokenSubjectException("Invalid JWT: subject does not match");
             }
 
             // 6. Validate issuer claim
             String tokenIssuer = claims.getIssuer();
             if (StringUtils.hasText(tokenIssuer) && !tokenIssuer.equalsIgnoreCase(issuer)) {
-                throw new TokenInvalidException("Invalid JWT: issuer does not match");
+                throw new TokenIssuerException("Invalid JWT: issuer does not match");
             }
 
             // 7. Validate audience claim
             Set<String> tokenAudience = claims.getAudience();
             if (!CollectionUtils.isEmpty(tokenAudience) && !tokenAudience.contains(audience)) {
-                throw new TokenInvalidException("Invalid JWT: audience does not match");
+                throw new TokenAudienceException("Invalid JWT: audience does not match");
             }
 
             log.info("JWT token validated successfully for subject: {}", subject);
-        } catch (TokenInvalidException ex) {
-            throw ex;
-        } catch (JwtException ex) {
+        } catch (JsonProcessingException ex) {
+            log.error("JWT validation failed: {}", ex.getMessage());
             throw new TokenInvalidException("Invalid JWT: " + ex.getMessage(), ex);
-        } catch (Exception ex) {
-            throw new TokenInvalidException("JWT validation failed: " + ex.getMessage(), ex);
         }
     }
 
@@ -368,7 +405,7 @@ public class JwtService implements IJwtService {
                 return kf.generatePublic(spec);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load public key from PEM", e);
+            throw new PublicKeyFromPEMException("Failed to load public key from PEM", e);
         }
     }
 
@@ -381,7 +418,10 @@ public class JwtService implements IJwtService {
 
     @Override
     public Optional<Date> extractExpiration(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+
         log.debug("Extracting expiration date from signed token");
         return extractClaim(token, Claims::getExpiration, key);
     }
