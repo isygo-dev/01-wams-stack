@@ -3,8 +3,11 @@ package eu.isygoit.jwt;
 import eu.isygoit.dto.common.TokenResponseDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.MacAlgorithm;
+import io.jsonwebtoken.security.SecureDigestAlgorithm;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -36,8 +39,6 @@ public interface IJwtService {
     // ─────────────────────────────────────────────────────────────────────────
     Optional<String> extractTenant(String token, String key);
 
-    Optional<String> extractApplication(String token, String key);
-
     Optional<String> extractAccountType(String token, String key);
 
     Optional<String> extractUserName(String token, String key);
@@ -64,8 +65,8 @@ public interface IJwtService {
     // ─────────────────────────────────────────────────────────────────────────
     Boolean isTokenExpired(String token, String key);
 
-    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
-                                 MacAlgorithm algorithm, String key, Integer lifeTimeInMs);
+    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, List<String> audience,
+                                 SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs);
 
     /**
      * Creates a signed JWT token based on the provided request parameters.
@@ -75,7 +76,7 @@ public interface IJwtService {
      */
     TokenResponseDto createToken(JwtTokenRequest request);
 
-    void validateToken(String token, String subject, String key);
+    void validateToken(String token, String subject, String issuer, String audience, String secretKey, String publicKeyPem);
 
     Date calcExpiryDate(Integer lifeTimeInMs);
 }

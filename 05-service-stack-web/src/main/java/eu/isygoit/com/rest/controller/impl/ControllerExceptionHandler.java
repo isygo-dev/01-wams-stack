@@ -83,10 +83,14 @@ public class ControllerExceptionHandler implements IControllerExceptionHandler {
         log.error("<Error>: Exception {}", e);
         try {
             if (e instanceof ManagedException managedException) {
-                return new ResponseEntity<>(e.getLocalizedMessage(), managedException.getHttpStatus());
-            } else {
                 IExceptionHandler handler = exceptionHandler(controllerClass);
-                return ResponseFactory.responseInternalServerError(handler.handleError(e));
+                if(managedException.getHttpStatus() == null) {
+                    return ResponseFactory.responseInternalServerError(handler.handleError(e));
+                } else {
+                    return new ResponseEntity<>(handler.handleError(e), managedException.getHttpStatus());
+                }
+            } else {
+                return ResponseFactory.responseInternalServerError(e.getLocalizedMessage());
             }
         } catch (Exception ex) {
             log.warn("Error while building exception response for {}: {}", controllerClass.getSimpleName(), ex.getMessage());

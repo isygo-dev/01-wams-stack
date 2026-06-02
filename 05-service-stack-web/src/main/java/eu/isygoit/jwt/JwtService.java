@@ -1,5 +1,7 @@
 package eu.isygoit.jwt;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumWebToken;
@@ -7,7 +9,9 @@ import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.MacAlgorithm;
+import io.jsonwebtoken.security.SecureDigestAlgorithm;
 import io.jsonwebtoken.security.SecurityException;
+import io.jsonwebtoken.security.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,10 +20,13 @@ import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -99,13 +106,6 @@ public class JwtService implements IJwtService {
         return extractClaim(token, JwtConstants.JWT_IS_ADMIN, Boolean.class, key)
                 .map(Boolean.class::cast)
                 .orElse(Boolean.FALSE);
-    }
-
-    @Override
-    public Optional<String> extractApplication(String token, String key) {
-        if (!StringUtils.hasText(token)) throw new IllegalArgumentException("token cannot be null or empty");
-        log.debug("Extracting application from signed token");
-        return extractClaim(token, JwtConstants.JWT_LOG_APP, String.class, key);
     }
 
     @Override
@@ -204,8 +204,8 @@ public class JwtService implements IJwtService {
     // ========================================================================
 
     @Override
-    public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
-                                        MacAlgorithm algorithm, String key, Integer lifeTimeInMs) {
+    public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, List<String> audience,
+                                        SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs) {
         return createToken(JwtTokenRequest.builder()
                 .subject(subject)
                 .claims(claims)
@@ -221,16 +221,28 @@ public class JwtService implements IJwtService {
     public TokenResponseDto createToken(JwtTokenRequest request) {
         log.info("Creating new JWT token for subject: {}", request.subject());
         Date expiryDate = calcExpiryDate(request.lifeTimeInMs());
-        SecretKey secretKey = buildSecretKey(request.key());
 
         JwtBuilder jwtBuilder = Jwts.builder()
                 .subject(request.subject())
                 .issuer(request.issuer())
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(expiryDate)
-                .audience().add(request.audience()).and()
-                .signWith(secretKey, request.algorithm());
+                .audience().add(request.audience()).and();
 
+        // Determine algorithm type and sign accordingly
+        if (request.algorithm() instanceof MacAlgorithm) {
+            // HMAC algorithm (HS256, HS384, HS512)
+            SecretKey secretKey = buildSecretKey(request.key()); // expects Base64
+            jwtBuilder.signWith(secretKey, (SecureDigestAlgorithm<SecretKey, ?>)request.algorithm());
+        } else if (request.algorithm() instanceof SignatureAlgorithm) {
+            // Asymmetric algorithm (RS*, PS*, ES*, EdDSA)
+            PrivateKey privateKey = loadPrivateKeyFromPem(request.key()); // expects PEM
+            jwtBuilder.signWith(privateKey, (SecureDigestAlgorithm<PrivateKey, ?>)request.algorithm());
+        } else {
+            throw new IllegalArgumentException("Unsupported algorithm type: " + request.algorithm());
+        }
+
+        // Add claims if any
         if (!CollectionUtils.isEmpty(request.claims())) {
             request.claims().forEach(jwtBuilder::claim);
         }
@@ -240,35 +252,123 @@ public class JwtService implements IJwtService {
         return new TokenResponseDto(IEnumWebToken.Types.Bearer, token, expiryDate);
     }
 
+    private PrivateKey loadPrivateKeyFromPem(String pem) {
+        try {
+            // Remove headers, footers, and whitespace
+            String base64 = pem.replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replaceAll("\\s", "");
+            byte[] keyBytes = Base64.getDecoder().decode(base64);
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+
+            // Try RSA first, then EC (or use Bouncy Castle for generic detection)
+            try {
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                return kf.generatePrivate(spec);
+            } catch (Exception e) {
+                KeyFactory kf = KeyFactory.getInstance("EC");
+                return kf.generatePrivate(spec);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load private key from PEM", e);
+        }
+    }
+
     @Override
-    public void validateToken(String token, String subject, String key) {
+    public void validateToken(String token, String subject, String issuer, String audience, String secretKey, String publicKeyPem) {
         log.info("Validating JWT token for subject: {}", subject);
         if (!StringUtils.hasText(token)) {
             throw new IllegalArgumentException("token cannot be null or empty");
         }
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(buildSecretKey(key))
-                    .build()
+            // 1. Manually decode the JWT header to get the algorithm (no verification)
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) {
+                throw new MalformedJwtException("Invalid JWT format");
+            }
+            String headerJson = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
+            // Use a simple JSON parser; if Jackson is not available, you can use a regex.
+            // Here we assume Jackson ObjectMapper is available (or you can use a simple string search).
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode header = mapper.readTree(headerJson);
+            String algName = header.get("alg").asText();
+
+            // 2. Look up the algorithm in JJWT's registry
+            SecureDigestAlgorithm<?, ?> algorithm = Jwts.SIG.get().get(algName);
+            if (algorithm == null) {
+                throw new TokenInvalidException("Unsupported algorithm: " + algName);
+            }
+
+            // 3. Build the parser with the correct key
+            JwtParserBuilder parserBuilder = Jwts.parser();
+
+            if (algorithm instanceof MacAlgorithm) {
+                // HMAC: use the symmetric secret key (Base64)
+                SecretKey key = buildSecretKey(secretKey);
+                parserBuilder.verifyWith(key);
+            } else if (algorithm instanceof SignatureAlgorithm) {
+                // Asymmetric: use the public key (PEM)
+                if (publicKeyPem == null || publicKeyPem.isBlank()) {
+                    throw new TokenInvalidException("Public key missing for asymmetric algorithm: " + algName);
+                }
+                PublicKey publicKey = loadPublicKeyFromPem(publicKeyPem);
+                parserBuilder.verifyWith(publicKey);
+            } else {
+                throw new TokenInvalidException("Unsupported algorithm type: " + algName);
+            }
+
+            // 4. Now parse and verify the token
+            Claims claims = parserBuilder.build()
                     .parseSignedClaims(token)
                     .getPayload();
 
+            // 5. Validate subject claim
             String tokenSubject = claims.getSubject();
             if (!StringUtils.hasText(tokenSubject) || !tokenSubject.equalsIgnoreCase(subject)) {
                 throw new TokenInvalidException("Invalid JWT: subject does not match");
             }
+
+            // 6. Validate issuer claim
+            String tokenIssuer = claims.getIssuer();
+            if (StringUtils.hasText(tokenIssuer) && !tokenIssuer.equalsIgnoreCase(issuer)) {
+                throw new TokenInvalidException("Invalid JWT: issuer does not match");
+            }
+
+            // 7. Validate audience claim
+            Set<String> tokenAudience = claims.getAudience();
+            if (!CollectionUtils.isEmpty(tokenAudience) && !tokenAudience.contains(audience)) {
+                throw new TokenInvalidException("Invalid JWT: audience does not match");
+            }
+
+            log.info("JWT token validated successfully for subject: {}", subject);
         } catch (TokenInvalidException ex) {
             throw ex;
-        } catch (SecurityException ex) {
-            throw new TokenInvalidException("Invalid JWT: signature", ex);
-        } catch (MalformedJwtException ex) {
-            throw new TokenInvalidException("Invalid JWT: malformed", ex);
-        } catch (ExpiredJwtException ex) {
-            throw new TokenInvalidException("Invalid JWT: expired", ex);
-        } catch (UnsupportedJwtException ex) {
-            throw new TokenInvalidException("Invalid JWT: unsupported", ex);
-        } catch (IllegalArgumentException ex) {
-            throw new TokenInvalidException("Invalid JWT: illegal argument", ex);
+        } catch (JwtException ex) {
+            throw new TokenInvalidException("Invalid JWT: " + ex.getMessage(), ex);
+        } catch (Exception ex) {
+            throw new TokenInvalidException("JWT validation failed: " + ex.getMessage(), ex);
+        }
+    }
+
+    private PublicKey loadPublicKeyFromPem(String pem) {
+        try {
+            // Remove headers and whitespace
+            String base64 = pem.replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replaceAll("\\s", "");
+            byte[] keyBytes = Base64.getDecoder().decode(base64);
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+
+            // Try RSA first; fallback to EC
+            try {
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                return kf.generatePublic(spec);
+            } catch (Exception e) {
+                KeyFactory kf = KeyFactory.getInstance("EC");
+                return kf.generatePublic(spec);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load public key from PEM", e);
         }
     }
 
@@ -291,7 +391,8 @@ public class JwtService implements IJwtService {
         return Date.from(Instant.now().plusMillis(lifeTimeInMs));
     }
 
-    private SecretKey buildSecretKey(String key) {
-        return Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
+    private SecretKey buildSecretKey(String base64Key) {
+        byte[] decoded = Base64.getDecoder().decode(base64Key);
+        return Keys.hmacShaKeyFor(decoded);
     }
 }
