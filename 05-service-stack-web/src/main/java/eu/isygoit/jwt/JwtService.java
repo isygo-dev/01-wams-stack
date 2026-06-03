@@ -415,7 +415,11 @@ public class JwtService implements IJwtService {
 
             // 7. Validate audience claim
             Set<String> tokenAudience = claims.getAudience();
-            if (!CollectionUtils.isEmpty(tokenAudience) && !tokenAudience.contains(audience)) {
+            if (CollectionUtils.isEmpty(tokenAudience)) {
+                throw new TokenAudienceException("Invalid JWT: audience does not match");
+            }
+
+            if (!CollectionUtils.isEmpty(tokenAudience) && !tokenAudience.containsAll(audience)) {
                 throw new TokenAudienceException("Invalid JWT: audience does not match");
             }
 
