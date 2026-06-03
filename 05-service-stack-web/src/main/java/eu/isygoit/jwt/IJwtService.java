@@ -4,7 +4,10 @@ import eu.isygoit.dto.common.TokenResponseDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.SecureDigestAlgorithm;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -68,7 +71,7 @@ public interface IJwtService {
     // ─────────────────────────────────────────────────────────────────────────
     Boolean isTokenExpired(String token, String key);
 
-    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, String audience,
+    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, Set<String> audience,
                                  SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs);
 
     /**
@@ -79,7 +82,7 @@ public interface IJwtService {
      */
     TokenResponseDto createToken(JwtTokenRequest request);
 
-    void validateToken(String token, String subject, String issuer, String audience, String secretKey, String publicKeyPem);
+    void validateToken(String token, String subject, String issuer, Set<String> audience, String secretKey, String publicKeyPem);
 
     Date calcExpiryDate(Integer lifeTimeInMs);
 }

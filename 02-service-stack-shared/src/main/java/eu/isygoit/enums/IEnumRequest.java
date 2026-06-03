@@ -1,6 +1,5 @@
 package eu.isygoit.enums;
 
-import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;

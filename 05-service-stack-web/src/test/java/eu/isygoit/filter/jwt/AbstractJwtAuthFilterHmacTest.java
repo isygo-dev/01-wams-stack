@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -90,7 +91,7 @@ class AbstractJwtAuthFilterHmacTest {
         }
 
         @Override
-        public boolean isTokenValid(String jwt, String tenant, String audience, String userName) {
+        public boolean isTokenValid(String jwt, String tenant, Set<String> audience, String userName) {
             return true;
         }
 

@@ -26,6 +26,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -100,7 +101,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     /**
      * Custom token validation logic (signature, expiration, etc.)
      */
-    public abstract boolean isTokenValid(String jwt, String tenant, String audience, String userName);
+    public abstract boolean isTokenValid(String jwt, String tenant, Set<String> audience, String userName);
 
     /**
      * Hook for adding request attributes (used for anonymous flow)
@@ -200,7 +201,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
             Boolean isAdmin = jwtService.extractIsAdmin(jwt);
 
             // Validate token (signature, expiration, etc.)
-            if (!isTokenValid(jwt, tenant, application, userName)) {
+            if (!isTokenValid(jwt, tenant, Set.of(application), userName)) {
                 throw new TokenInvalidException("Token validation failed");
             }
 

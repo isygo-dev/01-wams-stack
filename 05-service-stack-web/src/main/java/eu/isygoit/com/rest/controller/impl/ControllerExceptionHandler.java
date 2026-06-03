@@ -84,7 +84,7 @@ public class ControllerExceptionHandler implements IControllerExceptionHandler {
         try {
             if (e instanceof ManagedException managedException) {
                 IExceptionHandler handler = exceptionHandler(controllerClass);
-                if(managedException.getHttpStatus() == null) {
+                if (managedException.getHttpStatus() == null) {
                     return ResponseFactory.responseInternalServerError(handler.handleError(e));
                 } else {
                     return new ResponseEntity<>(handler.handleError(e), managedException.getHttpStatus());

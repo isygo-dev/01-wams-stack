@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,9 +51,9 @@ class JwtKmsAuthFilterTest {
         String userName = "user1";
         String userIdentifier = "user1@tenant1";
 
-        when(tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)).thenReturn(true);
+        when(tokenService.isTokenValid(tenant, Set.of(application), IEnumToken.Types.ACCESS, jwt, userIdentifier)).thenReturn(true);
 
-        assertTrue(jwtKmsAuthFilter.isTokenValid(jwt, tenant, application, userName));
+        assertTrue(jwtKmsAuthFilter.isTokenValid(jwt, tenant, Set.of(application), userName));
     }
 
     @Test
@@ -64,16 +65,16 @@ class JwtKmsAuthFilterTest {
         String userName = "user1";
         String userIdentifier = "user1@tenant1";
 
-        when(tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)).thenReturn(false);
+        when(tokenService.isTokenValid(tenant, Set.of(application), IEnumToken.Types.ACCESS, jwt, userIdentifier)).thenReturn(false);
 
-        assertThrows(TokenInvalidException.class, () -> jwtKmsAuthFilter.isTokenValid(jwt, tenant, application, userName));
+        assertThrows(TokenInvalidException.class, () -> jwtKmsAuthFilter.isTokenValid(jwt, tenant, Set.of(application), userName));
     }
 
     @Test
     @DisplayName("isTokenValid should throw TokenInvalidException when tokenService is null")
     void testIsTokenValid_TokenServiceNull() {
         JwtKmsAuthFilter filterWithoutService = new JwtKmsAuthFilter(jwtService, requestContextService, tokenService);
-        assertThrows(TokenInvalidException.class, () -> filterWithoutService.isTokenValid("jwt", "tenant", "app", "user"));
+        assertThrows(TokenInvalidException.class, () -> filterWithoutService.isTokenValid("jwt", "tenant", Set.of("app"), "user"));
     }
 
     @Test

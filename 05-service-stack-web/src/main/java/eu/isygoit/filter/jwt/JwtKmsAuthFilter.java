@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -58,15 +59,15 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
      * Validates a JWT token using the token api.
      * Creates a user identifier by combining username and tenant.
      *
-     * @param jwt         the JWT token to validate
-     * @param tenant      the tenant extracted from token
-     * @param application the application identifier from token
-     * @param userName    the username from token
+     * @param jwt      the JWT token to validate
+     * @param tenant   the tenant extracted from token
+     * @param audience the audience from token
+     * @param userName the username from token
      * @return true if token is valid
      * @throws TokenInvalidException if token is invalid or token api is unavailable
      */
     @Override
-    public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
+    public boolean isTokenValid(String jwt, String tenant, Set<String> audience, String userName) {
         if (tokenService == null) {
             log.error("Token validation failed: Token api is not available");
             throw new TokenInvalidException("No token validator available");
@@ -76,15 +77,15 @@ public class JwtKmsAuthFilter extends AbstractJwtAuthFilter {
         String userIdentifier = userName.toLowerCase() + "@" + tenant;
 
         // Validate token using token api
-        if (!tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, userIdentifier)) {
+        if (!tokenService.isTokenValid(tenant, audience, IEnumToken.Types.ACCESS, jwt, userIdentifier)) {
             log.warn("Invalid token for user: {}, application: {}, tenant: {}",
-                    userName, application, tenant);
+                    userName, audience, tenant);
             throw new TokenInvalidException("KMS::isTokenValid");
         }
 
         if (log.isDebugEnabled()) {
             log.debug("Token successfully validated for user: {}, application: {}, tenant: {}",
-                    userName, application, tenant);
+                    userName, audience, tenant);
         }
 
         return true;

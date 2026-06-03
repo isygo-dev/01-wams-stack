@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,15 +33,15 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
      * Validates a JWT token using the remote token api API.
      * Makes a Feign client call to the token api and handles the response.
      *
-     * @param jwt         the JWT token to validate
-     * @param tenant      the tenant extracted from token
-     * @param application the application identifier from token
-     * @param userName    the username from token
+     * @param jwt      the JWT token to validate
+     * @param tenant   the tenant extracted from token
+     * @param audience the application identifier from token
+     * @param userName the username from token
      * @return true if token is valid
      * @throws TokenInvalidException if token validation fails or api is unavailable
      */
     @Override
-    public boolean isTokenValid(String jwt, String tenant, String application, String userName) {
+    public boolean isTokenValid(String jwt, String tenant, Set<String> audience, String userName) {
         if (tokenService == null) {
             log.error("Token validation failed: TokenServiceApi is not available");
             throw new TokenInvalidException("No token validator available");
@@ -55,7 +56,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
 
             // Use the constant empty context to avoid object creation
             ResponseEntity<Boolean> result = tokenService.isTokenValid(
-                    application,
+                    audience,
                     IEnumToken.Types.ACCESS,
                     jwt,
                     userIdentifier
@@ -70,14 +71,14 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             // Check for valid response and body
             if (Boolean.FALSE.equals(result.getBody())) {
                 log.warn("Token validation failed for user: {}, application: {}, tenant: {}",
-                        userName, application, tenant);
+                        userName, audience, tenant);
 
                 throw new TokenInvalidException("KMS::isTokenValid");
             }
 
             // Log successful validation
             if (log.isDebugEnabled()) {
-                log.debug("Token successfully validated for user: {}, application: {}", userName, application);
+                log.debug("Token successfully validated for user: {}, application: {}", userName, audience);
             }
 
         } catch (TokenInvalidException e) {
@@ -87,7 +88,7 @@ public abstract class JwtKmsClientAuthFilter extends AbstractJwtAuthFilter {
             // Log the exception but allow the request to proceed
             // Consider if this is the desired behavior or if you should throw an exception
             log.error("Remote token api call failed for user: {}, application: {}, tenant: {}",
-                    userName, application, tenant, e);
+                    userName, audience, tenant, e);
 
             // Uncomment to throw exception instead of continuing
             // throw new TokenInvalidException("Token validation api unavailable", e);

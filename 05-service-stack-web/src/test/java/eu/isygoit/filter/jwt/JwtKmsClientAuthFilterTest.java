@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,10 +43,10 @@ class JwtKmsClientAuthFilterTest {
         String userName = "user1";
         String userIdentifier = "user1@tenant1";
 
-        when(tokenService.isTokenValid(eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
+        when(tokenService.isTokenValid(eq(Set.of(application)), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
                 .thenReturn(ResponseFactory.responseOk(true));
 
-        assertTrue(filter.isTokenValid(jwt, tenant, application, userName));
+        assertTrue(filter.isTokenValid(jwt, tenant, Set.of(application), userName));
     }
 
     @Test
@@ -57,10 +58,10 @@ class JwtKmsClientAuthFilterTest {
         String userName = "user1";
         String userIdentifier = "user1@tenant1";
 
-        when(tokenService.isTokenValid(eq(application), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
+        when(tokenService.isTokenValid(eq(Set.of(application)), eq(IEnumToken.Types.ACCESS), eq(jwt), eq(userIdentifier)))
                 .thenReturn(ResponseFactory.responseOk(false));
 
-        assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, application, userName));
+        assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, Set.of(application), userName));
     }
 
     @Test
@@ -74,7 +75,7 @@ class JwtKmsClientAuthFilterTest {
         when(tokenService.isTokenValid(any(), any(), any(), any()))
                 .thenReturn(ResponseFactory.responseOk(false));
 
-        assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, application, userName));
+        assertThrows(TokenInvalidException.class, () -> filter.isTokenValid(jwt, tenant, Set.of(application), userName));
     }
 
     @Test
@@ -89,14 +90,14 @@ class JwtKmsClientAuthFilterTest {
                 .thenThrow(new RuntimeException("Remote call failed"));
 
         // The current implementation logs the error but returns true
-        assertTrue(filter.isTokenValid(jwt, tenant, application, userName));
+        assertTrue(filter.isTokenValid(jwt, tenant, Set.of(application), userName));
     }
 
     @Test
     @DisplayName("isTokenValid should throw TokenInvalidException when tokenService is null")
     void testIsTokenValid_TokenServiceNull() {
         TestJwtKmsClientAuthFilter filterWithoutService = new TestJwtKmsClientAuthFilter(jwtService, requestContextService, tokenService);
-        assertThrows(TokenInvalidException.class, () -> filterWithoutService.isTokenValid("jwt", "tenant", "app", "user"));
+        assertThrows(TokenInvalidException.class, () -> filterWithoutService.isTokenValid("jwt", "tenant", Set.of("app"), "user"));
     }
 
     @Test

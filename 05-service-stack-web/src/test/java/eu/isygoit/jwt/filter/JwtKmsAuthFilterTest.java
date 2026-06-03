@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -67,13 +68,13 @@ class JwtKmsAuthFilterTest {
         String userName = "JohnDoe";
         String expectedUserId = "johndoe@tenant.com";
 
-        when(tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId))
+        when(tokenService.isTokenValid(tenant, Set.of(application), IEnumToken.Types.ACCESS, jwt, expectedUserId))
                 .thenReturn(true);
 
-        boolean result = jwtKmsAuthFilter.isTokenValid(jwt, tenant, application, userName);
+        boolean result = jwtKmsAuthFilter.isTokenValid(jwt, tenant, Set.of(application), userName);
 
         assertTrue(result, "Token should be valid");
-        verify(tokenService).isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId);
+        verify(tokenService).isTokenValid(tenant, Set.of(application), IEnumToken.Types.ACCESS, jwt, expectedUserId);
     }
 
     /**
@@ -87,14 +88,14 @@ class JwtKmsAuthFilterTest {
         String userName = "Alice";
         String expectedUserId = "alice@test.org";
 
-        when(tokenService.isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId))
+        when(tokenService.isTokenValid(tenant, Set.of(application), IEnumToken.Types.ACCESS, jwt, expectedUserId))
                 .thenReturn(false);
 
         TokenInvalidException ex = assertThrows(TokenInvalidException.class, () ->
-                jwtKmsAuthFilter.isTokenValid(jwt, tenant, application, userName));
+                jwtKmsAuthFilter.isTokenValid(jwt, tenant, Set.of(application), userName));
 
         assertEquals("KMS::isTokenValid", ex.getMessage());
-        verify(tokenService).isTokenValid(tenant, application, IEnumToken.Types.ACCESS, jwt, expectedUserId);
+        verify(tokenService).isTokenValid(tenant, Set.of(application), IEnumToken.Types.ACCESS, jwt, expectedUserId);
     }
 
     /**

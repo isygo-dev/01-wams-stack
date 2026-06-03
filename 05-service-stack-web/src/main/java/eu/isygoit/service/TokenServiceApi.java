@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Set;
+
 /**
  * The interface Token api api.
  */
@@ -24,7 +26,7 @@ public interface TokenServiceApi {
     /**
      * Create token by tenant response entity.
      *
-     * @param audience     the audience
+     * @param audience        the audience
      * @param tokenType       the token type
      * @param tokenRequestDto the token request dto
      * @return the response entity
@@ -39,17 +41,17 @@ public interface TokenServiceApi {
     })
     @PostMapping(path = "/builder")
     ResponseEntity<TokenResponseDto> buildToken(
-            @RequestParam(name = RestApiConstants.AUDIENCE) String audience,
+            @RequestParam(name = RestApiConstants.AUDIENCE) Set<String> audience,
             @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
             @Valid @RequestBody TokenRequestDto tokenRequestDto);
 
     /**
      * Is token valid response entity.
      *
-     * @param audience the audience
-     * @param tokenType   the token type
-     * @param token       the token
-     * @param subject     the subject
+     * @param audience  the audience
+     * @param tokenType the token type
+     * @param token     the token
+     * @param subject   the subject
      * @return the response entity
      */
     @Operation(summary = "isTokenValid Api",
@@ -62,7 +64,7 @@ public interface TokenServiceApi {
     })
     @GetMapping(path = "/validation")
     ResponseEntity<Boolean> isTokenValid(
-            @RequestParam(name = RestApiConstants.AUDIENCE) String audience,
+            @RequestParam(name = RestApiConstants.AUDIENCE) Set<String> audience,
             @RequestParam(name = RestApiConstants.TOKEN_TYPE) IEnumToken.Types tokenType,
             @RequestParam(name = RestApiConstants.TOKEN) String token,
             @RequestParam(name = RestApiConstants.SUBJECT) String subject);

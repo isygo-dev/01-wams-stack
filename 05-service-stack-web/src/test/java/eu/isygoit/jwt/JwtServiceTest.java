@@ -49,7 +49,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(claims)
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -88,7 +88,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -106,7 +106,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -128,7 +128,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -145,7 +145,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -162,7 +162,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(claims)
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -184,7 +184,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -204,7 +204,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -224,7 +224,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(claims)
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -247,7 +247,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -263,7 +263,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1)
@@ -301,7 +301,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -324,7 +324,7 @@ class JwtServiceTest {
                 .subject(subject)
                 .claims(Collections.emptyMap())
                 .issuer("issuerTest")
-                .audience("audienceTest")
+                .audience(Set.of("audienceTest"))
                 .algorithm(Jwts.SIG.HS256)
                 .key(testKey)
                 .lifeTimeInMs(1000 * 60 * 60)
@@ -351,7 +351,7 @@ class JwtServiceTest {
                     .subject(subject)
                     .claims(Collections.emptyMap())
                     .issuer("issuerTest")
-                    .audience("audienceTest")
+                    .audience(Set.of("audienceTest"))
                     .algorithm(Jwts.SIG.HS256)
                     .key(testKey)
                     .lifeTimeInMs(1000 * 60 * 60)
@@ -361,20 +361,20 @@ class JwtServiceTest {
 
         @Test
         void validateTokenSuccess() {
-            assertDoesNotThrow(() -> jwtService.validateToken(validToken, subject, "tenant", "logapp", testKey, null));
+            assertDoesNotThrow(() -> jwtService.validateToken(validToken, subject, "tenant", Set.of("logapp"), testKey, null));
         }
 
         @Test
         void validateTokenEmptyThrows() {
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                    () -> jwtService.validateToken("", subject, "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken("", subject, "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().contains("null or empty"));
         }
 
         @Test
         void validateTokenWrongSubjectThrows() {
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(validToken, "wrongSubject", "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken(validToken, "wrongSubject", "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().contains("subject does not match"));
         }
 
@@ -382,7 +382,7 @@ class JwtServiceTest {
         void validateTokenInvalidSignatureThrows() {
             String invalidSignatureToken = validToken + "junk";
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(invalidSignatureToken, subject, "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken(invalidSignatureToken, subject, "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().toLowerCase().contains("signature"));
         }
 
@@ -390,7 +390,7 @@ class JwtServiceTest {
         void validateTokenMalformedThrows() {
             String malformedToken = "abc.def";
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(malformedToken, subject, "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken(malformedToken, subject, "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().toLowerCase().contains("malformed"));
         }
 
@@ -400,7 +400,7 @@ class JwtServiceTest {
                     .subject(subject)
                     .claims(Collections.emptyMap())
                     .issuer("issuerTest")
-                    .audience("audienceTest")
+                    .audience(Set.of("audienceTest"))
                     .algorithm(Jwts.SIG.HS256)
                     .key(testKey)
                     .lifeTimeInMs(1)
@@ -408,7 +408,7 @@ class JwtServiceTest {
             Thread.sleep(5);
 
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(shortLived.getToken(), subject, "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken(shortLived.getToken(), subject, "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().toLowerCase().contains("expired"));
         }
 
@@ -416,14 +416,14 @@ class JwtServiceTest {
         void validateTokenUnsupportedThrows() {
             String unsupportedToken = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0.";
             TokenInvalidException ex = assertThrows(TokenInvalidException.class,
-                    () -> jwtService.validateToken(unsupportedToken, subject, "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken(unsupportedToken, subject, "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().toLowerCase().contains("unsupported"));
         }
 
         @Test
         void validateTokenIllegalArgumentThrows() {
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                    () -> jwtService.validateToken(null, subject, "tenant", "logapp", testKey, null));
+                    () -> jwtService.validateToken(null, subject, "tenant", Set.of("logapp"), testKey, null));
             assertTrue(ex.getMessage().toLowerCase().contains("null or empty"));
         }
     }

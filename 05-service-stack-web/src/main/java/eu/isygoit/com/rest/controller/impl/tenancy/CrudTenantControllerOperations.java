@@ -19,8 +19,6 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
-import eu.isygoit.model.jakarta.AuditableTenantEntity;
-import eu.isygoit.model.jakarta.CancelableEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
