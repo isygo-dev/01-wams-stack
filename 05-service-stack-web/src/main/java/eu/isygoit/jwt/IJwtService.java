@@ -71,7 +71,8 @@ public interface IJwtService {
     // ─────────────────────────────────────────────────────────────────────────
     Boolean isTokenExpired(String token, String key);
 
-    TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, Set<String> audience,
+    TokenResponseDto createToken(String subject, Map<String, Object> claims, Map<String, Object> headers,
+                                 String issuer, Set<String> audience,
                                  SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs);
 
     /**
@@ -85,4 +86,7 @@ public interface IJwtService {
     void validateToken(String token, String subject, String issuer, Set<String> audience, String secretKey, String publicKeyPem);
 
     Date calcExpiryDate(Integer lifeTimeInMs);
+
+    Optional<String> extractHeader(String token, String headerName);
+    Optional<String> extractKmsKeyVersionId(String token);
 }

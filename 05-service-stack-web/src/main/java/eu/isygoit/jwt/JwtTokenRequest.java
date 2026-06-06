@@ -13,6 +13,7 @@ import java.util.Set;
 public record JwtTokenRequest(
         String subject,
         Map<String, Object> claims,
+        Map<String, Object> headers,
         String issuer,
         Set<String> audience,
         SecureDigestAlgorithm<?, ?> algorithm,

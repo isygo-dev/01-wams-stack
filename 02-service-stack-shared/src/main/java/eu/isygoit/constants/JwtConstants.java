@@ -33,5 +33,5 @@ public interface JwtConstants {
     /**
      * The constant JWT_KMS_KEY_VERSION_ID.
      */
-    String JWT_KMS_KEY_VERSION_ID = "kmsKeyVersionId";
+    String KID_VERSION = "kidVersion";
 }

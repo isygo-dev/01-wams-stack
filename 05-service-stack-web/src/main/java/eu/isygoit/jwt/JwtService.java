@@ -279,15 +279,60 @@ public class JwtService implements IJwtService {
     }
 
     // ========================================================================
+    // Header extraction (unsecured)
+    // ========================================================================
+
+    @Override
+    public Optional<String> extractHeader(String token, String headerName) {
+        if (!StringUtils.hasText(token)) {
+            throw new TokenInvalidException("token cannot be null or empty");
+        }
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) {
+                return Optional.empty();
+            }
+            String headerJson = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode header = mapper.readTree(headerJson);
+            JsonNode valueNode = header.get(headerName);
+            if (valueNode != null && !valueNode.isNull()) {
+                if (valueNode.isTextual()) {
+                    return Optional.of(valueNode.asText());
+                } else {
+                    // For non-text values, return JSON string representation
+                    return Optional.of(valueNode.toString());
+                }
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("Failed to extract header '{}' from token", headerName, e);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<String> extractKmsKeyVersionId(String token) {
+        return extractHeader(token, JwtConstants.KID_VERSION);
+    }
+
+    // ========================================================================
     // Token creation / validation / utilities
     // ========================================================================
 
     @Override
-    public TokenResponseDto createToken(String subject, Map<String, Object> claims, String issuer, Set<String> audience,
-                                        SecureDigestAlgorithm<?, ?> algorithm, String key, Integer lifeTimeInMs) {
+    public TokenResponseDto createToken(String subject,
+                                        Map<String, Object> claims,
+                                        Map<String, Object> headers,
+                                        String issuer,
+                                        Set<String> audience,
+                                        SecureDigestAlgorithm<?, ?> algorithm,
+                                        String key,
+                                        Integer lifeTimeInMs) {
         return createToken(JwtTokenRequest.builder()
                 .subject(subject)
                 .claims(claims)
+                .headers(headers)
                 .issuer(issuer)
                 .audience(audience)
                 .algorithm(algorithm)
@@ -321,6 +366,10 @@ public class JwtService implements IJwtService {
             throw new SignaturAlgorithmNotSupportedException("Unsupported algorithm type: " + request.algorithm());
         }
 
+        // Add headers if any
+        if (!CollectionUtils.isEmpty(request.headers())) {
+            jwtBuilder.header().add(request.headers());
+        }
         // Add claims if any
         if (!CollectionUtils.isEmpty(request.claims())) {
             request.claims().forEach(jwtBuilder::claim);
