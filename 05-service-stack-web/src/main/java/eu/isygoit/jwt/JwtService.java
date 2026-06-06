@@ -353,6 +353,10 @@ public class JwtService implements IJwtService {
                 .expiration(expiryDate)
                 .audience().add(request.audience()).and();
 
+        if(expiryDate == null) {
+            jwtBuilder.header().add("exp", "never");
+        }
+
         // Determine algorithm type and sign accordingly
         if (request.algorithm() instanceof MacAlgorithm) {
             // HMAC algorithm (HS256, HS384, HS512)
@@ -520,6 +524,9 @@ public class JwtService implements IJwtService {
 
     @Override
     public Date calcExpiryDate(Integer lifeTimeInMs) {
+        if(lifeTimeInMs == null) {
+            return null;
+        }
         return Date.from(Instant.now().plusMillis(lifeTimeInMs));
     }
 
