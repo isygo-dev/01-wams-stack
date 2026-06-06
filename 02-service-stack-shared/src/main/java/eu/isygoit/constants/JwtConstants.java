@@ -29,4 +29,9 @@ public interface JwtConstants {
      * The constant JWT_IS_ADMIN.
      */
     String JWT_IS_ADMIN = "is-admin";
+
+    /**
+     * The constant JWT_KMS_KEY_VERSION_ID.
+     */
+    String JWT_KMS_KEY_VERSION_ID = "kmsKeyVersionId";
 }
