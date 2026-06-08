@@ -1,7 +1,7 @@
 package eu.isygoit.dto.common;
 
 
-import eu.isygoit.dto.extendable.AuditableDto;
+import eu.isygoit.dto.extendable.AuditableIdAssignableDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class FileEntityDto<T extends Serializable> extends AuditableDto<T> {
+public abstract class FileEntityDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
     private String fileName;
     private String originalFileName;

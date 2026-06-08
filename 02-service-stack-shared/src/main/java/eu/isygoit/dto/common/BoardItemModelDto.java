@@ -1,6 +1,6 @@
 package eu.isygoit.dto.common;
 
-import eu.isygoit.dto.extendable.AuditableDto;
+import eu.isygoit.dto.extendable.AuditableIdAssignableDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class BoardItemModelDto extends AuditableDto<Long> {
+public class BoardItemModelDto extends AuditableIdAssignableDto<Long> {
 
     @Setter
     private Long id;

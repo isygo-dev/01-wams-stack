@@ -1,6 +1,6 @@
 package eu.isygoit.dto;
 
-import eu.isygoit.dto.extendable.AuditableDto;
+import eu.isygoit.dto.extendable.AuditableIdAssignableDto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountDto extends AuditableDto<Long> {
+public class AccountDto extends AuditableIdAssignableDto<Long> {
 
     @Setter
     private Long id;

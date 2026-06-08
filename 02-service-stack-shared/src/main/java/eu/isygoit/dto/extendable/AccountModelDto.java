@@ -20,7 +20,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AccountModelDto<T extends Serializable> extends AuditableDto<T> {
+public abstract class AccountModelDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
     private String code;
     @NotEmpty

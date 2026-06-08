@@ -1,6 +1,8 @@
 package eu.isygoit.service;
 
 import eu.isygoit.constants.RestApiConstants;
+import eu.isygoit.dto.common.PaginatedResponseDto;
+import eu.isygoit.dto.common.RandomKeyDto;
 import eu.isygoit.enums.IEnumCharSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,15 +10,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
  * The interface Key api api.
  */
-public interface KeyServiceApi {
+public interface RandomKeyServiceApi {
 
     /**
      * Generate random key response entity.
@@ -41,7 +41,6 @@ public interface KeyServiceApi {
     /**
      * Renew key by name response entity.
      *
-     * @param tenant      the tenant
      * @param keyName     the key name
      * @param length      the length
      * @param charSetType the char set type
@@ -57,7 +56,6 @@ public interface KeyServiceApi {
     })
     @PostMapping(path = "/random/renew")
     ResponseEntity<String> renewRandomKey(
-            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
             @RequestParam(name = RestApiConstants.KEY_NAME) String keyName,
             @RequestParam(name = RestApiConstants.LENGTH) Integer length,
             @RequestParam(name = RestApiConstants.CHAR_SET_TYPE) IEnumCharSet.Types charSetType);
@@ -65,7 +63,6 @@ public interface KeyServiceApi {
     /**
      * Gets key by name.
      *
-     * @param tenant  the tenant
      * @param keyName the key name
      * @return the key by name
      */
@@ -79,6 +76,14 @@ public interface KeyServiceApi {
     })
     @GetMapping(path = "/random")
     ResponseEntity<String> getRandomKey(
-            @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
             @RequestParam(name = RestApiConstants.KEY_NAME) String keyName);
+
+    @GetMapping("/list")
+    ResponseEntity<PaginatedResponseDto<RandomKeyDto>> listRandomKeys(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size);
+
+    @DeleteMapping("/{name}")
+    ResponseEntity<Void> deleteRandomKey(
+            @PathVariable(name = RestApiConstants.KEY_NAME) String keyName);
 }

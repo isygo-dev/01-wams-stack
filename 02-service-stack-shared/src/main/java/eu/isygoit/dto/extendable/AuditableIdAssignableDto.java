@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class AuditableDto {
+public abstract class AuditableIdAssignableDto<T extends Serializable> extends IdAssignableDto<T> {
 
     private LocalDateTime createDate;
     private String createdBy;

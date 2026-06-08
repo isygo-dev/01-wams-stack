@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class CustomerModelDto<T extends Serializable> extends AuditableDto<T> implements IImageUploadDto {
+public abstract class CustomerModelDto<T extends Serializable> extends AuditableIdAssignableDto<T> implements IImageUploadDto {
 
     private String name;
     private String description;

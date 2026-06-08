@@ -17,7 +17,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public abstract class LicenceModelDto<T extends Serializable> extends AuditableDto<T> {
+public abstract class LicenceModelDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
     private String tenant;
     private String provider;

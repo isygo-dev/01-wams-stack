@@ -1,6 +1,6 @@
 package eu.isygoit.dto;
 
-import eu.isygoit.dto.extendable.AuditableDto;
+import eu.isygoit.dto.extendable.AuditableIdAssignableDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ContractDto extends AuditableDto<Long> implements IFileUploadDto {
+public class ContractDto extends AuditableIdAssignableDto<Long> implements IFileUploadDto {
 
     @Setter
     private Long id;
