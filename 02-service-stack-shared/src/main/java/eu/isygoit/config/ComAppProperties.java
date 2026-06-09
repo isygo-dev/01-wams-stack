@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 @Getter
 public class ComAppProperties {
 
-    @Value("${app.email.async}")
+    @Value("${app.email.async:true}")
     private boolean sendAsyncEmail;
 
     @Value("${app.email.broker}")
