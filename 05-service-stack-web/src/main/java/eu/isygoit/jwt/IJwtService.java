@@ -88,5 +88,6 @@ public interface IJwtService {
     Date calcExpiryDate(Integer lifeTimeInMs);
 
     Optional<String> extractHeader(String token, String headerName);
+
     Optional<String> extractKmsKeyVersionId(String token);
 }

@@ -1,7 +1,7 @@
 package eu.isygoit.dto.extendable;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -12,7 +12,7 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

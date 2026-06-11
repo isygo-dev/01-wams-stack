@@ -4,7 +4,7 @@ import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.enums.IEnumRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -15,7 +15,7 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

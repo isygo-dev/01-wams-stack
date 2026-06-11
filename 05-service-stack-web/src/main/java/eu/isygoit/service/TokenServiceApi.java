@@ -1,8 +1,8 @@
 package eu.isygoit.service;
 
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.dto.common.TokenRequestDto;
+import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumToken;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
