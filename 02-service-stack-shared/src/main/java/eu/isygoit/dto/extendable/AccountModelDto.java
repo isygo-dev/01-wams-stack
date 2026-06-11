@@ -3,10 +3,7 @@ package eu.isygoit.dto.extendable;
 
 import eu.isygoit.enums.IEnumAccountOrigin;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -16,10 +13,11 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Getter
+
+@Data
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 public abstract class AccountModelDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
     private String code;
