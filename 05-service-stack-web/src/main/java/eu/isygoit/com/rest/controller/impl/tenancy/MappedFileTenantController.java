@@ -123,9 +123,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
      *
      * @param object the object
      * @return the fulld
-     * @throws Exception the exception
      */
-    public F beforeCreate(F object) throws Exception {
+    public F beforeCreate(F object) {
         return object;
     }
 
@@ -134,9 +133,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
      *
      * @param object the object
      * @return the t
-     * @throws Exception the exception
      */
-    public T afterCreate(T object) throws Exception {
+    public T afterCreate(T object) {
         return object;
     }
 
@@ -145,9 +143,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
      *
      * @param object the object
      * @return the fulld
-     * @throws Exception the exception
      */
-    public F beforeUpdate(F object) throws Exception {
+    public F beforeUpdate(F object) {
         return object;
     }
 
@@ -156,9 +153,8 @@ public abstract class MappedFileTenantController<I extends Serializable,
      *
      * @param object the object
      * @return the t
-     * @throws Exception the exception
      */
-    public T afterUpdate(T object) throws Exception {
+    public T afterUpdate(T object) {
         return object;
     }
 }
