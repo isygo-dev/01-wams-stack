@@ -16,6 +16,7 @@ import eu.isygoit.model.IImageEntity;
 import eu.isygoit.service.RequestContextService;
 import jakarta.validation.Valid;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public abstract class MappedImageController<
         implements IMappedImageApi<I, F> {
 
     @Getter
+    @Setter
     @Autowired
     private RequestContextService requestContextService;
 

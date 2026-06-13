@@ -11,6 +11,7 @@ import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.service.RequestContextService;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ public abstract class MappedCrudTenantController<I extends Serializable,
         implements IMappedCrudApi<I, M, F> {
 
     @Getter
+    @Setter
     @Autowired
     private RequestContextService requestContextService;
 
@@ -74,6 +76,16 @@ public abstract class MappedCrudTenantController<I extends Serializable,
     public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(Integer page,
                                                                      Integer size) {
         return performFindAllFull(this.getRequestContextService().getCurrentContext(), page, size);
+    }
+
+    @Override
+    public final ResponseEntity<List<F>> findAllListFull() {
+        return performFindAllListFull(this.getRequestContextService().getCurrentContext());
+    }
+
+    @Override
+    public final ResponseEntity<List<M>> findAllList() {
+        return performFindAllList(this.getRequestContextService().getCurrentContext());
     }
 
     @Override

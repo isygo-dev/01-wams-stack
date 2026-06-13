@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +32,62 @@ import java.util.Map;
 @Tag(name = "CRUD Fetch Operations", description = "API endpoints for fetching data with pagination and filtering")
 @SecurityRequirement(name = "BearerAuth")
 public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssignableDto<I> & IDto, F extends M> {
+
+    /**
+     * Retrieves all objects with minimal data.
+     *
+     * @return List of minimal DTO objects
+     */
+    @Operation(summary = "Find all objects",
+            description = "Retrieves all objects with minimal data using Min DTO")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully retrieved objects",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PaginatedResponseDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid pagination parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
+    @GetMapping(path = "/list")
+    ResponseEntity<List<M>> findAllList();
+
+    /**
+     * Retrieves all objects with full data.
+     *
+     * @return List of full DTO objects
+     */
+    @Operation(summary = "Find all objects",
+            description = "Retrieves all objects with minimal data using Min DTO")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully retrieved objects",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PaginatedResponseDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid pagination parameters",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
+    @GetMapping(path = "/list/full")
+    ResponseEntity<List<F>> findAllListFull();
 
     /**
      * Retrieves all objects with minimal data by page.
@@ -61,10 +118,9 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "")
     ResponseEntity<PaginatedResponseDto<M>> findAll(
-
-            @RequestParam(name = RestApiConstants.PAGE, required = false)
+            @RequestParam(name = RestApiConstants.PAGE, required = false, defaultValue = "0")
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
-            @RequestParam(name = RestApiConstants.SIZE, required = false)
+            @RequestParam(name = RestApiConstants.SIZE, required = false, defaultValue = "20")
             @Parameter(description = "Number of items per page", example = "20") Integer size);
 
     /**
@@ -96,10 +152,9 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/full")
     ResponseEntity<PaginatedResponseDto<F>> findAllFull(
-
-            @RequestParam(name = RestApiConstants.PAGE, required = false)
+            @RequestParam(name = RestApiConstants.PAGE, required = false, defaultValue = "0")
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
-            @RequestParam(name = RestApiConstants.SIZE, required = false)
+            @RequestParam(name = RestApiConstants.SIZE, required = false, defaultValue = "20")
             @Parameter(description = "Number of items per page", example = "20") Integer size);
 
     /**
@@ -130,7 +185,6 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/{id}")
     ResponseEntity<F> findById(
-
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
 
@@ -157,8 +211,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     content = @Content)
     })
     @GetMapping(path = "/count")
-    ResponseEntity<Long> getCount(
-    );
+    ResponseEntity<Long> getCount();
 
     /**
      * Retrieves objects filtered by criteria with pagination.
@@ -190,12 +243,11 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
     })
     @GetMapping(path = "/filter")
     ResponseEntity<PaginatedResponseDto<F>> findAllFilteredByCriteria(
-
             @RequestParam(name = RestApiConstants.CRITERIA)
             @Parameter(description = "Filter criteria", example = "name=John,OR age>18") String criteria,
-            @RequestParam(name = RestApiConstants.PAGE, required = false)
+            @RequestParam(name = RestApiConstants.PAGE, required = false, defaultValue = "0")
             @Parameter(description = "Page number (0-based)", example = "0") Integer page,
-            @RequestParam(name = RestApiConstants.SIZE, required = false)
+            @RequestParam(name = RestApiConstants.SIZE, required = false, defaultValue = "20")
             @Parameter(description = "Number of items per page", example = "20") Integer size);
 
     /**

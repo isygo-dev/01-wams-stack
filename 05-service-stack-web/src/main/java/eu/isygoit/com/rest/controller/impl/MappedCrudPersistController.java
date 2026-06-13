@@ -9,6 +9,7 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.service.RequestContextService;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ public abstract class MappedCrudPersistController<I extends Serializable, T exte
         implements IMappedCrudPersistApi<I, F> {
 
     @Getter
+    @Setter
     @Autowired
     private RequestContextService requestContextService;
 

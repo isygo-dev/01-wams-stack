@@ -18,6 +18,7 @@ import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.service.RequestContextService;
 import jakarta.validation.Valid;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public abstract class MappedImageTenantController<I extends Serializable,
         implements IMappedImageApi<I, F> {
 
     @Getter
+    @Setter
     @Autowired
     private RequestContextService requestContextService;
 

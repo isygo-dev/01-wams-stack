@@ -135,8 +135,9 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
     private boolean shouldSkipUri(String uri) {
         return uri.startsWith(PUBLIC_API_PREFIX)
-                || uri.contains(IMAGE_DOWNLOAD_PATTERN)
-                || uri.contains(FILE_DOWNLOAD_PATTERN);
+                //|| uri.contains(IMAGE_DOWNLOAD_PATTERN)
+                //|| uri.contains(FILE_DOWNLOAD_PATTERN)
+                ;
     }
 
     // =========================

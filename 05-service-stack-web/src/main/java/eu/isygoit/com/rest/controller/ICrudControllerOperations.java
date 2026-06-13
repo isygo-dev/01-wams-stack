@@ -96,6 +96,10 @@ public interface ICrudControllerOperations<I extends Serializable,
      */
     ResponseEntity<PaginatedResponseDto<M>> performFindAll(ContextRequestDto requestContext, Integer page, Integer size);
 
+    ResponseEntity<List<M>> performFindAllList(ContextRequestDto context);
+
+    ResponseEntity<List<F>> performFindAllListFull(ContextRequestDto context);
+
     /**
      * Sub find by id response entity.
      *

@@ -17,6 +17,7 @@ import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.service.RequestContextService;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -50,6 +51,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
         implements IMappedMultiFileApi<L, I> {
 
     @Getter
+    @Setter
     @Autowired
     private RequestContextService requestContextService;
 

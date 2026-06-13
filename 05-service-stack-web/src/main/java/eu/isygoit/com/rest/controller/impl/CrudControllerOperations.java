@@ -269,6 +269,47 @@ public abstract class CrudControllerOperations<
     }
 
     /**
+     * Retrieves entities with minimal details for the specified tenant.
+     *
+     * @param context Request context containing tenant information
+     * @return ResponseEntity containing the list of minimal DTOs
+     */
+    @Override
+    public ResponseEntity<List<M>> performFindAllList(ContextRequestDto context) {
+        return executeWithMonitoring("performFindAllList", () -> {
+            log.info("Finding all {}s for tenant: {}",
+                    this.getPersistentClass().getSimpleName(),
+                    context != null ? context.getSenderTenant() : TenantContext.getTenantId());
+
+            List<T> entities = crudService().findAll();
+            List<M> resultDtos = minDtoMapper().listEntityToDto(entities);
+            List<M> postProcessedDtos = afterFindAll(context, resultDtos);
+
+            return ResponseFactory.responseOk(postProcessedDtos);
+        });
+    }
+
+    /**
+     * Retrieves entities with full details for the specified tenant.
+     *
+     * @param context Request context containing tenant information
+     * @return ResponseEntity containing the list of full DTOs
+     */
+    @Override
+    public ResponseEntity<List<F>> performFindAllListFull(ContextRequestDto context) {
+        return executeWithMonitoring("performFindAllListFull", () -> {
+            log.info("Finding all {}s for tenant: {}",
+                    this.getPersistentClass().getSimpleName(),
+                    context != null ? context.getSenderTenant() : TenantContext.getTenantId());
+
+            List<T> entities = crudService().findAll();
+            List<F> resultDtos = mapper().listEntityToDto(entities);
+            List<F> postProcessedDtos = afterFindAllFull(context, resultDtos);
+
+            return ResponseFactory.responseOk(postProcessedDtos);
+        });
+    }
+    /**
      * Retrieves entities with full details, supporting both paginated and non-paginated queries.
      *
      * @param context Request context

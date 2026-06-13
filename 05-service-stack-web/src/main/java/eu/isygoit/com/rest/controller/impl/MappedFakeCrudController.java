@@ -77,6 +77,18 @@ public abstract class MappedFakeCrudController<
         throw UNSUPPORTED_OPERATION;
     }
 
+    @Override
+    public final ResponseEntity<List<F>> findAllListFull() {
+        log.warn("Attempted to call findAll on fake controller");
+        throw UNSUPPORTED_OPERATION;
+    }
+
+    @Override
+    public final ResponseEntity<List<M>> findAllList() {
+        log.warn("Attempted to call findAll on fake controller");
+        throw UNSUPPORTED_OPERATION;
+    }
+
     /**
      * Retrieves all entities with full details and pagination. This operation is not supported.
      * containing metadata
