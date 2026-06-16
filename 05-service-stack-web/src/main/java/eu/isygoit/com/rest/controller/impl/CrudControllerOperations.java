@@ -309,6 +309,7 @@ public abstract class CrudControllerOperations<
             return ResponseFactory.responseOk(postProcessedDtos);
         });
     }
+
     /**
      * Retrieves entities with full details, supporting both paginated and non-paginated queries.
      *
