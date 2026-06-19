@@ -3,7 +3,7 @@ package eu.isygoit.common;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.audit.TenantContext;
-import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.dto.common.RequestContextDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,7 +76,7 @@ public class TenantToContextFilter extends OncePerRequestFilter {
 
         try {
             TenantContext.setTenantId(tenantId);
-            setIfNotNull(request, ContextRequestDto.x_sender_tenant, tenantId);
+            setIfNotNull(request, RequestContextDto.x_sender_tenant, tenantId);
 
             filterChain.doFilter(request, response);
         } finally {
@@ -87,13 +87,13 @@ public class TenantToContextFilter extends OncePerRequestFilter {
     /**
      * Builds a RequestContextDto from token claims.
      */
-    private ContextRequestDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application, String clientIp) {
-        return ContextRequestDto.builder()
+    private RequestContextDto buildRequestContext(String tenant, String userName, Boolean isAdmin, String application, String clientIp) {
+        return RequestContextDto.builder()
                 .senderTenant(tenant)
                 .senderUser(userName)
                 .isAdmin(isAdmin)
-                .logApp(application)
-                .clientIp(clientIp)
+                .appOrigin(application)
+                .ipOrigin(clientIp)
                 .build();
     }
 

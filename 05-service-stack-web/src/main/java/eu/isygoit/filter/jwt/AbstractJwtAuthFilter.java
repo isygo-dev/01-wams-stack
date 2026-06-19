@@ -3,7 +3,7 @@ package eu.isygoit.filter.jwt;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.constants.TenantConstants;
-import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.helper.HmacHelper;
 import eu.isygoit.helper.UrlHelper;
@@ -20,11 +20,15 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.PathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -51,20 +55,23 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     // Constants
     // =========================
 
+    private static final String LOGIN_PATH = "/login";
     private static final String PUBLIC_API_PREFIX = "/api/v1/public";
     private static final String IMAGE_DOWNLOAD_PATTERN = "/image/download";
     private static final String FILE_DOWNLOAD_PATTERN = "/file/download";
+
+    private final PathMatcher pathMatcher = new AntPathMatcher();
 
     /**
      * Default context for unauthenticated requests.
      * ⚠️ Keep minimal privileges (DO NOT make it admin in real prod)
      */
-    private static final ContextRequestDto DEFAULT_CONTEXT = ContextRequestDto.builder()
+    private static final RequestContextDto DEFAULT_CONTEXT = RequestContextDto.builder()
             .senderTenant(TenantConstants.SUPER_TENANT_NAME)
-            .senderUser("root")
-            .isAdmin(true)
-            .logApp("application")
-            .clientIp("127.0.0.1")
+            .senderUser("default-context-user")
+            .isAdmin(false)
+            .appOrigin("application")
+            .ipOrigin("127.0.0.1")
             .build();
 
     // =========================
@@ -134,10 +141,25 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean shouldSkipUri(String uri) {
-        return uri.startsWith(PUBLIC_API_PREFIX)
-                //|| uri.contains(IMAGE_DOWNLOAD_PATTERN)
-                //|| uri.contains(FILE_DOWNLOAD_PATTERN)
-                ;
+        // 1. Always skip public API endpoints (simple prefix)
+        if (uri.startsWith(PUBLIC_API_PREFIX)) {
+            return true;
+        }
+
+        // 2. Check additional patterns (e.g., "/login/**", "/actuator/**")
+        List<String> patterns = skipUriPatterns();
+        if (!CollectionUtils.isEmpty(patterns)) {
+            for (String pattern : patterns) {
+                if (pathMatcher.match(pattern, uri)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<String> skipUriPatterns() {
+        return Collections.emptyList();
     }
 
     // =========================
@@ -220,7 +242,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
                     request.getRequestURI(),
                     e.getMessage());
 
-            handleInvalidToken(response);
+            sendUnauthorizedResponse(request, response);
         }
     }
 
@@ -249,14 +271,26 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         );
     }
 
-    // =========================
+// =========================
     // Error / fallback handling
     // =========================
 
-    private void handleInvalidToken(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\":\"Invalid token\"}");
+    private void sendUnauthorizedResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // Determine if the client expects JSON (API request) or HTML (browser)
+        String acceptHeader = request.getHeader("Accept");
+        boolean expectsJson = acceptHeader != null && acceptHeader.contains("application/json");
+
+        if (!response.isCommitted()) {
+            if (expectsJson) {
+                // Return JSON error for API clients
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid token\"}");
+            } else {
+                // Redirect to login page for browser requests
+                response.sendRedirect(LOGIN_PATH);
+            }
+        }
     }
 
     private void handleMissingToken(
@@ -271,6 +305,8 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         // Set minimal safe context
         this.getRequestContextService().setContext(DEFAULT_CONTEXT, request);
 
-        filterChain.doFilter(request, response);
+        // For missing token, also redirect or return JSON based on Accept header
+        sendUnauthorizedResponse(request, response);
+        // Do NOT continue the chain after sending response
     }
 }

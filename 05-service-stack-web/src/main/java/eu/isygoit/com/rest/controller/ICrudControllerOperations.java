@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.controller;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.validation.Valid;
@@ -35,7 +35,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param object the object
      * @return the response entity
      */
-    ResponseEntity<F> performCreate(ContextRequestDto requestContext, @Valid F object);
+    ResponseEntity<F> performCreate(RequestContextDto requestContext, @Valid F object);
 
     /**
      * Sub create response entity.
@@ -43,7 +43,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param objects the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> performCreate(ContextRequestDto requestContext, @Valid List<F> objects);
+    ResponseEntity<List<F>> performCreate(RequestContextDto requestContext, @Valid List<F> objects);
 
     /**
      * Sub update response entity.
@@ -52,7 +52,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param object the object
      * @return the response entity
      */
-    ResponseEntity<F> performUpdate(ContextRequestDto requestContext, I id, @Valid F object);
+    ResponseEntity<F> performUpdate(RequestContextDto requestContext, I id, @Valid F object);
 
     /**
      * Sub update response entity.
@@ -60,7 +60,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param objects the objects
      * @return the response entity
      */
-    ResponseEntity<List<F>> performUpdate(ContextRequestDto requestContext, @Valid List<F> objects);
+    ResponseEntity<List<F>> performUpdate(RequestContextDto requestContext, @Valid List<F> objects);
 
     /**
      * Sub delete response entity.
@@ -68,7 +68,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param id the id
      * @return the response entity
      */
-    ResponseEntity<Void> performDelete(ContextRequestDto requestContext, I id);
+    ResponseEntity<Void> performDelete(RequestContextDto requestContext, I id);
 
     /**
      * Sub delete response entity.
@@ -76,7 +76,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param objects the objects
      * @return the response entity
      */
-    ResponseEntity<Void> performDelete(ContextRequestDto requestContext, @Valid List<F> objects);
+    ResponseEntity<Void> performDelete(RequestContextDto requestContext, @Valid List<F> objects);
 
     /**
      * Sub find all full response entity.
@@ -85,7 +85,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param size the size
      * @return the response entity
      */
-    ResponseEntity<PaginatedResponseDto<F>> performFindAllFull(ContextRequestDto requestContext, Integer page, Integer size);
+    ResponseEntity<PaginatedResponseDto<F>> performFindAllFull(RequestContextDto requestContext, Integer page, Integer size);
 
     /**
      * Sub find all response entity.
@@ -94,11 +94,11 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param size the size
      * @return the response entity
      */
-    ResponseEntity<PaginatedResponseDto<M>> performFindAll(ContextRequestDto requestContext, Integer page, Integer size);
+    ResponseEntity<PaginatedResponseDto<M>> performFindAll(RequestContextDto requestContext, Integer page, Integer size);
 
-    ResponseEntity<List<M>> performFindAllList(ContextRequestDto context);
+    ResponseEntity<List<M>> performFindAllList(RequestContextDto context);
 
-    ResponseEntity<List<F>> performFindAllListFull(ContextRequestDto context);
+    ResponseEntity<List<F>> performFindAllListFull(RequestContextDto context);
 
     /**
      * Sub find by id response entity.
@@ -106,7 +106,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param id the id
      * @return the response entity
      */
-    ResponseEntity<F> performFindById(ContextRequestDto requestContext, I id);
+    ResponseEntity<F> performFindById(RequestContextDto requestContext, I id);
 
 
     /**
@@ -114,7 +114,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      *
      * @return the response entity
      */
-    ResponseEntity<Long> performGetCount(ContextRequestDto requestContext);
+    ResponseEntity<Long> performGetCount(RequestContextDto requestContext);
 
     /**
      * Sub find all filter criteria response entity.
@@ -131,5 +131,5 @@ public interface ICrudControllerOperations<I extends Serializable,
      * @param size     the size
      * @return the response entity
      */
-    ResponseEntity<PaginatedResponseDto<F>> performFindAllFilteredByCriteria(ContextRequestDto requestContext, String criteria, Integer page, Integer size);
+    ResponseEntity<PaginatedResponseDto<F>> performFindAllFilteredByCriteria(RequestContextDto requestContext, String criteria, Integer page, Integer size);
 }

@@ -9,7 +9,7 @@ import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.ContextRequestDto;
+import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.filter.QueryCriteria;
@@ -66,7 +66,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO is null
      */
     @Override
-    public ResponseEntity<F> performCreate(ContextRequestDto context, F dto) {
+    public ResponseEntity<F> performCreate(RequestContextDto context, F dto) {
         return executeWithMonitoring("performCreate", () -> {
             log.info("Creating {} for tenant: {}", this.getPersistentClass().getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -91,7 +91,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> performCreate(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> performCreate(RequestContextDto context, List<F> dtos) {
         return executeWithMonitoring("performCreateBulk", () -> {
             log.info("Bulk creating {} entities for tenant: {}", dtos.size(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -120,7 +120,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<List<F>> performUpdate(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<List<F>> performUpdate(RequestContextDto context, List<F> dtos) {
         return executeWithMonitoring("performUpdateBulk", () -> {
             log.info("Bulk updating {} entities for tenant: {}", dtos.size(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -150,7 +150,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if ID or DTO is null
      */
     @Override
-    public ResponseEntity<F> performUpdate(ContextRequestDto context, I id, F dto) {
+    public ResponseEntity<F> performUpdate(RequestContextDto context, I id, F dto) {
         return executeWithMonitoring("performUpdateById", () -> {
             log.info("Updating {} with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -177,7 +177,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if ID is null
      */
     @Override
-    public ResponseEntity<Void> performDelete(ContextRequestDto context, I id) {
+    public ResponseEntity<Void> performDelete(RequestContextDto context, I id) {
         return executeWithMonitoring("performDelete", () -> {
             log.info("Deleting {} with ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -203,7 +203,7 @@ public abstract class CrudControllerOperations<
      * @throws BadArgumentException if the DTO list is empty or exceeds max size
      */
     @Override
-    public ResponseEntity<Void> performDelete(ContextRequestDto context, List<F> dtos) {
+    public ResponseEntity<Void> performDelete(RequestContextDto context, List<F> dtos) {
         return executeWithMonitoring("subDeleteBulk", () -> {
             log.info("Bulk deleting {} entities for tenant: {}", dtos.size(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -233,7 +233,7 @@ public abstract class CrudControllerOperations<
 
 
     @Override
-    public ResponseEntity<PaginatedResponseDto<M>> performFindAll(ContextRequestDto context, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<M>> performFindAll(RequestContextDto context, Integer page, Integer size) {
         return executeWithMonitoring("performFindAll", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -275,7 +275,7 @@ public abstract class CrudControllerOperations<
      * @return ResponseEntity containing the list of minimal DTOs
      */
     @Override
-    public ResponseEntity<List<M>> performFindAllList(ContextRequestDto context) {
+    public ResponseEntity<List<M>> performFindAllList(RequestContextDto context) {
         return executeWithMonitoring("performFindAllList", () -> {
             log.info("Finding all {}s for tenant: {}",
                     this.getPersistentClass().getSimpleName(),
@@ -296,7 +296,7 @@ public abstract class CrudControllerOperations<
      * @return ResponseEntity containing the list of full DTOs
      */
     @Override
-    public ResponseEntity<List<F>> performFindAllListFull(ContextRequestDto context) {
+    public ResponseEntity<List<F>> performFindAllListFull(RequestContextDto context) {
         return executeWithMonitoring("performFindAllListFull", () -> {
             log.info("Finding all {}s for tenant: {}",
                     this.getPersistentClass().getSimpleName(),
@@ -322,7 +322,7 @@ public abstract class CrudControllerOperations<
 
 
     @Override
-    public ResponseEntity<PaginatedResponseDto<F>> performFindAllFull(ContextRequestDto context, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> performFindAllFull(RequestContextDto context, Integer page, Integer size) {
         return executeWithMonitoring("performFindAllFull", () -> {
             log.info("Finding {} {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -370,7 +370,7 @@ public abstract class CrudControllerOperations<
 
 
     @Override
-    public ResponseEntity<PaginatedResponseDto<F>> performFindAllFilteredByCriteria(ContextRequestDto context, String criteria, Integer page, Integer size) {
+    public ResponseEntity<PaginatedResponseDto<F>> performFindAllFilteredByCriteria(RequestContextDto context, String criteria, Integer page, Integer size) {
         return executeWithMonitoring("performFindAllFilteredByCriteria", () -> {
             log.info("Finding {} filtered {}s (page: {}, size: {}) for tenant: {}",
                     isPaginationRequested(page, size) ? "paginated" : "all",
@@ -419,7 +419,7 @@ public abstract class CrudControllerOperations<
 
 
     @Override
-    public ResponseEntity<F> performFindById(ContextRequestDto context, I id) {
+    public ResponseEntity<F> performFindById(RequestContextDto context, I id) {
         return executeWithMonitoring("performFindById", () -> {
             log.info("Finding {} by ID: {} for tenant: {}", this.getPersistentClass().getSimpleName(), id,
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -443,7 +443,7 @@ public abstract class CrudControllerOperations<
 
 
     @Override
-    public ResponseEntity<Long> performGetCount(ContextRequestDto context) {
+    public ResponseEntity<Long> performGetCount(RequestContextDto context) {
         return executeWithMonitoring("performGetCount", () -> {
             log.info("Counting {}s for tenant: {}", this.getPersistentClass().getSimpleName(),
                     context != null ? context.getSenderTenant() : TenantContext.getTenantId());
@@ -583,7 +583,7 @@ public abstract class CrudControllerOperations<
      * @return Processed list of DTOs
      */
     @Override
-    public List<F> afterFindAllFull(ContextRequestDto context, List<F> dtos) {
+    public List<F> afterFindAllFull(RequestContextDto context, List<F> dtos) {
         log.debug("Post-find-all-full hook for {} entities", dtos.size());
         return dtos;
     }
@@ -596,7 +596,7 @@ public abstract class CrudControllerOperations<
      * @return Processed list of DTOs
      */
     @Override
-    public List<M> afterFindAll(ContextRequestDto context, List<M> dtos) {
+    public List<M> afterFindAll(RequestContextDto context, List<M> dtos) {
         log.debug("Post-find-all hook for {} entities", dtos.size());
         return dtos;
     }

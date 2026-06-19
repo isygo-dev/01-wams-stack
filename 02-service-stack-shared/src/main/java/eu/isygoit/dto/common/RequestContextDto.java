@@ -14,18 +14,24 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ContextRequestDto {
+public class RequestContextDto {
 
     public static final String x_sender_tenant = "X-SENTER-TENANT";
     public static final String x_sender_user = "X-SENTER-USER";
     public static final String x_log_app = "X-LOG-APP";
     public static final String x_is_admin = "X-IS-ADMIN";
+    public static final String x_device = "X-DEVICE";
+    public static final String x_browser = "X-BROWSER";
+    public static final String x_ip_origin = "X-IP-ORIGIN";
 
+    private String appOrigin;
     private String senderTenant;
     private String senderUser;
     private Boolean isAdmin;
-    private String logApp;
-    private String clientIp;
+
+    private String device;
+    private String browser;
+    private String ipOrigin;
 
     /**
      * Gets created by string.
