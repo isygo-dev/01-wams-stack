@@ -13,15 +13,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.jwt")
 public class JwtProperties {
 
-    @Value("${app.jwt.secretKey}")
+    @Value("${app.jwt.secretKey:o9ZqX8kL2mNpR4tY7uVwB1cD3eF5gH6jK8lM0nP2rS4tU6vW8xY0z}")
     private String secretKey;
 
-    @Value("${app.jwt.signatureAlgorithm}")
+    @Value("${app.jwt.signatureAlgorithm:HS256}")
     private SignatureAlgorithm signatureAlgorithm;
 
-    @Value("${app.jwt.life-time-ms}")
+    @Value("${app.jwt.life-time-ms:14400000}")
     private Integer lifeTimeInMs;
 
-    @Value("${app.jwt.storage-type}")
+    @Value("${app.jwt.storage-type:LOCAL}")
     private IEnumJwtStorage.Types jwtStorageType;
+
+    @Value("${app.jwt.all-audiences:*}")
+    private String jwtAllAudiences;
+
+    @Value("${app.jwt.prefix-audiences:KMS.}")
+    private String jwtPrefixAudiences;
 }

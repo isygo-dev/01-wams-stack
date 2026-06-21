@@ -55,10 +55,11 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     // Constants
     // =========================
 
-    private static final String LOGIN_PATH = "/login";
-    private static final String PUBLIC_API_PREFIX = "/api/v1/public";
-    private static final String IMAGE_DOWNLOAD_PATTERN = "/image/download";
-    private static final String FILE_DOWNLOAD_PATTERN = "/file/download";
+    private static final String REDIRECT_LOGIN_PATH = "/login";
+
+    private static final String PUBLIC_URI_PATTERN = "/**/public/**";
+    private static final String IMAGE_DOWNLOAD_PATTERN = "/**/image/download/**";
+    private static final String FILE_DOWNLOAD_PATTERN = "/**/file/download/**";
 
     private final PathMatcher pathMatcher = new AntPathMatcher();
 
@@ -142,15 +143,15 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
 
     private boolean shouldSkipUri(String uri) {
         // 1. Always skip public API endpoints (simple prefix)
-        if (uri.startsWith(PUBLIC_API_PREFIX)) {
+        if (pathMatcher.match(PUBLIC_URI_PATTERN, uri)) {
             return true;
         }
 
         // 2. Check additional patterns (e.g., "/login/**", "/actuator/**")
         List<String> patterns = skipUriPatterns();
         if (!CollectionUtils.isEmpty(patterns)) {
-            for (String pattern : patterns) {
-                if (pathMatcher.match(pattern, uri)) {
+            for (String skipUriPattern : patterns) {
+                if (pathMatcher.match(skipUriPattern, uri)) {
                     return true;
                 }
             }
@@ -271,7 +272,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         );
     }
 
-// =========================
+    // =========================
     // Error / fallback handling
     // =========================
 
@@ -288,7 +289,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
                 response.getWriter().write("{\"error\":\"Invalid token\"}");
             } else {
                 // Redirect to login page for browser requests
-                response.sendRedirect(LOGIN_PATH);
+                response.sendRedirect(REDIRECT_LOGIN_PATH);
             }
         }
     }
