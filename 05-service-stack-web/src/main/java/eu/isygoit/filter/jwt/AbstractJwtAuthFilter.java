@@ -60,9 +60,6 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     private static final String PUBLIC_URI_PATTERN = "/**/public/**";
     private static final String IMAGE_DOWNLOAD_PATTERN = "/**/image/download/**";
     private static final String FILE_DOWNLOAD_PATTERN = "/**/file/download/**";
-
-    private final PathMatcher pathMatcher = new AntPathMatcher();
-
     /**
      * Default context for unauthenticated requests.
      * ⚠️ Keep minimal privileges (DO NOT make it admin in real prod)
@@ -74,11 +71,11 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
             .appOrigin("application")
             .ipOrigin("127.0.0.1")
             .build();
+    private final PathMatcher pathMatcher = new AntPathMatcher();
 
     // =========================
     // Dependencies
     // =========================
-
     @Getter
     private final IJwtService jwtService;
 

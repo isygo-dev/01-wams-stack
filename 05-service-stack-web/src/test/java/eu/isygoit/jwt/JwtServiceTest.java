@@ -3,11 +3,10 @@ package eu.isygoit.jwt;
 import eu.isygoit.constants.JwtConstants;
 import eu.isygoit.dto.common.TokenResponseDto;
 import eu.isygoit.enums.IEnumWebToken;
-import eu.isygoit.exception.*;
+import eu.isygoit.exception.TokenInvalidException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -244,6 +243,55 @@ class JwtServiceTest {
     // ValidateToken tests (comprehensive)
     // ========================================================================
 
+    private TokenResponseDto createTestToken() {
+        return jwtService.createToken(JwtTokenRequest.builder()
+                .subject(SUBJECT)
+                .claims(Collections.emptyMap())
+                .issuer(ISSUER)
+                .audience(AUDIENCE)
+                .algorithm(Jwts.SIG.HS256)
+                .key(TEST_KEY_BASE64)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
+    }
+
+    // ========================================================================
+    // Extract Claims Error Handling (covers both secured & unsecured)
+    // ========================================================================
+
+    private TokenResponseDto createTestTokenWithClaims() {
+        return jwtService.createToken(JwtTokenRequest.builder()
+                .subject(SUBJECT)
+                .claims(CLAIMS)
+                .issuer(ISSUER)
+                .audience(AUDIENCE)
+                .algorithm(Jwts.SIG.HS256)
+                .key(TEST_KEY_BASE64)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
+    }
+
+    // ========================================================================
+    // Helper methods
+    // ========================================================================
+
+    private TokenResponseDto createTestTokenWithHeaders() {
+        Map<String, Object> headers = Map.of(
+                JwtConstants.KID_VERSION, "test-key-version",
+                "x-custom", "custom-value"
+        );
+        return jwtService.createToken(JwtTokenRequest.builder()
+                .subject(SUBJECT)
+                .claims(Collections.emptyMap())
+                .headers(headers)
+                .issuer(ISSUER)
+                .audience(AUDIENCE)
+                .algorithm(Jwts.SIG.HS256)
+                .key(TEST_KEY_BASE64)
+                .lifeTimeInMs(1000 * 60 * 60)
+                .build());
+    }
+
     @Nested
     class ValidateTokenTests {
 
@@ -366,10 +414,6 @@ class JwtServiceTest {
         }
     }
 
-    // ========================================================================
-    // Extract Claims Error Handling (covers both secured & unsecured)
-    // ========================================================================
-
     @Nested
     class ExtractClaimsErrorHandling {
 
@@ -429,50 +473,5 @@ class JwtServiceTest {
             assertThrows(IllegalArgumentException.class, () -> jwtService.extractTenant("", TEST_KEY_BASE64));
             assertThrows(IllegalArgumentException.class, () -> jwtService.extractIsAdmin("", TEST_KEY_BASE64));
         }
-    }
-
-    // ========================================================================
-    // Helper methods
-    // ========================================================================
-
-    private TokenResponseDto createTestToken() {
-        return jwtService.createToken(JwtTokenRequest.builder()
-                .subject(SUBJECT)
-                .claims(Collections.emptyMap())
-                .issuer(ISSUER)
-                .audience(AUDIENCE)
-                .algorithm(Jwts.SIG.HS256)
-                .key(TEST_KEY_BASE64)
-                .lifeTimeInMs(1000 * 60 * 60)
-                .build());
-    }
-
-    private TokenResponseDto createTestTokenWithClaims() {
-        return jwtService.createToken(JwtTokenRequest.builder()
-                .subject(SUBJECT)
-                .claims(CLAIMS)
-                .issuer(ISSUER)
-                .audience(AUDIENCE)
-                .algorithm(Jwts.SIG.HS256)
-                .key(TEST_KEY_BASE64)
-                .lifeTimeInMs(1000 * 60 * 60)
-                .build());
-    }
-
-    private TokenResponseDto createTestTokenWithHeaders() {
-        Map<String, Object> headers = Map.of(
-                JwtConstants.KID_VERSION, "test-key-version",
-                "x-custom", "custom-value"
-        );
-        return jwtService.createToken(JwtTokenRequest.builder()
-                .subject(SUBJECT)
-                .claims(Collections.emptyMap())
-                .headers(headers)
-                .issuer(ISSUER)
-                .audience(AUDIENCE)
-                .algorithm(Jwts.SIG.HS256)
-                .key(TEST_KEY_BASE64)
-                .lifeTimeInMs(1000 * 60 * 60)
-                .build());
     }
 }

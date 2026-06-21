@@ -39,9 +39,8 @@ import java.util.function.Function;
 @Transactional
 public class JwtService implements IJwtService {
 
-    private final JwtProperties jwtProperties;
-
     public static final String AUTHORIZATION = "Authorization";
+    private final JwtProperties jwtProperties;
 
     public JwtService(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
@@ -484,18 +483,18 @@ public class JwtService implements IJwtService {
             // If none match, we reject the token.
 
             if (    // 2. Check if the token audience contains a special "all-audiences" value
-                    //    (e.g., "KMS.*") configured in jwtProperties. If it does, it matches any audience.
+                //    (e.g., "KMS.*") configured in jwtProperties. If it does, it matches any audience.
                     !tokenAudience.contains(jwtProperties.getJwtAllAudiences())
-                    // 3. Check if the token audience contains the wildcard "*" – a common
-                    //    convention meaning "match any audience". If present, it's valid.
-                    && !tokenAudience.contains("*")
-                    // 4. Check if one audience in the token not starts with a configured prefix
-                    //    (e.g., "KMS."). This allows for domain‑wide wildcards like "KMS.service".
-                    && !tokenAudience.stream().allMatch(aud -> aud.startsWith(jwtProperties.getJwtPrefixAudiences()))
-                    // 5. Finally, check if the token audience contains **all** the required audiences
-                    //    (the ones we are expecting for this request). If it contains all of them,
-                    //    it's valid.
-                    && !tokenAudience.containsAll(audience)) {
+                            // 3. Check if the token audience contains the wildcard "*" – a common
+                            //    convention meaning "match any audience". If present, it's valid.
+                            && !tokenAudience.contains("*")
+                            // 4. Check if one audience in the token not starts with a configured prefix
+                            //    (e.g., "KMS."). This allows for domain‑wide wildcards like "KMS.service".
+                            && !tokenAudience.stream().allMatch(aud -> aud.startsWith(jwtProperties.getJwtPrefixAudiences()))
+                            // 5. Finally, check if the token audience contains **all** the required audiences
+                            //    (the ones we are expecting for this request). If it contains all of them,
+                            //    it's valid.
+                            && !tokenAudience.containsAll(audience)) {
                 // None of the acceptance conditions passed → reject the token.
                 throw new TokenAudienceException("Invalid JWT: audience does not match");
             }

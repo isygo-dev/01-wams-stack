@@ -39,7 +39,8 @@ public interface TokenServiceApi {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = TokenResponseDto.class))})
     })
-    @PostMapping(path = "/public/builder") // TBD secure by internal token/key
+    @PostMapping(path = "/public/builder")
+    // TBD secure by internal token/key
     ResponseEntity<TokenResponseDto> buildToken(
             @RequestParam(name = RestApiConstants.TENANT_NAME) String tenant,
             @RequestParam(name = RestApiConstants.AUDIENCE) Set<String> audience,
