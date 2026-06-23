@@ -40,6 +40,10 @@ import java.util.function.Function;
 public class JwtService implements IJwtService {
 
     public static final String AUTHORIZATION = "Authorization";
+    public static final String X_API_KEY = "X-API-KEY";
+    public static final String X_SERVICE_ID = "X-SERVICE-ID";
+    public static final String X_INTERNAL_CALL = "X-INTERNAL-CALL";
+    public static final String X_AUTH_WARNING = "X-AUTH-WARNING";
     private final JwtProperties jwtProperties;
 
     public JwtService(JwtProperties jwtProperties) {

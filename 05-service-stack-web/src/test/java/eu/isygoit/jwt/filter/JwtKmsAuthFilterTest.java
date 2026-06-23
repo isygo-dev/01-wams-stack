@@ -2,7 +2,6 @@ package eu.isygoit.jwt.filter;
 
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
-import eu.isygoit.filter.jwt.JwtKmsAuthFilter;
 import eu.isygoit.service.ITokenValidationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;

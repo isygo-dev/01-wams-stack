@@ -27,10 +27,16 @@ public interface IEnumToken {
          * The Authority.
          */
         AUTHORITY("Authority Token"),
+
         /**
          * The Rstpwd.
          */
         RSTPWD("Reset Password Token"),
+
+        /**
+         * The Internal.
+         */
+        INTERNAL("Internal Token"),
 
         /**
          * The Qrc.
@@ -38,9 +44,9 @@ public interface IEnumToken {
         QRC("QR code access token"),
 
         /**
-         * The Tpsw.
+         * The Ttps.
          */
-        TPSW("Trusted ThirdParty Software Token");
+        TTPS("Trusted ThirdParty Software Token");
 
         private final String meaning;
 

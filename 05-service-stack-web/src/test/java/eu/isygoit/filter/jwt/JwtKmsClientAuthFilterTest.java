@@ -4,6 +4,7 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
+import eu.isygoit.jwt.filter.JwtKmsClientAuthFilter;
 import eu.isygoit.service.RequestContextService;
 import eu.isygoit.service.TokenServiceApi;
 import jakarta.servlet.http.HttpServletRequest;

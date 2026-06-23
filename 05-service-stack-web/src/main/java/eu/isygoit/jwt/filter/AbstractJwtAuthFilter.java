@@ -1,4 +1,4 @@
-package eu.isygoit.filter.jwt;
+package eu.isygoit.jwt.filter;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -123,6 +123,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         // 1. Cached URI decision (fast path)
+        // atomically updates the cache if the key doesn't exist
         if (Boolean.TRUE.equals(uriFilterCache.get(uri, this::shouldSkipUri))) {
             return true;
         }

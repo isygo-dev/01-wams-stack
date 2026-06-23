@@ -3,6 +3,7 @@ package eu.isygoit.filter.jwt;
 import eu.isygoit.enums.IEnumToken;
 import eu.isygoit.exception.TokenInvalidException;
 import eu.isygoit.jwt.IJwtService;
+import eu.isygoit.jwt.filter.JwtKmsAuthFilter;
 import eu.isygoit.service.ITokenValidationService;
 import eu.isygoit.service.RequestContextService;
 import jakarta.servlet.http.HttpServletRequest;
