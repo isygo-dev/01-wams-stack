@@ -31,7 +31,7 @@ public class LocaleMessageModel<T extends Serializable> extends AbstractEntity<T
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_sequence_generator")
     private T id;
 
-    @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.XXL_VALUE, nullable = false)
+    @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.XXL_VALUE, updatable = false, nullable = false)
     private String code;
     @Column(name = ComSchemaColumnConstantName.C_LOCALE, length = ComSchemaConstantSize.LANG_CODE, nullable = false)
     private String locale;

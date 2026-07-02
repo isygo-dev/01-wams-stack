@@ -32,7 +32,7 @@ import java.util.List;
 public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity, ICodeAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
-    @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false)
+    @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
     private String code;
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_FILE_NAME, length = ComSchemaConstantSize.FILE_NAME_SIZE)
