@@ -29,11 +29,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity, ICodeAssignable {
+public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity {
 
-    //@Convert(converter = LowerCaseConverter.class)
-    @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
-    private String code;
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_FILE_NAME, length = ComSchemaConstantSize.FILE_NAME_SIZE)
     private String fileName;

@@ -1,8 +1,10 @@
 package eu.isygoit.model.extendable;
 
 
+import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
+import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OrderBy;
@@ -25,7 +27,11 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class LinkedFileModel<T extends Serializable> extends FileEntity<T> implements ILinkedFile {
+public abstract class LinkedFileModel<T extends Serializable> extends FileEntity<T> implements ILinkedFile, ICodeAssignable {
+
+    //@Convert(converter = LowerCaseConverter.class)
+    @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
+    private String code;
 
     @Column(name = ComSchemaColumnConstantName.C_CRC_16, updatable = false, nullable = true)
     private Long crc16;
