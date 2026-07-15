@@ -27,7 +27,7 @@ public interface ICrudControllerOperations<I extends Serializable,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudServiceUtils<I, T>>
-        extends ICrudControllerEvents<I, T, M, F> {
+        extends ICrudControllerHooks<I, T, M, F> {
 
     /**
      * Sub create response entity.

@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.controller.impl.tenancy;
 
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceHooks;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -34,7 +34,7 @@ public abstract class MappedCrudTenantController<I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudTenantServiceOperations<I, T> & ICrudTenantServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudTenantServiceOperations<I, T> & ICrudTenantServiceHooks<I, T> & ICrudServiceUtils<I, T>>
         extends CrudTenantControllerOperations<I, T, M, F, S>
         implements IMappedCrudApi<I, M, F> {
 

@@ -3,7 +3,7 @@ package eu.isygoit.jpa.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceHooks;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.exception.*;
 import eu.isygoit.filter.QueryCriteria;
@@ -64,7 +64,7 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
         R extends JsonBasedTenantAssignableRepository<E, IE>>
         extends CrudServiceUtils<UUID, T, R>
         implements ICrudTenantServiceOperations<UUID, T>,
-        ICrudTenantServiceEvents<UUID, T>,
+        ICrudTenantServiceHooks<UUID, T>,
         ICrudServiceUtils<UUID, T> {
 
     @Getter

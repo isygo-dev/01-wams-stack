@@ -2,7 +2,7 @@ package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
-import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceEvents;
+import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceHooks;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.constants.LogConstants;
 import eu.isygoit.constants.TenantConstants;
@@ -42,7 +42,7 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
         T extends IIdAssignable<I> & ITenantAssignable,
         R extends CassandraRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudTenantServiceOperations<I, T>, ICrudTenantServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudTenantServiceOperations<I, T>, ICrudTenantServiceHooks<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
     @Getter

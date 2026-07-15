@@ -16,7 +16,7 @@ import java.util.List;
  * @param <M> the type parameter
  * @param <F> the type parameter
  */
-interface ICrudControllerEvents<I extends Serializable, T extends IIdAssignable<I>, M extends IIdAssignableDto<I> & IDto, F extends M> {
+interface ICrudControllerHooks<I extends Serializable, T extends IIdAssignable<I>, M extends IIdAssignableDto<I> & IDto, F extends M> {
 
     /**
      * Before create fulld.
