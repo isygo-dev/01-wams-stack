@@ -1,6 +1,5 @@
 package eu.isygoit.model.extendable;
 
-import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
