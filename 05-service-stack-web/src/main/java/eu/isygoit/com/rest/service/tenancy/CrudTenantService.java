@@ -72,7 +72,7 @@ public abstract class CrudTenantService<I extends Serializable,
     private JpaPagingAndSortingTenantAssignableRepository getTenantAssignableRepository() {
         if (!(repository() instanceof JpaPagingAndSortingTenantAssignableRepository jpaRepo)) {
             log.error("Entity {} or its repository is not tenant assignable", this.getPersistentClass().getSimpleName());
-            throw new OperationNotSupportedException("Entity  or its repository is not tenant assignable: " + this.getPersistentClass().getSimpleName());
+            throw new OperationNotSupportedException("Entity or its repository is not tenant assignable: " + this.getPersistentClass().getSimpleName());
         }
         return (JpaPagingAndSortingTenantAssignableRepository) repository();
     }
