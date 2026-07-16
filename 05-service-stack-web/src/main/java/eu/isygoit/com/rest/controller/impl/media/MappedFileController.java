@@ -3,7 +3,7 @@ package eu.isygoit.com.rest.controller.impl.media;
 import eu.isygoit.com.rest.api.IMappedFileApi;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.impl.CrudControllerOperations;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.com.rest.service.media.IFileServiceOperations;
@@ -41,7 +41,7 @@ public abstract class MappedFileController<
         F extends M,
         S extends IFileServiceOperations<I, T>
                 & ICrudServiceOperations<I, T>
-                & ICrudServiceEvents<I, T>
+                & ICrudServiceHooks<I, T>
                 & ICrudServiceUtils<I, T>>
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedFileApi<I, F> {

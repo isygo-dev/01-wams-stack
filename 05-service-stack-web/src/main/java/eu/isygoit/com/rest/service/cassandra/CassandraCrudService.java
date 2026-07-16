@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service.cassandra;
 
 import eu.isygoit.com.rest.service.CrudServiceUtils;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.constants.LogConstants;
@@ -39,7 +39,7 @@ public abstract class CassandraCrudService<I extends Serializable,
         T extends IIdAssignable<I>,
         R extends CassandraRepository<T, I>>
         extends CrudServiceUtils<I, T, R>
-        implements ICrudServiceOperations<I, T>, ICrudServiceEvents<I, T>, ICrudServiceUtils<I, T> {
+        implements ICrudServiceOperations<I, T>, ICrudServiceHooks<I, T>, ICrudServiceUtils<I, T> {
 
     //Attention !!! should get the class type of th persist entity
     @Getter

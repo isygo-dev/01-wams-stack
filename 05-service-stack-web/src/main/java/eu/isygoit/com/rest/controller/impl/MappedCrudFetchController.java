@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.controller.impl;
 
 import eu.isygoit.com.rest.api.IMappedCrudFetchApi;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
@@ -32,7 +32,7 @@ import java.util.Map;
 public abstract class MappedCrudFetchController<I extends Serializable, T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudServiceOperations<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudServiceOperations<I, T> & ICrudServiceHooks<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudFetchApi<I, M, F> {
 

@@ -4,7 +4,7 @@ import eu.isygoit.audit.TenantContext;
 import eu.isygoit.com.rest.controller.ICrudControllerOperations;
 import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
-import eu.isygoit.com.rest.service.ICrudServiceEvents;
+import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
@@ -49,7 +49,7 @@ public abstract class CrudControllerOperations<
         T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudServiceOperations<I, T> & ICrudServiceEvents<I, T> & ICrudServiceUtils<I, T>>
+        S extends ICrudServiceOperations<I, T> & ICrudServiceHooks<I, T> & ICrudServiceUtils<I, T>>
         extends CrudControllerUtils<I, T, M, F, S>
         implements ICrudControllerOperations<I, T, M, F, S> {
 
