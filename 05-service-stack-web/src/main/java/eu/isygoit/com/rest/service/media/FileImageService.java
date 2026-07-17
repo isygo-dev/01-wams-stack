@@ -140,13 +140,6 @@ public abstract class FileImageService<I extends Serializable,
                 new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
     }
 
-    private void assignTenantIfApplicable(String tenant, T entity) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            ((ITenantAssignable) entity).setTenant(tenant);
-        }
-    }
-
     private Function<T, Path> resolveTargetPath() {
         return entity -> {
             String tenant = (entity instanceof ITenantAssignable da)

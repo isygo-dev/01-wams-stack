@@ -53,13 +53,13 @@ public abstract class CrudTenantService<I extends Serializable,
 
     private static void validateTenantNotNull(String tenant) {
         if (!StringUtils.hasText(tenant)) {
-            throw new BadArgumentException("tenant is null or empty");
+            throw new OperationNotAllowedException("tenant is null or empty");
         }
     }
 
     private static <I extends Serializable> void validateIdNotNull(I id) {
         if (id == null) {
-            throw new BadArgumentException("id is null");
+            throw new OperationNotAllowedException("id is null");
         }
     }
 
@@ -141,7 +141,8 @@ public abstract class CrudTenantService<I extends Serializable,
             log.debug("Input entity: {}", object);
 
             // Set tenant and prepare entity
-            object.setTenant(tenant);
+            object = TenantHelper.assignTenantIfApplicable(tenant, object);
+
             assignCodeIfEmpty(object);
 
             var preparedObject = beforeCreate(tenant, object);
@@ -411,7 +412,7 @@ public abstract class CrudTenantService<I extends Serializable,
                 ? jpaRepo.findById(id)
                 .map(o -> afterFindById(tenant, (T) o))
                 : jpaRepo.findById(id)
-                .filter(t -> ((ITenantAssignable) t).getTenant().equals(tenant))
+                .filter(t -> ((ITenantAssignable) t).getTenant().toUpperCase().equals(tenant.toUpperCase()))
                 .map(o -> afterFindById(tenant, (T) o));
 
         log.debug("Find by ID result for ID {} and tenant {}: {}", id, tenant, result.isPresent() ? "found" : "not found");

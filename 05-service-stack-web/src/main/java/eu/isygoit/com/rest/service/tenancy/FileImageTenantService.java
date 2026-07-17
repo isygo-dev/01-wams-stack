@@ -115,9 +115,7 @@ public abstract class FileImageTenantService<I extends Serializable,
         }
 
         // Enforce tenant if applicable and not super tenant
-        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            entity.setTenant(tenant);
-        }
+        entity = TenantHelper.assignTenantIfApplicable(tenant, entity);
 
         // Assign code if empty
         assignCodeIfEmpty(entity);
@@ -138,9 +136,7 @@ public abstract class FileImageTenantService<I extends Serializable,
         }
 
         // Enforce tenant if applicable and not super tenant
-        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            entity.setTenant(tenant);
-        }
+        entity = TenantHelper.assignTenantIfApplicable(tenant, entity);
 
         // Save new image and update path
         entity.setImagePath(saveImageFile(entity, file));

@@ -190,13 +190,6 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                 : TenantConstants.DEFAULT_TENANT_NAME;
     }
 
-    private void setTenantIfApplicable(String tenant, T entity) {
-        if (ITenantAssignable.class.isAssignableFrom(persistentClass)
-                && !TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            ((ITenantAssignable) entity).setTenant(tenant);
-        }
-    }
-
     private T handleFileUpload(T entity, MultipartFile file) throws IOException {
         String tenant = getEntityTenantOrDefault(entity);
         entity = beforeUpload(tenant, entity, file);

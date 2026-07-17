@@ -115,7 +115,7 @@ public abstract class FileTenantService<I extends Serializable,
     @Transactional
     @Override
     public T createWithFile(String tenant, T entity, MultipartFile file) throws IOException {
-        setTenantIfApplicable(tenant, entity);
+        entity = TenantHelper.assignTenantIfApplicable(tenant, entity);
 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
@@ -138,7 +138,7 @@ public abstract class FileTenantService<I extends Serializable,
     @Transactional
     @Override
     public T updateWithFile(String tenant, I id, T entity, MultipartFile file) throws IOException {
-        setTenantIfApplicable(tenant, entity);
+        entity = TenantHelper.assignTenantIfApplicable(tenant, entity);
 
         T existing = repository().findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
@@ -211,12 +211,6 @@ public abstract class FileTenantService<I extends Serializable,
         entity.setFileName(entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
         entity.setOriginalFileName(file.getOriginalFilename());
         entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-    }
-
-    private void setTenantIfApplicable(String tenant, T entity) {
-        if (!TenantConstants.SUPER_TENANT_NAME.equals(tenant)) {
-            entity.setTenant(tenant);
-        }
     }
 
     private T handleFileUpload(String tenant, T entity, MultipartFile file) throws IOException {
