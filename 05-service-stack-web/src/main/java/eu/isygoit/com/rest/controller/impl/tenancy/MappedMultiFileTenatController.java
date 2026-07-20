@@ -15,11 +15,7 @@ import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.service.RequestContextService;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -50,10 +46,6 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
         extends CrudControllerUtils<I, T, M, F, S>
         implements IMappedMultiFileApi<L, I> {
 
-    @Getter
-    @Setter
-    @Autowired
-    private RequestContextService requestContextService;
 
     /**
      * Linked file mapper entity mapper.
@@ -68,7 +60,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
             MultipartFile[] files) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(this.getRequestContextService().getCurrentContext().getSenderTenant(), parentId, files)));
+            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFiles(requestContextService().getCurrentContext().getSenderTenant(), parentId, files)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -81,7 +73,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
             MultipartFile file) {
         log.info("update additionl file");
         try {
-            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), parentId, file)));
+            return ResponseFactory.responseOk(linkedFileMapper().listEntityToDto(crudService().uploadAdditionalFile(requestContextService().getCurrentContext().getSenderTenant(), parentId, file)));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -94,7 +86,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
             I fileId) {
         log.info("delete additional file");
         try {
-            return ResponseFactory.responseOk(crudService().deleteAdditionalFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), parentId, fileId));
+            return ResponseFactory.responseOk(crudService().deleteAdditionalFile(requestContextService().getCurrentContext().getSenderTenant(), parentId, fileId));
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
@@ -110,7 +102,7 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
         try {
             log.info("download file ");
             try {
-                ResourceDto resource = crudService().downloadFile(this.getRequestContextService().getCurrentContext().getSenderTenant(), parentId, fileId, version);
+                ResourceDto resource = crudService().downloadFile(requestContextService().getCurrentContext().getSenderTenant(), parentId, fileId, version);
                 if (resource != null) {
                     log.info("File downloaded successfully {}", resource.getResource().getFilename());
                     return ResponseEntity.ok()

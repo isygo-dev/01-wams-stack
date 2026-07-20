@@ -2,7 +2,6 @@ package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.com.rest.controller.impl.tenancy.IImageTenantServiceOperations;
 import eu.isygoit.constants.LogConstants;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyPathException;

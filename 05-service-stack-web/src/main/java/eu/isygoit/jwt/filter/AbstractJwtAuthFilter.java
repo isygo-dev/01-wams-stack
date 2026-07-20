@@ -186,7 +186,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
              * Prevent ThreadLocal memory leak
              * (Tomcat reuses threads between requests)
              */
-            this.getRequestContextService().clear();
+            requestContextService.clear();
 
             /**
              * Also clear Spring Security context
@@ -231,7 +231,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
             setSecurityContext(subject, isAdmin);
 
             // Set request context (ThreadLocal + request attributes)
-            this.getRequestContextService().setContextFromJwt(jwt, request);
+            requestContextService.setContextFromJwt(jwt, request);
 
             filterChain.doFilter(request, response);
 
@@ -302,7 +302,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
         }
 
         // Set minimal safe context
-        this.getRequestContextService().setContext(DEFAULT_CONTEXT, request);
+        requestContextService.setContext(DEFAULT_CONTEXT, request);
 
         // For missing token, also redirect or return JSON based on Accept header
         sendUnauthorizedResponse(request, response);

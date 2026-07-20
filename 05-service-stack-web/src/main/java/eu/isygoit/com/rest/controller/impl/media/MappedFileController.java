@@ -13,13 +13,9 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.service.RequestContextService;
 import jakarta.validation.Valid;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -46,10 +42,6 @@ public abstract class MappedFileController<
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedFileApi<I, F> {
 
-    @Getter
-    @Setter
-    @Autowired
-    private RequestContextService requestContextService;
 
     @Override
     public ResponseEntity<F> uploadFile(I id, MultipartFile file) {
@@ -90,21 +82,22 @@ public abstract class MappedFileController<
 
     @Override
     public ResponseEntity<F> createWithFile(MultipartFile file, @Valid F dto) {
-        log.debug("Creating entity with file for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
+        String senderTenant = requestContextService().getCurrentContext().getSenderTenant();
+        log.debug("Creating entity with file for tenant: {}", senderTenant);
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
-                tenantAssignableDto.setTenant(this.getRequestContextService().getCurrentContext().getSenderTenant());
-                log.debug("Assigned tenant {} to DTO", this.getRequestContextService().getCurrentContext().getSenderTenant());
+                tenantAssignableDto.setTenant(senderTenant);
+                log.debug("Assigned tenant {} to DTO", senderTenant);
             }
 
             F processed = beforeCreate(dto);
             T entity = crudService().createWithFile(mapper().dtoToEntity(processed), file);
             T result = afterCreate(entity);
 
-            log.info("Successfully created entity with file for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
+            log.info("Successfully created entity with file for tenant: {}", senderTenant);
             return ResponseFactory.responseCreated(mapper().entityToDto(result));
         } catch (IOException e) {
-            log.error("Failed to create entity with file for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant(), e);
+            log.error("Failed to create entity with file for tenant: {}", senderTenant, e);
             return getBackExceptionResponse(e);
         }
     }

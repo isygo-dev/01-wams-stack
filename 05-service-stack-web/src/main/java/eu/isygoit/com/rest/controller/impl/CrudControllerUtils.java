@@ -3,7 +3,6 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.annotation.InjectService;
-import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.controller.IControllerExceptionHandler;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
@@ -11,7 +10,6 @@ import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.exception.*;
-import eu.isygoit.exception.handler.IExceptionHandler;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import lombok.Getter;
@@ -37,6 +35,7 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends ICrudServiceUtils<I, T>>
+        extends ControllerUtils
         implements ICrudControllerUtils<I, T, M, F, S>, IControllerExceptionHandler {
 
     @Getter
@@ -66,11 +65,6 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     }
 
     @Override
-    public IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
-        return controllerExceptionHandler.exceptionHandler(this.getClass());
-    }
-
-    @Override
     public ResponseEntity getBackExceptionResponse(Throwable e) {
         return controllerExceptionHandler.getBackExceptionResponse(this.getClass(), e);
     }
@@ -78,10 +72,6 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     @Override
     public String handleExceptionMessage(Throwable throwable) {
         return controllerExceptionHandler.handleExceptionMessage(this.getClass(), throwable);
-    }
-
-    public final ApplicationContextService getApplicationContextService() {
-        return controllerExceptionHandler.getApplicationContextService();
     }
 
     @Override

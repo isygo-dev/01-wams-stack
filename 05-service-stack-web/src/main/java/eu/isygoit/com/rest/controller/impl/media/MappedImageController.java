@@ -13,13 +13,9 @@ import eu.isygoit.dto.IImageUploadDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IImageEntity;
-import eu.isygoit.service.RequestContextService;
 import jakarta.validation.Valid;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -46,10 +42,6 @@ public abstract class MappedImageController<
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedImageApi<I, F> {
 
-    @Getter
-    @Setter
-    @Autowired
-    private RequestContextService requestContextService;
 
     @Override
     public ResponseEntity<F> uploadImage(I id, MultipartFile file) {
@@ -89,21 +81,21 @@ public abstract class MappedImageController<
 
     @Override
     public ResponseEntity<F> createWithImage(MultipartFile file, @Valid F dto) {
-        log.debug("Creating entity with image for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
+        log.debug("Creating entity with image for tenant: {}", requestContextService().getCurrentContext().getSenderTenant());
         try {
             if (dto instanceof ITenantAssignableDto tenantAssignableDto && StringUtils.isEmpty(tenantAssignableDto.getTenant())) {
-                tenantAssignableDto.setTenant(this.getRequestContextService().getCurrentContext().getSenderTenant());
-                log.debug("Assigned tenant {} to DTO", this.getRequestContextService().getCurrentContext().getSenderTenant());
+                tenantAssignableDto.setTenant(requestContextService().getCurrentContext().getSenderTenant());
+                log.debug("Assigned tenant {} to DTO", requestContextService().getCurrentContext().getSenderTenant());
             }
 
             F processed = beforeCreate(dto);                    // ← reused from base
             T entity = crudService().createWithImage(mapper().dtoToEntity(processed), file);
             T result = afterCreate(entity);                     // ← reused from base
 
-            log.info("Successfully created entity with image for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant());
+            log.info("Successfully created entity with image for tenant: {}", requestContextService().getCurrentContext().getSenderTenant());
             return ResponseFactory.responseCreated(mapper().entityToDto(result));
         } catch (IOException e) {
-            log.error("Failed to create entity with image for tenant: {}", this.getRequestContextService().getCurrentContext().getSenderTenant(), e);
+            log.error("Failed to create entity with image for tenant: {}", requestContextService().getCurrentContext().getSenderTenant(), e);
             return getBackExceptionResponse(e);
         }
     }

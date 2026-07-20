@@ -1,7 +1,6 @@
 package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.com.rest.service.ICodeAssignableService;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.model.ICodeAssignable;

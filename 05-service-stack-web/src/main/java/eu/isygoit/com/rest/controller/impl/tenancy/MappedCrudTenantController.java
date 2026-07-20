@@ -9,11 +9,7 @@ import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
-import eu.isygoit.service.RequestContextService;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -38,72 +34,67 @@ public abstract class MappedCrudTenantController<I extends Serializable,
         extends CrudTenantControllerOperations<I, T, M, F, S>
         implements IMappedCrudApi<I, M, F> {
 
-    @Getter
-    @Setter
-    @Autowired
-    private RequestContextService requestContextService;
-
     @Override
     public final ResponseEntity<F> create(
             F object) {
-        return performCreate(this.getRequestContextService().getCurrentContext(), object);
+        return performCreate(requestContextService().getCurrentContext(), object);
     }
 
     public final ResponseEntity<List<F>> createBatch(List<F> objects) {
-        return performCreate(this.getRequestContextService().getCurrentContext(), objects);
+        return performCreate(requestContextService().getCurrentContext(), objects);
     }
 
     @Override
     public final ResponseEntity<?> delete(I id) {
-        return performDelete(this.getRequestContextService().getCurrentContext(), id);
+        return performDelete(requestContextService().getCurrentContext(), id);
     }
 
     @Override
     public final ResponseEntity<?> deleteBatch(
             List<I> ids) {
 
-        return performDelete(this.getRequestContextService().getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
+        return performDelete(requestContextService().getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 
     @Override
     public final ResponseEntity<PaginatedResponseDto<M>> findAll(
             Integer page,
             Integer size) {
-        return performFindAll(this.getRequestContextService().getCurrentContext(), page, size);
+        return performFindAll(requestContextService().getCurrentContext(), page, size);
     }
 
     @Override
     public final ResponseEntity<PaginatedResponseDto<F>> findAllFull(Integer page,
                                                                      Integer size) {
-        return performFindAllFull(this.getRequestContextService().getCurrentContext(), page, size);
+        return performFindAllFull(requestContextService().getCurrentContext(), page, size);
     }
 
     @Override
     public final ResponseEntity<List<F>> findAllListFull() {
-        return performFindAllListFull(this.getRequestContextService().getCurrentContext());
+        return performFindAllListFull(requestContextService().getCurrentContext());
     }
 
     @Override
     public final ResponseEntity<List<M>> findAllList() {
-        return performFindAllList(this.getRequestContextService().getCurrentContext());
+        return performFindAllList(requestContextService().getCurrentContext());
     }
 
     @Override
     public final ResponseEntity<F> findById(
             I id) {
-        return performFindById(this.getRequestContextService().getCurrentContext(), id);
+        return performFindById(requestContextService().getCurrentContext(), id);
     }
 
     @Override
     public final ResponseEntity<F> update(
             I id,
             F object) {
-        return performUpdate(this.getRequestContextService().getCurrentContext(), id, object);
+        return performUpdate(requestContextService().getCurrentContext(), id, object);
     }
 
     @Override
     public ResponseEntity<Long> getCount() {
-        return performGetCount(this.getRequestContextService().getCurrentContext());
+        return performGetCount(requestContextService().getCurrentContext());
     }
 
 
@@ -112,7 +103,7 @@ public abstract class MappedCrudTenantController<I extends Serializable,
             String criteria,
             Integer page,
             Integer size) {
-        return performFindAllFilteredByCriteria(this.getRequestContextService().getCurrentContext(), criteria, page, size);
+        return performFindAllFilteredByCriteria(requestContextService().getCurrentContext(), criteria, page, size);
     }
 
     @Override

@@ -7,11 +7,7 @@ import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.model.IIdAssignable;
-import eu.isygoit.service.RequestContextService;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
@@ -34,19 +30,15 @@ public abstract class MappedCrudDeleteController<I extends Serializable, T exten
         extends CrudControllerOperations<I, T, M, F, S>
         implements IMappedCrudDeleteApi<I> {
 
-    @Getter
-    @Setter
-    @Autowired
-    private RequestContextService requestContextService;
 
     @Override
     public final ResponseEntity<?> delete(
             I id) {
-        return performDelete(this.getRequestContextService().getCurrentContext(), id);
+        return performDelete(requestContextService().getCurrentContext(), id);
     }
 
     @Override
     public final ResponseEntity<?> deleteBatch(List<I> ids) {
-        return performDelete(this.getRequestContextService().getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
+        return performDelete(requestContextService().getCurrentContext(), mapper().listEntityToDto(crudService().getByIdIn(ids)));
     }
 }

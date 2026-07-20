@@ -21,7 +21,7 @@ import eu.isygoit.model.IIdAssignable;
 public interface ICrudControllerUtils<I, T extends IIdAssignable<I>,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
-        S extends ICrudServiceUtils<I, T>> {
+        S extends ICrudServiceUtils<I, T>> extends IControllerUtils {
 
     /**
      * Mapper entity mapper.
