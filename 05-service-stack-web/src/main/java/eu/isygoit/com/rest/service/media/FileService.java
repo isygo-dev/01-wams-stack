@@ -4,6 +4,7 @@ import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.ObjectNotFoundException;
+import eu.isygoit.exception.StorageException;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
@@ -159,7 +160,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
                     try {
                         return performDownloadFile(entity, version);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new StorageException("Failed to download file", e);
                     }
                 })
                 .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));

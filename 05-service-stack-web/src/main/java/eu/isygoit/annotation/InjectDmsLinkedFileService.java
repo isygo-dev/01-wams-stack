@@ -8,14 +8,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Dms link file api.
+ * Annotation to inject a DMS linked file service into a REST controller.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectDmsLinkedFileService {
-
     /**
-     * Value class.
+     * The linked file service class.
      *
      * @return the class
      */

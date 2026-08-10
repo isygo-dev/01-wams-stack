@@ -8,14 +8,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Code gen kms.
+ * Annotation to inject a remote code generator service (KMS) into a REST controller.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectCodeGenKms {
-
     /**
-     * Value class.
+     * The remote code generator service class.
      *
      * @return the class
      */

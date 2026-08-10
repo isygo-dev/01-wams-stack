@@ -1,11 +1,12 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
+import eu.isygoit.exception.KafkaException;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.errors.AuthenticationException;
 import org.apache.kafka.common.errors.AuthorizationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,12 +129,12 @@ public abstract class AbstractKafkaConsumer<T> {
         exceptions.clear();
         if (message == null || message.length == 0) {
             log.error("Received null message on topic {}", receivedTopic);
-            throw new IllegalArgumentException("Message cannot be null");
+            throw new BadArgumentException("Message cannot be null");
         }
 
         if (receivedTopic == null || receivedTopic.trim().isEmpty()) {
             log.error("Received invalid topic");
-            throw new IllegalArgumentException("Topic must be non-empty");
+            throw new BadArgumentException("Topic must be non-empty");
         }
 
         Timer timer = (meterRegistry != null) ? meterRegistry.timer("kafka.consumer.process", "topic", receivedTopic) : null;
@@ -177,19 +178,19 @@ public abstract class AbstractKafkaConsumer<T> {
         } catch (AuthenticationException e) {
             log.error("Authentication failed for topic {}: {}", topic, e.getMessage());
             exceptions.add(e);
-            throw new RuntimeException("Kafka authentication failed", e);
+            throw new KafkaException("Kafka authentication failed", e);
         } catch (AuthorizationException e) {
             log.error("Authorization failed for topic {}: {}", topic, e.getMessage());
             exceptions.add(e);
-            throw new RuntimeException("Kafka authorization failed", e);
-        } catch (KafkaException e) {
+            throw new KafkaException("Kafka authorization failed", e);
+        } catch (org.apache.kafka.common.KafkaException e) {
             log.error("Kafka error processing message from topic {}: {}", topic, e.getMessage());
             exceptions.add(e);
-            throw new RuntimeException("Kafka processing failed", e);
+            throw new KafkaException("Kafka processing failed", e);
         } catch (Exception e) {
             log.error("Failed to process message from topic {}, partition {}, offset {}: {}", topic, partition, offset, e.getMessage());
             exceptions.add(e);
-            throw new RuntimeException("Kafka processing failed", e);
+            throw new KafkaException("Kafka processing failed", e);
         }
     }
 
@@ -204,7 +205,7 @@ public abstract class AbstractKafkaConsumer<T> {
         String messageString = new String(message, StandardCharsets.UTF_8);
         String[] parts = messageString.split("\\|", 2);
         if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid signed message format");
+            throw new BadArgumentException("Invalid signed message format");
         }
         byte[] data = Base64.getDecoder().decode(parts[0]);
         String receivedSignature = parts[1];

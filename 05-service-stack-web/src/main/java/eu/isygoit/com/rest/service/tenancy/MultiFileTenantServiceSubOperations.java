@@ -7,6 +7,7 @@ import eu.isygoit.com.rest.api.ILinkedFileApi;
 import eu.isygoit.com.rest.service.media.FileServiceDmsStaticOperations;
 import eu.isygoit.com.rest.service.media.FileServiceLocalStaticOperations;
 import eu.isygoit.dto.common.ResourceDto;
+import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.*;
@@ -112,14 +113,14 @@ public abstract class MultiFileTenantServiceSubOperations<
     protected final L performUploadFile(MultipartFile file, L entity) {
         if (file == null || entity == null) {
             log.error("Invalid input: file or entity is null");
-            throw new IllegalArgumentException("File and entity must not be null");
+            throw new BadArgumentException("File and entity must not be null");
         }
         log.debug("Uploading file for entity with code: {}", entity.getCode());
         return executeSafely(() -> {
             var service = getLinkedFileApi();
             String fileName = service != null
                     ? FileServiceDmsStaticOperations.upload(file, entity, service).getCode()
-                    : FileServiceLocalStaticOperations.upload(file, entity);
+                    : FileServiceLocalStaticOperations.upload(file, entity, true);
             entity.setFileName(fileName);
             log.info("File uploaded successfully for entity: {}, fileName: {}", entity.getCode(), fileName);
             return entity;
@@ -137,7 +138,7 @@ public abstract class MultiFileTenantServiceSubOperations<
     protected final ResourceDto performDownloadFile(L entity, Long version) {
         if (entity == null) {
             log.error("Invalid input: entity is null");
-            throw new IllegalArgumentException("Entity must not be null");
+            throw new BadArgumentException("Entity must not be null");
         }
         log.debug("Downloading file for entity: {}, version: {}", entity.getCode(), version);
         return executeSafely(() -> {
@@ -160,7 +161,7 @@ public abstract class MultiFileTenantServiceSubOperations<
     protected final boolean subDeleteFile(L entity) {
         if (entity == null) {
             log.error("Invalid input: entity is null");
-            throw new IllegalArgumentException("Entity must not be null");
+            throw new BadArgumentException("Entity must not be null");
         }
         log.debug("Deleting file for entity: {}", entity.getCode());
         return executeSafely(() -> {

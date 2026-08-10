@@ -73,7 +73,6 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public Long count() {
         validateNotTenantSpecific("count ");
-        log.info("Counting all {} entities", this.getPersistentClass().getSimpleName());
         var count = repository().count();
         log.debug("Count result: {}", count);
         return count;
@@ -90,7 +89,6 @@ public abstract class CrudService<I extends Serializable,
     @Override
     public boolean existsById(I id) {
         validateNotTenantSpecific("existsById ");
-        log.info("Checking existence of {} with ID: {}", this.getPersistentClass().getSimpleName(), id);
         var exists = repository().existsById(id);
         log.debug("Existence check result for ID {}: {}", id, exists);
         return exists;

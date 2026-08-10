@@ -1,5 +1,6 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +19,7 @@ public abstract class KafkaFileConsumer extends AbstractKafkaConsumer<InputStrea
     @Override
     protected InputStream deserialize(byte[] data) throws Exception {
         if (data == null) {
-            throw new IllegalArgumentException("Cannot deserialize null data");
+            throw new BadArgumentException("Cannot deserialize null data");
         }
         return new ByteArrayInputStream(data);
     }

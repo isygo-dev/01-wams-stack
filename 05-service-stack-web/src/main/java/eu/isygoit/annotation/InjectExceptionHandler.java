@@ -8,15 +8,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Ctrl handler.
+ * Annotation to inject an exception handler into a REST controller.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectExceptionHandler {
     /**
-     * Value class.
+     * The exception handler class.
      *
      * @return the class
      */
-    Class<? extends IExceptionHandler> value(); // Data Exception Handler class
+    Class<? extends IExceptionHandler> value();
 }

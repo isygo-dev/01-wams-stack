@@ -10,36 +10,38 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Ctrl def.
+ * Combined annotation to inject mappers, services, and exception handlers into a REST controller.
+ * @deprecated Use {@link RestConfiguration} for a more comprehensive configuration.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectMapperAndService {
     /**
-     * Handler class.
+     * The exception handler class.
      *
      * @return the class
      */
-    Class<? extends IExceptionHandler> handler(); // Data Exception Handler class
+    Class<? extends IExceptionHandler> handler();
 
     /**
-     * Mapper class.
+     * Full DTO entity mapper class.
      *
      * @return the class
      */
-    Class<? extends EntityMapper> mapper(); // full dto / entity mapper class
+    Class<? extends EntityMapper> mapper();
 
     /**
-     * Min mapper class.
+     * Minimal DTO entity mapper class.
      *
      * @return the class
      */
-    Class<? extends EntityMapper> minMapper(); // min dto / entity mapper class
+    Class<? extends EntityMapper> minMapper();
 
     /**
-     * Service class.
+     * The service class.
      *
      * @return the class
      */
-    Class<? extends ICrudServiceUtils> service(); // eu.isygoit.api class
+    Class<? extends ICrudServiceUtils> service();
 }

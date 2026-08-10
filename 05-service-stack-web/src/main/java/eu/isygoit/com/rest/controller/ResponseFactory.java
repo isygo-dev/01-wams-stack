@@ -88,7 +88,7 @@ public class ResponseFactory {
      * @return the response entity
      */
     public static <T> ResponseEntity<T> responseCreated(T body) {
-        return ResponseEntity.created(null).body(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     /**

@@ -8,23 +8,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Ctrl mapper.
+ * Annotation to inject mappers into a REST controller.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectMapper {
 
     /**
-     * Mapper class.
+     * Full DTO entity mapper class.
      *
      * @return the class
      */
-    Class<? extends EntityMapper> mapper(); // full dto / entity mapper class
+    Class<? extends EntityMapper> mapper();
 
     /**
-     * Min mapper class.
+     * Minimal DTO entity mapper class.
      *
      * @return the class
      */
-    Class<? extends EntityMapper> minMapper(); // min dto / entity mapper class
+    Class<? extends EntityMapper> minMapper();
 }

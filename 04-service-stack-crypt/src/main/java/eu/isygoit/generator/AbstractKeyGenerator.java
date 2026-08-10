@@ -1,6 +1,7 @@
 package eu.isygoit.generator;
 
 import eu.isygoit.enums.IEnumCharSet;
+import eu.isygoit.exception.BadArgumentException;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -36,7 +37,7 @@ public abstract class AbstractKeyGenerator implements IKeyGenerator {
      * @param length the length
      */
     public void setBufferLength(int length) {
-        if (length < 1) throw new IllegalArgumentException("Buffer length must be >= 1: " + length);
+        if (length < 1) throw new BadArgumentException("Buffer length must be >= 1: " + length);
         buf = new char[length];
     }
 

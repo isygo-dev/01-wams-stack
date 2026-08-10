@@ -8,14 +8,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Code gen local.
+ * Annotation to inject a code generator service into a REST controller.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectCodeGen {
-
     /**
-     * Value class.
+     * The code generator service class.
      *
      * @return the class
      */

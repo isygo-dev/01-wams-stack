@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion.VersionFlag;
+import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.JsonHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,7 +58,7 @@ public abstract class KafkaJsonConsumer<T> extends AbstractKafkaConsumer<T> {
         var errors = schema.validate(node);
         if (!errors.isEmpty()) {
             log.error("JSON schema validation failed: {}", errors);
-            throw new IllegalArgumentException("JSON schema validation failed: " + errors);
+            throw new BadArgumentException("JSON schema validation failed: " + errors);
         }
     }
 

@@ -1,5 +1,6 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStream;
@@ -21,7 +22,7 @@ public abstract class KafkaFileProducer extends AbstractKafkaProducer<InputStrea
     @Override
     protected byte[] serialize(InputStream inputStream) throws Exception {
         if (inputStream == null) {
-            throw new IllegalArgumentException("Cannot serialize null message");
+            throw new BadArgumentException("Cannot serialize null message");
         }
         // Read the InputStream into a byte array
         return inputStream.readAllBytes();

@@ -1,5 +1,6 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
@@ -15,7 +16,7 @@ public abstract class KafkaStringProducer extends AbstractKafkaProducer<String> 
     @Override
     protected byte[] serialize(String message) {
         if (message == null) {
-            throw new IllegalArgumentException("Cannot serialize null message");
+            throw new BadArgumentException("Cannot serialize null message");
         }
         return message.getBytes(StandardCharsets.UTF_8);
     }

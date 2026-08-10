@@ -1,5 +1,7 @@
 package eu.isygoit.factory;
 
+import eu.isygoit.exception.ObjectInstantiationException;
+
 import java.lang.reflect.ParameterizedType;
 
 /**
@@ -35,7 +37,7 @@ public abstract class AbstractFactory<T> implements Factory<T> {
             // Direct call to newInstance() is simpler in most cases than using getDeclaredConstructor()
             return type.newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Cannot instantiate " + type.getName(), e);
+            throw new ObjectInstantiationException("Cannot instantiate " + type.getName(), e);
         }
     }
 }

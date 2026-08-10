@@ -47,7 +47,7 @@ public abstract class FileTenantServiceOperations<I extends Serializable,
     final String performUploadFile(MultipartFile file, T entity) {
         return executeWithFallback(
                 dms -> FileServiceDmsStaticOperations.upload(file, entity, dms).getCode(),
-                () -> FileServiceLocalStaticOperations.upload(file, entity),
+                () -> FileServiceLocalStaticOperations.upload(file, entity, true),
                 "upload"
         );
     }

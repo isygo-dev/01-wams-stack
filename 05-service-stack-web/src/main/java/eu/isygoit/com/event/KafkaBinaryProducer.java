@@ -1,5 +1,6 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -13,7 +14,7 @@ public abstract class KafkaBinaryProducer extends AbstractKafkaProducer<byte[]> 
     @Override
     protected byte[] serialize(byte[] message) {
         if (message == null) {
-            throw new IllegalArgumentException("Cannot serialize null message");
+            throw new BadArgumentException("Cannot serialize null message");
         }
         return message;  // No conversion needed
     }

@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.annotation.InjectService;
+import eu.isygoit.annotation.RestConfiguration;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
@@ -28,8 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CrudControllerUtils Tests")
@@ -46,8 +46,15 @@ class CrudControllerUtilsTest {
 
     @BeforeEach
     void setUp() {
+        // Clear caches to ensure test isolation
+        ((com.github.benmanes.caffeine.cache.Cache) ReflectionTestUtils.getField(CrudControllerUtils.class, "serviceClassCache")).invalidateAll();
+        ((com.github.benmanes.caffeine.cache.Cache) ReflectionTestUtils.getField(CrudControllerUtils.class, "mapperClassCache")).invalidateAll();
+        ((com.github.benmanes.caffeine.cache.Cache) ReflectionTestUtils.getField(CrudControllerUtils.class, "minMapperClassCache")).invalidateAll();
+
         // CrudControllerUtils uses @Autowired for ControllerExceptionHandler
         ReflectionTestUtils.setField(controller, "controllerExceptionHandler", controllerExceptionHandler);
+        lenient().when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
+        lenient().when(applicationContextService.getBean(any())).thenReturn(Optional.of(mock(Object.class)));
     }
 
     interface TestService extends ICrudServiceUtils<Long, TestEntity> {
@@ -73,6 +80,11 @@ class CrudControllerUtilsTest {
         private Long id;
 
         @Override
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        @Override
         public boolean isEmpty() {
             return id == null;
         }
@@ -92,6 +104,15 @@ class CrudControllerUtilsTest {
     static class TestCrudController extends CrudControllerUtils<Long, TestEntity, TestDto, TestDto, TestService> {
     }
 
+    @RestConfiguration(
+            mapper = TestMapper.class,
+            minMapper = TestMapper.class,
+            service = TestService.class,
+            exceptionHandler = IExceptionHandler.class
+    )
+    static class TestRestConfigurationController extends CrudControllerUtils<Long, TestEntity, TestDto, TestDto, TestService> {
+    }
+
     @InjectMapper(mapper = TestMapper.class, minMapper = TestMapper.class)
     @InjectService(TestService.class)
     static class TestCrudControllerWithSeparateAnnotations extends CrudControllerUtils<Long, TestEntity, TestDto, TestDto, TestService> {
@@ -108,7 +129,6 @@ class CrudControllerUtilsTest {
         @DisplayName("crudService() should return service from InjectMapperAndService annotation")
         void testCrudServiceInjectionFromMapperAndService() throws Exception {
             TestService mockService = mock(TestService.class);
-            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
             when(applicationContextService.getBean(TestService.class)).thenReturn(Optional.of(mockService));
 
             TestService result = controller.crudService();
@@ -122,9 +142,10 @@ class CrudControllerUtilsTest {
         void testCrudServiceInjectionFromInjectService() throws Exception {
             TestCrudControllerWithSeparateAnnotations controller2 = new TestCrudControllerWithSeparateAnnotations();
             ReflectionTestUtils.setField(controller2, "controllerExceptionHandler", controllerExceptionHandler);
+            // Re-mock because it's a new instance calling crudService()
+            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
 
             TestService mockService = mock(TestService.class);
-            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
             when(applicationContextService.getBean(TestService.class)).thenReturn(Optional.of(mockService));
 
             TestService result = controller2.crudService();
@@ -134,10 +155,26 @@ class CrudControllerUtilsTest {
         }
 
         @Test
+        @DisplayName("crudService() should return service from RestConfiguration annotation")
+        void testCrudServiceInjectionFromRestConfiguration() throws Exception {
+            TestRestConfigurationController controllerRest = new TestRestConfigurationController();
+            ReflectionTestUtils.setField(controllerRest, "controllerExceptionHandler", controllerExceptionHandler);
+            // Re-mock because it's a new instance calling crudService()
+            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
+
+            TestService mockService = mock(TestService.class);
+            when(applicationContextService.getBean(TestService.class)).thenReturn(Optional.of(mockService));
+
+            TestService result = controllerRest.crudService();
+
+            assertNotNull(result);
+            assertEquals(mockService, result);
+        }
+
+        @Test
         @DisplayName("mapper() should return mapper from InjectMapperAndService annotation")
         void testMapperInjectionFromMapperAndService() throws Exception {
             TestMapper mockMapper = mock(TestMapper.class);
-            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
             when(applicationContextService.getBean(TestMapper.class)).thenReturn(Optional.of(mockMapper));
 
             TestMapper result = (TestMapper) controller.mapper();
@@ -150,7 +187,6 @@ class CrudControllerUtilsTest {
         @DisplayName("minDtoMapper() should return min mapper from InjectMapperAndService annotation")
         void testMinDtoMapperInjectionFromMapperAndService() throws Exception {
             TestMapper mockMapper = mock(TestMapper.class);
-            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
             when(applicationContextService.getBean(TestMapper.class)).thenReturn(Optional.of(mockMapper));
 
             TestMapper result = (TestMapper) controller.minDtoMapper();
@@ -162,7 +198,6 @@ class CrudControllerUtilsTest {
         @Test
         @DisplayName("crudService() should throw BeanNotFoundException if service bean not found")
         void testCrudServiceNotFound() {
-            when(controllerExceptionHandler.getApplicationContextService()).thenReturn(applicationContextService);
             when(applicationContextService.getBean(TestService.class)).thenReturn(Optional.empty());
 
             assertThrows(BeanNotFoundException.class, () -> controller.crudService());
@@ -189,8 +224,6 @@ class CrudControllerUtilsTest {
         @Test
         @DisplayName("validateBulkOperation should throw exception for large list")
         void testValidateBulkOperationTooLarge() {
-            // Need to know MAX_PAGE_SIZE. Let's assume it's 1000 for test purpose or check CtrlConstants
-            // If we don't want to depend on actual value, we can use a very large list
             java.util.List<String> largeList = java.util.stream.IntStream.range(0, 1001).mapToObj(i -> "item").toList();
             assertThrows(eu.isygoit.exception.BadArgumentException.class, () -> CrudControllerUtils.validateBulkOperation(largeList));
         }

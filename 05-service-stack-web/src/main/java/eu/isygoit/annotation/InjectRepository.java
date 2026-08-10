@@ -8,13 +8,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The interface Srv repo.
+ * Annotation to inject a repository into a service.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface InjectRepository {
     /**
-     * Value class.
+     * The repository class.
      *
      * @return the class
      */

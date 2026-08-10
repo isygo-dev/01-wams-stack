@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service.media;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
+import eu.isygoit.exception.FileAlreadyExistsException;
 import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.model.*;
@@ -40,7 +41,7 @@ public final class FileServiceLocalStaticOperations {
      * @return the string
      * @throws IOException the io exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity) throws IOException {
+    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity, boolean replaceExisting) throws IOException {
         Path directory = Path.of(entity.getPath());
 
         // Ensure the directory exists (creates it and its parents if missing)
@@ -49,8 +50,13 @@ public final class FileServiceLocalStaticOperations {
         // Determine the target path using the entity's code
         Path targetPath = directory.resolve(entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
 
-        // Copy the uploaded file to the target location, replacing any existing file
-        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        // If the target file already exists, throw a managed exception instead of overwriting
+        if (!replaceExisting && Files.exists(targetPath)) {
+            throw new FileAlreadyExistsException(targetPath.toString());
+        }
+
+        // Copy the uploaded file to the target location
+        Files.copy(file.getInputStream(), targetPath, replaceExisting ? StandardCopyOption.REPLACE_EXISTING : null);
 
         return entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename());
     }

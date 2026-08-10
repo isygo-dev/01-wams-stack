@@ -18,4 +18,8 @@ public class BadArgumentException extends ManagedException {
     public BadArgumentException(String message) {
         super(message);
     }
+
+    public BadArgumentException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

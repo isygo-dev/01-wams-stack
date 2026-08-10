@@ -1,6 +1,7 @@
 package eu.isygoit.com.event;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import eu.isygoit.exception.BadArgumentException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,7 @@ public abstract class KafkaXmlProducer<T> extends AbstractKafkaProducer<T> {
     @Override
     protected byte[] serialize(T message) throws Exception {
         if (message == null) {
-            throw new IllegalArgumentException("Cannot serialize null message");
+            throw new BadArgumentException("Cannot serialize null message");
         }
         String xml = xmlMapper.writeValueAsString(message);
         if (enableXmlValidation && xsdSchemaPath != null && !xsdSchemaPath.isEmpty()) {

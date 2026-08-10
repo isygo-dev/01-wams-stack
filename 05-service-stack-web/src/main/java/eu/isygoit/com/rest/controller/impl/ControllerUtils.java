@@ -33,7 +33,7 @@ public abstract class ControllerUtils
     }
 
     public final ApplicationContextService getApplicationContextService() {
-        return controllerExceptionHandler.getApplicationContextService();
+        return controllerExceptionHandler != null ? controllerExceptionHandler.getApplicationContextService() : null;
     }
 
     @Override

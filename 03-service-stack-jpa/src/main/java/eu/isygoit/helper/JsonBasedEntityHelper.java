@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.annotation.ElementType;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
+import eu.isygoit.exception.ObjectInstantiationException;
 import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
@@ -108,7 +109,7 @@ public class JsonBasedEntityHelper {
             jsonEntity.init(elementType, json);
             return jsonEntity;
         } catch (Exception e) {
-            throw new RuntimeException(
+            throw new ObjectInstantiationException(
                     "Failed to instantiate entity class '%s' for elementType '%s'."
                             .formatted(jsonEntityClass.getSimpleName(), elementType), e);
         }

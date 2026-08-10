@@ -17,6 +17,7 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import eu.isygoit.exception.BadArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -442,7 +443,7 @@ public interface JsonHelper {
 
             return diff;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to compute diff: " + e.getMessage(), e);
+            throw new BadArgumentException("Failed to compute diff: " + e.getMessage(), e);
         }
     }
 
@@ -458,7 +459,7 @@ public interface JsonHelper {
         try {
             return objectMapper.convertValue(obj, Map.class);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Failed to convert object to Map: " + e.getMessage(), e);
+            throw new BadArgumentException("Failed to convert object to Map: " + e.getMessage(), e);
         }
     }
 

@@ -1,11 +1,12 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
+import eu.isygoit.exception.KafkaException;
 import eu.isygoit.exception.KafkaPrepareDataException;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -101,11 +102,11 @@ public abstract class AbstractKafkaProducer<T> {
         String resolvedTopic = resolveTopic(message);
         if (message == null) {
             log.error("Cannot send null message to topic {}", resolvedTopic);
-            throw new IllegalArgumentException("Message cannot be null");
+            throw new BadArgumentException("Message cannot be null");
         }
         if (resolvedTopic == null || resolvedTopic.trim().isEmpty()) {
             log.error("Topic is not set or invalid");
-            throw new IllegalArgumentException("Topic must be set and non-empty");
+            throw new BadArgumentException("Topic must be set and non-empty");
         }
 
         Timer timer = (meterRegistry != null) ? meterRegistry.timer("kafka.producer.send", "topic", resolvedTopic) : null;
@@ -126,11 +127,11 @@ public abstract class AbstractKafkaProducer<T> {
         String resolvedTopic = resolveTopic(message);
         if (message == null) {
             log.error("Cannot send null message to topic {}", resolvedTopic);
-            throw new IllegalArgumentException("Message cannot be null");
+            throw new BadArgumentException("Message cannot be null");
         }
         if (resolvedTopic == null || resolvedTopic.trim().isEmpty()) {
             log.error("Topic is not set or invalid");
-            throw new IllegalArgumentException("Topic must be set and non-empty");
+            throw new BadArgumentException("Topic must be set and non-empty");
         }
 
         try {
@@ -159,7 +160,7 @@ public abstract class AbstractKafkaProducer<T> {
             });
         } catch (Exception e) {
             log.error("Failed to prepare async message for topic {}: {}", resolvedTopic, e.getMessage());
-            throw new RuntimeException("Kafka async send failed", e);
+            throw new KafkaException("Kafka async send failed", e);
         }
     }
 

@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.service;
 import eu.isygoit.com.rest.service.media.FileServiceLocalStaticOperations;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EmptyPathException;
+import eu.isygoit.exception.FileAlreadyExistsException;
 import eu.isygoit.exception.FileNotFoundException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import eu.isygoit.model.Resume;
@@ -89,7 +90,7 @@ class FileServiceLocalStaticOperationsTest {
         var file = new MockMultipartFile("file", "upload.txt", "text/plain", fileContent.getBytes());
         var resume = createResume(TEMP_DIR.resolve("nested").toString(), "upload", "upload.txt");
 
-        String returnedCode = FileServiceLocalStaticOperations.upload(file, resume);
+        String returnedCode = FileServiceLocalStaticOperations.upload(file, resume, true);
 
         // Directory should be created
         assertTrue(Files.exists(Path.of(resume.getPath())));
@@ -192,7 +193,7 @@ class FileServiceLocalStaticOperationsTest {
      * @throws IOException the io exception
      */
     @Test
-    void upload_shouldOverwriteExistingFile() throws IOException {
+    void upload_shouldThrowFileAlreadyExistsException_whenFileAlreadyExists() throws IOException {
         Path filePath = TEMP_DIR.resolve("overwrite.txt");
         Files.writeString(filePath, "Old content");
 
@@ -200,10 +201,7 @@ class FileServiceLocalStaticOperationsTest {
         var newFileContent = "New content";
         var newFile = new MockMultipartFile("file", "overwrite.txt", "text/plain", newFileContent.getBytes());
 
-        String code = FileServiceLocalStaticOperations.upload(newFile, oldFile);
-
-        assertEquals("overwrite.txt", code);
-        assertEquals(newFileContent, Files.readString(filePath));
+        assertThrows(FileAlreadyExistsException.class, () -> FileServiceLocalStaticOperations.upload(newFile, oldFile, true));
     }
 
     /**

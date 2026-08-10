@@ -2,6 +2,8 @@ package eu.isygoit.model.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.isygoit.exception.BadArgumentException;
+import eu.isygoit.exception.ServiceOperationException;
 import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
@@ -46,10 +48,10 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
 
     protected void baseInit(String elementType, JsonNode attributes) {
         if (elementType == null || attributes == null) {
-            throw new IllegalArgumentException("elementType and attributes must not be null");
+            throw new BadArgumentException("elementType and attributes must not be null");
         }
         if (this.elementType != null || this.attributes != null) {
-            throw new IllegalStateException("Entity already initialized");
+            throw new ServiceOperationException("Entity already initialized");
         }
         this.elementType = elementType;
         this.attributes = attributes;
@@ -68,7 +70,7 @@ public abstract class JsonBasedEntity<I extends Serializable> extends AuditableE
 
     protected void baseUpdate(JsonNode attributes) {
         if (this.elementType == null) {
-            throw new IllegalStateException("Entity not initialized");
+            throw new ServiceOperationException("Entity not initialized");
         }
         this.attributes = attributes;
     }

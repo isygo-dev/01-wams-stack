@@ -2,6 +2,7 @@ package eu.isygoit.route.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eu.isygoit.exception.ObjectInstantiationException;
 import eu.isygoit.helper.JsonHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -48,7 +49,7 @@ public abstract class AbstractTimelineEventRoute<T extends ITimelineEventEntity 
                     try {
                         event = clazz.getDeclaredConstructor().newInstance();
                     } catch (Exception e) {
-                        throw new RuntimeException("Failed to instantiate " + clazz.getName(), e);
+                        throw new ObjectInstantiationException("Failed to instantiate " + clazz.getName(), e);
                     }
 
                     if (event instanceof ITenantAssignable eventTenantAssignable) {

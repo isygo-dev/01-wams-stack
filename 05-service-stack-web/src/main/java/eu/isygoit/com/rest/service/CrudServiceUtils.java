@@ -1,5 +1,7 @@
 package eu.isygoit.com.rest.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.annotation.InjectRepository;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.constants.LogConstants;
@@ -34,6 +36,8 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
     private ApplicationContextService applicationContextService;
 
     private R repository;
+
+    private static final Cache<Class<?>, Class<?>> repositoryClassCache = Caffeine.newBuilder().build();
 
     /**
      * Validates that an object is not null.
@@ -75,16 +79,18 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
     }
 
     @Override
-    public final R repository() throws JpaRepositoryNotDefinedException {
+    public final R repository() {
         if (this.repository == null) {
-            InjectRepository controllerDefinition = this.getClass().getAnnotation(InjectRepository.class);
-            if (controllerDefinition != null) {
-                this.repository = (R) applicationContextService.getBean(controllerDefinition.value())
-                        .orElseThrow(() -> new JpaRepositoryNotDefinedException("JpaRepository " + controllerDefinition.value().getSimpleName() + " not found"));
-            } else {
-                log.error("<Error>: Repository bean not defined for {}", this.getClass().getSimpleName());
-                throw new JpaRepositoryNotDefinedException("JpaRepository");
-            }
+            Class<R> repositoryClass = (Class<R>) repositoryClassCache.get(this.getClass(), clazz -> {
+                InjectRepository controllerDefinition = clazz.getAnnotation(InjectRepository.class);
+                if (controllerDefinition != null) {
+                    return (Class<R>) controllerDefinition.value();
+                }
+                throw new JpaRepositoryNotDefinedException("Repository not defined for " + clazz.getSimpleName());
+            });
+
+            this.repository = (R) applicationContextService.getBean(repositoryClass)
+                    .orElseThrow(() -> new JpaRepositoryNotDefinedException("JpaRepository " + repositoryClass.getSimpleName() + " not found"));
         }
 
         return this.repository;

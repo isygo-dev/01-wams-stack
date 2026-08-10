@@ -1,5 +1,6 @@
 package eu.isygoit.helper;
 
+import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.EmptyPathException;
 import eu.isygoit.exception.ResourceNotFoundException;
 import org.apache.commons.io.FilenameUtils;
@@ -46,14 +47,14 @@ public interface FileHelper {
      */
     public static void createDirectoryIfAbsent(Path directoryPath) {
         if (directoryPath == null) {
-            throw new IllegalArgumentException("Invalid directory path: " + directoryPath);
+            throw new BadArgumentException("Invalid directory path: " + directoryPath);
         }
 
         File directory = new File(directoryPath.toUri());
 
         if (directory.exists()) {
             if (directory.isFile()) {
-                throw new IllegalArgumentException("Cannot create directory, Path points to a file, not a directory: " + directoryPath);
+                throw new BadArgumentException("Cannot create directory, Path points to a file, not a directory: " + directoryPath);
             } else {
                 logger.debug("Directory already exists: {}", directoryPath);
             }
@@ -94,7 +95,7 @@ public interface FileHelper {
             return filePath;
         } else {
             logger.warn("Attempted to save an empty MultipartFile.");
-            throw new IllegalArgumentException("Provided file is empty.");
+            throw new BadArgumentException("Provided file is empty.");
         }
     }
 

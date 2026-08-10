@@ -3,6 +3,7 @@ package eu.isygoit.helper;
 import eu.isygoit.annotation.Criteria;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
+import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
@@ -57,7 +58,7 @@ public final class CriteriaHelper {
             return parseWhereClause(normalizeWhereClause(sqlWhere));
         } catch (Exception e) {
             log.error("Failed to parse WHERE clause: {}", sqlWhere, e);
-            throw new IllegalArgumentException("Invalid WHERE clause: " + sqlWhere, e);
+            throw new BadArgumentException("Invalid WHERE clause: " + sqlWhere, e);
         }
     }
 
@@ -86,7 +87,7 @@ public final class CriteriaHelper {
     private static List<QueryCriteria> parseWhereClause(String whereClause) {
         // Validate parentheses balance
         if (!hasBalancedParentheses(whereClause)) {
-            throw new IllegalArgumentException("Unbalanced parentheses in WHERE clause: " + whereClause);
+            throw new BadArgumentException("Unbalanced parentheses in WHERE clause: " + whereClause);
         }
 
         var tokens = tokenizeWhereClause(whereClause);
@@ -193,7 +194,7 @@ public final class CriteriaHelper {
         var matcher = CONDITION_PATTERN.matcher(condition);
 
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Invalid condition format: " + condition);
+            throw new BadArgumentException("Invalid condition format: " + condition);
         }
 
         var field = matcher.group(1).trim();
@@ -230,7 +231,7 @@ public final class CriteriaHelper {
      */
     private static void validateOperator(String operator) {
         if (!SUPPORTED_OPERATORS.contains(operator)) {
-            throw new IllegalArgumentException("Unsupported operator: " + operator);
+            throw new BadArgumentException("Unsupported operator: " + operator);
         }
     }
 
@@ -249,7 +250,7 @@ public final class CriteriaHelper {
             case ">=" -> IEnumOperator.Types.GE;
             case "IN" -> IEnumOperator.Types.IN;
             case "BW" -> IEnumOperator.Types.BW;
-            default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
+            default -> throw new BadArgumentException("Unsupported operator: " + operator);
         };
     }
 
@@ -412,7 +413,7 @@ public final class CriteriaHelper {
     @SuppressWarnings("unchecked")
     public static <T extends IIdAssignable> Specification<T> between(String fieldName, List<?> values) {
         if (values == null || values.size() != 2) {
-            throw new IllegalArgumentException("BETWEEN operator requires exactly two values");
+            throw new BadArgumentException("BETWEEN operator requires exactly two values");
         }
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.between(root.get(fieldName), (Comparable<Object>) values.get(0), (Comparable<Object>) values.get(1));

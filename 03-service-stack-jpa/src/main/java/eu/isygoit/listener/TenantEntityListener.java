@@ -1,6 +1,7 @@
 package eu.isygoit.listener;
 
 import eu.isygoit.audit.TenantContext;
+import eu.isygoit.exception.TenantContextException;
 import eu.isygoit.model.ITenantAssignable;
 import jakarta.persistence.PrePersist;
 
@@ -21,7 +22,7 @@ public class TenantEntityListener {
             if (tenantId != null) {
                 tenantEntity.setTenant(tenantId);
             } else {
-                throw new IllegalStateException("Missing tenant ID in context");
+                throw new TenantContextException("Missing tenant ID in context");
             }
         }
     }

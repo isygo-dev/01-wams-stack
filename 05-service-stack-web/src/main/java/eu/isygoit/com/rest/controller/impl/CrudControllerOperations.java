@@ -98,8 +98,10 @@ public abstract class CrudControllerOperations<
             validateBulkOperation(dtos);
 
             List<T> entities = dtos.stream()
-                    .map(this::beforeCreate)
-                    .map(mapper()::dtoToEntity)
+                    .map(dto -> {
+                        F processedDto = beforeCreate(dto);
+                        return mapper().dtoToEntity(processedDto);
+                    })
                     .toList();
             List<T> createdEntities = crudService().createBatch(entities);
             List<T> postProcessedEntities = createdEntities.stream()

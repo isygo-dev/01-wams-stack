@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
+import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.JsonHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,7 +39,7 @@ public abstract class KafkaJsonProducer<T> extends AbstractKafkaProducer<T> {
     @Override
     protected byte[] serialize(T message) throws Exception {
         if (message == null) {
-            throw new IllegalArgumentException("Cannot serialize null message");
+            throw new BadArgumentException("Cannot serialize null message");
         }
         if (enableJsonValidation && jsonSchemaPath != null && !jsonSchemaPath.isEmpty()) {
             validateJsonSchema(message);
@@ -54,7 +55,7 @@ public abstract class KafkaJsonProducer<T> extends AbstractKafkaProducer<T> {
         var errors = schema.validate(node);
         if (!errors.isEmpty()) {
             log.error("JSON schema validation failed for message: {}", errors);
-            throw new IllegalArgumentException("JSON schema validation failed: " + errors);
+            throw new BadArgumentException("JSON schema validation failed: " + errors);
         }
     }
 }

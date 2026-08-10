@@ -1,7 +1,10 @@
 package eu.isygoit.com.rest.controller.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.annotation.InjectExceptionHandler;
 import eu.isygoit.annotation.InjectMapperAndService;
+import eu.isygoit.annotation.RestConfiguration;
 import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.controller.IControllerExceptionHandler;
 import eu.isygoit.com.rest.controller.ResponseFactory;
@@ -15,9 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -28,19 +29,22 @@ import java.util.stream.Stream;
 public class ControllerExceptionHandler implements IControllerExceptionHandler {
 
     // Cache to store the determined IExceptionHandler for each controller class
-    private final Map<Class<?>, IExceptionHandler> handlerCache = new ConcurrentHashMap<>();
+    private final Cache<Class<?>, IExceptionHandler> handlerCache = Caffeine.newBuilder().build();
     @Getter
     @Autowired
     protected ApplicationContextService applicationContextService;
 
-    public final IExceptionHandler exceptionHandler() throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
+    public final IExceptionHandler exceptionHandler() {
         return exceptionHandler(this.getClass());
     }
 
-    public final IExceptionHandler exceptionHandler(Class<?> controllerClass) throws BeanNotFoundException, ExceptionHandlerNotDefinedException {
-        return handlerCache.computeIfAbsent(controllerClass, (clazz) -> {
+    public final IExceptionHandler exceptionHandler(Class<?> controllerClass) {
+        return handlerCache.get(controllerClass, (clazz) -> {
             // Récupération de la classe du handler via les annotations
             var handlerClass = Stream.of(
+                            Optional.ofNullable(clazz.getAnnotation(RestConfiguration.class))
+                                    .filter(ann -> ann.exceptionHandler() != IExceptionHandler.class)
+                                    .map(RestConfiguration::exceptionHandler),
                             Optional.ofNullable(clazz.getAnnotation(InjectExceptionHandler.class)).map(InjectExceptionHandler::value),
                             Optional.ofNullable(clazz.getAnnotation(InjectMapperAndService.class)).map(InjectMapperAndService::handler)
                     ).flatMap(Optional::stream)
@@ -51,6 +55,8 @@ public class ControllerExceptionHandler implements IControllerExceptionHandler {
             try {
                 return (IExceptionHandler) applicationContextService.getBean((Class) handlerClass)
                         .orElseThrow(() -> new BeanNotFoundException(clazz.getSimpleName()));
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }

@@ -1,8 +1,12 @@
 package eu.isygoit.com.rest.controller.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.annotation.InjectMapper;
 import eu.isygoit.annotation.InjectMapperAndService;
 import eu.isygoit.annotation.InjectService;
+import eu.isygoit.annotation.RestConfiguration;
+import eu.isygoit.app.ApplicationContextService;
 import eu.isygoit.com.rest.controller.IControllerExceptionHandler;
 import eu.isygoit.com.rest.controller.ICrudControllerUtils;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
@@ -48,6 +52,10 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     private EntityMapper<T, M> minEntityMapper;
     private S crudService;
 
+    private static final Cache<Class<?>, Class<?>> serviceClassCache = Caffeine.newBuilder().build();
+    private static final Cache<Class<?>, Class<?>> mapperClassCache = Caffeine.newBuilder().build();
+    private static final Cache<Class<?>, Class<?>> minMapperClassCache = Caffeine.newBuilder().build();
+
     /**
      * Validates a bulk operation list.
      *
@@ -75,61 +83,99 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     }
 
     @Override
-    public final S crudService() throws BeanNotFoundException, ServiceNotDefinedException {
+    public final S crudService() {
         if (this.crudService == null) {
-            InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
-            if (injectMapperAndService != null) {
-                this.crudService = getApplicationContextService().getBean((Class<S>) injectMapperAndService.service())
-                        .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.CONTROLLER_SERVICE));
-            } else {
-                InjectService injectService = this.getClass().getAnnotation(InjectService.class);
-                if (injectService != null) {
-                    this.crudService = getApplicationContextService().getBean((Class<S>) injectService.value())
-                            .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.CONTROLLER_SERVICE));
+            Class<S> serviceClass = (Class<S>) serviceClassCache.get(this.getClass(), clazz -> {
+                RestConfiguration restConfiguration = clazz.getAnnotation(RestConfiguration.class);
+                if (restConfiguration != null && restConfiguration.service() != ICrudServiceUtils.class) {
+                    return restConfiguration.service();
                 }
+
+                InjectMapperAndService injectMapperAndService = clazz.getAnnotation(InjectMapperAndService.class);
+                if (injectMapperAndService != null) {
+                    return injectMapperAndService.service();
+                }
+                InjectService injectService = clazz.getAnnotation(InjectService.class);
+                if (injectService != null) {
+                    return injectService.value();
+                }
+                throw new ServiceNotDefinedException("Service not defined for " + clazz.getSimpleName());
+            });
+
+            ApplicationContextService contextService = getApplicationContextService();
+            if (contextService == null) {
+                log.warn("ApplicationContextService not found for controller {}. ControllerExceptionHandler might not be injected.", this.getClass().getSimpleName());
+                // Fallback or rethrow if strictness is required.
+                // For now rethrowing as it was effectively doing NPE before, but with better message.
+                throw new BeanNotFoundException("ApplicationContextService not found (ControllerExceptionHandler might not be injected)");
             }
+
+            this.crudService = contextService.getBean(serviceClass)
+                    .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.CONTROLLER_SERVICE));
         }
 
         return this.crudService;
     }
 
     @Override
-    public final EntityMapper<T, F> mapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<T, F> mapper() {
         if (this.fullEntityMapper == null) {
-            InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
-            if (injectMapperAndService != null) {
-                this.fullEntityMapper = getApplicationContextService().getBean(injectMapperAndService.mapper())
-                        .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
-            } else {
-                InjectMapper injectMapper = this.getClass().getAnnotation(InjectMapper.class);
-                if (injectMapper != null) {
-                    this.fullEntityMapper = getApplicationContextService().getBean(injectMapper.mapper())
-                            .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapper.mapper().getSimpleName()));
-                } else {
-                    throw new MapperNotDefinedException("Full entity mapper for " + this.getClass().getSimpleName());
+            Class<EntityMapper<T, F>> mapperClass = (Class<EntityMapper<T, F>>) mapperClassCache.get(this.getClass(), clazz -> {
+                RestConfiguration restConfiguration = clazz.getAnnotation(RestConfiguration.class);
+                if (restConfiguration != null && restConfiguration.mapper() != EntityMapper.class) {
+                    return restConfiguration.mapper();
                 }
+
+                InjectMapperAndService injectMapperAndService = clazz.getAnnotation(InjectMapperAndService.class);
+                if (injectMapperAndService != null) {
+                    return injectMapperAndService.mapper();
+                }
+                InjectMapper injectMapper = clazz.getAnnotation(InjectMapper.class);
+                if (injectMapper != null) {
+                    return injectMapper.mapper();
+                }
+                throw new MapperNotDefinedException("Full entity mapper for " + clazz.getSimpleName());
+            });
+
+            ApplicationContextService contextService = getApplicationContextService();
+            if (contextService == null) {
+                throw new BeanNotFoundException("ApplicationContextService not found (ControllerExceptionHandler might not be injected)");
             }
+
+            this.fullEntityMapper = contextService.getBean(mapperClass)
+                    .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + mapperClass.getSimpleName()));
         }
 
         return this.fullEntityMapper;
     }
 
     @Override
-    public final EntityMapper<T, M> minDtoMapper() throws BeanNotFoundException, MapperNotDefinedException {
+    public final EntityMapper<T, M> minDtoMapper() {
         if (this.minEntityMapper == null) {
-            InjectMapperAndService injectMapperAndService = this.getClass().getAnnotation(InjectMapperAndService.class);
-            if (injectMapperAndService != null) {
-                this.minEntityMapper = getApplicationContextService().getBean(injectMapperAndService.minMapper())
-                        .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapperAndService.mapper().getSimpleName()));
-            } else {
-                InjectMapper injectMapper = this.getClass().getAnnotation(InjectMapper.class);
-                if (injectMapper != null) {
-                    this.minEntityMapper = getApplicationContextService().getBean(injectMapper.minMapper())
-                            .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + injectMapper.mapper().getSimpleName()));
-                } else {
-                    throw new MapperNotDefinedException("Min entity mapper for " + this.getClass().getSimpleName());
+            Class<EntityMapper<T, M>> mapperClass = (Class<EntityMapper<T, M>>) minMapperClassCache.get(this.getClass(), clazz -> {
+                RestConfiguration restConfiguration = clazz.getAnnotation(RestConfiguration.class);
+                if (restConfiguration != null && restConfiguration.minMapper() != EntityMapper.class) {
+                    return restConfiguration.minMapper();
                 }
+
+                InjectMapperAndService injectMapperAndService = clazz.getAnnotation(InjectMapperAndService.class);
+                if (injectMapperAndService != null) {
+                    return injectMapperAndService.minMapper();
+                }
+                InjectMapper injectMapper = clazz.getAnnotation(InjectMapper.class);
+                if (injectMapper != null) {
+                    return injectMapper.minMapper();
+                }
+                throw new MapperNotDefinedException("Min entity mapper for " + clazz.getSimpleName());
+            });
+
+            ApplicationContextService contextService = getApplicationContextService();
+            if (contextService == null) {
+                throw new BeanNotFoundException("ApplicationContextService not found (ControllerExceptionHandler might not be injected)");
             }
+
+            this.minEntityMapper = contextService.getBean(mapperClass)
+                    .orElseThrow(() -> new BeanNotFoundException(CtrlConstants.ERROR_BEAN_NOT_FOUND + ": " + mapperClass.getSimpleName()));
         }
 
         return this.minEntityMapper;

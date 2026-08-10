@@ -1,5 +1,6 @@
 package eu.isygoit.com.event;
 
+import eu.isygoit.exception.BadArgumentException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
@@ -15,7 +16,7 @@ public abstract class KafkaByteBufferProducer extends AbstractKafkaProducer<Byte
     @Override
     protected byte[] serialize(ByteBuffer buffer) throws Exception {
         if (buffer == null) {
-            throw new IllegalArgumentException("Cannot serialize null message");
+            throw new BadArgumentException("Cannot serialize null message");
         }
         return buffer.array(); // Assumes direct buffer; adjust if needed
     }
