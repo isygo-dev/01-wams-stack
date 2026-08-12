@@ -27,7 +27,7 @@ public interface IFileServiceOperations<I extends Serializable,
      * @throws IOException the io exception
      */
     @Transactional
-    T createWithFile(T entity, MultipartFile file) throws IOException;
+    T createWithFile(String senderTenant, T entity, MultipartFile file) throws IOException;
 
     /**
      * Update with file t.
@@ -39,7 +39,7 @@ public interface IFileServiceOperations<I extends Serializable,
      * @throws IOException the io exception
      */
     @Transactional
-    T updateWithFile(I id, T entity, MultipartFile file) throws IOException;
+    T updateWithFile(String senderTenant, I id, T entity, MultipartFile file) throws IOException;
 
     /**
      * Upload file t.
@@ -50,7 +50,7 @@ public interface IFileServiceOperations<I extends Serializable,
      * @throws IOException the io exception
      */
     @Transactional
-    T uploadFile(I id, MultipartFile file) throws IOException;
+    T uploadFile(String senderTenant, I id, MultipartFile file) throws IOException;
 
     /**
      * Download file resource.
@@ -60,5 +60,5 @@ public interface IFileServiceOperations<I extends Serializable,
      * @return the resource
      * @throws IOException the io exception
      */
-    ResourceDto downloadFile(I id, Long version) throws IOException;
+    ResourceDto downloadFile(String senderTenant, I id, Long version) throws IOException;
 }

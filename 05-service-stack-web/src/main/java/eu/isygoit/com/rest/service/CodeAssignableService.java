@@ -151,8 +151,9 @@ public abstract class CodeAssignableService<I extends Serializable,
                 this.remoteNextCodeService = applicationContextService.getBean(annotation.value())
                         .orElseThrow(() ->
                                 new RemoteNextCodeServiceNotDefinedException("Bean not found: " + annotation.value().getSimpleName()));
+                log.info("Getting @InjectCodeGenKms - KMS code generator for {}", this.getClass().getSimpleName());
             } else {
-                log.error("KMS code generator not defined for {}", this.getClass().getSimpleName());
+                log.warn("Getting @InjectCodeGenKms - KMS code generator not defined for {}", this.getClass().getSimpleName());
             }
         }
         return this.remoteNextCodeService;
@@ -166,8 +167,9 @@ public abstract class CodeAssignableService<I extends Serializable,
                 this.nextCodeService = applicationContextService.getBean(annotation.value())
                         .orElseThrow(() ->
                                 new NextCodeServiceNotDefinedException("Bean not found: " + annotation.value().getSimpleName()));
+                log.info("Getting @InjectCodeGen - Local code generator for {}", this.getClass().getSimpleName());
             } else {
-                log.error("Local code generator not defined for {}", this.getClass().getSimpleName());
+                log.warn("Getting @InjectCodeGen - Local code generator not defined for {}", this.getClass().getSimpleName());
             }
         }
         return this.nextCodeService;

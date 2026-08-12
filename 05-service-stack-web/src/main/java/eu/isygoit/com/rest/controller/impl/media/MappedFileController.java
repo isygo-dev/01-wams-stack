@@ -45,11 +45,12 @@ public abstract class MappedFileController<
 
     @Override
     public ResponseEntity<F> uploadFile(I id, MultipartFile file) {
-        log.debug("Uploading file for entityId: {}", id);
+        String senderTenant = requestContextService().getCurrentContext().getSenderTenant();
+        log.debug("Uploading file for entityId: {} for tenant {}", id, senderTenant);
         try {
-            T entity = crudService().uploadFile(id, file);
+            T entity = crudService().uploadFile(senderTenant, id, file);
             F dto = mapper().entityToDto(entity);
-            log.info("Successfully uploaded file for entityId: {}", id);
+            log.info("Successfully uploaded file for entityId: {} for tenant {}", id, senderTenant);
             return ResponseFactory.responseOk(dto);
         } catch (IOException e) {
             log.error("Failed to upload file for entityId: {}", id, e);
@@ -59,9 +60,10 @@ public abstract class MappedFileController<
 
     @Override
     public ResponseEntity<Resource> downloadFile(I id, Long version) {
-        log.debug("Downloading file for entityId: {}, version: {}", id, version);
+        String senderTenant = requestContextService().getCurrentContext().getSenderTenant();
+        log.debug("Downloading file for entityId: {}, version: {} for tenant {}", id, version, senderTenant);
         try {
-            var resource = crudService().downloadFile(id, version);
+            var resource = crudService().downloadFile(senderTenant, id, version);
             if (resource != null && resource.getResource() != null) {
                 var file = resource.getResource().getFile();
                 var contentType = Files.probeContentType(file.toPath());
@@ -91,7 +93,7 @@ public abstract class MappedFileController<
             }
 
             F processed = beforeCreate(dto);
-            T entity = crudService().createWithFile(mapper().dtoToEntity(processed), file);
+            T entity = crudService().createWithFile(senderTenant, mapper().dtoToEntity(processed), file);
             T result = afterCreate(entity);
 
             log.info("Successfully created entity with file for tenant: {}", senderTenant);
@@ -104,10 +106,11 @@ public abstract class MappedFileController<
 
     @Override
     public ResponseEntity<F> updateWithFile(I id, MultipartFile file, @Valid F dto) {
-        log.debug("Updating entity with file for entityId: {}", id);
+        String senderTenant = requestContextService().getCurrentContext().getSenderTenant();
+        log.debug("Updating entity with file for entityId: {} for tenant {}", id, senderTenant);
         try {
             F processed = beforeUpdate(id, dto);               // ← now uses id
-            T entity = crudService().updateWithFile(id, mapper().dtoToEntity(processed), file);
+            T entity = crudService().updateWithFile(senderTenant, id, mapper().dtoToEntity(processed), file);
             T result = afterUpdate(entity);
 
             log.info("Successfully updated entity with file for entityId: {}", id);

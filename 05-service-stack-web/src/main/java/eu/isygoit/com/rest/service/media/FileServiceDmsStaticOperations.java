@@ -50,14 +50,8 @@ public final class FileServiceDmsStaticOperations {
             throw new EntityNullException("Entity must not be null");
         }
 
-        // Determine tenant, fallback to default if entity doesn't implement ITenantAssignable
-        var tenant = (entity instanceof ITenantAssignable tenantAssignable)
-                ? tenantAssignable.getTenant()
-                : TenantConstants.DEFAULT_TENANT_NAME;
-
         // Prepare the request DTO for uploading the linked file
         var requestDto = LinkedFileRequestDto.builder()
-                .tenant(tenant)
                 .code(entity.getCode())
                 .path(entity.getClass().getSimpleName().toLowerCase())
                 .tags(entity.getTags())
@@ -103,19 +97,15 @@ public final class FileServiceDmsStaticOperations {
             throw new EntityNullException("Entity must not be null");
         }
 
-        var tenant = (entity instanceof ITenantAssignable tenantAssignable)
-                ? tenantAssignable.getTenant()
-                : TenantConstants.DEFAULT_TENANT_NAME;
-
         // Perform the download request
-        ResponseEntity<ResourceDto> response = linkedFileService.download(tenant, entity.getCode());
+        ResponseEntity<ResourceDto> response = linkedFileService.download(entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
-            log.info("File downloaded successfully with tenant {} and code {}", tenant, entity.getCode());
+            log.info("File downloaded successfully with code {}", entity.getCode());
             return response.getBody();
         }
 
-        log.warn("Failed to download file for tenant {} and code {}", tenant, entity.getCode());
+        log.warn("Failed to download file with code {}", entity.getCode());
         return null;
     }
 
@@ -141,18 +131,14 @@ public final class FileServiceDmsStaticOperations {
             throw new EntityNullException("Entity must not be null");
         }
 
-        var tenant = (entity instanceof ITenantAssignable tenantAssignable)
-                ? tenantAssignable.getTenant()
-                : TenantConstants.DEFAULT_TENANT_NAME;
-
-        var response = linkedFileService.deleteFile(tenant, entity.getCode());
+        var response = linkedFileService.deleteFile(entity.getCode());
 
         if (response.getStatusCode().is2xxSuccessful() && Boolean.TRUE.equals(response.getBody())) {
-            log.info("File deleted successfully with tenant {} and code {}", tenant, entity.getCode());
+            log.info("File deleted successfully with code {}", entity.getCode());
             return true;
         }
 
-        log.warn("Failed to delete file with tenant {} and code {}", tenant, entity.getCode());
+        log.warn("Failed to delete file with code {}", entity.getCode());
         return false;
     }
 }
