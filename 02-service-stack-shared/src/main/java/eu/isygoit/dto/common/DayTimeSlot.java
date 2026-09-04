@@ -1,7 +1,6 @@
 package eu.isygoit.dto.common;
 
 import java.time.DayOfWeek;
-import java.time.LocalTime;
 
 public interface DayTimeSlot<D> {
 
@@ -12,4 +11,8 @@ public interface DayTimeSlot<D> {
     D getEndTime();
 
     String getDescription();
+
+    String getLocation();
+
+    String getOwner();
 }
