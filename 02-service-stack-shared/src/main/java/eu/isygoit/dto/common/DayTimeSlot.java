@@ -3,11 +3,13 @@ package eu.isygoit.dto.common;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-public interface DayTimeSlot {
+public interface DayTimeSlot<D> {
 
-    public DayOfWeek getDayOfWeek();
-    public LocalTime getStartTime();
-    public LocalTime getEndTime() ;
+    DayOfWeek getDayOfWeek();
 
-    public String getDescription();
+    D getStartTime();
+
+    D getEndTime();
+
+    String getDescription();
 }
