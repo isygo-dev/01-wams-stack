@@ -6,7 +6,6 @@ import java.time.LocalTime;
 
 public interface CalendarTimeSlot {
 
-    public DayOfWeek getDayOfWeek();
     public LocalDateTime getStartTime();
     public LocalDateTime getEndTime() ;
 
