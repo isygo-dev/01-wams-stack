@@ -2,7 +2,7 @@ package eu.isygoit.dto.common;
 
 import java.time.DayOfWeek;
 
-public interface DayTimeSlot<D> {
+public interface DayTimeSlot<D, S> {
 
     DayOfWeek getDayOfWeek();
 
@@ -10,9 +10,13 @@ public interface DayTimeSlot<D> {
 
     D getEndTime();
 
+    String getTitle();
+
     String getDescription();
 
     String getLocation();
 
     String getOwner();
+
+    S getStatus();
 }
