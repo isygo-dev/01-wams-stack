@@ -30,6 +30,9 @@ import java.util.List;
 @MappedSuperclass
 public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity {
 
+    @Column(name = ComSchemaColumnConstantName.C_CATEGORY)
+    private String category;
+
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_FILE_NAME, length = ComSchemaConstantSize.FILE_NAME_SIZE)
     private String fileName;

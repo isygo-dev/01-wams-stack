@@ -20,6 +20,7 @@ import java.io.Serializable;
 @SuperBuilder
 public abstract class FileEntityDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
+    private String category;
     private String fileName;
     private String originalFileName;
     private String path;

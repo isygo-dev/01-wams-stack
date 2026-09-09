@@ -24,7 +24,9 @@ public class LinkedFileMinDto<T extends Serializable> extends AuditableIdAssigna
     @Setter
     private T id;
     private String code;
+    private String category;
     private String originalFileName;
     private Long size;
     private Long version;
+    private String mimetype;
 }
