@@ -37,7 +37,7 @@ public abstract class FileEntity<T extends Serializable> extends AuditableEntity
     @Column(name = ComSchemaColumnConstantName.C_ORIGINAL_FILE_NAME, length = ComSchemaConstantSize.FILE_NAME_SIZE)
     private String originalFileName;
     @ColumnDefault("'NA'")
-    @Column(name = ComSchemaColumnConstantName.C_PATH, nullable = false)
+    @Column(name = ComSchemaColumnConstantName.C_PATH, nullable = false, updatable = false)
     private String path;
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_EXTENSION, length = ComSchemaConstantSize.EXTENSION_SIZE)
