@@ -4,7 +4,10 @@ package eu.isygoit.dto.common;
 import eu.isygoit.dto.extendable.AbstractDto;
 import eu.isygoit.enums.IEnumNotification;
 import eu.isygoit.enums.IEnumTarget;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
@@ -13,13 +16,13 @@ import java.util.List;
 /**
  * The type Notification dto.
  */
-@Getter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationDto extends AbstractDto<Long> {
 
-    @Setter
+
     private Long id;
     private IEnumTarget.Types targetType;
     private IEnumNotification.Types notificationType;

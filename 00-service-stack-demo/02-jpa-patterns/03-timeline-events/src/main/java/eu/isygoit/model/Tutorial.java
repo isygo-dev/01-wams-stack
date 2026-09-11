@@ -6,19 +6,17 @@ import eu.isygoit.model.jakarta.AuditableTenantEntity;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Tutorial.
  */
-@Getter
-@Setter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Entity
 @Table(name = "TUTORIALS")
 @EntityListeners(TimelineEventListener.class)

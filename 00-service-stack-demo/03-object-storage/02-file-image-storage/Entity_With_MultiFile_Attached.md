@@ -40,7 +40,7 @@ The application allows users to:
 - Contains fields for resume metadata and file/image paths
 
 ```java
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

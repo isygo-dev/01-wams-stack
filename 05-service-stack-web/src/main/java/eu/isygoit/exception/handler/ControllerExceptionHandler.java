@@ -12,8 +12,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.RollbackException;
 import jakarta.validation.ConstraintViolation;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
@@ -45,7 +44,7 @@ import java.util.function.Function;
  * This class handles various exceptions and produces localized error messages.
  */
 @Slf4j
-@Getter
+@Data
 @Service
 public abstract class ControllerExceptionHandler implements IExceptionHandler {
 
@@ -55,7 +54,7 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
     @Autowired
     private ControllerExceptionHandlerBuilder builder;
 
-    @Setter
+
     @Autowired(required = false)
     private LocaleService localeService;
 

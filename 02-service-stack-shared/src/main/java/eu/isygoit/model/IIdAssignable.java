@@ -8,6 +8,9 @@ import java.io.Serializable;
  * @param <I> the type parameter
  */
 public interface IIdAssignable<I> extends Serializable {
+
+    static final long serialVersionUID = 1L; // Use a fixed version
+
     /**
      * Gets id.
      *

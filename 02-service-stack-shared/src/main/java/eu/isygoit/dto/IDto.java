@@ -7,6 +7,8 @@ import java.io.Serializable;
  */
 public interface IDto extends Serializable {
 
+    static final long serialVersionUID = 1L; // Use a fixed version
+
     /**
      * Gets section name.
      *

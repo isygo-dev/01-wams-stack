@@ -1,13 +1,11 @@
 package eu.isygoit.openai.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * The type Gemini request.
  */
-@Getter
-@Setter
+@Data
 public class GeminiRequest {
     private Content[] contents;
     private SafetySetting[] safetySettings;
@@ -16,8 +14,7 @@ public class GeminiRequest {
     /**
      * The type Content.
      */
-    @Getter
-    @Setter
+    @Data
     public static class Content {
         private Part[] parts;
     }
@@ -25,8 +22,7 @@ public class GeminiRequest {
     /**
      * The type Part.
      */
-    @Getter
-    @Setter
+    @Data
     public static class Part {
         private String text;
 
@@ -35,8 +31,7 @@ public class GeminiRequest {
     /**
      * The type Safety setting.
      */
-    @Getter
-    @Setter
+    @Data
     public static class SafetySetting {
         private String category;
         private String threshold;
@@ -56,8 +51,7 @@ public class GeminiRequest {
     /**
      * The type Generation config.
      */
-    @Getter
-    @Setter
+    @Data
     public static class GenerationConfig {
         private double temperature;
         private double topP;

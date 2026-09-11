@@ -1,21 +1,20 @@
 package eu.isygoit.dto.common;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Bpm event request dto.
  */
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 public class BpmEventRequestDto {
 
-    @Setter
+
     private Long id;
     private BoardItemModelDto item;
     private String wbCode;

@@ -3,7 +3,7 @@ package eu.isygoit.model.cassandra;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
@@ -20,10 +20,10 @@ import java.time.LocalDateTime;
  *
  * @param <T> the type parameter
  */
-@Getter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 public abstract class AuditableEntity<T> extends AbstractEntity<T> {
 

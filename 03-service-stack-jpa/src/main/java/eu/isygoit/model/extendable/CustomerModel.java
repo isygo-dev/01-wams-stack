@@ -12,7 +12,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -23,11 +26,11 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Setter
-@Getter
-@SuperBuilder
-@NoArgsConstructor
+
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 public abstract class CustomerModel<T extends Serializable> extends AuditableEntity<T> implements ITenantAssignable, ICodeAssignable, IImageEntity {
 

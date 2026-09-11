@@ -2,7 +2,6 @@ package eu.isygoit.com.event;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -36,7 +35,7 @@ public abstract class KafkaXmlConsumer<T> extends AbstractKafkaConsumer<T> {
      * The Xsd schema path.
      */
     @Getter
-    @Setter
+
     protected String xsdSchemaPath; // Set by concrete classes via @Value
 
     @Value("${kafka.security.enable-xml-validation:false}")

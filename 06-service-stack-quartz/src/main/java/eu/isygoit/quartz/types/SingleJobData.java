@@ -2,7 +2,7 @@ package eu.isygoit.quartz.types;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -11,10 +11,10 @@ import lombok.experimental.SuperBuilder;
  *
  * @param <V> the type parameter
  */
-@Getter
-@SuperBuilder
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 public class SingleJobData<V> {
 
     private String key;

@@ -2,7 +2,7 @@ package eu.isygoit.dto.common;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * The type Token request dto.
  */
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder

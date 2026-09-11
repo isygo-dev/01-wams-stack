@@ -7,9 +7,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -20,11 +19,10 @@ import java.time.LocalDateTime;
 /**
  * The type Timeline event entity.
  */
-@Getter
-@Setter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 public abstract class TimelineEventEntity<I extends Serializable> extends AbstractEntity<I> implements ITimelineEventEntity {
 

@@ -3,7 +3,10 @@ package eu.isygoit.model.jakarta;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLRestriction;
@@ -16,11 +19,10 @@ import java.time.LocalDateTime;
  *
  * @param <T> the type parameter
  */
-@Getter
-@Setter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 @SQLRestriction("check_cancel = false")
 public abstract class CancelableEntity<T extends Serializable> extends AbstractEntity<T> {

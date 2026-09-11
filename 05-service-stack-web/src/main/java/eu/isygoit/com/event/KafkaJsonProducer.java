@@ -8,7 +8,6 @@ import com.networknt.schema.SpecVersion;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.helper.JsonHelper;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -30,7 +29,7 @@ public abstract class KafkaJsonProducer<T> extends AbstractKafkaProducer<T> {
      * The Json schema path.
      */
     @Getter
-    @Setter
+
     protected String jsonSchemaPath; // Set by concrete classes via @Value
 
     @Value("${kafka.security.enable-json-validation:false}")

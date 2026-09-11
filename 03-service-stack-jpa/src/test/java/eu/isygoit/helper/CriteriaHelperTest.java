@@ -10,8 +10,7 @@ import eu.isygoit.model.jakarta.AbstractEntity;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -40,9 +39,9 @@ class CriteriaHelperTest {
     }
 
     // Test entities
-    @Getter
+    @Data
     static class TestEntity extends AbstractEntity<Long> implements IIdAssignable<Long> {
-        @Setter
+
         private Long id;
 
         @Criteria
@@ -72,9 +71,9 @@ class CriteriaHelperTest {
         private String tenant;
     }
 
-    @Getter
+    @Data
     static class EmptyTestEntity extends AbstractEntity<Long> implements IIdAssignable<Long> {
-        @Setter
+
         private Long id;
         private String someField;
     }

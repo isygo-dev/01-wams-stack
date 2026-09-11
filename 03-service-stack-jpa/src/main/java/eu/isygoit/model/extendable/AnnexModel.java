@@ -11,9 +11,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.validator.constraints.Length;
@@ -25,11 +24,11 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Setter
-@Getter
-@SuperBuilder
-@NoArgsConstructor
+
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 public abstract class AnnexModel<T extends Serializable> extends AuditableEntity<T> implements ITenantAssignable {
 

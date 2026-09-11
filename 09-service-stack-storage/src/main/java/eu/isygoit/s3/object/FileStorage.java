@@ -2,9 +2,9 @@ package eu.isygoit.s3.object;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -13,10 +13,10 @@ import java.util.Map;
 /**
  * The type File storage.
  */
-@Getter
-@Builder
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 public class FileStorage {
 
     /**

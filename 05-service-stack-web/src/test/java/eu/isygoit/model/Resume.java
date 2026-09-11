@@ -2,9 +2,8 @@ package eu.isygoit.model;
 
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -13,11 +12,10 @@ import java.util.List;
 /**
  * The type Resume.
  */
-@Getter
-@Setter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class Resume extends AuditableCancelableEntity<Long>
         implements ITenantAssignable, ICodeAssignable, ITLEntity, IFileEntity, IMultiFileEntity<ResumeLinkedFile>, IImageEntity {
 

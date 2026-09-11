@@ -1,17 +1,17 @@
 package eu.isygoit.api;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Abstract response.
  */
-@Getter
-@SuperBuilder
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 public class AbstractResponse {
 
     private Boolean hasError;

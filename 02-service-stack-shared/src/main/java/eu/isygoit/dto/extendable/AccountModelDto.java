@@ -18,9 +18,9 @@ import java.io.Serializable;
  */
 
 @Data
-@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public abstract class AccountModelDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
     private String code;

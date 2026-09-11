@@ -2,14 +2,14 @@ package eu.isygoit.config;
 
 import eu.isygoit.enums.IEnumJwtStorage;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * The type Jwt properties.
  */
-@Getter
+@Data
 @ConfigurationProperties(prefix = "app.jwt")
 public class JwtProperties {
 

@@ -1,18 +1,17 @@
 package eu.isygoit.kafka.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Getter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class TutorialDto {
 
-    @Setter
+
     private Long id;
 
     private String tenant;

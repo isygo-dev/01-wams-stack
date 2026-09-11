@@ -2,19 +2,17 @@ package eu.isygoit.model;
 
 import eu.isygoit.model.extendable.LinkedFileModel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
  * The type Resume linked file.
  */
-@Getter
-@Setter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class ResumeLinkedFile extends LinkedFileModel<Long> implements ITenantAssignable {
 
     private Long id;

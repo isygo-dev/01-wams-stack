@@ -3,7 +3,7 @@ package eu.isygoit.model.cassandra;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
  *
  * @param <T> the type parameter
  */
-@Getter
+@Data
 @SuperBuilder
 @AllArgsConstructor
 @MappedSuperclass

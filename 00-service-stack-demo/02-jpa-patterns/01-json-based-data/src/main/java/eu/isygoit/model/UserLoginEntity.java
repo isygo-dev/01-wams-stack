@@ -6,9 +6,8 @@ import eu.isygoit.annotation.JsonEntity;
 import eu.isygoit.model.jakarta.AbstractEntity;
 import eu.isygoit.model.json.JsonElement;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
@@ -25,16 +24,16 @@ import java.util.UUID;
  * JPA row — not stored inside the JSONB payload. See issue #3 in the review for a
  * discussion of removing this interface from JSON element types.
  */
-@Getter
-@SuperBuilder
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 @JsonEntity(EventEntity.class)
 @ElementType("USER_LOGIN")
 public class UserLoginEntity extends AbstractEntity<UUID>
         implements JsonElement<UUID>, ITenantAssignable {
 
-    @Setter
+
     @Criteria
     private UUID id;
 

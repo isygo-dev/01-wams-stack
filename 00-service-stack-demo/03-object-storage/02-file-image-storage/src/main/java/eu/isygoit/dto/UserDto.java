@@ -2,16 +2,19 @@ package eu.isygoit.dto;
 
 import eu.isygoit.dto.extendable.AuditableIdAssignableDto;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Getter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class UserDto extends AuditableIdAssignableDto<Long> implements IImageUploadDto {
 
-    @Setter
+
     private Long id;
     @NotNull
     private String tenant;

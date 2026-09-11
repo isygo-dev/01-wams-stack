@@ -3,9 +3,8 @@ package eu.isygoit.dto.common;
 
 import eu.isygoit.dto.extendable.AuditableIdAssignableDto;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -15,13 +14,12 @@ import java.io.Serializable;
  *
  * @param <T> the type parameter
  */
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 public class LinkedFileMinDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
-    @Setter
     private T id;
     private String code;
     private String category;

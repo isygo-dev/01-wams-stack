@@ -1,7 +1,6 @@
 package eu.isygoit.common;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -14,8 +13,7 @@ import java.util.List;
 @ConditionalOnProperty(name = "app.tenancy.enabled", havingValue = "true")
 @ConfigurationProperties(prefix = "app.tenancy")
 @Component
-@Getter
-@Setter
+@Data
 public class MultiTenancyProperties {
 
     private String mode;

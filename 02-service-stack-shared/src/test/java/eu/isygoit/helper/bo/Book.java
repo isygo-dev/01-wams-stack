@@ -4,15 +4,13 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * The type Book.
  */
 
-@Getter
-@Setter
+@Data
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Book {
     @XmlAttribute(required = true)

@@ -4,8 +4,8 @@ import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.KafkaException;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.AuthenticationException;
 import org.apache.kafka.common.errors.AuthorizationException;
@@ -55,6 +55,7 @@ import java.util.function.BiConsumer;
  *
  * @param <T> the type parameter
  */
+@Data
 @Slf4j
 public abstract class AbstractKafkaConsumer<T> {
 
@@ -63,7 +64,6 @@ public abstract class AbstractKafkaConsumer<T> {
     /**
      * The Enable hmac.
      */
-    @Setter
     @Value("${kafka.security.enable-hmac:false}")
     protected boolean enableHmac;
 
@@ -77,24 +77,20 @@ public abstract class AbstractKafkaConsumer<T> {
      * The Topic.
      */
     @Getter
-    @Setter
     protected String topic; // Set by concrete classes via @Value
     /**
      * The Hmac secret.
      */
-    @Setter
     @Value("${kafka.security.hmac-secret:}")
     protected String hmacSecret;
     /**
      * The Enable encryption.
      */
-    @Setter
     @Value("${kafka.security.enable-encryption:false}")
     protected boolean enableEncryption;
     /**
      * The Aes key.
      */
-    @Setter
     @Value("${kafka.security.aes-key:}")
     protected String aesKey;
     /**

@@ -1,7 +1,6 @@
 package eu.isygoit.security;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -10,8 +9,7 @@ import java.util.Collection;
 /**
  * The type Custom authentification.
  */
-@Getter
-@Setter
+@Data
 public class CustomAuthentification extends UsernamePasswordAuthenticationToken {
 
     /**

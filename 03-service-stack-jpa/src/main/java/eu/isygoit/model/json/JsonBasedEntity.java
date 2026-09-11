@@ -10,7 +10,7 @@ import eu.isygoit.model.jakarta.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -24,10 +24,10 @@ import java.util.UUID;
  *
  * @param <I> the type parameter
  */
-@Getter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 public abstract class JsonBasedEntity<I extends Serializable> extends AuditableEntity<I> implements IIdAssignable<I> {
 

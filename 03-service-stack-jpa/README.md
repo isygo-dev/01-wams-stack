@@ -155,8 +155,7 @@ Add the following dependency to your `pom.xml`:
 
 ```java
 
-@Getter
-@Setter
+@Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

@@ -6,7 +6,7 @@ import eu.isygoit.model.schema.ComSchemaFkConstantName;
 import eu.isygoit.model.schema.ComSchemaTableConstantName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -18,10 +18,10 @@ import java.util.List;
  *
  * @param <T> the type parameter
  */
-@Getter
-@SuperBuilder
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 public abstract class AddressModel<T extends Serializable> extends AuditableEntity<T> {
 

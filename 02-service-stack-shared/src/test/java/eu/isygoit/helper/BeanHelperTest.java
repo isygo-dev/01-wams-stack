@@ -3,9 +3,8 @@ package eu.isygoit.helper;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.exception.BadFieldNameException;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,20 +36,20 @@ public class BeanHelperTest {
      * The type Sample bean.
      */
     // SampleBean class definition with multiple field types for testing
-    @Getter
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     @SuperBuilder
     public static class SampleBean implements IDto {
-        @Setter
+
         private Long id;
         private String sectionName;
-        @Setter
+
         private String firstName;
         private String lastName;
         private int age;
         private Date birthDate;
-        @Setter
+
         private List<String> collectionField;
         private Set<String> setField;
 

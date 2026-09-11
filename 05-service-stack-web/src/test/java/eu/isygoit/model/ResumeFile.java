@@ -2,9 +2,8 @@ package eu.isygoit.model;
 
 import eu.isygoit.model.extendable.FileEntity;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
@@ -12,13 +11,13 @@ import java.util.List;
 /**
  * The type Resume file.
  */
-@Getter
-@SuperBuilder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class ResumeFile extends FileEntity<Long> implements IFileEntity {
 
-    @Setter
+
     private Long id;
     private List<String> tags;
 }
