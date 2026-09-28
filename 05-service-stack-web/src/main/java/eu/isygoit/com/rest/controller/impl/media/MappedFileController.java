@@ -120,4 +120,9 @@ public abstract class MappedFileController<
             return getBackExceptionResponse(e);
         }
     }
+
+    @Override
+    public ResponseEntity<Boolean> deleteFile(I parentId) {
+        throw new UnsupportedOperationException("Delete file operation is not supported in this controller.");
+    }
 }

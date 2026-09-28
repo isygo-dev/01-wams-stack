@@ -112,6 +112,11 @@ public abstract class MappedFileTenantController<I extends Serializable,
         }
     }
 
+    @Override
+    public ResponseEntity<Boolean> deleteFile(I parentId) {
+        throw new UnsupportedOperationException("Delete file operation is not supported in this controller.");
+    }
+
     /**
      * Before create fulld.
      *
