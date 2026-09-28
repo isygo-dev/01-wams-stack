@@ -17,3 +17,7 @@ node_modules/
 /logs/
 
 /.run/
+
+**/bundles
+**/generated
+**/main/frontend
