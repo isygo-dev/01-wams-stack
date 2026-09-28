@@ -7,7 +7,7 @@
     <parent>
         <groupId>eu.isygo-it.services</groupId>
         <artifactId>service-stack</artifactId>
-        <version>WS-1.0.260408-T1636</version>
+        <version>WS-1.0.260928-T1052</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -186,7 +186,7 @@
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack</artifactId>
-                <version>WS-1.0.260408-T1636</version>
+                <version>WS-1.0.260928-T1052</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

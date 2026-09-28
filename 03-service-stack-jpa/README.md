@@ -1,6 +1,6 @@
 # Service Stack - JPA
 
-**Version**: `WS-1.0.260408-T1636`
+**Version**: `WS-1.0.260928-T1052`
 
 A common library for the JPA implementation layer in Spring Boot microservices. It provides a set of base entities,
 repository interfaces, auditing utilities, and a dynamic query helper to standardize and accelerate development.
