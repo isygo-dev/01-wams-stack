@@ -42,6 +42,9 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
         extends ControllerUtils
         implements ICrudControllerUtils<I, T, M, F, S>, IControllerExceptionHandler {
 
+    private static final Cache<Class<?>, Class<?>> serviceClassCache = Caffeine.newBuilder().build();
+    private static final Cache<Class<?>, Class<?>> mapperClassCache = Caffeine.newBuilder().build();
+    private static final Cache<Class<?>, Class<?>> minMapperClassCache = Caffeine.newBuilder().build();
     @Getter
     private final Class<F> fullDtoClass = (Class<F>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[3];
     @Getter
@@ -51,10 +54,6 @@ public abstract class CrudControllerUtils<I, T extends IIdAssignable<I>,
     private EntityMapper<T, F> fullEntityMapper;
     private EntityMapper<T, M> minEntityMapper;
     private S crudService;
-
-    private static final Cache<Class<?>, Class<?>> serviceClassCache = Caffeine.newBuilder().build();
-    private static final Cache<Class<?>, Class<?>> mapperClassCache = Caffeine.newBuilder().build();
-    private static final Cache<Class<?>, Class<?>> minMapperClassCache = Caffeine.newBuilder().build();
 
     /**
      * Validates a bulk operation list.

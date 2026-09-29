@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 
 /**
  * Combined annotation to inject mappers, services, and exception handlers into a REST controller.
+ *
  * @deprecated Use {@link RestConfiguration} for a more comprehensive configuration.
  */
 @Deprecated

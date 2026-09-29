@@ -32,12 +32,10 @@ import java.util.function.BiConsumer;
 public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssignable<I>, R extends Repository>
         implements ICrudServiceUtils<I, T> {
 
+    private static final Cache<Class<?>, Class<?>> repositoryClassCache = Caffeine.newBuilder().build();
     @Autowired
     private ApplicationContextService applicationContextService;
-
     private R repository;
-
-    private static final Cache<Class<?>, Class<?>> repositoryClassCache = Caffeine.newBuilder().build();
 
     /**
      * Validates that an object is not null.

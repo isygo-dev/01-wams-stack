@@ -44,7 +44,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     /**
      * Download response entity.
      *
-     * @param code   the code
+     * @param code the code
      * @return the response entity
      * @throws IOException the io exception
      */
@@ -63,7 +63,7 @@ public interface ILinkedFileApi<D extends IFileUploadDto> {
     /**
      * Delete file response entity.
      *
-     * @param code   the code
+     * @param code the code
      * @return the response entity
      */
     @Operation(summary = "Delete linked file Api",

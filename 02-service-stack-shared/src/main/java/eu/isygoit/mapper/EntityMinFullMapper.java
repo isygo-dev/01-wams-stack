@@ -7,11 +7,11 @@ import java.util.Set;
 /**
  * The interface Entity mapper.
  *
- * @param <T> the type parameter
- * @param <MinD> the type parameter
+ * @param <T>     the type parameter
+ * @param <MinD>  the type parameter
  * @param <FullD> the type parameter
  */
-public interface EntityMinFullMapper<T, MinD, FullD extends MinD> extends EntityMapper<T, FullD>{
+public interface EntityMinFullMapper<T, MinD, FullD extends MinD> extends EntityMapper<T, FullD> {
 
     /**
      * Dto to entity t.

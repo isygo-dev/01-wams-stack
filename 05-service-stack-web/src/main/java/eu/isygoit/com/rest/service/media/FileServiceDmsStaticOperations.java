@@ -1,14 +1,16 @@
 package eu.isygoit.com.rest.service.media;
 
 import eu.isygoit.com.rest.api.ILinkedFileApi;
-import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.dto.common.LinkedFileRequestDto;
 import eu.isygoit.dto.common.LinkedFileResponseDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.EntityNullException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
 import eu.isygoit.exception.MultiPartFileNullException;
-import eu.isygoit.model.*;
+import eu.isygoit.model.ICodeAssignable;
+import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ILinkedFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;

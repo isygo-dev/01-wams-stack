@@ -49,8 +49,8 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
      * Before upload t.
      *
      * @param senderTenant the senderTenant
-     * @param entity the entity
-     * @param file   the file
+     * @param entity       the entity
+     * @param file         the file
      * @return the t
      * @throws IOException the io exception
      */
@@ -63,8 +63,8 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
      * After upload t.
      *
      * @param senderTenant the senderTenant
-     * @param entity the entity
-     * @param file   the file
+     * @param entity       the entity
+     * @param file         the file
      * @return the t
      * @throws IOException the io exception
      */
@@ -204,7 +204,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         if (entity instanceof ITenantAssignableDto tenantAssignableDto
                 && StringUtils.hasText(tenantAssignableDto.getTenant())) {
             return tenantAssignableDto.getTenant();
-        } else if(StringUtils.hasText(senderTenant)){
+        } else if (StringUtils.hasText(senderTenant)) {
             return senderTenant;
         } else {
             return TenantConstants.DEFAULT_TENANT_NAME;
