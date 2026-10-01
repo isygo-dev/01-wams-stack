@@ -10,15 +10,15 @@ public interface IStatusAssignable<S> {
     /**
      * Gets state.
      *
-     * @return the state
+     * @return the status
      */
-    S getState();
+    S getStatus();
 
     /**
-     * Sets state.
+     * Sets status.
      *
-     * @param state the state
+     * @param status the status
      */
-    void setState(S state);
+    void setStatus(S status);
 }
 
