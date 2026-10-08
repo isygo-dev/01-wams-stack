@@ -82,7 +82,7 @@ public abstract class AbstractJwtAuthFilter extends OncePerRequestFilter {
     @Getter
     private final RequestContextService requestContextService;
 
-    @Value("${app.feign.shouldNotFilterKey}")
+    @Value("${app.feign.shouldNotFilterKey:++SHOULD_NOT_FILTER$}")
     private String shouldNotFilterKey;
 
     /**

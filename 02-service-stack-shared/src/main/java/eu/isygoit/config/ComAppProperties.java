@@ -18,7 +18,7 @@ public class ComAppProperties {
     @Value("${app.upload.directory}")
     private String uploadDirectory;
 
-    @Value("${app.feign.shouldNotFilterKey}")
+    @Value("${app.feign.shouldNotFilterKey:++SHOULD_NOT_FILTER$}")
     private String shouldNotFilterKey;
 
     @Value("${spring.application.version}")
