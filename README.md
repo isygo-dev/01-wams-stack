@@ -160,7 +160,7 @@ Declare `service-stack-parent` as your application's parent:
 <parent>
     <groupId>eu.isygo-it.services</groupId>
     <artifactId>service-stack-parent</artifactId>
-    <version>WS-1.0.260928-T1052</version>
+    <version>WS-1.0.261007-T1703</version>
 </parent>
 ```
 
