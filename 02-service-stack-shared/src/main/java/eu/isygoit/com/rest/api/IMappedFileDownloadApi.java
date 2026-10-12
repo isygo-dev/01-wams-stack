@@ -54,5 +54,5 @@ public interface IMappedFileDownloadApi<I extends Serializable, D extends IFileU
     @GetMapping(path = "/file/download/{id}")
     ResponseEntity<Resource> downloadFile(
             @PathVariable(name = RestApiConstants.ID) I id,
-            @RequestParam(name = RestApiConstants.VERSION) Long version);
+            @RequestParam(name = RestApiConstants.VERSION, required = false) Long version);
 }
