@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -129,8 +130,12 @@ public final class CriteriaHelper {
             switch (c) {
                 case '(' -> {
                     if (parenLevel == 0 && i > start) {
-                        tokens.add(whereClause.substring(start, i).trim());
-                        start = i;
+                        String preceding = whereClause.substring(start, i).trim();
+                        boolean isValueList = preceding.matches("(?i).*\\b(IN|BW)\\s*$");
+                        if (!isValueList) {
+                            tokens.add(preceding);
+                            start = i;
+                        }
                     }
                     parenLevel++;
                 }
@@ -348,6 +353,11 @@ public final class CriteriaHelper {
                     || fieldType.equals(Date.class) || fieldType.equals(java.sql.Date.class)
                     || fieldType.equals(java.time.LocalDate.class) || fieldType.equals(java.time.LocalDateTime.class);
             case LI, NL -> fieldType.equals(String.class);
+            case IN -> true;   // element type isn't checked here; conversion below will fail fast
+            case BW -> Number.class.isAssignableFrom(wrapPrimitive(fieldType))
+                    || fieldType.equals(Date.class) || fieldType.equals(java.sql.Date.class)
+                    || fieldType.equals(java.time.LocalDate.class)
+                    || fieldType.equals(java.time.LocalDateTime.class);
             default -> false;
         };
 
@@ -445,12 +455,15 @@ public final class CriteriaHelper {
     private static Object convertSingleValue(String value, Class<?> fieldType) {
         try {
             return switch (fieldType.getSimpleName()) {
-                case "String" -> value;
-                case "Integer", "int" -> Integer.valueOf(value);
-                case "Long", "long" -> Long.valueOf(value);
-                case "Double", "double" -> Double.valueOf(value);
-                case "Float", "float" -> Float.valueOf(value);
-                case "Boolean", "boolean" -> Boolean.valueOf(value);
+                case "String"     -> value;
+                case "Integer","int"   -> Integer.valueOf(value);
+                case "Long","long"     -> Long.valueOf(value);
+                case "Double","double" -> Double.valueOf(value);
+                case "Float","float"   -> Float.valueOf(value);
+                case "Boolean","boolean" -> Boolean.valueOf(value);
+                case "LocalDate"      -> java.time.LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
+                case "LocalDateTime"  -> java.time.LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                case "Date"           -> java.sql.Date.valueOf(java.time.LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE));
                 default -> value;
             };
         } catch (NumberFormatException e) {
