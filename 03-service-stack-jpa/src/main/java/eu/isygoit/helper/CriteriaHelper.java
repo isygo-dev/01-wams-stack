@@ -455,15 +455,16 @@ public final class CriteriaHelper {
     private static Object convertSingleValue(String value, Class<?> fieldType) {
         try {
             return switch (fieldType.getSimpleName()) {
-                case "String"     -> value;
-                case "Integer","int"   -> Integer.valueOf(value);
-                case "Long","long"     -> Long.valueOf(value);
-                case "Double","double" -> Double.valueOf(value);
-                case "Float","float"   -> Float.valueOf(value);
-                case "Boolean","boolean" -> Boolean.valueOf(value);
-                case "LocalDate"      -> java.time.LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
-                case "LocalDateTime"  -> java.time.LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                case "Date"           -> java.sql.Date.valueOf(java.time.LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE));
+                case "String" -> value;
+                case "Integer", "int" -> Integer.valueOf(value);
+                case "Long", "long" -> Long.valueOf(value);
+                case "Double", "double" -> Double.valueOf(value);
+                case "Float", "float" -> Float.valueOf(value);
+                case "Boolean", "boolean" -> Boolean.valueOf(value);
+                case "LocalDate" -> java.time.LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
+                case "LocalDateTime" -> java.time.LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                case "Date" ->
+                        java.sql.Date.valueOf(java.time.LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE));
                 default -> value;
             };
         } catch (NumberFormatException e) {
