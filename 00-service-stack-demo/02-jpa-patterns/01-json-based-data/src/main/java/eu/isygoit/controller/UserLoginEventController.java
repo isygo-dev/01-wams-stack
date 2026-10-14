@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@CrossOrigin(origins = "http://localhost:8081")
+
 @InjectMapper(mapper = UserLoginEventMapper.class, minMapper = UserLoginEventMapper.class)
 @InjectService(UserLoginEventTenantService.class)
 @RestController

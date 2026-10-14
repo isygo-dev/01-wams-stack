@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:8081")
+
 @InjectMapper(mapper = TutorialMapper.class, minMapper = TutorialMapper.class)
 @InjectService(TutorialService.class)
 @RestController

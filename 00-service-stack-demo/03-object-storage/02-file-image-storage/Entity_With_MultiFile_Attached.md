@@ -109,7 +109,7 @@ public class ResumeLinkedFileDto extends LinkedFileMinDto<Long> {
 - Configured for CORS with localhost:8081
 
 ```java
-@CrossOrigin(origins = "http://localhost:8081")
+
 @RestController
 @RequestMapping("/api/v1/resume")
 public class ResumeMultiFileController extends MappedMultiFileTenatController<Long, ResumeEntity, ResumeLinkedFileDto, ResumeDto, ResumeDto, ResumeMultiFileService> implements IMappedMultiFileApi<ResumeLinkedFileDto, Long> {

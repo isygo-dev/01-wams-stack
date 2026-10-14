@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * The type Tutorial controller.
  */
-@CrossOrigin(origins = "http://localhost:8081")
+
 @InjectMapper(mapper = TutorialMapper.class, minMapper = TutorialMapper.class)
 @InjectService(TutorialService.class)
 @RestController

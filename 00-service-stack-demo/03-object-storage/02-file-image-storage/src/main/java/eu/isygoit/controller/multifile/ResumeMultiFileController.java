@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * The type Resume multi file controller.
  */
-@CrossOrigin(origins = "http://localhost:8081")
+
 @InjectMapper(mapper = ResumeMapper.class, minMapper = ResumeMapper.class)
 @InjectService(ResumeMultiFileService.class)
 @RestController
