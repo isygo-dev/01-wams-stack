@@ -15,7 +15,7 @@ public class ResizableKeyGenerator extends AbstractKeyGenerator {
      * @return the string
      */
     public String nextGuid(int length, IEnumCharSet.Types charSetType) {
-        this.setBufferLength(length);
-        return nextGuid(charSetType);
+        // Do not call setBufferLength here: instances such as RandomKeyGenerator are shared singletons.
+        return generate(length, charSetType);
     }
 }
