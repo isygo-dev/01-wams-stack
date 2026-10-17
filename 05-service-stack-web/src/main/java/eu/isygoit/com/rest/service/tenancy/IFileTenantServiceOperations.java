@@ -66,4 +66,15 @@ public interface IFileTenantServiceOperations<I extends Serializable,
      * @throws IOException the io exception
      */
     ResourceDto downloadFile(String tenant, I id, Long version) throws IOException;
+
+    /**
+     * Delete the file of an entity: the stored file and its attributes.
+     *
+     * @param tenant the tenant
+     * @param id     the id
+     * @return the updated entity
+     * @throws IOException the io exception
+     */
+    @Transactional
+    T deleteFile(String tenant, I id) throws IOException;
 }

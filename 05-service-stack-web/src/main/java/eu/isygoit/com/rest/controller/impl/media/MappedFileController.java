@@ -123,6 +123,12 @@ public abstract class MappedFileController<
 
     @Override
     public ResponseEntity<Boolean> deleteFile(I parentId) {
-        throw new UnsupportedOperationException("Delete file operation is not supported in this controller.");
+        try {
+            crudService().deleteFile(requestContextService().getCurrentContext().getSenderTenant(), parentId);
+            return ResponseFactory.responseOk(true);
+        } catch (Exception e) {
+            log.error("Failed to delete file for entityId: {}", parentId, e);
+            return getBackExceptionResponse(e);
+        }
     }
 }

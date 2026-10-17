@@ -13,5 +13,5 @@ import java.io.Serializable;
  * @param <D> the type parameter
  */
 public interface IMappedImageApi<I extends Serializable, D extends IIdAssignableDto<I> & IImageUploadDto>
-        extends IMappedImageDownloadApi<I, D>, IMappedImageUploadApi<I, D> {
+        extends IMappedImageDownloadApi<I, D>, IMappedImageUploadApi<I, D>, IMappedImageDeleteApi<I, D> {
 }

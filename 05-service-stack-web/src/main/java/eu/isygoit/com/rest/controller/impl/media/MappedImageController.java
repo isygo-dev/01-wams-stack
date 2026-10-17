@@ -58,6 +58,18 @@ public abstract class MappedImageController<
     }
 
     @Override
+    public ResponseEntity<Boolean> deleteImage(I id) {
+        log.debug("Deleting image for entityId: {}", id);
+        try {
+            crudService().deleteImage(id);
+            return ResponseFactory.responseOk(true);
+        } catch (Exception e) {
+            log.error("Failed to delete image for entityId: {}", id, e);
+            return getBackExceptionResponse(e);
+        }
+    }
+
+    @Override
     public ResponseEntity<Resource> downloadImage(I id) {
         log.debug("Downloading image for entityId: {}", id);
         try {

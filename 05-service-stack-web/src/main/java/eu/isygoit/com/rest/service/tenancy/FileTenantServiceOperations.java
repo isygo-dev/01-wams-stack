@@ -110,6 +110,13 @@ public abstract class FileTenantServiceOperations<I extends Serializable,
      *
      * @param <R> the type parameter
      */
+    final boolean performDeleteFile(T entity) {
+        return Boolean.TRUE.equals(executeWithFallback(
+                dms -> Boolean.TRUE.equals(dms.deleteFile(entity.getCode()).getBody()),
+                () -> java.nio.file.Files.deleteIfExists(java.nio.file.Path.of(entity.getPath()).resolve(entity.getFileName())),
+                "delete"));
+    }
+
     @FunctionalInterface
     interface FileOperation<R> {
         /**

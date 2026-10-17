@@ -54,4 +54,13 @@ public interface IImageServiceOperations<I extends Serializable, T extends IIdAs
      * @throws IOException the io exception
      */
     T updateWithImage(T entity, MultipartFile file) throws IOException;
+
+    /**
+     * Delete the image of an entity: the stored file and the image path.
+     *
+     * @param id the id
+     * @return the updated entity
+     * @throws IOException the io exception
+     */
+    T deleteImage(I id) throws IOException;
 }

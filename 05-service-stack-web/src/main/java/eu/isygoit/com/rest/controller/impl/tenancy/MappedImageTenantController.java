@@ -63,6 +63,19 @@ public abstract class MappedImageTenantController<I extends Serializable,
     }
 
     @Override
+    public ResponseEntity<Boolean> deleteImage(
+            @PathVariable(name = RestApiConstants.ID) I id) {
+        log.info("Delete image request received");
+        try {
+            crudService().deleteImage(requestContextService().getCurrentContext().getSenderTenant(), id);
+            return ResponseFactory.responseOk(true);
+        } catch (Throwable e) {
+            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+            return getBackExceptionResponse(e);
+        }
+    }
+
+    @Override
     public ResponseEntity<Resource> downloadImage(
             @PathVariable(name = RestApiConstants.ID) I id) throws IOException {
         log.info("Download image request received");

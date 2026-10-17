@@ -106,6 +106,19 @@ public abstract class FileImageTenantService<I extends Serializable,
 
     @Override
     @Transactional
+    public T deleteImage(String tenant, I id) throws IOException {
+        T entity = findById(tenant, id).orElseThrow(() ->
+                new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
+
+        if (StringUtils.hasText(entity.getImagePath())) {
+            java.nio.file.Files.deleteIfExists(Path.of(entity.getImagePath()));
+        }
+        entity.setImagePath(null);
+        return update(tenant, entity);
+    }
+
+    @Override
+    @Transactional
     public T createWithImage(String tenant, T entity, MultipartFile file) throws IOException {
         // Validate input file
         if (!FileHelper.isImage(file)) {

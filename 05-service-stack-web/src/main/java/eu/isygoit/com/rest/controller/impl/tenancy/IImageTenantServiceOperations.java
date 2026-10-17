@@ -58,4 +58,14 @@ public interface IImageTenantServiceOperations<I extends Serializable, T extends
      * @throws IOException the io exception
      */
     T updateWithImage(String tenant, T entity, MultipartFile file) throws IOException;
+
+    /**
+     * Delete the image of an entity: the stored file and the image path.
+     *
+     * @param tenant the sender tenant
+     * @param id     the id
+     * @return the updated entity
+     * @throws IOException the io exception
+     */
+    T deleteImage(String tenant, I id) throws IOException;
 }

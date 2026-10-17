@@ -111,6 +111,19 @@ public abstract class ImageService<I extends Serializable, T extends IImageEntit
 
     @Override
     @Transactional
+    public T deleteImage(I id) throws IOException {
+        T entity = findById(id).orElseThrow(() ->
+                new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
+
+        if (StringUtils.hasText(entity.getImagePath())) {
+            java.nio.file.Files.deleteIfExists(Path.of(entity.getImagePath()));
+        }
+        entity.setImagePath(null);
+        return update(entity);
+    }
+
+    @Override
+    @Transactional
     public T createWithImage(T entity, MultipartFile file) throws IOException {
         // Validate input file
         if (!FileHelper.isImage(file)) {

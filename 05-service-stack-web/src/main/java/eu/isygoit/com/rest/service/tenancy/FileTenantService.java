@@ -194,6 +194,23 @@ public abstract class FileTenantService<I extends Serializable,
                 .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
     }
 
+    @Transactional
+    @Override
+    public T deleteFile(String tenant, I id) throws IOException {
+        T entity = findById(tenant, id)
+                .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
+
+        if (StringUtils.hasText(entity.getFileName()) && StringUtils.hasText(entity.getPath())) {
+            performDeleteFile(entity);
+        }
+        entity.setFileName(null);
+        entity.setOriginalFileName(null);
+        entity.setExtension(null);
+        entity.setType(null);
+        entity.setPath(null);
+        return update(tenant, entity);
+    }
+
     private void assignOrPreserveCode(T entity, T existing) {
         if (!StringUtils.hasText(entity.getCode()) && !StringUtils.hasText(existing.getCode())) {
             entity.setCode(((ICodeAssignableService) this).getNextCode());
