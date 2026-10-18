@@ -7,7 +7,6 @@ import eu.isygoit.dto.UserDto;
 import eu.isygoit.mapper.UserMapper;
 import eu.isygoit.model.image.UserEntity;
 import eu.isygoit.service.UserService;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

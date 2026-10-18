@@ -7,7 +7,6 @@ import eu.isygoit.dto.ContractDto;
 import eu.isygoit.mapper.ContractMapper;
 import eu.isygoit.model.file.ContractEntity;
 import eu.isygoit.service.ContractService;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

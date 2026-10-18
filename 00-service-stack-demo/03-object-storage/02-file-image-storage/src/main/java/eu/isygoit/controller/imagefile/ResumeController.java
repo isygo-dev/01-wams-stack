@@ -7,7 +7,6 @@ import eu.isygoit.dto.ResumeDto;
 import eu.isygoit.mapper.ResumeMapper;
 import eu.isygoit.model.imagefile.ResumeEntity;
 import eu.isygoit.service.ResumeService;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

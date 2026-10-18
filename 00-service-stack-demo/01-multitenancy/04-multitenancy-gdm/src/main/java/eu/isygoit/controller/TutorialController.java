@@ -7,7 +7,6 @@ import eu.isygoit.dto.TutorialDto;
 import eu.isygoit.mapper.TutorialMapper;
 import eu.isygoit.model.Tutorial;
 import eu.isygoit.service.TutorialService;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

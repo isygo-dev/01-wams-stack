@@ -8,7 +8,6 @@ import eu.isygoit.mapper.UserLoginEventMapper;
 import eu.isygoit.model.OrderPlacedEntity;
 import eu.isygoit.service.OrderPlacedEventTenantService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

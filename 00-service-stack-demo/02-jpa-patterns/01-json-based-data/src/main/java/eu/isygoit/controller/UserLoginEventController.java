@@ -7,7 +7,6 @@ import eu.isygoit.dto.UserLoginEventDto;
 import eu.isygoit.mapper.UserLoginEventMapper;
 import eu.isygoit.model.UserLoginEntity;
 import eu.isygoit.service.UserLoginEventTenantService;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
