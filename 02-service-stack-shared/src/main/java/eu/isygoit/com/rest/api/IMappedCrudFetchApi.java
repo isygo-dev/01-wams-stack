@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.api;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.dto.extendable.IdAssignableDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Interface for CRUD fetch operations with pagination and filtering capabilities.
@@ -261,7 +261,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
             @ApiResponse(responseCode = "200",
                     description = "Successfully retrieved filter criteria",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Map.class))}),
+                            schema = @Schema(implementation = List.class))}),
             @ApiResponse(responseCode = "401",
                     description = "Unauthorized - Invalid or missing JWT token",
                     content = @Content),
@@ -273,5 +273,5 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     content = @Content)
     })
     @GetMapping(path = "/filter/criteria")
-    ResponseEntity<Map<String, String>> getAnnotatedCriteria();
+    ResponseEntity<List<CriteriaFieldDto>> getAnnotatedCriteria();
 }

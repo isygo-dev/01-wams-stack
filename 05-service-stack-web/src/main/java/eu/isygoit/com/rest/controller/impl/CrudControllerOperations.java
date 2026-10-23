@@ -9,6 +9,7 @@ import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.exception.BadArgumentException;
@@ -460,11 +461,11 @@ public abstract class CrudControllerOperations<
      * @return ResponseEntity containing the map of filter criteria
      */
     @Override
-    public ResponseEntity<Map<String, String>> performGetAnnotatedCriteria() {
+    public ResponseEntity<List<CriteriaFieldDto>> performGetAnnotatedCriteria() {
         return executeWithMonitoring("performGetAnnotatedCriteria", () -> {
             log.info("Retrieving filter criteria for {}", this.getPersistentClass().getSimpleName());
-            Map<String, String> criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
-            return createMapResponse(criteriaMap);
+            List<CriteriaFieldDto> criteriaMap = CriteriaHelper.getCriteriaData(persistentClass);
+            return createListResponse(criteriaMap);
         });
     }
 

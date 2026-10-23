@@ -6,6 +6,7 @@ import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The type Mapped crud controller.
@@ -95,7 +95,7 @@ public abstract class MappedCrudController<I extends Serializable, T extends IId
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
+    public ResponseEntity<List<CriteriaFieldDto>> getAnnotatedCriteria() {
         return performGetAnnotatedCriteria();
     }
 }

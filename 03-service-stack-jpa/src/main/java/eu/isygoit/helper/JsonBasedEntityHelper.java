@@ -2,6 +2,7 @@ package eu.isygoit.helper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.isygoit.annotation.ElementType;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.ObjectInstantiationException;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -151,6 +153,15 @@ public class JsonBasedEntityHelper {
     /**
      * Validates that every criterion name matches a declared field of the given class.
      *
+     * <p>Field names are collected from {@link CriteriaHelper#getCriteriaData}
+     * (now an ordered {@code List<CriteriaFieldDto>}) into a {@link java.util.Set}
+     * before lookup. The order the list carries is irrelevant to validation —
+     * only field membership matters here — so a {@code HashSet} is the right
+     * shape for the O(1) {@code contains} this method needs. Preserving the
+     * order is the responsibility of the endpoint that serializes the list
+     * (see {@code CrudControllerOperations.performGetAnnotatedCriteria}),
+     * not of this validation step.
+     *
      * @param jsonElementClass the class whose fields define valid criterion names
      * @param criteria         the criteria to validate
      * @param <T>              type bound
@@ -158,9 +169,15 @@ public class JsonBasedEntityHelper {
      */
     public static <T> void validateCriteriaAgainstJsonElement(Class<T> jsonElementClass,
                                                               List<QueryCriteria> criteria) {
-        var validFields = CriteriaHelper.getCriteriaData(jsonElementClass);
+        // Flatten the ordered metadata list into a name-only set for O(1) lookup.
+        // The order is preserved where it matters (the HTTP response); here we
+        // only need to answer "does this field exist?".
+        Set<String> validFieldNames = CriteriaHelper.getCriteriaData(jsonElementClass).stream()
+                .map(CriteriaFieldDto::name)
+                .collect(Collectors.toSet());
+
         for (QueryCriteria criterion : criteria) {
-            if (!validFields.containsKey(criterion.getName())) {
+            if (!validFieldNames.contains(criterion.getName())) {
                 throw new WrongCriteriaFilterException("with name: " + criterion.getName());
             }
         }

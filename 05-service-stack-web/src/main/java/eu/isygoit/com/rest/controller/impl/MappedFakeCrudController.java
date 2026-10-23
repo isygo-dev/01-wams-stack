@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.controller.impl;
 import eu.isygoit.com.rest.api.IMappedCrudApi;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Abstract fake controller class for simulating CRUD operations via REST API.
@@ -197,7 +197,7 @@ public abstract class MappedFakeCrudController<
      * @throws UnsupportedOperationException as this is a fake controller
      */
     @Override
-    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
+    public ResponseEntity<List<CriteriaFieldDto>> getAnnotatedCriteria() {
         log.warn("Attempted to call getAnnotatedCriteria on fake controller");
         throw UNSUPPORTED_OPERATION;
     }

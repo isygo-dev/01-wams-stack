@@ -1,6 +1,9 @@
 package eu.isygoit.helper;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import eu.isygoit.annotation.Criteria;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.BadArgumentException;
@@ -8,13 +11,13 @@ import eu.isygoit.exception.WrongCriteriaFilterException;
 import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -34,7 +37,7 @@ public final class CriteriaHelper {
     private static final Pattern LOGICAL_OP_PATTERN = Pattern.compile("\\s*([&|])\\s*");
 
     // Cache for criteria metadata to avoid repeated reflection
-    private static final Map<Class<?>, Map<String, FieldInfo>> CRITERIA_CACHE = new ConcurrentHashMap<>();
+    private static final Cache<Class<?>, Map<String, FieldInfo>> CRITERIA_CACHE = Caffeine.newBuilder().build();
 
     private static final Set<String> SUPPORTED_OPERATORS = Set.of("=", "!=", "~", "!~", "<", "<=", ">", ">=", "IN", "BW");
 
@@ -262,36 +265,98 @@ public final class CriteriaHelper {
     /**
      * Gets criteria metadata with caching for better performance.
      *
+     * <p><b>Ordering.</b> The fields are returned in the exact order established
+     * by {@code @Criteria.order()} on the backend (see
+     * {@link #extractCriteriaFields(Class)}). Because the return type is a
+     * {@link List}, that order is preserved unconditionally:
+     * <ul>
+     *   <li>On the wire — the list serializes to a JSON array, whose element
+     *       order is fixed by RFC 8259 and is <i>not</i> affected by
+     *       {@code SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS}.</li>
+     *   <li>On the client — every {@code List} implementation preserves
+     *       iteration order; a re-wrap into {@code HashMap} cannot happen
+     *       because no map is involved.</li>
+     * </ul>
+     * The internal reflection cache still stores a {@link java.util.LinkedHashMap}
+     * (for cheap name-based lookup) whose iteration order matches
+     * {@code @Criteria.order()}; this method flattens it into the ordered
+     * {@link List} that the API contract expects.
+     *
      * @param classType the class type to analyze
-     * @return map of field names to their type information
+     * @return ordered list of {@link CriteriaFieldDto} — never {@code null},
+     * empty when the class has no {@code @Criteria}-annotated fields
      */
-    public static Map<String, String> getCriteriaData(Class<?> classType) {
-        return getCriteriaFieldInfo(classType).entrySet().stream()
-                .collect(HashMap::new,
-                        (map, entry) -> map.put(entry.getKey(), entry.getValue().typeSimpleName()),
-                        HashMap::putAll);
+    public static List<CriteriaFieldDto> getCriteriaData(Class<?> classType) {
+        // getCriteriaFieldInfo(...) returns a LinkedHashMap whose iteration
+        // order is the sorted order built by extractCriteriaFields. Streaming
+        // its values into a list keeps that order — no intermediate Map, no
+        // risk of a HashMap re-wrap on the way out.
+        return getCriteriaFieldInfo(classType).values().stream()
+                .map(info -> new CriteriaFieldDto(info.name(), info.typeSimpleName()))
+                .toList();
     }
 
     /**
      * Gets cached criteria field information.
      */
     private static Map<String, FieldInfo> getCriteriaFieldInfo(Class<?> classType) {
-        return CRITERIA_CACHE.computeIfAbsent(classType, CriteriaHelper::extractCriteriaFields);
+        return CRITERIA_CACHE.get(classType, CriteriaHelper::extractCriteriaFields);
     }
 
     /**
-     * Extracts criteria fields using reflection, including inherited fields.
+     * Extracts criteria fields using reflection, including inherited fields,
+     * and returns them ordered by {@link Criteria#order()} ascending.
+     *
+     * <p><b>Ordering.</b> Fields are sorted by their {@code @Criteria.order()}
+     * value (default {@code 0}), with the field name as a stable tiebreaker so
+     * that fields sharing the same order always appear in the same order across
+     * runs and refactors. The returned map is a {@link LinkedHashMap} — its
+     * iteration order matches the sorted order, so downstream consumers can rely
+     * on it without re-sorting.
+     *
+     * <p><b>Shadowing.</b> The hierarchy is walked subclass-first; a subclass
+     * field with the same name as a parent field shadows the parent (the
+     * subclass's {@code @Criteria} annotation, including its {@code order}, is
+     * the one that counts). This preserves the previous {@code putIfAbsent}
+     * semantics.
      */
     private static Map<String, FieldInfo> extractCriteriaFields(Class<?> classType) {
-        Map<String, FieldInfo> fieldMap = new HashMap<>();
+        // Internal carrier: keeps the field's info alongside the order value
+        // read from the annotation, so the sort can run before the map is built.
+        record Ordered(String name, FieldInfo info, int order) {
+        }
+
+        List<Ordered> collected = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
         Class<?> current = classType;
         while (current != null && current != Object.class) {
             for (Field field : current.getDeclaredFields()) {
-                if (field.isAnnotationPresent(Criteria.class)) {
-                    fieldMap.putIfAbsent(field.getName(), new FieldInfo(field.getName(), field.getType(), field.getType().getSimpleName()));
-                }
+                Criteria criteria = AnnotatedElementUtils.getMergedAnnotation(field, Criteria.class);
+                if (criteria == null) continue;
+
+                // Subclass-first walk + seen-set: a subclass field with the same
+                // name shadows the parent field, including its order value.
+                if (!seen.add(field.getName())) continue;
+
+                FieldInfo info = new FieldInfo(
+                        field.getName(),
+                        field.getType(),
+                        field.getType().getSimpleName());
+                collected.add(new Ordered(field.getName(), info, criteria.order()));
             }
             current = current.getSuperclass();
+        }
+
+        // Sort by @Criteria.order ascending, then by field name for determinism.
+        collected.sort(Comparator
+                .comparingInt(Ordered::order)
+                .thenComparing(Ordered::name));
+
+        // LinkedHashMap preserves the sorted insertion order for iteration.
+        Map<String, FieldInfo> fieldMap = new LinkedHashMap<>(collected.size());
+        for (Ordered o : collected) {
+            fieldMap.put(o.name(), o.info());
         }
         return fieldMap;
     }
@@ -509,8 +574,6 @@ public final class CriteriaHelper {
                 criteriaBuilder.like(criteriaBuilder.lower(root.get(fieldName)), "%" + value.toLowerCase() + "%");
     }
 
-    // Enhanced specification methods with better type handling
-
     /**
      * Not like specification.
      *
@@ -610,7 +673,7 @@ public final class CriteriaHelper {
      * Clears the criteria cache. Useful for testing or when class definitions change.
      */
     public static void clearCache() {
-        CRITERIA_CACHE.clear();
+        CRITERIA_CACHE.cleanUp();
     }
 
     /**
@@ -619,7 +682,7 @@ public final class CriteriaHelper {
      * @return the cache size
      */
     public static int getCacheSize() {
-        return CRITERIA_CACHE.size();
+        return CRITERIA_CACHE.asMap().size();
     }
 
     /**

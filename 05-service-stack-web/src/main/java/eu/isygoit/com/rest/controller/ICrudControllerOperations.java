@@ -3,6 +3,7 @@ package eu.isygoit.com.rest.controller;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.dto.common.RequestContextDto;
 import eu.isygoit.model.IIdAssignable;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The interface Crud controller sub methods.
@@ -121,7 +121,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      *
      * @return the response entity
      */
-    ResponseEntity<Map<String, String>> performGetAnnotatedCriteria();
+    ResponseEntity<List<CriteriaFieldDto>> performGetAnnotatedCriteria();
 
     /**
      * Sub find all filtered by criteria response entity.

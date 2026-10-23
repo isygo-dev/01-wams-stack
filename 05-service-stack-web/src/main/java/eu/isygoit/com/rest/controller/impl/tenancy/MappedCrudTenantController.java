@@ -6,6 +6,7 @@ import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceHooks;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.dto.common.PaginatedResponseDto;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
@@ -14,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The type Mapped crud controller.
@@ -107,7 +107,7 @@ public abstract class MappedCrudTenantController<I extends Serializable,
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> getAnnotatedCriteria() {
+    public ResponseEntity<List<CriteriaFieldDto>> getAnnotatedCriteria() {
         return performGetAnnotatedCriteria();
     }
 }

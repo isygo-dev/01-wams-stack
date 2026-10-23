@@ -1,6 +1,7 @@
 package eu.isygoit.helper;
 
 import eu.isygoit.annotation.Criteria;
+import eu.isygoit.dto.common.CriteriaFieldDto;
 import eu.isygoit.enums.IEnumCriteriaCombiner;
 import eu.isygoit.enums.IEnumOperator;
 import eu.isygoit.exception.WrongCriteriaFilterException;
@@ -18,13 +19,36 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @DisplayName("CriteriaHelper Test Suite")
 class CriteriaHelperTest {
+
+    /**
+     * Test helper: returns the type name of the field with the given name,
+     * or {@code null} if the field is not present. Replaces the previous
+     * {@code Map.get(name)} idiom, now that {@link CriteriaHelper#getCriteriaData}
+     * returns an ordered {@code List<CriteriaFieldDto>} rather than a {@code Map}.
+     */
+    private static String findType(List<CriteriaFieldDto> fields, String name) {
+        return fields.stream()
+                .filter(f -> name.equals(f.name()))
+                .map(CriteriaFieldDto::type)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Test helper: returns the ordered list of field names.
+     */
+    private static List<String> fieldNames(List<CriteriaFieldDto> fields) {
+        return fields.stream().map(CriteriaFieldDto::name).toList();
+    }
 
     @BeforeEach
     void setUp() {
@@ -39,6 +63,7 @@ class CriteriaHelperTest {
     }
 
     // Test entities
+
     @Data
     static class TestEntity extends AbstractEntity<Long> implements IIdAssignable<Long> {
 
@@ -78,6 +103,31 @@ class CriteriaHelperTest {
         private String someField;
     }
 
+    /**
+     * Explicit-order entity: verifies that {@code @Criteria.order()} is honoured
+     * over the alphabetical tiebreaker used when orders are equal.
+     */
+    @Data
+    static class OrderedTestEntity extends AbstractEntity<Long> implements IIdAssignable<Long> {
+
+        private Long id;
+
+        @Criteria(order = 100)
+        private String last;
+
+        @Criteria(order = 1)
+        private String first;
+
+        @Criteria(order = 10)
+        private String middle;
+
+        @Criteria           // default order = 0 → sorted before "first"
+        private String zeroA;
+
+        @Criteria           // default order = 0 → sorted after "zeroA"
+        private String zeroB;
+    }
+
     @Nested
     @DisplayName("SQL WHERE Clause Conversion Tests")
     class SqlWhereConversionTests {
@@ -90,19 +140,16 @@ class CriteriaHelperTest {
 
             assertEquals(3, criteria.size());
 
-            // First condition
             assertEquals("name", criteria.get(0).getName());
             assertEquals(IEnumOperator.Types.EQ, criteria.get(0).getOperator());
             assertEquals("John", criteria.get(0).getValue());
             assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
 
-            // Second condition (AND combiner)
             assertEquals("age", criteria.get(1).getName());
             assertEquals(IEnumOperator.Types.GT, criteria.get(1).getOperator());
             assertEquals("25", criteria.get(1).getValue());
             assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
 
-            // Third condition (OR combiner)
             assertEquals("status", criteria.get(2).getName());
             assertEquals(IEnumOperator.Types.NE, criteria.get(2).getOperator());
             assertEquals("INACTIVE", criteria.get(2).getValue());
@@ -171,14 +218,12 @@ class CriteriaHelperTest {
 
             assertEquals(4, criteria.size());
 
-            // First group
             assertEquals("name", criteria.get(0).getName());
             assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(0).getCombiner());
 
             assertEquals("age", criteria.get(1).getName());
             assertEquals(IEnumCriteriaCombiner.Types.AND, criteria.get(1).getCombiner());
 
-            // Second group
             assertEquals("department", criteria.get(2).getName());
             assertEquals(IEnumCriteriaCombiner.Types.OR, criteria.get(2).getCombiner());
 
@@ -296,37 +341,81 @@ class CriteriaHelperTest {
         @Test
         @DisplayName("Should extract criteria fields correctly")
         void testGetCriteriaData() {
-            Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
+            List<CriteriaFieldDto> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
 
             assertEquals(8, criteriaData.size());
-            assertEquals("String", criteriaData.get("name"));
-            assertEquals("Integer", criteriaData.get("age"));
-            assertEquals("String", criteriaData.get("status"));
-            assertEquals("Boolean", criteriaData.get("active"));
-            assertEquals("String", criteriaData.get("department"));
-            assertEquals("Double", criteriaData.get("salary"));
-            assertEquals("Long", criteriaData.get("score"));
-            assertNull(criteriaData.get("nonCriteriaField"));
+
+            // Each type is resolved from the field's declared type.
+            assertEquals("String", findType(criteriaData, "name"));
+            assertEquals("Integer", findType(criteriaData, "age"));
+            assertEquals("String", findType(criteriaData, "status"));
+            assertEquals("Boolean", findType(criteriaData, "active"));
+            assertEquals("String", findType(criteriaData, "department"));
+            assertEquals("Double", findType(criteriaData, "salary"));
+            assertEquals("Long", findType(criteriaData, "score"));
+            assertEquals("String", findType(criteriaData, "tenant"));
+
+            // Fields without @Criteria must not appear.
+            assertTrue(criteriaData.stream()
+                            .noneMatch(f -> "nonCriteriaField".equals(f.name())),
+                    "nonCriteriaField has no @Criteria and must be absent from the result");
+        }
+
+        @Test
+        @DisplayName("Should return fields in @Criteria.order then alphabetical order (all default = 0)")
+        void testGetCriteriaData_DefaultOrdering() {
+            List<CriteriaFieldDto> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
+
+            // All TestEntity fields use the default @Criteria.order() = 0, so the
+            // alphabetical tiebreaker determines the order.
+            List<String> expected = List.of(
+                    "active", "age", "department", "name",
+                    "salary", "score", "status", "tenant");
+            assertEquals(expected, fieldNames(criteriaData));
+        }
+
+        @Test
+        @DisplayName("Should honour explicit @Criteria.order() values")
+        void testGetCriteriaData_ExplicitOrdering() {
+            List<CriteriaFieldDto> criteriaData = CriteriaHelper.getCriteriaData(OrderedTestEntity.class);
+
+            // order 0 → "zeroA", "zeroB" (alphabetical tiebreaker)
+            // order 1 → "first"
+            // order 10 → "middle"
+            // order 100 → "last"
+            assertEquals(
+                    List.of("zeroA", "zeroB", "first", "middle", "last"),
+                    fieldNames(criteriaData));
+        }
+
+        @Test
+        @DisplayName("Should return a List (not a Map) to guarantee order preservation")
+        void testGetCriteriaData_ReturnsList() {
+            List<CriteriaFieldDto> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertNotNull(criteriaData);
+            // A List is the contract — a JSON array's order is fixed by RFC 8259,
+            // so the ordering survives serialization regardless of ObjectMapper config.
+            assertTrue(criteriaData instanceof List<?>);
         }
 
         @Test
         @DisplayName("Should handle empty class")
         void testGetCriteriaData_EmptyClass() {
-            Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(EmptyTestEntity.class);
+            List<CriteriaFieldDto> criteriaData = CriteriaHelper.getCriteriaData(EmptyTestEntity.class);
             assertTrue(criteriaData.isEmpty());
         }
 
         @Test
         @DisplayName("Should cache criteria data")
         void testGetCriteriaData_Caching() {
-            // First call
-            Map<String, String> firstCall = CriteriaHelper.getCriteriaData(TestEntity.class);
-            assertEquals(1, CriteriaHelper.getCacheSize()); // Cache is populated after first call
+            List<CriteriaFieldDto> firstCall = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertEquals(1, CriteriaHelper.getCacheSize());
 
-            // Second call should use cache
-            Map<String, String> secondCall = CriteriaHelper.getCriteriaData(TestEntity.class);
-            assertEquals(1, CriteriaHelper.getCacheSize()); // Cache is not populated after second call
+            List<CriteriaFieldDto> secondCall = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertEquals(1, CriteriaHelper.getCacheSize());
 
+            // Records implement equals(), so two independent lists with the
+            // same (name, type) pairs compare equal element-wise.
             assertEquals(firstCall, secondCall);
             assertTrue(CriteriaHelper.getCacheSize() > 0);
         }
@@ -468,7 +557,7 @@ class CriteriaHelperTest {
 
             for (IEnumOperator.Types operator : operators) {
                 QueryCriteria criteria = QueryCriteria.builder()
-                        .name("name") // String field
+                        .name("name")
                         .operator(operator)
                         .value("value")
                         .combiner(IEnumCriteriaCombiner.Types.OR)
@@ -484,8 +573,8 @@ class CriteriaHelperTest {
         @DisplayName("Should throw exception for incompatible operator (LIKE on Integer)")
         void testBuildSpecification_IncompatibleOperator() {
             QueryCriteria criteria = QueryCriteria.builder()
-                    .name("age") // Integer field
-                    .operator(IEnumOperator.Types.LI) // LIKE
+                    .name("age")
+                    .operator(IEnumOperator.Types.LI)
                     .value("25")
                     .combiner(IEnumCriteriaCombiner.Types.OR)
                     .build();
@@ -509,7 +598,7 @@ class CriteriaHelperTest {
 
             for (IEnumOperator.Types operator : operators) {
                 QueryCriteria criteria = QueryCriteria.builder()
-                        .name("age") // Integer field
+                        .name("age")
                         .operator(operator)
                         .value("25")
                         .combiner(IEnumCriteriaCombiner.Types.OR)
@@ -524,7 +613,6 @@ class CriteriaHelperTest {
         @Test
         @DisplayName("Should handle type conversion for different field types")
         void testBuildSpecification_TypeConversion() {
-            // Test Integer conversion
             QueryCriteria intCriteria = QueryCriteria.builder()
                     .name("age")
                     .operator(IEnumOperator.Types.EQ)
@@ -532,7 +620,6 @@ class CriteriaHelperTest {
                     .combiner(IEnumCriteriaCombiner.Types.OR)
                     .build();
 
-            // Test Boolean conversion
             QueryCriteria boolCriteria = QueryCriteria.builder()
                     .name("active")
                     .operator(IEnumOperator.Types.EQ)
@@ -540,7 +627,6 @@ class CriteriaHelperTest {
                     .combiner(IEnumCriteriaCombiner.Types.OR)
                     .build();
 
-            // Test Double conversion
             QueryCriteria doubleCriteria = QueryCriteria.builder()
                     .name("salary")
                     .operator(IEnumOperator.Types.GT)
@@ -583,7 +669,6 @@ class CriteriaHelperTest {
             Specification<TestEntity> spec = CriteriaHelper.equal("name", "John");
             assertNotNull(spec);
 
-            // Test with mock criteria builder
             Root<TestEntity> root = mock(Root.class);
             CriteriaQuery<?> query = mock(CriteriaQuery.class);
             CriteriaBuilder cb = mock(CriteriaBuilder.class);
@@ -691,16 +776,20 @@ class CriteriaHelperTest {
             String sqlWhere = "name = 'John' & age > 25 & active = true";
             List<QueryCriteria> criteria = CriteriaHelper.convertSqlWhereToCriteria(sqlWhere);
 
-            // 2. Verify criteria parsing
             assertEquals(3, criteria.size());
 
-            // 3. Get criteria metadata
-            Map<String, String> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
-            assertTrue(criteriaData.containsKey("name"));
-            assertTrue(criteriaData.containsKey("age"));
-            assertTrue(criteriaData.containsKey("active"));
+            // 2. Get criteria metadata — now a List<CriteriaFieldDto>.
+            List<CriteriaFieldDto> criteriaData = CriteriaHelper.getCriteriaData(TestEntity.class);
+            assertNotNull(findType(criteriaData, "name"),
+                    "Expected field 'name' to be present");
+            assertNotNull(findType(criteriaData, "age"),
+                    "Expected field 'age' to be present");
+            assertNotNull(findType(criteriaData, "active"),
+                    "Expected field 'active' to be present");
+            assertNull(findType(criteriaData, "nonCriteriaField"),
+                    "Expected field 'nonCriteriaField' to be absent (no @Criteria)");
 
-            // 4. Build specification
+            // 3. Build specification
             Specification<TestEntity> spec = CriteriaHelper.buildSpecification(
                     "tenant1", criteria, TestEntity.class);
 
