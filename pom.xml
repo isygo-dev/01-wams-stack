@@ -144,42 +144,42 @@
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-shared</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-jpa</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-crypt</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-web</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-multitenancy</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-storage</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-cassandra</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>eu.isygo-it.services</groupId>
                 <artifactId>service-stack-quartz</artifactId>
-                <version>WS-1.0.261007-T1703</version>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- Web / API -->
