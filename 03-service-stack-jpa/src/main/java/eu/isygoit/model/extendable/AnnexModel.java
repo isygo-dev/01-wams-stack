@@ -1,5 +1,6 @@
 package eu.isygoit.model.extendable;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.enums.IEnumLanguage;
 import eu.isygoit.model.ITenantAssignable;
@@ -32,10 +33,16 @@ import java.io.Serializable;
 @MappedSuperclass
 public abstract class AnnexModel<T extends Serializable> extends AuditableEntity<T> implements ITenantAssignable {
 
+    @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
+    @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
+    private String tenant;
+
+    @Criteria(1)
     @Length(max = ComSchemaConstantSize.TABLE_CODE)
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_CODE, length = ComSchemaConstantSize.TABLE_CODE, nullable = false)
     private String tableCode;
 
+    @Criteria(2)
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'EN'")
     @Column(name = ComSchemaColumnConstantName.C_LANGUAGE_CODE, length = IEnumLanguage.STR_ENUM_SIZE, nullable = false)
@@ -48,12 +55,11 @@ public abstract class AnnexModel<T extends Serializable> extends AuditableEntity
     @Column(name = ComSchemaColumnConstantName.C_DESCRIPTION, length = ComSchemaConstantSize.DESCRIPTION)
     private String description;
 
+    @Criteria(3)
     @Length(max = ComSchemaConstantSize.S_VALUE)
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_REFERENCE, length = ComSchemaConstantSize.S_VALUE)
     private String reference;
+
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_ORDER)
     private Integer annexOrder;
-    @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
-    @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
-    private String tenant;
 }
