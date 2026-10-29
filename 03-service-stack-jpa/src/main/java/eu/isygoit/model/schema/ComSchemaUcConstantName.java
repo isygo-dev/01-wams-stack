@@ -21,4 +21,9 @@ public interface ComSchemaUcConstantName {
      * The constant UC_TENANT_NAME.
      */
     String UC_TENANT_NAME = "UC_TENANT";
+
+    /**
+     * The constant UC_CODETABLE_VALUE_AND_LANGUAGE.
+     */
+    String UC_CODE_TABLE_VALUE_AND_LANGUAGE = "UC_CODETABLE_VALUE_AND_LANGUAGE";
 }

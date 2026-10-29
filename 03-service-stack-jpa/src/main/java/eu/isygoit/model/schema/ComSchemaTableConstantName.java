@@ -38,4 +38,9 @@ public interface ComSchemaTableConstantName {
      * The constant T_TENANT.
      */
     String T_TENANT = "T_TENANT";
+
+    /**
+     * The constant T_ANNEX.
+     */
+    String T_ANNEX = "T_ANNEX";
 }
