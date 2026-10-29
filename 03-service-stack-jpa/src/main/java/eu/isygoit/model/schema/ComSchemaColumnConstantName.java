@@ -694,4 +694,5 @@ public interface ComSchemaColumnConstantName {
      * The constant C_CODE_VALUE.
      */
     String C_CODE_VALUE = "CODE_VALUE";
+    String C_TRANSLATED = "TRANSLATED";
 }
