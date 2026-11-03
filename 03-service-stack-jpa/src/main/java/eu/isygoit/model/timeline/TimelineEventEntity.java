@@ -2,6 +2,7 @@ package eu.isygoit.model.timeline;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.isygoit.model.jakarta.AbstractEntity;
+import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,7 +31,7 @@ public abstract class TimelineEventEntity<I extends Serializable> extends Abstra
     @Column(nullable = false)
     private TimelineEventType eventType;
 
-    @Column(name = "ELEMENT_TYPE", nullable = false)
+    @Column(name = ComSchemaColumnConstantName.C_ELEMENT_TYPE, nullable = false)
     private String elementType;
 
     @Column(nullable = false)
@@ -46,4 +47,3 @@ public abstract class TimelineEventEntity<I extends Serializable> extends Abstra
     @Column(columnDefinition = "jsonb")
     private JsonNode attributes;
 }
-

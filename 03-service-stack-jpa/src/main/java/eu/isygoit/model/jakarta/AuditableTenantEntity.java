@@ -3,6 +3,7 @@ package eu.isygoit.model.jakarta;
 import eu.isygoit.constants.ErrorCodeConstants;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
+import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.timeline.ITimelineEventSource;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -22,7 +23,7 @@ public abstract class AuditableTenantEntity<I extends Serializable>
         extends AuditableEntity<I>
         implements ITenantAssignable, IIdAssignable<I>, ITimelineEventSource {
 
-    @Column(name = "TENANT_ID", nullable = false, updatable = false)
+    @Column(name = ComSchemaColumnConstantName.C_TENANT, nullable = false, updatable = false)
     private String tenant;
 
     @Override

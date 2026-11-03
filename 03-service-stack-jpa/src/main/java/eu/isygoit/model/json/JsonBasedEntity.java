@@ -7,6 +7,7 @@ import eu.isygoit.exception.ServiceOperationException;
 import eu.isygoit.helper.JsonBasedEntityHelper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
+import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
@@ -31,7 +32,7 @@ import java.util.UUID;
 @MappedSuperclass
 public abstract class JsonBasedEntity<I extends Serializable> extends AuditableEntity<I> implements IIdAssignable<I> {
 
-    @Column(name = "ELEMENT_TYPE", nullable = false)
+    @Column(name = ComSchemaColumnConstantName.C_ELEMENT_TYPE, nullable = false)
     private String elementType;
 
     @JdbcTypeCode(SqlTypes.JSON)
