@@ -1,5 +1,6 @@
 package eu.isygoit.model.tenancy;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -29,6 +30,7 @@ import java.io.Serializable;
 @MappedSuperclass
 public abstract class TenantModel<T extends Serializable> extends AuditableCancelableEntity<T> {
 
+    @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_NAME, length = ComSchemaConstantSize.S_NAME, updatable = false)
     private String name;
 

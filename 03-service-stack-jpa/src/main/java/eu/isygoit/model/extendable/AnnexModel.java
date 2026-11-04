@@ -42,6 +42,7 @@ public abstract class AnnexModel<T extends Serializable> extends AuditableEntity
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_CODE, length = ComSchemaConstantSize.TABLE_CODE, nullable = false)
     private String tableCode;
 
+    @Criteria(4)
     @Length(max = ComSchemaConstantSize.XL_VALUE)
     @Column(name = ComSchemaColumnConstantName.C_ANNEX_VALUE, length = ComSchemaConstantSize.XL_VALUE, nullable = false)
     private String value;

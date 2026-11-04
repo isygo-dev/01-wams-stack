@@ -1,6 +1,7 @@
 package eu.isygoit.model.extendable;
 
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.ILinkedFile;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -28,6 +29,7 @@ import java.io.Serializable;
 public abstract class LinkedFileModel<T extends Serializable> extends FileEntity<T> implements ILinkedFile, ICodeAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
+    @Criteria(4)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
     private String code;
 

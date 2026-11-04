@@ -1,5 +1,6 @@
 package eu.isygoit.model.extendable;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.enums.IEnumAccountSystemStatus;
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
@@ -36,12 +37,14 @@ import java.io.Serializable;
 public abstract class AccountModel<T extends Serializable> extends AuditableCancelableEntity<T> implements ITenantAssignable, ICodeAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
+    @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
     private String code;
     //@Convert(converter = LowerCaseConverter.class)
     @ColumnDefault("'" + TenantConstants.DEFAULT_TENANT_NAME + "'")
     @Column(name = ComSchemaColumnConstantName.C_TENANT, length = ComSchemaConstantSize.TENANT, updatable = false, nullable = false)
     private String tenant;
+    @Criteria(2)
     @Column(name = ComSchemaColumnConstantName.C_EMAIL, length = ComSchemaConstantSize.EMAIL, nullable = false)
     @Email(message = "email.should.be.valid")
     private String email;

@@ -1,5 +1,6 @@
 package eu.isygoit.model.extendable;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.constants.TenantConstants;
 import eu.isygoit.enums.IEnumEnabledBinaryStatus;
 import eu.isygoit.model.ICodeAssignable;
@@ -40,9 +41,11 @@ public abstract class CustomerModel<T extends Serializable> extends AuditableEnt
     private String tenant;
 
     //@Convert(converter = LowerCaseConverter.class)
+    @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
     private String code;
 
+    @Criteria(2)
     @Column(name = ComSchemaColumnConstantName.C_NAME, length = ComSchemaConstantSize.S_NAME)
     private String name;
 

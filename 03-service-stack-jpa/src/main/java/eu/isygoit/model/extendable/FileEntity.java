@@ -1,5 +1,6 @@
 package eu.isygoit.model.extendable;
 
+import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -28,17 +29,20 @@ import java.util.List;
 @MappedSuperclass
 public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity {
 
+    @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CATEGORY)
     private String category;
 
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_FILE_NAME, updatable = false, length = ComSchemaConstantSize.FILE_NAME_SIZE)
     private String fileName;
+    @Criteria(2)
     @Column(name = ComSchemaColumnConstantName.C_ORIGINAL_FILE_NAME, length = ComSchemaConstantSize.FILE_NAME_SIZE)
     private String originalFileName;
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_PATH, updatable = false)
     private String path;
+    @Criteria(3)
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_EXTENSION, length = ComSchemaConstantSize.EXTENSION_SIZE)
     private String extension;
