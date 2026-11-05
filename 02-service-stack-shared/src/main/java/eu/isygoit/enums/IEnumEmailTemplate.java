@@ -44,6 +44,10 @@ public interface IEnumEmailTemplate {
          */
         NEW_POST_PUBLISHED_TEMPLATE("NEW_POST_PUBLISHED_TEMPLATE"),
         /**
+         * Message delivery template types.
+         */
+        MESSAGE_TEMPLATE("MESSAGE_CONTENT_TEMPLATE"),
+        /**
          * Unmanaged exception template types.
          */
         UNMANAGED_EXCEPTION_TEMPLATE("UNMANAGED_EXCEPTION_TEMPLATE"),
