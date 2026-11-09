@@ -22,6 +22,10 @@
         <url>https://isygo-it.eu</url>
     </organization>
 
+    <properties>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+    </properties>
+
     <dependencies>
 
         <!-- Internal stack deps -->
