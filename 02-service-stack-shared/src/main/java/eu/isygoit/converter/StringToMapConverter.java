@@ -20,6 +20,10 @@ public class StringToMapConverter
 
     @Override
     public Map<String, String> convert(String source) {
+        if (source == null || source.isBlank()) {
+            // an empty form field means "no tags", not an invalid JSON document
+            return null;
+        }
         try {
             return objectMapper.readValue(
                     source,
