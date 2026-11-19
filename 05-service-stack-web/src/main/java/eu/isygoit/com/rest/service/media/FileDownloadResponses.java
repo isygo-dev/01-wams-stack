@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 
 public final class FileDownloadResponses {
 
-    private FileDownloadResponses() {}
+    private FileDownloadResponses() {
+    }
 
     // ---------- DTO-based entry point (unchanged) ----------
 
@@ -65,7 +66,9 @@ public final class FileDownloadResponses {
 
     // ---------- MIME resolution ----------
 
-    /** Same logic as before, for {@link ResourceDto}. */
+    /**
+     * Same logic as before, for {@link ResourceDto}.
+     */
     public static String resolveContentType(ResourceDto dto) {
         String declared = dto.getFileType();
         if (StringUtils.isNotBlank(declared) && declared.contains("/")) {

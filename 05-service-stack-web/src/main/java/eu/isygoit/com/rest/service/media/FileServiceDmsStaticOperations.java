@@ -106,7 +106,7 @@ public final class FileServiceDmsStaticOperations {
             log.info("File downloaded successfully with code {}", entity.getCode());
             return ResourceDto.builder()
                     .fileName(entity.getFileName())
-                    .fileType(entity.getType())
+                    .fileType(entity.getMimetype())
                     .originalFileName(entity.getOriginalFileName())
                     .resource(response.getBody())
                     .build();

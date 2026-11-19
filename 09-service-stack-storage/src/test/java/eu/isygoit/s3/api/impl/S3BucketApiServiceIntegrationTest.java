@@ -72,7 +72,7 @@ class S3BucketApiServiceIntegrationTest {
                 .objectName(objectName)
                 .bucketName(bucketName)
                 .contentType("text/plain")
-                .tagsMap(Map.of("test-tag", "test-value"))
+                .tags(Map.of("test-tag", "test-value"))
                 .build();
         // Upload
         s3BucketApiService.uploadFile(s3Config, metaData, file);

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The type Linked file response dto.
@@ -23,6 +24,6 @@ public class LinkedFileResponseDto extends AuditableDto {
     private String code;                //Unique file name
     private String originalFileName;    //original file name
     private String path;
-    private List<String> tags;
+    private Map<String, String> tags;
     private List<String> categoryNames;
 }

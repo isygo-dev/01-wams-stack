@@ -127,8 +127,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
         byte[] data = minIOService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
@@ -149,8 +148,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
         String url = minIOService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
@@ -173,8 +171,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(tags.values().stream().toList())
-                .tagsMap(tags)
+                .tags(tags)
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
 
@@ -199,8 +196,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
 
@@ -226,8 +222,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
         minIOService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
@@ -250,8 +245,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(f1.getContentType() != null ? f1.getContentType() : "text/plain")
                 .size(f1.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData1, f1);
 
@@ -261,8 +255,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(f2.getContentType() != null ? f2.getContentType() : "text/plain")
                 .size(f2.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData2, f2);
 
@@ -337,8 +330,7 @@ class MinIOStorageIntegrationTests {
                 .bucketName(BUCKET_NAME)
                 .objectName(OBJECT_NAME)
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         assertThrows(IllegalArgumentException.class,
                 () -> minIOService.uploadFile(s3Config, metaData, null));
@@ -370,8 +362,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
         byte[] retrieved = minIOService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
@@ -391,8 +382,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
         List<FileStorage> files = minIOService.getObjects(s3Config, BUCKET_NAME);
@@ -413,8 +403,7 @@ class MinIOStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         minIOService.uploadFile(s3Config, metaData, file);
         assertDoesNotThrow(() ->

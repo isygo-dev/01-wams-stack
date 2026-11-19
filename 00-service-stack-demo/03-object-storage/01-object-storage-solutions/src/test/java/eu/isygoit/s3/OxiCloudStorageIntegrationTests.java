@@ -123,8 +123,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
         byte[] data = oxiCloudService.getObject(s3Config, BUCKET_NAME, OBJECT_NAME, null);
@@ -145,8 +144,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
         String url = oxiCloudService.getPresignedObjectUrl(s3Config, BUCKET_NAME, OBJECT_NAME);
@@ -169,8 +167,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(tags.values().stream().toList())
-                .tagsMap(tags)
+                .tags(tags)
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
 
@@ -195,8 +192,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
 
@@ -222,8 +218,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
         oxiCloudService.deleteObject(s3Config, BUCKET_NAME, OBJECT_NAME);
@@ -246,8 +241,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(f1.getContentType() != null ? f1.getContentType() : "text/plain")
                 .size(f1.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData1, f1);
         MetaData metaData2 = MetaData.builder()
@@ -256,8 +250,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(f2.getContentType() != null ? f2.getContentType() : "text/plain")
                 .size(f2.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData2, f2);
 
@@ -332,8 +325,7 @@ class OxiCloudStorageIntegrationTests {
                 .bucketName(BUCKET_NAME)
                 .objectName(OBJECT_NAME)
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         assertThrows(IllegalArgumentException.class,
                 () -> oxiCloudService.uploadFile(s3Config, metaData, null));
@@ -365,8 +357,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
         byte[] retrieved = oxiCloudService.getObject(s3Config, BUCKET_NAME, objectPath + objectName, null);
@@ -386,8 +377,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
         List<FileStorage> files = oxiCloudService.getObjects(s3Config, BUCKET_NAME);
@@ -408,8 +398,7 @@ class OxiCloudStorageIntegrationTests {
                 .contentType(file.getContentType() != null ? file.getContentType() : "text/plain")
                 .size(file.getSize())
                 .etag("etag123")
-                .tags(List.of("value1", "value2"))
-                .tagsMap(Map.of("key1", "value1", "key2", "value2"))
+                .tags(Map.of("key1", "value1", "key2", "value2"))
                 .build();
         oxiCloudService.uploadFile(s3Config, metaData, file);
         assertDoesNotThrow(() ->

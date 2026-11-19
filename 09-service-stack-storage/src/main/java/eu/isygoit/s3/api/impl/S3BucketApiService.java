@@ -8,6 +8,7 @@ import eu.isygoit.s3.object.FileStorage;
 import eu.isygoit.s3.object.MetaData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -391,9 +392,9 @@ public class S3BucketApiService implements IAWSS3ApiService {
                         ? metaData.getPath() + "/" + metaData.getObjectName()
                         : metaData.getObjectName();
 
-                List<Tag> s3Tags = metaData.getTagsMap() != null ? metaData.getTagsMap().entrySet().stream()
+                List<Tag> s3Tags = CollectionUtils.isEmpty(metaData.getTags()) ? null : metaData.getTags().entrySet().stream()
                         .map(entry -> Tag.builder().key(entry.getKey()).value(entry.getValue()).build())
-                        .collect(Collectors.toList()) : null;
+                        .collect(Collectors.toList());
 
                 PutObjectResponse putResponse = client.putObject(PutObjectRequest.builder()
                         .bucket(metaData.getBucketName())
@@ -419,8 +420,7 @@ public class S3BucketApiService implements IAWSS3ApiService {
                         .etag(headResponse.eTag())
                         .versionID(headResponse.versionId())
                         .lastModified(headResponse.lastModified() != null ? headResponse.lastModified().toString() : null)
-                        .tagsMap(metaData.getTagsMap())
-                        .tags(metaData.getTagsMap() != null ? new ArrayList<>(metaData.getTagsMap().values().stream().distinct().toList()) : Collections.emptyList())
+                        .tags(metaData.getTags())
                         .build();
             } catch (Exception e) {
                 throw new S3BuketException("Error uploading file: " + metaData.getObjectName(), e);
@@ -474,8 +474,7 @@ public class S3BucketApiService implements IAWSS3ApiService {
                         .etag(headResponse.eTag())
                         .versionID(headResponse.versionId())
                         .lastModified(headResponse.lastModified() != null ? headResponse.lastModified().toString() : null)
-                        .tagsMap(tagsMap)
-                        .tags(tagsMap.values().stream().distinct().toList())
+                        .tags(tagsMap)
                         .build();
             } catch (Exception e) {
                 throw new S3BuketException("Error retrieving metadata for object: " + objectName, e);

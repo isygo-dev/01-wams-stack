@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * The type Resume file.
@@ -19,5 +19,5 @@ public class ResumeFile extends FileEntity<Long> implements IFileEntity {
 
 
     private Long id;
-    private List<String> tags;
+    private Map<String, String> tags;
 }

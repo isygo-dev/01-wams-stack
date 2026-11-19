@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The type Resume.
@@ -37,7 +38,7 @@ public class Resume extends AuditableCancelableEntity<Long>
     private String originalFileName;
     private String path;
     private String extension;
-    private String type;
-    private List<String> tags;
+    private String mimetype;
+    private Map<String, String> tags;
     private List<ResumeLinkedFile> additionalFiles;
 }

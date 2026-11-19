@@ -8,8 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -26,11 +28,11 @@ public class ContractFileEntity extends FileEntity<Long> implements IFileEntity 
 
     private Long id;
 
-    @ElementCollection
-    @CollectionTable(name = "CONTRACT_FILE_TAGS"
-            , joinColumns = @JoinColumn(name = "CONTRACT",
-            referencedColumnName = ComSchemaColumnConstantName.C_ID,
-            foreignKey = @ForeignKey(name = "FK_TAGS_REF_CONTRACT_FILE")))
-    @Column(name = ComSchemaColumnConstantName.C_TAG_OWNER)
-    private List<String> tags;
+    /**
+     * Stored as a single JSON column (e.g. {"mimetype":"…","category":"…","extension":"…"}).
+     * Keeps the existing C_TAG column — no join table required.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")
+    private Map<String, String> tags;
 }

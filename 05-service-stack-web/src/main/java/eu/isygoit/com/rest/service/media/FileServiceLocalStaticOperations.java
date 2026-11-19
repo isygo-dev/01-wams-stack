@@ -89,7 +89,7 @@ public final class FileServiceLocalStaticOperations {
         return ResourceDto.builder()
                 .originalFileName(entity.getOriginalFileName())
                 .fileName(entity.getFileName())
-                .fileType(entity.getType())
+                .fileType(entity.getMimetype())
                 .resource(resource)
                 .build();
     }

@@ -1,6 +1,6 @@
 package eu.isygoit.model;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * The interface File entity.
@@ -12,14 +12,14 @@ public interface IFileEntity {
      *
      * @return the type
      */
-    String getType();
+    String getMimetype();
 
     /**
      * Sets type.
      *
      * @param type the type
      */
-    void setType(String type);
+    void setMimetype(String type);
 
     /**
      * Gets file name.
@@ -77,10 +77,5 @@ public interface IFileEntity {
      */
     void setExtension(String extension);
 
-    /**
-     * Gets tags.
-     *
-     * @return the tags
-     */
-    List<String> getTags();
+    Map<String, String> getTags();
 }

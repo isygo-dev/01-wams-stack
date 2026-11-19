@@ -137,7 +137,7 @@ public class MinIOApiService implements IMinIOApiService {
                 client.putObject(PutObjectArgs.builder()
                         .bucket(metaData.getBucketName())
                         .object(fullPath)
-                        .tags(metaData.getTagsMap())
+                        .tags(metaData.getTags())
                         .contentType(metaData.getContentType() != null ? metaData.getContentType() : file.getContentType())
                         .stream(file.getInputStream(), file.getSize(), -1)
                         .build());
@@ -154,8 +154,7 @@ public class MinIOApiService implements IMinIOApiService {
                         .etag(stat.etag())
                         .versionID(stat.versionId())
                         .lastModified(stat.lastModified() != null ? stat.lastModified().toString() : null)
-                        .tagsMap(tags.get())
-                        .tags(tags.get().values().stream().distinct().toList())
+                        .tags(tags.get())
                         .build();
             } catch (Exception e) {
                 throw new MinIoS3BucketException("Error uploading file: " + metaData.getObjectName(), e);
@@ -391,8 +390,7 @@ public class MinIOApiService implements IMinIOApiService {
                         .etag(stat.etag())
                         .versionID(stat.versionId())
                         .lastModified(stat.lastModified() != null ? stat.lastModified().toString() : null)
-                        .tagsMap(tags.get())
-                        .tags(tags.get().values().stream().distinct().toList())
+                        .tags(tags.get())
                         .build();
             } catch (Exception e) {
                 throw new MinIoS3BucketException("Error retrieving metadata for object: " + objectName, e);

@@ -193,7 +193,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
         entity.setFileName(null);
         entity.setOriginalFileName(null);
         entity.setExtension(null);
-        entity.setType(null);
+        entity.setMimetype(null);
         entity.setPath(null);
         return update(entity);
     }

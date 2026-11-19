@@ -9,8 +9,8 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The type File entity dto.
@@ -28,19 +28,19 @@ public abstract class FileEntityDto<T extends Serializable> extends AuditableIdA
     private String originalFileName;
     private String path;
     private String extension;
-    private String type;
+    private String mimetype;
     private Long size;
     private Long version;
-    private String mimetype;
-    private List<String> tags;
+    private Map<String, String> tags;
 
-    public List<String> getTags() {
-        if(CollectionUtils.isEmpty(tags)) {
-            return Arrays.asList(type!=null?type:"typeNA",
-                    mimetype!=null?mimetype:"mimetypeNA",
-                    category!=null?category:"categoryNA",
-                    extension!=null?extension:"extensionNA");
+    public Map<String, String> getTags() {
+        if (!CollectionUtils.isEmpty(tags)) {
+            return tags;
         }
+        tags = new LinkedHashMap<>();
+        tags.put("mimetype", mimetype != null ? mimetype : "NA");
+        tags.put("category", category != null ? category : "NA");
+        tags.put("extension", extension != null ? extension : "NA");
         return tags;
     }
 }

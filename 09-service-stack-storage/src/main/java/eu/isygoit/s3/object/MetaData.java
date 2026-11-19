@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,7 +26,6 @@ public class MetaData {
     private String etag;
     private String versionID;
     private boolean currentVersion;
-    private List<String> tags;
-    private Map<String, String> tagsMap;
+    private Map<String, String> tags;
     private String lastModified;
 }

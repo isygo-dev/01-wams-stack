@@ -12,9 +12,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -84,15 +87,15 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
     @Column(name = ComSchemaColumnConstantName.C_EXTENSION, table = "RESUME_FILE")
     private String extension;
     @Column(name = ComSchemaColumnConstantName.C_TYPE, table = "RESUME_FILE")
-    private String type;
+    private String mimetype;
 
-    @ElementCollection
-    @CollectionTable(name = "RESUME_FILE_TAGS"
-            , joinColumns = @JoinColumn(name = "RESUME",
-            referencedColumnName = ComSchemaColumnConstantName.C_ID,
-            foreignKey = @ForeignKey(name = "FK_TAGS_REF_RESUME_FILE")))
-    @Column(name = ComSchemaColumnConstantName.C_TAG_OWNER)
-    private List<String> tags;
+    /**
+     * Stored as a single JSON column (e.g. {"mimetype":"…","category":"…","extension":"…"}).
+     * Keeps the existing C_TAG column — no join table required.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")
+    private Map<String, String> tags;
     //END IFileEntity : SecondaryTable
 
     //Multi file join
