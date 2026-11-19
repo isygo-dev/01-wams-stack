@@ -6,6 +6,7 @@ import eu.isygoit.com.rest.controller.impl.CrudControllerOperations;
 import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.media.FileDownloadResponses;
 import eu.isygoit.com.rest.service.media.IImageServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,19 +75,29 @@ public abstract class MappedImageController<
     public ResponseEntity<Resource> downloadImage(I id) {
         log.debug("Downloading image for entityId: {}", id);
         try {
-            var resource = crudService().downloadImage(id);
-            if (resource != null && resource.getResource() != null) {
-                var file = resource.getResource().getFile();
-                var contentType = Files.probeContentType(file.toPath());
-                log.info("Successfully downloaded image: {} for entityId: {}", resource.getOriginalFileName(), id);
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_TYPE, contentType != null ? contentType : "application/octet-stream")
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
-                        .body(resource.getResource());
+            var resourceDto = crudService().downloadImage(id);
+            if (resourceDto == null || resourceDto.getResource() == null) {
+                log.warn("Image not found for entityId: {}", id);
+                return ResponseEntity.notFound().build();
             }
-            log.warn("Image not found for entityId: {}", id);
-            return ResponseEntity.notFound().build();
-        } catch (IOException e) {
+
+            // The Resource is an in-memory byte array (Feign), not a file on disk,
+            // so Files.probeContentType(...) cannot be used. Use the known image type.
+            String contentType = FileDownloadResponses.resolveContentType(resourceDto);
+
+            String fileName = StringUtils.defaultIfBlank(
+                    resourceDto.getOriginalFileName(),
+                    resourceDto.getFileName());
+
+            log.info("Successfully downloaded image: {} for entityId: {}",
+                    resourceDto.getOriginalFileName(), id);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\"")
+                    .body(resourceDto.getResource());
+        } catch (Exception e) {
             log.error("Failed to download image for entityId: {}", id, e);
             return getBackExceptionResponse(e);
         }

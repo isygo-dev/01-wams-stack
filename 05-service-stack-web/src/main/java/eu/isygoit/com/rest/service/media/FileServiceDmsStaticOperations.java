@@ -12,6 +12,7 @@ import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ILinkedFile;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -100,11 +101,15 @@ public final class FileServiceDmsStaticOperations {
         }
 
         // Perform the download request
-        ResponseEntity<ResourceDto> response = linkedFileService.download(entity.getCode());
-
+        ResponseEntity<Resource> response = linkedFileService.download(entity.getCode());
         if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
             log.info("File downloaded successfully with code {}", entity.getCode());
-            return response.getBody();
+            return ResourceDto.builder()
+                    .fileName(entity.getFileName())
+                    .fileType(entity.getType())
+                    .originalFileName(entity.getOriginalFileName())
+                    .resource(response.getBody())
+                    .build();
         }
 
         log.warn("Failed to download file with code {}", entity.getCode());

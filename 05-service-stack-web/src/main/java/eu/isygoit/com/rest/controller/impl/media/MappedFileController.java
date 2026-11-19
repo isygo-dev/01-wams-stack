@@ -6,6 +6,7 @@ import eu.isygoit.com.rest.controller.impl.CrudControllerOperations;
 import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.media.FileDownloadResponses;
 import eu.isygoit.com.rest.service.media.IFileServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,20 +65,29 @@ public abstract class MappedFileController<
         String senderTenant = requestContextService().getCurrentContext().getSenderTenant();
         log.debug("Downloading file for entityId: {}, version: {} for tenant {}", id, version, senderTenant);
         try {
-            var resource = crudService().downloadFile(senderTenant, id, version);
-            if (resource != null && resource.getResource() != null) {
-                var file = resource.getResource().getFile();
-                var contentType = Files.probeContentType(file.toPath());
-                log.info("Successfully downloaded file: {} for entityId: {}, version: {}",
-                        resource.getOriginalFileName(), id, version);
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_TYPE, contentType != null ? contentType : "application/octet-stream")
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
-                        .body(resource.getResource());
+            var resourceDto = crudService().downloadFile(senderTenant, id, version);
+            if (resourceDto == null || resourceDto.getResource() == null) {
+                log.warn("File not found for entityId: {}, version: {}", id, version);
+                return ResponseEntity.notFound().build();
             }
-            log.warn("File not found for entityId: {}, version: {}", id, version);
-            return ResponseEntity.notFound().build();
-        } catch (IOException e) {
+
+            // The Resource is an in-memory byte array (Feign), not a file on disk,
+            // so Files.probeContentType(...) cannot be used. Use the known file type.
+            String contentType = FileDownloadResponses.resolveContentType(resourceDto);
+
+            String fileName = StringUtils.defaultIfBlank(
+                    resourceDto.getOriginalFileName(),
+                    resourceDto.getFileName());
+
+            log.info("Successfully downloaded file: {} for entityId: {}, version: {}",
+                    resourceDto.getOriginalFileName(), id, version);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\"")
+                    .body(resourceDto.getResource());
+        } catch (Exception e) {
             log.error("Failed to download file for entityId: {}, version: {}", id, version, e);
             return getBackExceptionResponse(e);
         }

@@ -6,14 +6,16 @@ import eu.isygoit.com.rest.controller.impl.CrudControllerOperations;
 import eu.isygoit.com.rest.service.ICrudServiceHooks;
 import eu.isygoit.com.rest.service.ICrudServiceOperations;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.media.FileDownloadResponses;
 import eu.isygoit.com.rest.service.media.IMultiFileServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.LinkedFileMinDto;
+import eu.isygoit.dto.common.LinkedFileDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ import java.util.List;
 public abstract class MappedMultiFileController<
         I extends Serializable,
         T extends IIdAssignable<I> & IMultiFileEntity,
-        L extends LinkedFileMinDto,
+        L extends LinkedFileDto,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends IMultiFileServiceOperations<I, T>
@@ -108,26 +109,33 @@ public abstract class MappedMultiFileController<
                                              Long version) {
         log.debug("Downloading additional fileId: {}, parentId: {}, version: {}", fileId, parentId, version);
         try {
-            var resource = crudService().downloadFile(parentId, fileId, version);
+            var resourceDto = crudService().downloadFile(parentId, fileId, version);
 
-            if (resource != null && resource.getResource() != null) {
-                var file = resource.getResource().getFile();
-                var contentType = Files.probeContentType(file.toPath());
-
-                log.info("Successfully downloaded file: {} for parentId: {}, fileId: {}, version: {}",
-                        resource.getOriginalFileName(), parentId, fileId, version);
-
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_TYPE, contentType != null ? contentType : "application/octet-stream")
-                        .header(HttpHeaders.CONTENT_DISPOSITION,
-                                "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
-                        .body(resource.getResource());
+            if (resourceDto == null || resourceDto.getResource() == null) {
+                log.warn("Additional file not found for fileId: {}, parentId: {}, version: {}",
+                        fileId, parentId, version);
+                return ResponseEntity.notFound().build();
             }
 
-            log.warn("Additional file not found for fileId: {}, parentId: {}, version: {}", fileId, parentId, version);
-            return ResponseEntity.notFound().build();
-        } catch (IOException e) {
-            log.error("Failed to download additional fileId: {}, parentId: {}, version: {}", fileId, parentId, version, e);
+            // The Resource is an in-memory byte array (Feign), not a file on disk,
+            // so Files.probeContentType(...) cannot be used. Use the known file type.
+            String contentType = FileDownloadResponses.resolveContentType(resourceDto);
+
+            String fileName = StringUtils.defaultIfBlank(
+                    resourceDto.getOriginalFileName(),
+                    resourceDto.getFileName());
+
+            log.info("Successfully downloaded file: {} for parentId: {}, fileId: {}, version: {}",
+                    resourceDto.getOriginalFileName(), parentId, fileId, version);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\"")
+                    .body(resourceDto.getResource());
+        } catch (Exception e) {
+            log.error("Failed to download additional fileId: {}, parentId: {}, version: {}",
+                    fileId, parentId, version, e);
             return getBackExceptionResponse(e);
         }
     }

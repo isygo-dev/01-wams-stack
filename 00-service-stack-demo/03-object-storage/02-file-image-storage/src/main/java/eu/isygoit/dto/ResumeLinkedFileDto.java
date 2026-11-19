@@ -1,6 +1,6 @@
 package eu.isygoit.dto;
 
-import eu.isygoit.dto.common.LinkedFileMinDto;
+import eu.isygoit.dto.common.LinkedFileDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -11,6 +11,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @AllArgsConstructor
 @SuperBuilder
-public class ResumeLinkedFileDto extends LinkedFileMinDto<Long> {
+public class ResumeLinkedFileDto extends LinkedFileDto<Long> {
 
 }

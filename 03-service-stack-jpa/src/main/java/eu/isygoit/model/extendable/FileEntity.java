@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -49,8 +50,14 @@ public abstract class FileEntity<T extends Serializable> extends AuditableEntity
     @Column(name = ComSchemaColumnConstantName.C_TYPE, length = ComSchemaConstantSize.S_NAME)
     private String type;
 
+    @Column(name = ComSchemaColumnConstantName.C_TAG_OWNER)
+    private List<String> tags;
+
     @Override
     public List<String> getTags() {
-        return Arrays.asList(type, extension);
+        if(CollectionUtils.isEmpty(tags)) {
+            return Arrays.asList(type, category, extension);
+        }
+        return tags;
     }
 }

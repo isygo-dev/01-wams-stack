@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.LinkedFileMinDto;
+import eu.isygoit.dto.common.LinkedFileDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @param <L> the type parameter
  * @param <I> the type parameter
  */
-public interface IMappedMultiFileDeleteApi<L extends LinkedFileMinDto, I> {
+public interface IMappedMultiFileDeleteApi<L extends LinkedFileDto, I> {
 
     /**
      * Delete additional file response entity.

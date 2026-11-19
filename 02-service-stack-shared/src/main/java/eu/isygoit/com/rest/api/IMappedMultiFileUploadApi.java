@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.api;
 
 import eu.isygoit.constants.RestApiConstants;
-import eu.isygoit.dto.common.LinkedFileMinDto;
+import eu.isygoit.dto.common.LinkedFileDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +22,7 @@ import java.util.List;
  * @param <L> the type parameter
  * @param <I> the type parameter
  */
-public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
+public interface IMappedMultiFileUploadApi<L extends LinkedFileDto, I> {
 
     /**
      * Upload additional files response entity.
@@ -37,7 +37,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
             @ApiResponse(responseCode = "200",
                     description = "Files successfully uploaded",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))}),
+                            schema = @Schema(implementation = LinkedFileDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid files",
                     content = @Content),
@@ -73,7 +73,7 @@ public interface IMappedMultiFileUploadApi<L extends LinkedFileMinDto, I> {
             @ApiResponse(responseCode = "200",
                     description = "File successfully uploaded",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LinkedFileMinDto.class))}),
+                            schema = @Schema(implementation = LinkedFileDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid file",
                     content = @Content),

@@ -5,24 +5,25 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.media.FileDownloadResponses;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.com.rest.service.tenancy.IMultiFileTenantServiceOperations;
 import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IIdAssignableDto;
-import eu.isygoit.dto.common.LinkedFileMinDto;
+import eu.isygoit.dto.common.LinkedFileDto;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.mapper.EntityMapper;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.IMultiFileEntity;
 import eu.isygoit.model.ITenantAssignable;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.util.List;
 
 
@@ -39,7 +40,7 @@ import java.util.List;
 @Slf4j
 public abstract class MappedMultiFileTenatController<I extends Serializable,
         T extends IIdAssignable<I> & IMultiFileEntity & ITenantAssignable,
-        L extends LinkedFileMinDto,
+        L extends LinkedFileDto,
         M extends IIdAssignableDto<I> & IDto,
         F extends M,
         S extends IMultiFileTenantServiceOperations<I, T> & ICrudTenantServiceOperations<I, T> & ICrudServiceUtils<I, T>>
@@ -102,13 +103,26 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
         try {
             log.info("download file ");
             try {
-                ResourceDto resource = crudService().downloadFile(requestContextService().getCurrentContext().getSenderTenant(), parentId, fileId, version);
-                if (resource != null) {
-                    log.info("File downloaded successfully {}", resource.getResource().getFilename());
+                ResourceDto resourceDto = crudService().downloadFile(
+                        requestContextService().getCurrentContext().getSenderTenant(),
+                        parentId, fileId, version);
+
+                if (resourceDto != null && resourceDto.getResource() != null) {
+                    log.info("File downloaded successfully {}", resourceDto.getOriginalFileName());
+
+                    // The resource is an in-memory byte array (Feign), not a file on disk,
+                    // so Files.probeContentType(...) cannot be used. Rely on the DMS-provided type.
+                    String contentType = FileDownloadResponses.resolveContentType(resourceDto);
+
+                    String fileName = StringUtils.defaultIfBlank(
+                            resourceDto.getOriginalFileName(),
+                            resourceDto.getFileName());
+
                     return ResponseEntity.ok()
-                            .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
-                            .body(resource.getResource());
+                            .header(HttpHeaders.CONTENT_TYPE, contentType)
+                            .header(HttpHeaders.CONTENT_DISPOSITION,
+                                    "attachment; filename=\"" + fileName + "\"")
+                            .body(resourceDto.getResource());
                 }
             } catch (Exception e) {
                 log.error("Remote feign call failed : ", e);

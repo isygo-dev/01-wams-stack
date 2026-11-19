@@ -19,6 +19,10 @@ public interface IEnumJwtStorage {
          */
         LOCAL("Local storage"),
         /**
+         * The Session.
+         */
+        SESSION("Session storage"),
+        /**
          * The Cookie.
          */
         COOKIE("Cookie storage");

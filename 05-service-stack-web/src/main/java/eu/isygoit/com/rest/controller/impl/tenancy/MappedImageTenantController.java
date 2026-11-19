@@ -5,6 +5,7 @@ import eu.isygoit.com.rest.controller.ResponseFactory;
 import eu.isygoit.com.rest.controller.constants.CtrlConstants;
 import eu.isygoit.com.rest.controller.impl.CrudControllerUtils;
 import eu.isygoit.com.rest.service.ICrudServiceUtils;
+import eu.isygoit.com.rest.service.media.FileDownloadResponses;
 import eu.isygoit.com.rest.service.tenancy.ICrudTenantServiceOperations;
 import eu.isygoit.constants.RestApiConstants;
 import eu.isygoit.dto.IDto;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -80,11 +82,26 @@ public abstract class MappedImageTenantController<I extends Serializable,
             @PathVariable(name = RestApiConstants.ID) I id) throws IOException {
         log.info("Download image request received");
         try {
-            ResourceDto resource = crudService().downloadImage(requestContextService().getCurrentContext().getSenderTenant(), id);
+            ResourceDto resourceDto = crudService().downloadImage(
+                    requestContextService().getCurrentContext().getSenderTenant(), id);
+
+            if (resourceDto == null || resourceDto.getResource() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // The Resource is an in-memory byte array (Feign), not a file on disk,
+            // so Files.probeContentType(...) cannot be used. Use the known image type.
+            String contentType = FileDownloadResponses.resolveContentType(resourceDto);
+
+            String fileName = StringUtils.defaultIfBlank(
+                    resourceDto.getOriginalFileName(),
+                    resourceDto.getFileName());
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getResource().getFile().toPath()))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getOriginalFileName() + "\"")
-                    .body(resource.getResource());
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\"")
+                    .body(resourceDto.getResource());
         } catch (Throwable e) {
             log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
             return getBackExceptionResponse(e);
