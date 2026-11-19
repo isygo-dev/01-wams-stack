@@ -56,7 +56,9 @@ public abstract class FileEntity<T extends Serializable> extends AuditableEntity
     @Override
     public List<String> getTags() {
         if(CollectionUtils.isEmpty(tags)) {
-            return Arrays.asList(type, category, extension);
+            return Arrays.asList(type!=null?type:"typeNA",
+                    category!=null?category:"categoryNA",
+                    extension!=null?extension:"extensionNA");
         }
         return tags;
     }

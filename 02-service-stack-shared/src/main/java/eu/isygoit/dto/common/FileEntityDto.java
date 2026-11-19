@@ -36,7 +36,10 @@ public abstract class FileEntityDto<T extends Serializable> extends AuditableIdA
 
     public List<String> getTags() {
         if(CollectionUtils.isEmpty(tags)) {
-            return Arrays.asList(type, category, extension);
+            return Arrays.asList(type!=null?type:"typeNA",
+                    mimetype!=null?mimetype:"mimetypeNA",
+                    category!=null?category:"categoryNA",
+                    extension!=null?extension:"extensionNA");
         }
         return tags;
     }
