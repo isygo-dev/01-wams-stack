@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,6 +33,9 @@ public abstract class FileEntityDto<T extends Serializable> extends AuditableIdA
     private Long size;
     private Long version;
     private Map<String, String> tags;
+    /** Audit of the stored file itself (not of the record that owns it); null for linked files, which have their own dates. */
+    private LocalDateTime fileCreateDate;
+    private LocalDateTime fileUpdateDate;
 
     public Map<String, String> getTags() {
         if (!CollectionUtils.isEmpty(tags)) {

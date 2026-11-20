@@ -1,83 +1,54 @@
 package eu.isygoit.model;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
  * The interface File entity.
  */
 public interface IFileEntity {
-
-    /**
-     * Gets type.
-     *
-     * @return the type
-     */
+    
     String getMimetype();
-
-    /**
-     * Sets type.
-     *
-     * @param type the type
-     */
+    
     void setMimetype(String type);
-
-    /**
-     * Gets file name.
-     *
-     * @return the file name
-     */
+    
     String getFileName();
-
-    /**
-     * Sets file name.
-     *
-     * @param fileName the file name
-     */
+    
     void setFileName(String fileName);
-
-    /**
-     * Gets original file name.
-     *
-     * @return the original file name
-     */
+    
     String getOriginalFileName();
-
-    /**
-     * Sets original file name.
-     *
-     * @param originalFileName the original file name
-     */
+    
     void setOriginalFileName(String originalFileName);
-
-    /**
-     * Gets path.
-     *
-     * @return the path
-     */
+    
     String getPath();
-
-    /**
-     * Sets path.
-     *
-     * @param path the path
-     */
+    
     void setPath(String path);
-
-    /**
-     * Gets extension.
-     *
-     * @return the extension
-     */
+    
     String getExtension();
-
-    /**
-     * Sets extension.
-     *
-     * @param extension the extension
-     */
+    
     void setExtension(String extension);
 
     Map<String, String> getTags();
 
     String getCategory();
+
+    LocalDateTime getFileUpdateDate();
+
+    LocalDateTime getFileCreateDate();
+
+    Long getCrc16();
+
+    void setCrc16(Long crc16);
+
+    Long getCrc32();
+
+    void setCrc32(Long crc32);
+
+    Long getSize();
+
+    void setSize(Long size);
+
+    Long getVersion();
+
+    void setVersion(Long version);
 }

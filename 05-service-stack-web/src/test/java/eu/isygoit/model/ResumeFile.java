@@ -1,6 +1,6 @@
 package eu.isygoit.model;
 
-import eu.isygoit.model.extendable.FileEntity;
+import eu.isygoit.model.extendable.FileModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ResumeFile extends FileEntity<Long> implements IFileEntity {
+public class ResumeFile extends FileModel<Long> implements IFileEntity {
 
 
     private Long id;

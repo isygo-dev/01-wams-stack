@@ -26,26 +26,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class LinkedFileModel<T extends Serializable> extends FileEntity<T> implements ILinkedFile, ICodeAssignable {
+public abstract class LinkedFileModel<T extends Serializable> extends FileModel<T> implements ILinkedFile, ICodeAssignable {
 
     //@Convert(converter = LowerCaseConverter.class)
     @Criteria(4)
     @Column(name = ComSchemaColumnConstantName.C_CODE, length = ComSchemaConstantSize.CODE, updatable = false, nullable = false)
     private String code;
-
-    @Column(name = ComSchemaColumnConstantName.C_CRC_16, updatable = false, nullable = true)
-    private Long crc16;
-
-    @Column(name = ComSchemaColumnConstantName.C_CRC_32, updatable = false, nullable = true)
-    private Long crc32;
-
-    @Column(name = ComSchemaColumnConstantName.C_SIZE, updatable = false, nullable = false)
-    private Long size;
-
-    @OrderBy(ComSchemaColumnConstantName.C_VERSION + " ASC")
-    @Column(name = ComSchemaColumnConstantName.C_VERSION, updatable = false, nullable = true)
-    private Long version;
-
-    @Column(name = ComSchemaColumnConstantName.C_MIMETYPE, updatable = false, nullable = true)
-    private String mimetype;
 }

@@ -81,6 +81,19 @@ public class ContractEntity extends AuditableEntity<Long> implements ITenantAssi
     @Column(name = ComSchemaColumnConstantName.C_TYPE, table = "CONTRACT_FILE")
     private String mimetype;
 
+    @Column(name = ComSchemaColumnConstantName.C_CRC_16, table = "CONTRACT_FILE")
+    private Long crc16;
+
+    @Column(name = ComSchemaColumnConstantName.C_CRC_32, table = "CONTRACT_FILE")
+    private Long crc32;
+
+    @Column(name = ComSchemaColumnConstantName.C_SIZE, table = "CONTRACT_FILE")
+    private Long size;
+
+    @OrderBy(ComSchemaColumnConstantName.C_VERSION + " ASC")
+    @Column(name = ComSchemaColumnConstantName.C_VERSION, table = "CONTRACT_FILE")
+    private Long version;
+
     /**
      * Stored as a single JSON column (e.g. {"mimetype":"…","category":"…","extension":"…"}).
      * Keeps the existing C_TAG column — no join table required.
@@ -92,5 +105,13 @@ public class ContractEntity extends AuditableEntity<Long> implements ITenantAssi
     @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CATEGORY, table = "CONTRACT_FILE")
     private String category;
+
+    /** When the stored file was first uploaded (file audit, in the file table). */
+    @Column(name = ComSchemaColumnConstantName.C_CREATE_DATE, table = "CONTRACT_FILE", updatable = false)
+    private LocalDateTime fileCreateDate;
+
+    /** When the stored file was last uploaded or replaced (file audit, in the file table). */
+    @Column(name = ComSchemaColumnConstantName.C_UPDATE_DATE, table = "CONTRACT_FILE")
+    private LocalDateTime fileUpdateDate;
     //END IFileEntity : SecondaryTable
 }

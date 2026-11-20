@@ -1,12 +1,16 @@
 package eu.isygoit.model;
 
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
+import eu.isygoit.model.schema.ComSchemaColumnConstantName;
+import jakarta.persistence.Column;
+import jakarta.persistence.OrderBy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +43,14 @@ public class Resume extends AuditableCancelableEntity<Long>
     private String path;
     private String extension;
     private String mimetype;
+    private Long crc16;
+    private Long crc32;
+    private Long size;
+    private Long version;
     private Map<String, String> tags;
     private String category;
     private List<ResumeLinkedFile> additionalFiles;
+    private LocalDateTime fileCreateDate;
+    private LocalDateTime fileUpdateDate;
+    //END IFileEntity : SecondaryTable / ResumeFile
 }
