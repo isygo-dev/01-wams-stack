@@ -9,12 +9,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OrderBy;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
@@ -54,18 +57,19 @@ public abstract class FileModel<T extends Serializable> extends AuditableEntity<
     @Column(name = ComSchemaColumnConstantName.C_TYPE, length = ComSchemaConstantSize.S_NAME)
     private String mimetype;
 
-    @Column(name = ComSchemaColumnConstantName.C_CRC_16, updatable = false, nullable = true)
+    @Column(name = ComSchemaColumnConstantName.C_CRC_16, updatable = false, nullable = false)
     private Long crc16;
 
-    @Column(name = ComSchemaColumnConstantName.C_CRC_32, updatable = false, nullable = true)
+    @Column(name = ComSchemaColumnConstantName.C_CRC_32, updatable = false, nullable = false)
     private Long crc32;
 
     @Column(name = ComSchemaColumnConstantName.C_SIZE, updatable = false, nullable = false)
     private Long size;
 
+    @Builder.Default
     @OrderBy(ComSchemaColumnConstantName.C_VERSION + " ASC")
-    @Column(name = ComSchemaColumnConstantName.C_VERSION, updatable = false, nullable = true)
-    private Long version;
+    @Column(name = ComSchemaColumnConstantName.C_VERSION, updatable = false, nullable = false)
+    private Long version = 0L;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")

@@ -202,6 +202,10 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
                 t.setOriginalFileName(s.getOriginalFileName());
                 t.setPath(s.getPath());
                 t.setExtension(s.getExtension());
+                t.setSize(s.getSize());
+                t.setVersion(s.getVersion());
+                t.setCrc16(s.getCrc16());
+                t.setCrc32(s.getCrc32());
             }
         });
         applyIfInstance(object, existing, IImageEntity.class, (t, s) -> {

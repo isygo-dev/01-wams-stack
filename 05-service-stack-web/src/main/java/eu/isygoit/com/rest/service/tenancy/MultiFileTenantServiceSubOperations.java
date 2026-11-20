@@ -10,6 +10,7 @@ import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.BadArgumentException;
 import eu.isygoit.exception.JpaRepositoryNotDefinedException;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
+import eu.isygoit.exception.StorageException;
 import eu.isygoit.model.*;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
@@ -116,15 +117,27 @@ public abstract class MultiFileTenantServiceSubOperations<
             throw new BadArgumentException("File and entity must not be null");
         }
         log.debug("Uploading file for entity with code: {}", entity.getCode());
-        return executeSafely(() -> {
+        try {
             var service = getLinkedFileApi();
-            String fileName = service != null
-                    ? FileServiceDmsStaticOperations.upload(file, entity, service).getCode()
-                    : FileServiceLocalStaticOperations.upload(file, entity, true);
+            String fileName;
+            if (service != null) {
+                var stored = FileServiceDmsStaticOperations.upload(file, entity, service);
+                if (stored == null) {
+                    // the document service answered without a stored file: do not keep a record that has no content
+                    throw new StorageException("The document service did not store the file " + file.getOriginalFilename());
+                }
+                fileName = stored.getCode();
+            } else {
+                fileName = FileServiceLocalStaticOperations.upload(file, entity, true);
+            }
             entity.setFileName(fileName);
             log.info("File uploaded successfully for entity: {}, fileName: {}", entity.getCode(), fileName);
             return entity;
-        }, entity, "upload file");
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new StorageException("Failed to upload file " + file.getOriginalFilename(), e);
+        }
     }
 
     /**

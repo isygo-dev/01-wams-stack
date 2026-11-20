@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import eu.isygoit.helper.CRC16Helper;
+import eu.isygoit.helper.CRC32Helper;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -119,7 +122,7 @@ public abstract class FileTenantService<I extends Serializable,
 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
-            setFileAttributes(tenant, entity, file);
+            setFileAttributes(tenant, entity, file, null);
         } else {
             log.warn("CreateWithFile ({}): File is null or empty", this.getPersistentClass().getSimpleName());
         }
@@ -146,7 +149,7 @@ public abstract class FileTenantService<I extends Serializable,
 
         if (file != null && !file.isEmpty()) {
             assignOrPreserveCode(entity, existing);
-            setFileAttributes(tenant, entity, file);
+            setFileAttributes(tenant, entity, file, existing.getVersion());
         } else {
             log.warn("UpdateWithFile ({}): File is null or empty", this.getPersistentClass().getSimpleName());
         }
@@ -170,7 +173,7 @@ public abstract class FileTenantService<I extends Serializable,
 
         if (file != null && !file.isEmpty()) {
             assignCodeIfEmpty(entity);
-            setFileAttributes(tenant, entity, file);
+            setFileAttributes(tenant, entity, file, entity.getVersion());
             entity = update(tenant, entity);
 
             return handleFileUpload(tenant, entity, file);
@@ -205,6 +208,10 @@ public abstract class FileTenantService<I extends Serializable,
         }
         entity.setFileName(null);
         entity.setOriginalFileName(null);
+        entity.setSize(null);
+        entity.setVersion(null);
+        entity.setCrc16(null);
+        entity.setCrc32(null);
         entity.setExtension(null);
         entity.setMimetype(null);
         entity.setPath(null);
@@ -219,7 +226,7 @@ public abstract class FileTenantService<I extends Serializable,
         }
     }
 
-    private void setFileAttributes(String tenant, T entity, MultipartFile file) {
+    private void setFileAttributes(String tenant, T entity, MultipartFile file, Long previousVersion) throws IOException {
         Path path = Path.of(getUploadDirectory())
                 .resolve(tenant)
                 .resolve(this.getPersistentClass().getSimpleName().toLowerCase());
@@ -228,6 +235,13 @@ public abstract class FileTenantService<I extends Serializable,
         entity.setFileName(entity.getCode() + "." + FilenameUtils.getExtension(file.getOriginalFilename()));
         entity.setOriginalFileName(file.getOriginalFilename());
         entity.setExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
+        entity.setMimetype(file.getContentType());
+        // size, checksums and version of the stored file; a replaced file is the next version
+        byte[] content = file.getBytes();
+        entity.setSize(file.getSize());
+        entity.setCrc16(CRC16Helper.calculate(content));
+        entity.setCrc32(CRC32Helper.calculate(content));
+        entity.setVersion(previousVersion == null ? 1L : previousVersion + 1);
     }
 
     private T handleFileUpload(String tenant, T entity, MultipartFile file) throws IOException {

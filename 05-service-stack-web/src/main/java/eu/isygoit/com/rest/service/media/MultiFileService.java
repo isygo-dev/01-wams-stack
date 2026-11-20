@@ -26,6 +26,7 @@ import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Abstract service class for handling multiple file operations for entities.
@@ -97,7 +98,7 @@ public abstract class MultiFileService<
         log.debug("Uploading file for parentId: {}", parentId);
 
         try {
-            var linkedFile = createLinkedFile(file);
+            var linkedFile = createLinkedFile(entity, file);
 
             linkedFile = beforeUpload(linkedFile, file);
             linkedFile = performUploadFile(file, linkedFile);
@@ -118,7 +119,7 @@ public abstract class MultiFileService<
         }
     }
 
-    private L createLinkedFile(MultipartFile file) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IOException {
+    private L createLinkedFile(T parent, MultipartFile file) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IOException {
         var linkedFile = linkedFileClass.getDeclaredConstructor().newInstance();
         assignCodeIfEmpty(linkedFile);
 
@@ -134,7 +135,10 @@ public abstract class MultiFileService<
         linkedFile.setCrc16(CRC16Helper.calculate(bytes));
         linkedFile.setCrc32(CRC32Helper.calculate(bytes));
         linkedFile.setSize(file.getSize());
-        linkedFile.setVersion(1L);
+        // a file re-sent under the same name is the next version of it
+        long sameName = CollectionUtils.isEmpty(parent.getAdditionalFiles()) ? 0 : parent.getAdditionalFiles().stream()
+                .filter(f -> Objects.equals(f.getOriginalFileName(), originalFilename)).count();
+        linkedFile.setVersion(sameName + 1);
         return linkedFile;
     }
 
