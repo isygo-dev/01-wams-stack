@@ -40,5 +40,6 @@ public class Resume extends AuditableCancelableEntity<Long>
     private String extension;
     private String mimetype;
     private Map<String, String> tags;
+    private String category;
     private List<ResumeLinkedFile> additionalFiles;
 }

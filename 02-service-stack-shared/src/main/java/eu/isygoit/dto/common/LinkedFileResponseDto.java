@@ -25,5 +25,5 @@ public class LinkedFileResponseDto extends AuditableDto {
     private String originalFileName;    //original file name
     private String path;
     private Map<String, String> tags;
-    private List<String> categoryNames;
+    private String category;
 }

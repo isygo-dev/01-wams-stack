@@ -14,6 +14,7 @@ import eu.isygoit.model.ILinkedFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -58,7 +59,7 @@ public final class FileServiceDmsStaticOperations {
                 .code(entity.getCode())
                 .path(entity.getClass().getSimpleName().toLowerCase())
                 .tags(entity.getTags())
-                .categoryNames(List.of(entity.getClass().getSimpleName()))
+                .category(StringUtils.hasText(entity.getCategory()) ? entity.getCategory() : entity.getClass().getSimpleName())
                 .file(file)
                 .build();
 

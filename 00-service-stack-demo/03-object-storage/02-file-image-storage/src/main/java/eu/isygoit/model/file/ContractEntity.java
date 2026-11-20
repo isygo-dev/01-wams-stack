@@ -86,7 +86,11 @@ public class ContractEntity extends AuditableEntity<Long> implements ITenantAssi
      * Keeps the existing C_TAG column — no join table required.
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")
+    @Column(name = ComSchemaColumnConstantName.C_TAG, table = "CONTRACT_FILE")
     private Map<String, String> tags;
+
+    @Criteria(1)
+    @Column(name = ComSchemaColumnConstantName.C_CATEGORY, table = "CONTRACT_FILE")
+    private String category;
     //END IFileEntity : SecondaryTable
 }

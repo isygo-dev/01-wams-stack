@@ -78,4 +78,6 @@ public interface IFileEntity {
     void setExtension(String extension);
 
     Map<String, String> getTags();
+
+    String getCategory();
 }

@@ -27,12 +27,4 @@ public class ResumeFileEntity extends FileEntity<Long> implements IFileEntity {
     @Column(name = ComSchemaColumnConstantName.C_ID, updatable = false, nullable = false)
 
     private Long id;
-
-    /**
-     * Stored as a single JSON column (e.g. {"mimetype":"…","category":"…","extension":"…"}).
-     * Keeps the existing C_TAG column — no join table required.
-     */
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")
-    private Map<String, String> tags;
 }

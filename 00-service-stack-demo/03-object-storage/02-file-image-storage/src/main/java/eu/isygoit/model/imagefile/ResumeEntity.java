@@ -94,8 +94,12 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
      * Keeps the existing C_TAG column — no join table required.
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")
+    @Column(name = ComSchemaColumnConstantName.C_TAG, table = "RESUME_FILE")
     private Map<String, String> tags;
+
+    @Criteria(1)
+    @Column(name = ComSchemaColumnConstantName.C_CATEGORY, table = "RESUME_FILE")
+    private String category;
     //END IFileEntity : SecondaryTable
 
     //Multi file join

@@ -25,6 +25,6 @@ public class LinkedFileRequestDto extends AuditableDto implements IFileUploadDto
     private String originalFileName;    //original file name
     private String path;
     private Map<String, String> tags;
-    private List<String> categoryNames;
+    private String category;
     private MultipartFile file;
 }

@@ -32,10 +32,6 @@ import java.util.Map;
 @MappedSuperclass
 public abstract class FileEntity<T extends Serializable> extends AuditableEntity<T> implements IFileEntity {
 
-    @Criteria(1)
-    @Column(name = ComSchemaColumnConstantName.C_CATEGORY)
-    private String category;
-
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_FILE_NAME, updatable = false, length = ComSchemaConstantSize.FILE_NAME_SIZE)
     private String fileName;
@@ -56,13 +52,13 @@ public abstract class FileEntity<T extends Serializable> extends AuditableEntity
     @Column(name = ComSchemaColumnConstantName.C_TYPE, length = ComSchemaConstantSize.S_NAME)
     private String mimetype;
 
-    /**
-     * Stored as a single JSON column (e.g. {"mimetype":"…","category":"…","extension":"…"}).
-     * Keeps the existing C_TAG column — no join table required.
-     */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = ComSchemaColumnConstantName.C_TAG, columnDefinition = "jsonb")
     private Map<String, String> tags;
+
+    @Criteria(1)
+    @Column(name = ComSchemaColumnConstantName.C_CATEGORY, length = ComSchemaConstantSize.S_NAME)
+    private String category;
 
     public Map<String, String> getTags() {
         if (!CollectionUtils.isEmpty(tags)) {
