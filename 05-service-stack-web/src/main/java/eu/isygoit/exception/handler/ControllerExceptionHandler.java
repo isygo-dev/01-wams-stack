@@ -160,10 +160,14 @@ public abstract class ControllerExceptionHandler implements IExceptionHandler {
             Function<Throwable, String> handler = EXCEPTION_HANDLERS.getIfPresent(unwrapped.getClass());
             if (handler == null) {
                 // If no direct match, check for assignable types (e.g., subclasses)
+                // The MOST SPECIFIC registered type wins: a handler of a subclass (for instance the one that fills the
+                // {n} placeholders of a coded exception) must not lose to the one of a parent class (a plain bundle
+                // text, placeholders left as "{0}"). The cache has no order, so the first match is not good enough.
                 handler = EXCEPTION_HANDLERS.asMap().entrySet().stream()
                         .filter(entry -> entry.getKey().isAssignableFrom(unwrapped.getClass()))
+                        .min((first, second) -> first.getKey().isAssignableFrom(second.getKey())
+                                ? (first.getKey() == second.getKey() ? 0 : 1) : -1)
                         .map(Map.Entry::getValue)
-                        .findFirst()
                         .orElse(null);
             }
 
