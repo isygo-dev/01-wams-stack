@@ -7,12 +7,11 @@
         <name>isygo-it-services</name>
         <url>https://isygo-it.eu</url>
     </organization>
-    <!-- Spring Boot 3.5.13 — aligned with stack; all demos use same version.
-         FIXED: originals used 3.1.12 or 3.4.4 mixed. All unified to 3.5.13. -->
+    <!-- Spring Boot version aligned with the workspace release baseline. -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.16</version>
+        <version>4.2.0</version>
         <relativePath/>
     </parent>
     <groupId>eu.isygo-it.services</groupId>
