@@ -115,12 +115,16 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
     @Column(name = ComSchemaColumnConstantName.C_CATEGORY, table = "RESUME_FILE")
     private String category;
 
-    /** When the stored file was first uploaded (file audit, in the file table). */
+    /**
+     * When the stored file was first uploaded (file audit, in the file table).
+     */
     @CreatedDate
     @Column(name = ComSchemaColumnConstantName.C_CREATE_DATE, table = "RESUME_FILE")
     private LocalDateTime fileCreateDate;
 
-    /** When the stored file was last uploaded or replaced (file audit, in the file table). */
+    /**
+     * When the stored file was last uploaded or replaced (file audit, in the file table).
+     */
     @LastModifiedDate
     @Column(name = ComSchemaColumnConstantName.C_UPDATE_DATE, table = "RESUME_FILE")
     private LocalDateTime fileUpdateDate;

@@ -7,25 +7,25 @@ import java.util.Map;
  * The interface File entity.
  */
 public interface IFileEntity {
-    
+
     String getMimetype();
-    
+
     void setMimetype(String type);
-    
+
     String getFileName();
-    
+
     void setFileName(String fileName);
-    
+
     String getOriginalFileName();
-    
+
     void setOriginalFileName(String originalFileName);
-    
+
     String getPath();
-    
+
     void setPath(String path);
-    
+
     String getExtension();
-    
+
     void setExtension(String extension);
 
     Map<String, String> getTags();

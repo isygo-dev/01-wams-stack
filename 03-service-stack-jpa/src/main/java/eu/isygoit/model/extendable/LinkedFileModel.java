@@ -8,7 +8,6 @@ import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.OrderBy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

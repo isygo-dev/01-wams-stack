@@ -4,6 +4,8 @@ import eu.isygoit.com.rest.service.ICodeAssignableService;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.ObjectNotFoundException;
 import eu.isygoit.exception.StorageException;
+import eu.isygoit.helper.CRC16Helper;
+import eu.isygoit.helper.CRC32Helper;
 import eu.isygoit.model.ICodeAssignable;
 import eu.isygoit.model.IFileEntity;
 import eu.isygoit.model.IIdAssignable;
@@ -15,9 +17,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-import eu.isygoit.helper.CRC16Helper;
-import eu.isygoit.helper.CRC32Helper;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -1,9 +1,6 @@
 package eu.isygoit.model;
 
 import eu.isygoit.model.jakarta.AuditableCancelableEntity;
-import eu.isygoit.model.schema.ComSchemaColumnConstantName;
-import jakarta.persistence.Column;
-import jakarta.persistence.OrderBy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
