@@ -185,6 +185,15 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
 
     @Transactional
     @Override
+    public T updateFileCategory(String senderTenant, I id, String category) {
+        T entity = findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
+        entity.setCategory(StringUtils.hasText(category) ? category.trim() : null);
+        return update(entity);
+    }
+
+    @Transactional
+    @Override
     public T deleteFile(String senderTenant, I id) throws IOException {
         T entity = findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));

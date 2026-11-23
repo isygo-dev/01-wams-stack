@@ -72,4 +72,15 @@ public interface IFileServiceOperations<I extends Serializable,
      */
     @Transactional
     T deleteFile(String senderTenant, I id) throws IOException;
+
+    /**
+     * Updates the category of the file of an entity.
+     *
+     * @param senderTenant the sender tenant
+     * @param id           the id
+     * @param category     the new category (blank clears it)
+     * @return the updated entity
+     */
+    @Transactional
+    T updateFileCategory(String senderTenant, I id, String category);
 }

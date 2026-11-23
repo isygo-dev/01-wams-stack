@@ -32,6 +32,8 @@ public interface IFileEntity {
 
     String getCategory();
 
+    void setCategory(String category);
+
     LocalDateTime getFileUpdateDate();
 
     LocalDateTime getFileCreateDate();

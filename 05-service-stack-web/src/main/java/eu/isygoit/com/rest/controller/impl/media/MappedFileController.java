@@ -131,6 +131,17 @@ public abstract class MappedFileController<
     }
 
     @Override
+    public ResponseEntity<Boolean> updateFileCategory(I parentId, String category) {
+        try {
+            crudService().updateFileCategory(requestContextService().getCurrentContext().getSenderTenant(), parentId, category);
+            return ResponseFactory.responseOk(true);
+        } catch (Exception e) {
+            log.error("Failed to update the file category for entityId: {}", parentId, e);
+            return getBackExceptionResponse(e);
+        }
+    }
+
+    @Override
     public ResponseEntity<Boolean> deleteFile(I parentId) {
         try {
             crudService().deleteFile(requestContextService().getCurrentContext().getSenderTenant(), parentId);
