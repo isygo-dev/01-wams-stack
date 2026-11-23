@@ -95,6 +95,18 @@ public abstract class MappedMultiFileTenatController<I extends Serializable,
     }
 
     @Override
+    public ResponseEntity<Boolean> updateAdditionalFileCategory(I parentId, I fileId, String category) {
+        log.info("update additional file category");
+        try {
+            return ResponseFactory.responseOk(crudService().updateAdditionalFileCategory(
+                    requestContextService().getCurrentContext().getSenderTenant(), parentId, fileId, category));
+        } catch (Throwable e) {
+            log.error(CtrlConstants.ERROR_API_EXCEPTION, e);
+            return getBackExceptionResponse(e);
+        }
+    }
+
+    @Override
     public ResponseEntity<Resource> download(
             I parentId,
             I fileId,

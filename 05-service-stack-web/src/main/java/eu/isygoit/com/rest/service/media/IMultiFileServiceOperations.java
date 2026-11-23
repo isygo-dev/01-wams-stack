@@ -57,4 +57,15 @@ public interface IMultiFileServiceOperations<I extends Serializable, T extends I
      * @throws IOException the io exception
      */
     boolean deleteAdditionalFile(I parentId, I fileId) throws IOException;
+
+    /**
+     * Updates the category of an additional file.
+     *
+     * @param parentId the parent id
+     * @param fileId   the file id
+     * @param category the new category (blank clears it)
+     * @return true when stored
+     * @throws IOException the io exception
+     */
+    boolean updateAdditionalFileCategory(I parentId, I fileId, String category) throws IOException;
 }

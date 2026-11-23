@@ -18,4 +18,11 @@ public interface ILinkedFile extends IFileEntity {
      * @param code the code
      */
     void setCode(String code);
+
+    /**
+     * Sets the category of the file.
+     *
+     * @param category the category
+     */
+    void setCategory(String category);
 }

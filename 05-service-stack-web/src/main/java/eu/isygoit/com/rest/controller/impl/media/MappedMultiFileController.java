@@ -104,6 +104,17 @@ public abstract class MappedMultiFileController<
     }
 
     @Override
+    public ResponseEntity<Boolean> updateAdditionalFileCategory(I parentId, I fileId, String category) {
+        log.debug("Updating category of additional fileId: {} for parentId: {}", fileId, parentId);
+        try {
+            return ResponseFactory.responseOk(crudService().updateAdditionalFileCategory(parentId, fileId, category));
+        } catch (IOException e) {
+            log.error("Failed to update category of fileId: {} for parentId: {}", fileId, parentId, e);
+            return getBackExceptionResponse(e);
+        }
+    }
+
+    @Override
     public ResponseEntity<Resource> download(I parentId,
                                              I fileId,
                                              Long version) {

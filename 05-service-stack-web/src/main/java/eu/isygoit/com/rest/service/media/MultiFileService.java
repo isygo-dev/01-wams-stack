@@ -189,6 +189,22 @@ public abstract class MultiFileService<
     }
 
     /**
+     * Updates the category of an additional file of the specified parent.
+     */
+    @Override
+    public boolean updateAdditionalFileCategory(I parentId, I fileId, String category) throws IOException {
+        var entity = getEntityOrThrow(parentId);
+        var linkedFile = findLinkedFile(entity, fileId);
+        if (linkedFile == null) {
+            log.error("Linked file not found for fileId: {}, parentId: {}", fileId, parentId);
+            throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
+        }
+        linkedFile.setCategory(category == null || category.isBlank() ? null : category.trim());
+        update(entity);
+        return true;
+    }
+
+    /**
      * Retrieves the entity by ID or throws an exception if not found.
      *
      * @param id the ID of the entity

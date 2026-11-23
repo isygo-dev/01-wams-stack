@@ -61,4 +61,16 @@ public interface IMultiFileTenantServiceOperations<I extends Serializable, T ext
      * @throws IOException the io exception
      */
     boolean deleteAdditionalFile(String tenant, I parentId, I fileId) throws IOException;
+
+    /**
+     * Updates the category of an additional file.
+     *
+     * @param tenant   the tenant
+     * @param parentId the parent id
+     * @param fileId   the file id
+     * @param category the new category (blank clears it)
+     * @return true when stored
+     * @throws IOException the io exception
+     */
+    boolean updateAdditionalFileCategory(String tenant, I parentId, I fileId, String category) throws IOException;
 }

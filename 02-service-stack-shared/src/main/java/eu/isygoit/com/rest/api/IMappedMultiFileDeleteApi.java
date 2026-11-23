@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -50,4 +51,30 @@ public interface IMappedMultiFileDeleteApi<L extends LinkedFileDto, I> {
     ResponseEntity<Boolean> deleteAdditionalFile(
             @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
             @RequestParam(name = RestApiConstants.FILE_ID) I fileId);
+
+    /**
+     * Update the category of an additional file of an object.
+     *
+     * @param parentId the parent id
+     * @param fileId   the file id
+     * @param category the new category (blank clears it)
+     * @return true when the category has been stored
+     */
+    @Operation(summary = "Update the category of an additional file",
+            description = "Update the category of an additional file of an object")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Category successfully updated",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Boolean.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions", content = @Content),
+            @ApiResponse(responseCode = "404", description = "File or object not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @PutMapping(path = "/multi-files/category")
+    ResponseEntity<Boolean> updateAdditionalFileCategory(
+            @RequestParam(name = RestApiConstants.PARENT_ID) I parentId,
+            @RequestParam(name = RestApiConstants.FILE_ID) I fileId,
+            @RequestParam(name = "category", required = false) String category);
 }

@@ -193,6 +193,22 @@ public abstract class MultiFileTenantService<
     }
 
     /**
+     * Updates the category of an additional file of the specified tenant and parent.
+     */
+    @Override
+    public boolean updateAdditionalFileCategory(String tenant, I parentId, I fileId, String category) throws IOException {
+        var entity = getEntityOrThrow(tenant, parentId);
+        var linkedFile = findLinkedFile(entity, fileId);
+        if (linkedFile == null) {
+            log.error("Linked file not found for fileId: {}, parentId: {}, tenant: {}", fileId, parentId, tenant);
+            throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
+        }
+        linkedFile.setCategory(category == null || category.isBlank() ? null : category.trim());
+        update(tenant, entity);
+        return true;
+    }
+
+    /**
      * Retrieves the entity by tenant and ID or throws an exception if not found.
      *
      * @param tenant the tenant identifier
