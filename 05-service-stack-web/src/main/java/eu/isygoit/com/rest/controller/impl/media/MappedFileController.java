@@ -12,7 +12,7 @@ import eu.isygoit.dto.IDto;
 import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ import java.io.Serializable;
 @Slf4j
 public abstract class MappedFileController<
         I extends Serializable,
-        T extends IIdAssignable<I> & IFileEntity,
+        T extends IIdAssignable<I> & ISingleFileEntity,
         M extends IIdAssignableDto<I> & IDto & IFileUploadDto,
         F extends M,
         S extends IFileServiceOperations<I, T>

@@ -35,7 +35,7 @@ import java.util.function.Function;
  */
 @Slf4j
 public abstract class FileImageService<I extends Serializable,
-        T extends IImageEntity & IFileEntity & IIdAssignable<I> & ICodeAssignable,
+        T extends IImageEntity & ISingleFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends FileService<I, T, R>
         implements IFileServiceOperations<I, T>, IImageServiceOperations<I, T> {

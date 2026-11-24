@@ -33,7 +33,7 @@ import java.util.Map;
 )
 public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssignable,
         IImageEntity,
-        IFileEntity,
+        ISingleFileEntity,
         IMultiFileEntity<ResumeLinkedFile>,
         ICodeAssignable {
 
@@ -113,7 +113,7 @@ public class ResumeEntity extends AuditableEntity<Long> implements ITenantAssign
 
     @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CATEGORY, table = "RESUME_FILE")
-    private String category;
+    private String fileCategory;
 
     /**
      * When the stored file was first uploaded (file audit, in the file table).

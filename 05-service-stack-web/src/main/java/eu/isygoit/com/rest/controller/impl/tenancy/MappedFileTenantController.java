@@ -14,7 +14,7 @@ import eu.isygoit.dto.IFileUploadDto;
 import eu.isygoit.dto.IIdAssignableDto;
 import eu.isygoit.dto.ITenantAssignableDto;
 import eu.isygoit.dto.common.ResourceDto;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import jakarta.validation.Valid;
@@ -41,7 +41,7 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class MappedFileTenantController<I extends Serializable,
-        T extends IIdAssignable<I> & IFileEntity & ITenantAssignable,
+        T extends IIdAssignable<I> & ISingleFileEntity & ITenantAssignable,
         M extends IIdAssignableDto<I> & IDto & IFileUploadDto,
         F extends M,
         S extends IFileTenantServiceOperations<I, T> & ICrudTenantServiceOperations<I, T> & ICrudServiceUtils<I, T>>

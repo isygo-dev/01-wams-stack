@@ -199,7 +199,7 @@ public abstract class MultiFileService<
             log.error("Linked file not found for fileId: {}, parentId: {}", fileId, parentId);
             throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
-        linkedFile.setCategory(category == null || category.isBlank() ? null : category.trim());
+        linkedFile.setFileCategory(category == null || category.isBlank() ? null : category.trim());
         update(entity);
         return true;
     }

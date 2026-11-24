@@ -8,7 +8,7 @@ import eu.isygoit.exception.EntityNullException;
 import eu.isygoit.exception.LinkedFileServiceNullException;
 import eu.isygoit.exception.MultiPartFileNullException;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ILinkedFile;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public final class FileServiceDmsStaticOperations {
      * @return the linked file response dto
      * @throws IOException the io exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> LinkedFileResponseDto upload(
+    public static <T extends ISingleFileEntity & IIdAssignable & ICodeAssignable> LinkedFileResponseDto upload(
             MultipartFile file,
             T entity,
             ILinkedFileApi linkedFileService) throws IOException {
@@ -58,7 +58,7 @@ public final class FileServiceDmsStaticOperations {
                 .code(entity.getCode())
                 .path(entity.getClass().getSimpleName().toLowerCase())
                 .tags(entity.getTags())
-                .category(StringUtils.hasText(entity.getCategory()) ? entity.getCategory() : entity.getClass().getSimpleName())
+                .fileCategory(StringUtils.hasText(entity.getFileCategory()) ? entity.getFileCategory() : entity.getClass().getSimpleName())
                 .file(file)
                 .build();
 
@@ -85,7 +85,7 @@ public final class FileServiceDmsStaticOperations {
      * @return the resource
      * @throws IOException the io exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> ResourceDto download(
+    public static <T extends ISingleFileEntity & IIdAssignable & ICodeAssignable> ResourceDto download(
             T entity,
             Long version,
             ILinkedFileApi linkedFileService) throws IOException {

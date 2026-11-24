@@ -7,7 +7,7 @@ import eu.isygoit.exception.StorageException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
@@ -32,7 +32,7 @@ import java.nio.file.Path;
  */
 @Slf4j
 public abstract class FileTenantService<I extends Serializable,
-        T extends IFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
+        T extends ISingleFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
         extends FileTenantServiceOperations<I, T, R>
         implements IFileTenantServiceOperations<I, T> {
@@ -201,7 +201,7 @@ public abstract class FileTenantService<I extends Serializable,
     public T updateFileCategory(String tenant, I id, String category) {
         T entity = findById(tenant, id)
                 .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
-        entity.setCategory(StringUtils.hasText(category) ? category.trim() : null);
+        entity.setFileCategory(StringUtils.hasText(category) ? category.trim() : null);
         return update(tenant, entity);
     }
 

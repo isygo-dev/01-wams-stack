@@ -34,7 +34,7 @@ import java.nio.file.StandardOpenOption;
  */
 @Slf4j
 public abstract class FileImageTenantService<I extends Serializable,
-        T extends IImageEntity & IFileEntity & ITenantAssignable & IIdAssignable<I> & ICodeAssignable,
+        T extends IImageEntity & ISingleFileEntity & ITenantAssignable & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
         extends FileTenantService<I, T, R>
         implements IFileTenantServiceOperations<I, T>, IImageTenantServiceOperations<I, T> {

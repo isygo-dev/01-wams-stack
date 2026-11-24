@@ -203,7 +203,7 @@ public abstract class MultiFileTenantService<
             log.error("Linked file not found for fileId: {}, parentId: {}, tenant: {}", fileId, parentId, tenant);
             throw new FileNotFoundException(linkedFileClass.getSimpleName() + " with ID: " + fileId);
         }
-        linkedFile.setCategory(category == null || category.isBlank() ? null : category.trim());
+        linkedFile.setFileCategory(category == null || category.isBlank() ? null : category.trim());
         update(tenant, entity);
         return true;
     }

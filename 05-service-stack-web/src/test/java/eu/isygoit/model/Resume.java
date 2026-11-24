@@ -19,7 +19,7 @@ import java.util.Map;
 @NoArgsConstructor
 @SuperBuilder
 public class Resume extends AuditableCancelableEntity<Long>
-        implements ITenantAssignable, ICodeAssignable, ITLEntity, IFileEntity, IMultiFileEntity<ResumeLinkedFile>, IImageEntity {
+        implements ITenantAssignable, ICodeAssignable, ITLEntity, ISingleFileEntity, IMultiFileEntity<ResumeLinkedFile>, IImageEntity {
 
     private Long id;
     private String tenant;
@@ -45,7 +45,7 @@ public class Resume extends AuditableCancelableEntity<Long>
     private Long size;
     private Long version;
     private Map<String, String> tags;
-    private String category;
+    private String fileCategory;
     private List<ResumeLinkedFile> additionalFiles;
     private LocalDateTime fileCreateDate;
     private LocalDateTime fileUpdateDate;

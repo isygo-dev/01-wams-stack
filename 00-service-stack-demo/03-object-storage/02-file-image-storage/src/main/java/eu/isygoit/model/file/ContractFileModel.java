@@ -1,6 +1,6 @@
 package eu.isygoit.model.file;
 
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.extendable.FileModel;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import jakarta.persistence.*;
@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Entity
 @Table(name = "CONTRACT_FILE")
-public class ContractFileModel extends FileModel<Long> implements IFileEntity {
+public class ContractFileModel extends FileModel<Long> implements ISingleFileEntity {
 
     @Id
     @SequenceGenerator(name = "contract_file_sequence_generator", sequenceName = "contract_file_sequence", allocationSize = 1)

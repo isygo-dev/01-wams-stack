@@ -4,7 +4,7 @@ package eu.isygoit.model;
 /**
  * The interface Linked file.
  */
-public interface ILinkedFile extends IFileEntity {
+public interface ILinkedFile extends ISingleFileEntity {
     /**
      * Gets code.
      *
@@ -24,5 +24,5 @@ public interface ILinkedFile extends IFileEntity {
      *
      * @param category the category
      */
-    void setCategory(String category);
+    void setFileCategory(String category);
 }

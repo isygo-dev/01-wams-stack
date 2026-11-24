@@ -24,7 +24,7 @@ import java.util.Map;
 @SuperBuilder
 public abstract class FileEntityDto<T extends Serializable> extends AuditableIdAssignableDto<T> {
 
-    private String category;
+    private String fileCategory;
     private String fileName;
     private String originalFileName;
     private String path;
@@ -45,7 +45,7 @@ public abstract class FileEntityDto<T extends Serializable> extends AuditableIdA
         }
         tags = new LinkedHashMap<>();
         tags.put("mimetype", mimetype != null ? mimetype : "NA");
-        tags.put("category", category != null ? category : "NA");
+        tags.put("category", fileCategory != null ? fileCategory : "NA");
         tags.put("extension", extension != null ? extension : "NA");
         return tags;
     }

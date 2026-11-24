@@ -7,7 +7,7 @@ import eu.isygoit.com.rest.service.CodeAssignableService;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class FileServiceOperations<I extends Serializable,
-        T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
+        T extends ISingleFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends CodeAssignableService<I, T, R> {
 

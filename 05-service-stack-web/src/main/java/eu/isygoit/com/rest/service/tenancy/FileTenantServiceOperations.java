@@ -8,7 +8,7 @@ import eu.isygoit.com.rest.service.media.FileServiceLocalStaticOperations;
 import eu.isygoit.dto.common.ResourceDto;
 import eu.isygoit.exception.LinkedFileServiceNotDefinedException;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAndCodeAssignableRepository;
@@ -28,7 +28,7 @@ import java.io.Serializable;
  */
 @Slf4j
 public abstract class FileTenantServiceOperations<I extends Serializable,
-        T extends IFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
+        T extends ISingleFileEntity & IIdAssignable<I> & ICodeAssignable & ITenantAssignable,
         R extends JpaPagingAndSortingTenantAndCodeAssignableRepository<T, I>>
         extends CodeAssignableTenantService<I, T, R> {
 

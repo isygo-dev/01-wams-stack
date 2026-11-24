@@ -2,7 +2,7 @@ package eu.isygoit.model.file;
 
 import eu.isygoit.annotation.Criteria;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
@@ -32,7 +32,7 @@ import java.util.Map;
                 referencedColumnName = ComSchemaColumnConstantName.C_ID
                 , foreignKey = @ForeignKey(name = "FK_CONTRACT_FILE_REF_CONTRACT"))
 )
-public class ContractEntity extends AuditableEntity<Long> implements ITenantAssignable, IFileEntity, ICodeAssignable {
+public class ContractEntity extends AuditableEntity<Long> implements ITenantAssignable, ISingleFileEntity, ICodeAssignable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contract_sequence_generator")
@@ -106,7 +106,7 @@ public class ContractEntity extends AuditableEntity<Long> implements ITenantAssi
 
     @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CATEGORY, table = "CONTRACT_FILE")
-    private String category;
+    private String fileCategory;
 
     /**
      * When the stored file was first uploaded (file audit, in the file table).

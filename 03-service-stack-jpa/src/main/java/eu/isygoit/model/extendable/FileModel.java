@@ -1,7 +1,7 @@
 package eu.isygoit.model.extendable;
 
 import eu.isygoit.annotation.Criteria;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.jakarta.AuditableEntity;
 import eu.isygoit.model.schema.ComSchemaColumnConstantName;
 import eu.isygoit.model.schema.ComSchemaConstantSize;
@@ -33,7 +33,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-public abstract class FileModel<T extends Serializable> extends AuditableEntity<T> implements IFileEntity {
+public abstract class FileModel<T extends Serializable> extends AuditableEntity<T> implements ISingleFileEntity {
 
     @ColumnDefault("'NA'")
     @Column(name = ComSchemaColumnConstantName.C_FILE_NAME, updatable = false, length = ComSchemaConstantSize.FILE_NAME_SIZE)
@@ -75,7 +75,7 @@ public abstract class FileModel<T extends Serializable> extends AuditableEntity<
 
     @Criteria(1)
     @Column(name = ComSchemaColumnConstantName.C_CATEGORY, length = ComSchemaConstantSize.S_NAME)
-    private String category;
+    private String fileCategory;
 
     public Map<String, String> getTags() {
         if (!CollectionUtils.isEmpty(tags)) {
@@ -83,7 +83,7 @@ public abstract class FileModel<T extends Serializable> extends AuditableEntity<
         }
         tags = new LinkedHashMap<>();
         tags.put("mimetype", mimetype != null ? mimetype : "NA");
-        tags.put("category", category != null ? category : "NA");
+        tags.put("category", fileCategory != null ? fileCategory : "NA");
         tags.put("extension", extension != null ? extension : "NA");
         return tags;
     }

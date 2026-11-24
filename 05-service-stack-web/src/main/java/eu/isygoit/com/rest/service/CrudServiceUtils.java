@@ -195,7 +195,7 @@ public abstract class CrudServiceUtils<I extends Serializable, T extends IIdAssi
      */
     protected T keepOriginalAttributes(T object, T existing) {
         log.debug("Preserving attributes for {} entity with ID: {}", object.getClass().getSimpleName(), object.getId());
-        applyIfInstance(object, existing, IFileEntity.class, (t, s) -> {
+        applyIfInstance(object, existing, ISingleFileEntity.class, (t, s) -> {
             if (StringUtils.hasText(s.getPath())) {
                 t.setMimetype(s.getMimetype());
                 t.setFileName(s.getFileName());

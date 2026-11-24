@@ -15,7 +15,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class ResumeFile extends FileModel<Long> implements IFileEntity {
+public class ResumeFile extends FileModel<Long> implements ISingleFileEntity {
 
 
     private Long id;

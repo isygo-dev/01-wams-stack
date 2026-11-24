@@ -41,7 +41,7 @@ public final class FileServiceLocalStaticOperations {
      * @return the string
      * @throws IOException the io exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity, boolean replaceExisting) throws IOException {
+    public static <T extends ISingleFileEntity & IIdAssignable & ICodeAssignable> String upload(MultipartFile file, T entity, boolean replaceExisting) throws IOException {
         Path directory = Path.of(entity.getPath());
 
         // Ensure the directory exists (creates it and its parents if missing)
@@ -70,7 +70,7 @@ public final class FileServiceLocalStaticOperations {
      * @return the resource
      * @throws MalformedURLException the malformed url exception
      */
-    public static <T extends IFileEntity & IIdAssignable & ICodeAssignable> ResourceDto download(T entity, Long version) throws MalformedURLException {
+    public static <T extends ISingleFileEntity & IIdAssignable & ICodeAssignable> ResourceDto download(T entity, Long version) throws MalformedURLException {
         String path = entity.getPath();
 
         // Ensure the path is not null or empty
@@ -120,7 +120,7 @@ public final class FileServiceLocalStaticOperations {
                 ? da.getTenant()
                 : TenantConstants.DEFAULT_TENANT_NAME;
 
-        String fileName = (entity instanceof IFileEntity fe)
+        String fileName = (entity instanceof ISingleFileEntity fe)
                 ? fe.getFileName()
                 : "unknown";
 

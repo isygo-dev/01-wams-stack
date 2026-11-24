@@ -9,7 +9,7 @@ import eu.isygoit.exception.StorageException;
 import eu.isygoit.helper.CRC16Helper;
 import eu.isygoit.helper.CRC32Helper;
 import eu.isygoit.model.ICodeAssignable;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import lombok.Getter;
@@ -32,7 +32,7 @@ import java.nio.file.Path;
  * @param <R> the type parameter
  */
 @Slf4j
-public abstract class FileService<I extends Serializable, T extends IFileEntity & IIdAssignable<I> & ICodeAssignable,
+public abstract class FileService<I extends Serializable, T extends ISingleFileEntity & IIdAssignable<I> & ICodeAssignable,
         R extends JpaPagingAndSortingCodeAssignableRepository<T, I>>
         extends FileServiceOperations<I, T, R>
         implements IFileServiceOperations<I, T> {
@@ -188,7 +188,7 @@ public abstract class FileService<I extends Serializable, T extends IFileEntity 
     public T updateFileCategory(String senderTenant, I id, String category) {
         T entity = findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(this.getPersistentClass().getSimpleName() + " with id " + id));
-        entity.setCategory(StringUtils.hasText(category) ? category.trim() : null);
+        entity.setFileCategory(StringUtils.hasText(category) ? category.trim() : null);
         return update(entity);
     }
 

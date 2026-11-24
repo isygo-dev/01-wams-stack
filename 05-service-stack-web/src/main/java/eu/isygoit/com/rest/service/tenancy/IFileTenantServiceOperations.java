@@ -1,7 +1,7 @@
 package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.dto.common.ResourceDto;
-import eu.isygoit.model.IFileEntity;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @param <T> the type parameter
  */
 public interface IFileTenantServiceOperations<I extends Serializable,
-        T extends IIdAssignable<I> & IFileEntity & ITenantAssignable> {
+        T extends IIdAssignable<I> & ISingleFileEntity & ITenantAssignable> {
 
     /**
      * Create with file t.

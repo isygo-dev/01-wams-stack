@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * The interface File entity.
  */
-public interface IFileEntity {
+public interface ISingleFileEntity {
 
     String getMimetype();
 
@@ -30,9 +30,9 @@ public interface IFileEntity {
 
     Map<String, String> getTags();
 
-    String getCategory();
+    String getFileCategory();
 
-    void setCategory(String category);
+    void setFileCategory(String category);
 
     LocalDateTime getFileUpdateDate();
 
