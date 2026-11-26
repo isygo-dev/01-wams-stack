@@ -131,6 +131,11 @@ public abstract class CassandraCrudTenantService<I extends Serializable,
     }
 
     @Override
+    public Optional<T> findByCode(String tenant, String code) throws ObjectNotFoundException {
+        return Optional.empty();
+    }
+
+    @Override
     public T saveOrUpdate(String tenant, T object) {
         if (Objects.isNull(object)) {
             throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);

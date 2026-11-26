@@ -203,6 +203,13 @@ public class JsonBasedService<T extends IIdAssignable<UUID> & JsonElement<UUID>,
                 .map(this::afterFindById);
     }
 
+    @Override
+    public Optional<T> findByCode(String code) throws ObjectNotFoundException {
+        return repository().findByElementTypeAndJsonId(elementType, code)
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+                .map(this::afterFindById);
+    }
+
     // ── Update ────────────────────────────────────────────────────────────────
 
     @Override

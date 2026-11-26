@@ -118,6 +118,12 @@ public abstract class MappedFakeCrudController<
         throw UNSUPPORTED_OPERATION;
     }
 
+    @Override
+    public ResponseEntity<F> findByCode(String code) {
+        log.warn("Attempted to call findByCode on fake controller for Code: {}", code);
+        throw UNSUPPORTED_OPERATION;
+    }
+
     /**
      * Retrieves the count of all entities. This operation is not supported.
      * containing metadata

@@ -215,6 +215,14 @@ public class JsonBasedTenantService<T extends IIdAssignable<UUID> & JsonElement<
                 .map(t -> afterFindById(tenant, t));
     }
 
+    @Override
+    public Optional<T> findByCode(String tenant, String code) throws ObjectNotFoundException {
+        validateTenant(tenant);
+        return repository().findByElementTypeAndJsonIdAndTenant(elementType, code, tenant)
+                .map(e -> JsonBasedEntityHelper.toJsonElement(e, jsonElementClass, objectMapper))
+                .map(t -> afterFindById(tenant, t));
+    }
+
     // ── Update ────────────────────────────────────────────────────────────────
 
     @Override

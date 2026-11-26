@@ -189,6 +189,37 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
             @Parameter(description = "Object identifier", example = "123") I id);
 
     /**
+     * Retrieves a single object by its identifier.
+     *
+     * @param code Object code
+     * @return Single full DTO object
+     */
+    @Operation(summary = "Find object by code",
+            description = "Retrieves a single object with full data using Full DTO by its code")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully retrieved object",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = IdAssignableDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized - Invalid or missing JWT token",
+                    content = @Content),
+            @ApiResponse(responseCode = "403",
+                    description = "Forbidden - Insufficient permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Object not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
+    @GetMapping(path = "/{code}")
+    ResponseEntity<F> findByCode(
+            @PathVariable(name = RestApiConstants.CODE)
+            @Parameter(description = "Object code", example = "ABC123") String code);
+
+    /**
      * Retrieves the total count of objects.
      *
      * @return Total count of objects

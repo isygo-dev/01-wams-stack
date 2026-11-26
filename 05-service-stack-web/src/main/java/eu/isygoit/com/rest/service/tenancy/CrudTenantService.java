@@ -10,6 +10,7 @@ import eu.isygoit.model.IDirtyEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityManager;
@@ -419,6 +420,28 @@ public abstract class CrudTenantService<I extends Serializable,
         return result;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<T> findByCode(String tenant, String code) {
+        var jpaRepo = getTenantAssignableRepository();
+        if(jpaRepo instanceof JpaPagingAndSortingCodeAssignableRepository codeAssignableRepository) {
+            validateTenantNotNull(tenant);
+            validateIdNotNull(code);
+            log.info("Retrieving {} entity with code: {} for tenant: {}", this.getPersistentClass().getSimpleName(), code, tenant);
+            var result = TenantConstants.SUPER_TENANT_NAME.equals(tenant)
+                    ? codeAssignableRepository.findByCodeIgnoreCase(code)
+                    .map(o -> afterFindById(tenant, (T) o))
+                    : codeAssignableRepository.findByCodeIgnoreCase(code)
+                    .filter(t -> ((ITenantAssignable) t).getTenant().toUpperCase().equals(tenant.toUpperCase()))
+                    .map(o -> afterFindById(tenant, (T) o));
+
+            log.debug("Find by code result for code {} and tenant {}: {}", code, tenant, result.isPresent() ? "found" : "not found");
+            return result;
+        }
+
+        log.error("findByCode is not supported for repository type: " + repository().getClass().getName());
+        throw new UnsupportedOperationException("findByCode is not supported for this repository");
+    }
     /**
      * Saves or updates an entity for a specific tenant.
      *

@@ -86,6 +86,11 @@ public abstract class MappedCrudTenantController<I extends Serializable,
     }
 
     @Override
+    public final ResponseEntity<F> findByCode(String code) {
+        return performFindByCode(requestContextService().getCurrentContext(), code);
+    }
+
+    @Override
     public final ResponseEntity<F> update(
             I id,
             F object) {

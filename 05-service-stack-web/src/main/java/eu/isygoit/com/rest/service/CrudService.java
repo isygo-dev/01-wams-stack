@@ -9,7 +9,9 @@ import eu.isygoit.model.IDirtyEntity;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import eu.isygoit.repository.JpaPagingAndSortingRepository;
+import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -365,6 +368,27 @@ public abstract class CrudService<I extends Serializable,
                 .map(this::afterFindById);
         log.debug("Find by ID result for ID {}: {}", id, result.isPresent() ? "found" : "not found");
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    @TenantFilterable
+    @Override
+    public Optional<T> findByCode(String code) {
+        if (repository() instanceof JpaPagingAndSortingCodeAssignableRepository codeAssignableRepository) {
+            validateNotTenantSpecific("findByCode ");
+            if (!StringUtils.hasText(code)) {
+                log.error("Null Code provided for findByCode operation");
+                throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
+            }
+            log.info("Retrieving {} entity with Code: {}", this.getPersistentClass().getSimpleName(), code);
+
+            var result = codeAssignableRepository.findByCodeIgnoreCase(code);
+            log.debug("Find by ID result for ID {}: {}", code, result.isPresent() ? "found" : "not found");
+            return result;
+        }
+
+        log.error("findByCode is not supported for repository type: " + repository().getClass().getName());
+        throw new UnsupportedOperationException("findByCode is not supported for repository type: " + repository().getClass().getName());
     }
 
     /**

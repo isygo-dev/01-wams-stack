@@ -89,6 +89,15 @@ public interface ICrudServiceOperations<I extends Serializable, T extends IIdAss
     Optional<T> findById(I id) throws ObjectNotFoundException;
 
     /**
+     * Find by id optional.
+     *
+     * @param code the code
+     * @return the optional
+     * @throws ObjectNotFoundException the object not found exception
+     */
+    Optional<T> findByCode(String code) throws ObjectNotFoundException;
+
+    /**
      * Save or update t.
      *
      * @param object the object

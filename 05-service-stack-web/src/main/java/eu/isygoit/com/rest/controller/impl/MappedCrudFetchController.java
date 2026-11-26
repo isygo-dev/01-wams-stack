@@ -59,6 +59,11 @@ public abstract class MappedCrudFetchController<I extends Serializable, T extend
     }
 
     @Override
+    public final ResponseEntity<F> findByCode(String code) {
+        return performFindByCode(requestContextService().getCurrentContext(), code);
+    }
+
+    @Override
     public ResponseEntity<Long> getCount() {
         return performGetCount(requestContextService().getCurrentContext());
     }

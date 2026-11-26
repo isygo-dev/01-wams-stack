@@ -12,6 +12,7 @@ import eu.isygoit.filter.QueryCriteria;
 import eu.isygoit.model.IIdAssignable;
 import eu.isygoit.model.ITenantAssignable;
 import eu.isygoit.model.jakarta.CancelableEntity;
+import eu.isygoit.repository.JpaPagingAndSortingCodeAssignableRepository;
 import eu.isygoit.repository.tenancy.JpaPagingAndSortingTenantAssignableRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -219,6 +220,22 @@ public abstract class CassandraCrudService<I extends Serializable,
         // Retrieve the entity and apply afterFindById if present
         return repository().findById(id)
                 .map(entity -> afterFindById(entity));  // Apply afterFindById if value is present
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<T> findByCode(String code) throws ObjectNotFoundException {
+        if (repository() instanceof JpaPagingAndSortingCodeAssignableRepository codeAssignableRepository) {
+            if (Objects.isNull(code)) {
+                throw new BadArgumentException(LogConstants.NULL_OBJECT_PROVIDED);
+            }
+
+            // Retrieve the entity and apply afterFindById if present
+            return codeAssignableRepository.findByCodeIgnoreCase(code);
+        }
+
+        log.error("findByCode is not supported for repository type: " + repository().getClass().getName());
+        throw new UnsupportedOperationException("findByCode is not supported for this repository");
     }
 
     @Override

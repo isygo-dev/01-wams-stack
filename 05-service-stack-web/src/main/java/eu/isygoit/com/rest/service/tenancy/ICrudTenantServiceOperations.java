@@ -108,6 +108,8 @@ public interface ICrudTenantServiceOperations<I extends Serializable,
      */
     Optional<T> findById(String tenant, I id) throws ObjectNotFoundException;
 
+    Optional<T> findByCode(String tenant, String code) throws ObjectNotFoundException;
+
     /**
      * Save or update t.
      *

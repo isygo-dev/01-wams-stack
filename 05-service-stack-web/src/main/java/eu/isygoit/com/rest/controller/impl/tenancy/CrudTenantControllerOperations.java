@@ -435,6 +435,21 @@ public abstract class CrudTenantControllerOperations<
         });
     }
 
+    @Override
+    public ResponseEntity<F> performFindByCode(RequestContextDto context, String code) {
+        return executeWithMonitoring("performFindByCode", () -> {
+            log.info("Finding {} by code: {} for tenant: {}", this.getPersistentClass().getSimpleName(), code,
+                    context != null ? context.getSenderTenant() : TenantContext.getTenantId());
+            validateNotNull(code, "Code cannot be null");
+
+            Optional<T> entity = crudService().findByCode(context.getSenderTenant(), code);
+            return entity
+                    .map(mapper()::entityToDto)
+                    .map(ResponseFactory::responseOk)
+                    .orElseGet(() -> ResponseFactory.responseNotFound());
+        });
+    }
+
     /**
      * Retrieves the count of entities for the specified tenant.
      *

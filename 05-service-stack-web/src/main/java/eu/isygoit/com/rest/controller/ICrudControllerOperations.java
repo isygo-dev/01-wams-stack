@@ -108,6 +108,7 @@ public interface ICrudControllerOperations<I extends Serializable,
      */
     ResponseEntity<F> performFindById(RequestContextDto requestContext, I id);
 
+    ResponseEntity<F> performFindByCode(RequestContextDto context, String code);
 
     /**
      * Sub get count response entity.
