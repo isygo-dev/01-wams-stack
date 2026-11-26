@@ -183,7 +183,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     description = "Internal server error",
                     content = @Content)
     })
-    @GetMapping(path = "/{id}")
+    @GetMapping(path = "/id/{id}")
     ResponseEntity<F> findById(
             @PathVariable(name = RestApiConstants.ID)
             @Parameter(description = "Object identifier", example = "123") I id);
@@ -214,7 +214,7 @@ public interface IMappedCrudFetchApi<I extends Serializable, M extends IIdAssign
                     description = "Internal server error",
                     content = @Content)
     })
-    @GetMapping(path = "/{code}")
+    @GetMapping(path = "/code/{code}")
     ResponseEntity<F> findByCode(
             @PathVariable(name = RestApiConstants.CODE)
             @Parameter(description = "Object code", example = "ABC123") String code);
