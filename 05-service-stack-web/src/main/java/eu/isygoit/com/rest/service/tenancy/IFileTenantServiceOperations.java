@@ -1,8 +1,8 @@
 package eu.isygoit.com.rest.service.tenancy;
 
 import eu.isygoit.dto.common.ResourceDto;
-import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.IIdAssignable;
+import eu.isygoit.model.ISingleFileEntity;
 import eu.isygoit.model.ITenantAssignable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
